@@ -1,0 +1,309 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Glass morphism utilities */
+@theme {
+  /* Primary colors - Blue/Purple gradient theme */
+  --color-primary-50: oklch(0.97 0.02 260);
+  --color-primary-100: oklch(0.94 0.04 260);
+  --color-primary-200: oklch(0.88 0.08 260);
+  --color-primary-300: oklch(0.80 0.12 260);
+  --color-primary-400: oklch(0.70 0.16 260);
+  --color-primary-500: oklch(0.60 0.20 260);
+  --color-primary-600: oklch(0.50 0.22 260);
+  --color-primary-700: oklch(0.42 0.20 260);
+  --color-primary-800: oklch(0.35 0.16 260);
+  --color-primary-900: oklch(0.28 0.12 260);
+  --color-primary-950: oklch(0.20 0.08 260);
+
+  /* Accent colors - Cyan/Teal */
+  --color-accent-50: oklch(0.97 0.02 200);
+  --color-accent-100: oklch(0.94 0.04 200);
+  --color-accent-200: oklch(0.88 0.08 200);
+  --color-accent-300: oklch(0.80 0.12 200);
+  --color-accent-400: oklch(0.70 0.16 200);
+  --color-accent-500: oklch(0.60 0.18 200);
+  --color-accent-600: oklch(0.50 0.16 200);
+  --color-accent-700: oklch(0.42 0.14 200);
+  --color-accent-800: oklch(0.35 0.12 200);
+  --color-accent-900: oklch(0.28 0.10 200);
+
+  /* Surface colors */
+  --color-surface-light: oklch(0.99 0.005 260);
+  --color-surface-dark: oklch(0.15 0.02 260);
+  --color-surface-glass-light: oklch(1 0 0 / 0.7);
+  --color-surface-glass-dark: oklch(0.2 0.02 260 / 0.7);
+
+  /* Text colors */
+  --color-text-primary-light: oklch(0.15 0.02 260);
+  --color-text-primary-dark: oklch(0.95 0.01 260);
+  --color-text-secondary-light: oklch(0.40 0.02 260);
+  --color-text-secondary-dark: oklch(0.70 0.01 260);
+  --color-text-muted-light: oklch(0.55 0.01 260);
+  --color-text-muted-dark: oklch(0.55 0.01 260);
+}
+
+/* Base layer overrides */
+@layer base {
+  :root {
+    --background: var(--color-surface-light);
+    --foreground: var(--color-text-primary-light);
+    --muted: var(--color-text-muted-light);
+    --border: oklch(0.90 0.01 260);
+    --ring: var(--color-primary-500);
+  }
+
+  .dark {
+    --background: var(--color-surface-dark);
+    --foreground: var(--color-text-primary-dark);
+    --muted: var(--color-text-muted-dark);
+    --border: oklch(0.30 0.02 260);
+    --ring: var(--color-primary-400);
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Focus ring for accessibility */
+  *:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+/* Utility classes */
+@layer utilities {
+  .glass {
+    background: var(--color-surface-glass-light);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid oklch(0.90 0.01 260 / 0.5);
+  }
+
+  .dark .glass {
+    background: var(--color-surface-glass-dark);
+    border: 1px solid oklch(0.40 0.02 260 / 0.3);
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gradient-bg {
+    background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));
+  }
+
+  .gradient-bg-subtle {
+    background: linear-gradient(135deg, var(--color-primary-100), var(--color-accent-100));
+  }
+
+  .dark .gradient-bg-subtle {
+    background: linear-gradient(135deg, var(--color-primary-900), var(--color-accent-900));
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: oklch(0.70 0.02 260 / 0.4);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.60 0.02 260 / 0.6);
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    background: oklch(0.40 0.02 260 / 0.4);
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.50 0.02 260 / 0.6);
+  }
+}
+
+/* Animation keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes floatSlow {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-20px) rotate(5deg);
+  }
+}
+
+@keyframes floatFast {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-15px) rotate(-3deg);
+  }
+}
+
+@keyframes floatDiagonal {
+
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  25% {
+    transform: translate(10px, -15px) rotate(5deg);
+  }
+
+  50% {
+    transform: translate(5px, -25px) rotate(10deg);
+  }
+
+  75% {
+    transform: translate(-5px, -10px) rotate(2deg);
+  }
+}
+
+@keyframes floatOrbit {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  25% {
+    transform: translate(15px, -10px) rotate(90deg);
+  }
+
+  50% {
+    transform: translate(0, -20px) rotate(180deg);
+  }
+
+  75% {
+    transform: translate(-15px, -10px) rotate(270deg);
+  }
+
+  100% {
+    transform: translate(0, 0) rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out forwards;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-slow {
+  animation: floatSlow 8s ease-in-out infinite;
+}
+
+.animate-float-fast {
+  animation: floatFast 4s ease-in-out infinite;
+}
+
+.animate-float-diagonal {
+  animation: floatDiagonal 10s ease-in-out infinite;
+}
+
+.animate-float-orbit {
+  animation: floatOrbit 15s linear infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse 4s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 3s linear infinite;
+  background-size: 200% 100%;
+}
