@@ -128,8 +128,25 @@ export function Board() {
             {/* Threads List */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {isLoading ? (
-                    <div className="text-center py-12 text-text-secondary-light dark:text-text-secondary-dark">
-                        読み込み中...
+                    <div className="space-y-4">
+                        {[...Array(4)].map((_, i) => (
+                            <div key={i} className="rounded-2xl border border-[var(--border)] bg-white/50 dark:bg-white/5 p-6 animate-pulse">
+                                <div className="flex items-start justify-between gap-4">
+                                    <div className="flex-1 min-w-0 space-y-3">
+                                        <div className="h-5 bg-primary-200/40 dark:bg-primary-800/30 rounded-lg w-3/4" />
+                                        <div className="space-y-2">
+                                            <div className="h-3.5 bg-gray-200/60 dark:bg-gray-700/40 rounded w-full" />
+                                            <div className="h-3.5 bg-gray-200/60 dark:bg-gray-700/40 rounded w-2/3" />
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            <div className="h-3 bg-gray-200/50 dark:bg-gray-700/30 rounded w-16" />
+                                            <div className="h-3 bg-gray-200/50 dark:bg-gray-700/30 rounded w-24" />
+                                            <div className="h-3 bg-gray-200/50 dark:bg-gray-700/30 rounded w-10" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 ) : sortedThreads.length === 0 ? (
                     <div className="text-center py-12 text-text-secondary-light dark:text-text-secondary-dark">
