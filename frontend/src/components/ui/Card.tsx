@@ -16,7 +16,7 @@ const variantStyles = {
   `,
     elevated: `
     bg-white dark:bg-surface-dark
-    shadow-lg shadow-primary-500/5 dark:shadow-primary-500/10
+    shadow-lg shadow-black/[0.04] dark:shadow-primary-500/10
     border border-[var(--border)]
   `,
 };
@@ -38,8 +38,8 @@ export function Card({
     return (
         <div
             className={`
-        rounded-2xl
-        transition-all duration-300
+        rounded-3xl
+        transition-all duration-300 ease-out
         ${variantStyles[variant]}
         ${paddingStyles[padding]}
         ${className}

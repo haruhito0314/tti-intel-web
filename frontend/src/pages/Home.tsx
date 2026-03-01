@@ -68,7 +68,7 @@ function FloatingPuzzle({
 
     const gradientBg = gradient
         ? 'bg-gradient-to-br from-primary-400/20 to-accent-400/20 dark:from-primary-500/15 dark:to-accent-500/15'
-        : 'bg-primary-500/10 dark:bg-primary-400/10';
+        : 'bg-primary-500/[0.06] dark:bg-primary-400/[0.06]';
 
     if (shape === 'hexagon') {
         return (
@@ -231,13 +231,13 @@ export function Home() {
                             </span>
                         </div>
 
-                        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6">
+                        <h1 className="text-[28px] md:text-6xl lg:text-6xl font-bold mb-6 leading-tight tracking-tight">
                             <span className="gradient-text">AIの未来を</span>
                             <br />
                             <span className="text-text-primary-light dark:text-text-primary-dark">一緒に創ろう</span>
                         </h1>
 
-                        <p className="text-lg md:text-xl text-text-secondary-light dark:text-text-secondary-dark max-w-2xl mx-auto mb-10">
+                        <p className="text-[15px] md:text-xl text-text-secondary-light dark:text-text-secondary-dark max-w-2xl mx-auto mb-10 leading-relaxed">
                             TTI Intelligenceは、最新のAI技術を共に学び、
                             実践的な開発を通じてアイデアを形にする学生コミュニティです。
                         </p>
@@ -265,17 +265,17 @@ export function Home() {
             </section>
 
             {/* Next Event */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
                 <Card variant="glass" className="overflow-hidden">
                     <div className="flex flex-col md:flex-row">
                         <div className="md:w-1/3 gradient-bg p-8 flex items-center justify-center">
                             <div className="text-center text-white">
                                 <Calendar className="w-12 h-12 mx-auto mb-4" />
-                                <p className="text-lg font-semibold">次回イベント</p>
+                                <p className="text-base md:text-lg font-semibold">次回イベント</p>
                             </div>
                         </div>
                         <CardContent className="flex-1 p-8">
-                            <h3 className="text-xl font-bold text-text-primary-light dark:text-text-primary-dark mb-2">
+                            <h3 className="text-base md:text-xl font-bold text-text-primary-light dark:text-text-primary-dark mb-2">
                                 {nextEvent.title}
                             </h3>
                             <p className="text-text-secondary-light dark:text-text-secondary-dark mb-4">
@@ -296,9 +296,9 @@ export function Home() {
             </section>
 
             {/* Latest Posts */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
                 <div className="flex items-center justify-between mb-8">
-                    <h2 className="text-2xl md:text-3xl font-bold text-text-primary-light dark:text-text-primary-dark">
+                    <h2 className="text-xl md:text-3xl font-bold text-text-primary-light dark:text-text-primary-dark tracking-tight">
                         最新のお知らせ
                     </h2>
                     <Link
@@ -320,7 +320,7 @@ export function Home() {
                         >
                             <Card
                                 variant="elevated"
-                                className="h-full hover:scale-[1.02] transition-transform duration-300"
+                                className="h-full hover:scale-[1.015] transition-transform duration-300"
                             >
                                 <CardContent className="p-6">
                                     <div className="flex items-center gap-2 mb-3">
@@ -331,10 +331,10 @@ export function Home() {
                                             <Badge variant="warning">📌 固定</Badge>
                                         )}
                                     </div>
-                                    <h3 className="text-lg font-semibold text-text-primary-light dark:text-text-primary-dark mb-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                                    <h3 className="text-[15px] md:text-lg font-semibold text-text-primary-light dark:text-text-primary-dark mb-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
                                         {post.title}
                                     </h3>
-                                    <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-4 line-clamp-2">
+                                    <p className="text-[13px] md:text-sm text-text-secondary-light dark:text-text-secondary-dark mb-4 line-clamp-2">
                                         {post.excerpt}
                                     </p>
                                     <div className="flex items-center justify-between">
@@ -351,7 +351,7 @@ export function Home() {
             </section>
 
             {/* CTA Section */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
                 <Card variant="glass" padding="lg" className="text-center relative overflow-hidden">
                     {/* Floating elements in CTA */}
                     <FloatingPuzzle shape="hexagon" size={40} className="top-4 left-4" delay={0} duration={10} />
@@ -359,7 +359,7 @@ export function Home() {
                     <FloatingPuzzle shape="circle" size={20} className="bottom-4 left-[20%]" delay={2} duration={8} />
                     <FloatingPuzzle shape="triangle" size={35} className="bottom-6 right-[15%]" delay={0.5} duration={11} gradient />
 
-                    <h2 className="text-2xl md:text-3xl font-bold gradient-text mb-4 relative z-10">
+                    <h2 className="text-xl md:text-3xl font-bold gradient-text mb-4 relative z-10 tracking-tight">
                         一緒にAIを学びませんか？
                     </h2>
                     <p className="text-text-secondary-light dark:text-text-secondary-dark max-w-2xl mx-auto mb-8 relative z-10">

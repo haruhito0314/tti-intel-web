@@ -212,7 +212,7 @@ export function BoardDetail() {
                         )}
                     </div>
 
-                    <h1 className="text-2xl md:text-3xl font-bold text-text-primary-light dark:text-text-primary-dark mb-4">
+                    <h1 className="text-xl md:text-3xl font-bold text-text-primary-light dark:text-text-primary-dark mb-4 tracking-tight">
                         {thread.title}
                     </h1>
                 </div>
@@ -236,7 +236,7 @@ export function BoardDetail() {
 
                 {/* Comments */}
                 <div className="space-y-4 mb-8">
-                    <h2 className="text-lg font-semibold text-text-primary-light dark:text-text-primary-dark">
+                    <h2 className="text-base md:text-lg font-semibold text-text-primary-light dark:text-text-primary-dark">
                         コメント ({thread.commentCount || 0})
                     </h2>
 
@@ -277,7 +277,7 @@ export function BoardDetail() {
                 ) : (
                     <Card variant="glass">
                         <CardContent className="p-6">
-                            <h3 className="text-lg font-semibold text-text-primary-light dark:text-text-primary-dark mb-4">
+                            <h3 className="text-base md:text-lg font-semibold text-text-primary-light dark:text-text-primary-dark mb-4">
                                 コメントを投稿
                             </h3>
                             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

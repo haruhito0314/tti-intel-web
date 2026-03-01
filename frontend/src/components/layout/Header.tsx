@@ -13,25 +13,19 @@ export function Header() {
             <div className="absolute inset-0 glass" />
 
             <nav className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center justify-between h-16">
+                <div className="flex items-center justify-between h-12">
                     {/* Logo */}
                     <Link
                         to="/"
-                        className="flex items-center gap-2 group"
+                        className="flex items-center group"
                     >
-                        <div className="
-              relative w-10 h-10 rounded-xl
-              gradient-bg
-              flex items-center justify-center
-              group-hover:scale-105
+                        <Sparkles className="
+              w-7 h-7
+              text-primary-500
+              group-hover:scale-110
               transition-transform duration-300
               animate-float
-            ">
-                            <Sparkles className="w-6 h-6 text-white" />
-                        </div>
-                        <span className="font-bold text-lg hidden sm:block gradient-text">
-                            {siteConfig.shortName}
-                        </span>
+            " />
                     </Link>
 
                     {/* Desktop Navigation */}
@@ -41,8 +35,8 @@ export function Header() {
                                 key={link.href}
                                 to={link.href}
                                 className={({ isActive }) => `
-                  px-4 py-2 rounded-xl text-sm font-medium
-                  transition-all duration-200
+                  px-3 py-1.5 rounded-lg text-[13px] font-medium
+                  transition-all duration-300
                   ${isActive
                                         ? 'bg-primary-100 dark:bg-primary-900/50 text-primary-600 dark:text-primary-400'
                                         : 'text-text-secondary-light dark:text-text-secondary-dark hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/30'

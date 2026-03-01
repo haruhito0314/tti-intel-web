@@ -71,7 +71,7 @@ export function Contact() {
                     <div className="w-20 h-20 rounded-full gradient-bg flex items-center justify-center mx-auto mb-6">
                         <CheckCircle className="w-10 h-10 text-white" />
                     </div>
-                    <h1 className="text-3xl font-bold text-text-primary-light dark:text-text-primary-dark mb-4">
+                    <h1 className="text-2xl md:text-3xl font-bold text-text-primary-light dark:text-text-primary-dark mb-4">
                         送信完了
                     </h1>
                     <p className="text-text-secondary-light dark:text-text-secondary-dark mb-8">
@@ -94,17 +94,17 @@ export function Contact() {
                 <div className="absolute inset-0 gradient-bg-subtle opacity-30" />
                 <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
                     <div className="text-center">
-                        <h1 className="text-4xl font-bold text-text-primary-light dark:text-text-primary-dark mb-4">
+                        <h1 className="text-[28px] md:text-4xl font-bold text-text-primary-light dark:text-text-primary-dark mb-4 leading-tight tracking-tight">
                             Contact
                         </h1>
-                        <p className="text-text-secondary-light dark:text-text-secondary-dark">
+                        <p className="text-[15px] md:text-base text-text-secondary-light dark:text-text-secondary-dark">
                             ご質問やお問い合わせはこちらからお気軽にどうぞ
                         </p>
                     </div>
                 </div>
             </section>
 
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
                 <div className="grid md:grid-cols-3 gap-8">
                     {/* Contact Info */}
                     <div className="md:col-span-1 space-y-6">
@@ -118,7 +118,9 @@ export function Contact() {
                                         メール
                                     </h3>
                                     <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">
-                                        {siteConfig.contactEmail}
+                                        <a href={`mailto:${siteConfig.contactEmail}`} className="hover:text-primary-600 dark:hover:text-primary-400 transition-colors underline underline-offset-4 decoration-primary-300 dark:decoration-primary-700">
+                                            {siteConfig.contactEmail}
+                                        </a>
                                     </p>
                                 </div>
                             </div>

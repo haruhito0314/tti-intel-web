@@ -93,16 +93,16 @@ export function News() {
             <section className="relative overflow-hidden">
                 <div className="absolute inset-0 gradient-bg-subtle opacity-30" />
                 <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-                    <h1 className="text-4xl font-bold text-text-primary-light dark:text-text-primary-dark mb-4">
+                    <h1 className="text-[28px] md:text-4xl font-bold text-text-primary-light dark:text-text-primary-dark mb-4 leading-tight tracking-tight">
                         お知らせ・記事
                     </h1>
-                    <p className="text-text-secondary-light dark:text-text-secondary-dark">
+                    <p className="text-[15px] md:text-base text-text-secondary-light dark:text-text-secondary-dark">
                         サークルの活動報告やお知らせ、技術記事を掲載しています
                     </p>
                 </div>
             </section>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16">
                 <div className="flex flex-col lg:flex-row gap-8">
                     {/* Main Content */}
                     <div className="flex-1">
@@ -159,10 +159,10 @@ export function News() {
                                                                 </Badge>
                                                             )}
                                                         </div>
-                                                        <h2 className="text-xl font-semibold text-text-primary-light dark:text-text-primary-dark mb-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                                                        <h2 className="text-base md:text-xl font-semibold text-text-primary-light dark:text-text-primary-dark mb-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
                                                             {post.title}
                                                         </h2>
-                                                        <p className="text-text-secondary-light dark:text-text-secondary-dark mb-4 line-clamp-2">
+                                                        <p className="text-[13px] md:text-base text-text-secondary-light dark:text-text-secondary-dark mb-4 line-clamp-2">
                                                             {post.excerpt}
                                                         </p>
                                                         <div className="flex items-center justify-between">

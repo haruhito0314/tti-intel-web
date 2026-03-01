@@ -110,10 +110,10 @@ export function Board() {
                 <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div>
-                            <h1 className="text-4xl font-bold text-text-primary-light dark:text-text-primary-dark mb-2">
+                            <h1 className="text-[28px] md:text-4xl font-bold text-text-primary-light dark:text-text-primary-dark mb-2 leading-tight tracking-tight">
                                 掲示板
                             </h1>
-                            <p className="text-text-secondary-light dark:text-text-secondary-dark">
+                            <p className="text-[15px] md:text-base text-text-secondary-light dark:text-text-secondary-dark">
                                 サークルメンバー同士で情報交換しましょう
                             </p>
                         </div>
@@ -126,7 +126,7 @@ export function Board() {
             </section>
 
             {/* Threads List */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16">
                 {isLoading ? (
                     <div className="space-y-4">
                         {[...Array(4)].map((_, i) => (
@@ -149,9 +149,21 @@ export function Board() {
                         ))}
                     </div>
                 ) : sortedThreads.length === 0 ? (
-                    <div className="text-center py-12 text-text-secondary-light dark:text-text-secondary-dark">
-                        スレッドがありません。最初のスレッドを作成してみましょう！
-                    </div>
+                    <Card variant="glass" padding="lg" className="text-center py-16">
+                        <div className="flex flex-col items-center gap-4">
+                            <div className="w-16 h-16 rounded-2xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                                <MessageSquare className="w-8 h-8 text-primary-500" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold text-text-primary-light dark:text-text-primary-dark mb-2">
+                                    まだスレッドがありません
+                                </h3>
+                                <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark max-w-md mx-auto">
+                                    最初のスレッドを作成して、メンバー同士の交流を始めましょう！
+                                </p>
+                            </div>
+                        </div>
+                    </Card>
                 ) : (
                     <div className="space-y-4">
                         {sortedThreads.map((thread) => (
@@ -177,10 +189,10 @@ export function Board() {
                                                         </Badge>
                                                     )}
                                                 </div>
-                                                <h2 className="text-lg font-semibold text-text-primary-light dark:text-text-primary-dark mb-1 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors truncate">
+                                                <h2 className="text-[15px] md:text-lg font-semibold text-text-primary-light dark:text-text-primary-dark mb-1 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors truncate">
                                                     {thread.title}
                                                 </h2>
-                                                <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-3 line-clamp-2">
+                                                <p className="text-[13px] md:text-sm text-text-secondary-light dark:text-text-secondary-dark mb-3 line-clamp-2">
                                                     {thread.body}
                                                 </p>
                                                 <div className="flex items-center gap-4 text-sm text-text-muted-light dark:text-text-muted-dark">

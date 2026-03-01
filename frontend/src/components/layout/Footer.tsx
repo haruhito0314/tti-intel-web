@@ -38,19 +38,19 @@ export function Footer() {
 
     return (
         <footer className="mt-auto border-t border-[var(--border)]">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     {/* Brand */}
                     <div className="md:col-span-2">
-                        <Link to="/" className="flex items-center gap-2 mb-4">
-                            <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
-                                <Sparkles className="w-6 h-6 text-white" />
+                        <Link to="/" className="flex items-center gap-2 mb-3">
+                            <div className="w-8 h-8 rounded-lg gradient-bg flex items-center justify-center">
+                                <Sparkles className="w-5 h-5 text-white" />
                             </div>
-                            <span className="font-bold text-lg gradient-text">
+                            <span className="font-bold text-base gradient-text">
                                 {siteConfig.name}
                             </span>
                         </Link>
-                        <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark max-w-md">
+                        <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark max-w-md leading-relaxed">
                             {siteConfig.description}
                         </p>
 
@@ -65,11 +65,11 @@ export function Footer() {
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="
-                      p-2 rounded-xl
+                      p-1.5 rounded-lg
                       text-text-secondary-light dark:text-text-secondary-dark
                       hover:text-primary-600 dark:hover:text-primary-400
                       hover:bg-primary-50 dark:hover:bg-primary-900/30
-                      transition-all duration-200
+                      transition-all duration-300
                     "
                                         aria-label={label}
                                     >
@@ -82,18 +82,18 @@ export function Footer() {
 
                     {/* Menu Links */}
                     <div>
-                        <h3 className="font-semibold text-sm text-text-primary-light dark:text-text-primary-dark mb-4">
+                        <h3 className="font-semibold text-xs text-text-primary-light dark:text-text-primary-dark mb-3 uppercase tracking-wider">
                             メニュー
                         </h3>
-                        <ul className="space-y-2">
+                        <ul className="space-y-1.5">
                             {siteConfig.footerLinks.menu.map((link) => (
                                 <li key={link.href}>
                                     <Link
                                         to={link.href}
                                         className="
-                      text-sm text-text-secondary-light dark:text-text-secondary-dark
+                      text-xs text-text-secondary-light dark:text-text-secondary-dark
                       hover:text-primary-600 dark:hover:text-primary-400
-                      transition-colors duration-200
+                      transition-colors duration-300
                     "
                                     >
                                         {link.name}
@@ -105,17 +105,17 @@ export function Footer() {
 
                     {/* Admin & Legal */}
                     <div>
-                        <h3 className="font-semibold text-sm text-text-primary-light dark:text-text-primary-dark mb-4">
+                        <h3 className="font-semibold text-xs text-text-primary-light dark:text-text-primary-dark mb-3 uppercase tracking-wider">
                             その他
                         </h3>
-                        <ul className="space-y-2">
+                        <ul className="space-y-1.5">
                             <li>
                                 <Link
                                     to="/admin"
                                     className="
-                    text-sm text-text-secondary-light dark:text-text-secondary-dark
+                    text-xs text-text-secondary-light dark:text-text-secondary-dark
                     hover:text-primary-600 dark:hover:text-primary-400
-                    transition-colors duration-200
+                    transition-colors duration-300
                   "
                                 >
                                     管理者ページ
@@ -126,9 +126,9 @@ export function Footer() {
                                     <Link
                                         to={link.href}
                                         className="
-                      text-sm text-text-secondary-light dark:text-text-secondary-dark
+                      text-xs text-text-secondary-light dark:text-text-secondary-dark
                       hover:text-primary-600 dark:hover:text-primary-400
-                      transition-colors duration-200
+                      transition-colors duration-300
                     "
                                     >
                                         {link.name}
@@ -140,8 +140,8 @@ export function Footer() {
                 </div>
 
                 {/* Copyright */}
-                <div className="mt-12 pt-8 border-t border-[var(--border)]">
-                    <p className="text-center text-sm text-text-muted-light dark:text-text-muted-dark">
+                <div className="mt-8 pt-6 border-t border-[var(--border)]">
+                    <p className="text-center text-[11px] text-text-muted-light dark:text-text-muted-dark">
                         © {currentYear} {siteConfig.name}. All rights reserved.
                     </p>
                 </div>

@@ -58,10 +58,10 @@ export function About() {
                 <div className="absolute inset-0 gradient-bg-subtle opacity-30" />
                 <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
                     <div className="text-center">
-                        <h1 className="text-4xl md:text-5xl font-bold text-text-primary-light dark:text-text-primary-dark mb-6">
+                        <h1 className="text-[28px] md:text-5xl font-bold text-text-primary-light dark:text-text-primary-dark mb-6 leading-tight tracking-tight">
                             About <span className="gradient-text">TTI Intelligence</span>
                         </h1>
-                        <p className="text-lg text-text-secondary-light dark:text-text-secondary-dark max-w-3xl mx-auto">
+                        <p className="text-[15px] md:text-lg text-text-secondary-light dark:text-text-secondary-dark max-w-3xl mx-auto leading-relaxed">
                             私たちは豊田工業大学の学生を中心としたAIサークルです。
                             AI技術の学習・研究・開発を通じて、次世代のAIエンジニアを育成しています。
                         </p>
@@ -70,13 +70,13 @@ export function About() {
             </section>
 
             {/* Philosophy */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
                 <Card variant="glass" padding="lg">
                     <div className="text-center">
-                        <h2 className="text-2xl md:text-3xl font-bold text-text-primary-light dark:text-text-primary-dark mb-6">
+                        <h2 className="text-xl md:text-3xl font-bold text-text-primary-light dark:text-text-primary-dark mb-6 tracking-tight">
                             理念
                         </h2>
-                        <p className="text-lg text-text-secondary-light dark:text-text-secondary-dark max-w-3xl mx-auto leading-relaxed">
+                        <p className="text-[15px] md:text-lg text-text-secondary-light dark:text-text-secondary-dark max-w-3xl mx-auto leading-relaxed">
                             「<span className="font-semibold text-primary-600 dark:text-primary-400">学び、創り、共有する</span>」
                             <br className="hidden md:block" />
                             私たちは好奇心を大切にし、AI技術を通じて社会に貢献できる人材を育てます。
@@ -88,8 +88,8 @@ export function About() {
             </section>
 
             {/* Activities */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-                <h2 className="text-2xl md:text-3xl font-bold text-text-primary-light dark:text-text-primary-dark text-center mb-12">
+            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+                <h2 className="text-xl md:text-3xl font-bold text-text-primary-light dark:text-text-primary-dark text-center mb-10 tracking-tight">
                     活動内容
                 </h2>
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -99,17 +99,17 @@ export function About() {
                             <Card
                                 key={index}
                                 variant="elevated"
-                                className="hover:scale-[1.02] transition-transform duration-300"
+                                className="hover:scale-[1.015] transition-transform duration-300"
                                 style={{ animationDelay: `${index * 100}ms` }}
                             >
                                 <CardContent className="p-6 text-center">
                                     <div className="w-14 h-14 rounded-2xl gradient-bg flex items-center justify-center mx-auto mb-4">
                                         <Icon className="w-7 h-7 text-white" />
                                     </div>
-                                    <h3 className="text-lg font-semibold text-text-primary-light dark:text-text-primary-dark mb-2">
+                                    <h3 className="text-[15px] md:text-lg font-semibold text-text-primary-light dark:text-text-primary-dark mb-2">
                                         {activity.title}
                                     </h3>
-                                    <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                                    <p className="text-[13px] md:text-sm text-text-secondary-light dark:text-text-secondary-dark">
                                         {activity.description}
                                     </p>
                                 </CardContent>
@@ -120,8 +120,8 @@ export function About() {
             </section>
 
             {/* FAQ */}
-            <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-                <h2 className="text-2xl md:text-3xl font-bold text-text-primary-light dark:text-text-primary-dark text-center mb-12">
+            <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+                <h2 className="text-xl md:text-3xl font-bold text-text-primary-light dark:text-text-primary-dark text-center mb-10 tracking-tight">
                     よくある質問
                 </h2>
                 <div className="space-y-4">
@@ -155,6 +155,25 @@ export function About() {
                         </Card>
                     ))}
                 </div>
+            </section>
+
+            {/* CTA Section */}
+            <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+                <Card variant="glass" padding="lg" className="text-center">
+                    <h2 className="text-xl md:text-2xl font-bold gradient-text mb-4 tracking-tight">
+                        興味を持たれた方へ
+                    </h2>
+                    <p className="text-[15px] md:text-base text-text-secondary-light dark:text-text-secondary-dark mb-6 max-w-xl mx-auto">
+                        経験や専攻は問いません。AIに興味がある方なら誰でも歓迎です。まずはお気軽にお問い合わせください。
+                    </p>
+                    <a
+                        href="/contact"
+                        className="inline-flex items-center gap-2 px-6 py-3 rounded-xl gradient-bg text-white font-medium hover:opacity-90 transition-opacity"
+                    >
+                        入会について問い合わせる
+                        <ChevronDown className="w-4 h-4 -rotate-90" />
+                    </a>
+                </Card>
             </section>
         </div>
     );

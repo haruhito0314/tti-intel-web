@@ -25,7 +25,10 @@ const variantStyles: Record<ButtonVariant, string> = {
   `,
     ghost: `
     text-text-primary-light dark:text-text-primary-dark
+    bg-surface-light/50 dark:bg-surface-dark/50
+    border border-[var(--border)]
     hover:bg-primary-100 dark:hover:bg-primary-900/50
+    hover:border-primary-300 dark:hover:border-primary-700
     focus-visible:ring-2 focus-visible:ring-primary-500
     disabled:opacity-50 disabled:cursor-not-allowed
   `,
