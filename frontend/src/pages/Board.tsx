@@ -114,7 +114,7 @@ export function Board() {
                                 掲示板
                             </h1>
                             <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
-                                サークルメンバー同士で情報交換しましょう
+                                誰でも匿名で自由に書き込める掲示板です
                             </p>
                         </div>
                         <Button onClick={() => setIsCreateDialogOpen(true)}>
@@ -123,100 +123,103 @@ export function Board() {
                         </Button>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* Threads List */}
-            <div className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16">
-                {isLoading ? (
-                    <div className="space-y-4">
-                        {[...Array(4)].map((_, i) => (
-                            <div key={i} className="rounded-2xl border border-[var(--border)] bg-white/50 dark:bg-white/5 p-6 animate-pulse">
-                                <div className="flex items-start justify-between gap-4">
-                                    <div className="flex-1 min-w-0 space-y-3">
-                                        <div className="h-5 bg-[#D2D2D7]/40 dark:bg-[#38383A]/30 rounded-lg w-3/4" />
-                                        <div className="space-y-2">
-                                            <div className="h-3.5 bg-[#D2D2D7]/60 dark:bg-[#38383A]/40 rounded w-full" />
-                                            <div className="h-3.5 bg-[#D2D2D7]/60 dark:bg-[#38383A]/40 rounded w-2/3" />
-                                        </div>
-                                        <div className="flex items-center gap-4">
-                                            <div className="h-3 bg-[#D2D2D7]/50 dark:bg-[#38383A]/30 rounded w-16" />
-                                            <div className="h-3 bg-[#D2D2D7]/50 dark:bg-[#38383A]/30 rounded w-24" />
-                                            <div className="h-3 bg-[#D2D2D7]/50 dark:bg-[#38383A]/30 rounded w-10" />
+            < div className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16" >
+                {
+                    isLoading ? (
+                        <div className="space-y-4" >
+                            {[...Array(4)].map((_, i) => (
+                                <div key={i} className="rounded-2xl border border-[var(--border)] bg-white/50 dark:bg-white/5 p-6 animate-pulse">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="flex-1 min-w-0 space-y-3">
+                                            <div className="h-5 bg-[#D2D2D7]/40 dark:bg-[#38383A]/30 rounded-lg w-3/4" />
+                                            <div className="space-y-2">
+                                                <div className="h-3.5 bg-[#D2D2D7]/60 dark:bg-[#38383A]/40 rounded w-full" />
+                                                <div className="h-3.5 bg-[#D2D2D7]/60 dark:bg-[#38383A]/40 rounded w-2/3" />
+                                            </div>
+                                            <div className="flex items-center gap-4">
+                                                <div className="h-3 bg-[#D2D2D7]/50 dark:bg-[#38383A]/30 rounded w-16" />
+                                                <div className="h-3 bg-[#D2D2D7]/50 dark:bg-[#38383A]/30 rounded w-24" />
+                                                <div className="h-3 bg-[#D2D2D7]/50 dark:bg-[#38383A]/30 rounded w-10" />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+                            ))
+                            }
+                        </div >
+                    ) : sortedThreads.length === 0 ? (
+                        <Card variant="glass" padding="lg" className="text-center py-16">
+                            <div className="flex flex-col items-center gap-4">
+                                <div className="w-16 h-16 rounded-2xl bg-[#0071E3]/10 dark:bg-[#2997FF]/10 flex items-center justify-center">
+                                    <MessageSquare className="w-8 h-8 text-[#0071E3]" />
+                                </div>
+                                <div>
+                                    <h3 className="apple-headline text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
+                                        まだスレッドがありません
+                                    </h3>
+                                    <p className="text-sm text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] max-w-md mx-auto">
+                                        最初のスレッドを作成して、メンバー同士の交流を始めましょう！
+                                    </p>
+                                </div>
                             </div>
-                        ))}
-                    </div>
-                ) : sortedThreads.length === 0 ? (
-                    <Card variant="glass" padding="lg" className="text-center py-16">
-                        <div className="flex flex-col items-center gap-4">
-                            <div className="w-16 h-16 rounded-2xl bg-[#0071E3]/10 dark:bg-[#2997FF]/10 flex items-center justify-center">
-                                <MessageSquare className="w-8 h-8 text-[#0071E3]" />
-                            </div>
-                            <div>
-                                <h3 className="apple-headline text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
-                                    まだスレッドがありません
-                                </h3>
-                                <p className="text-sm text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] max-w-md mx-auto">
-                                    最初のスレッドを作成して、メンバー同士の交流を始めましょう！
-                                </p>
-                            </div>
-                        </div>
-                    </Card>
-                ) : (
-                    <div className="space-y-4">
-                        {sortedThreads.map((thread) => (
-                            <Link key={thread.id} to={`/board/${thread.id}`} className="block group">
-                                <Card
-                                    variant="elevated"
-                                    className="hover:scale-[1.01] transition-transform duration-300"
-                                >
-                                    <CardContent className="p-6">
-                                        <div className="flex items-start justify-between gap-4">
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    {thread.pinned && (
-                                                        <Badge variant="warning" className="flex items-center gap-1">
-                                                            <Pin className="w-3 h-3" />
-                                                            固定
-                                                        </Badge>
-                                                    )}
-                                                    {thread.locked && (
-                                                        <Badge variant="default" className="flex items-center gap-1">
-                                                            <Lock className="w-3 h-3" />
-                                                            ロック中
-                                                        </Badge>
-                                                    )}
+                        </Card>
+                    ) : (
+                        <div className="space-y-4">
+                            {sortedThreads.map((thread) => (
+                                <Link key={thread.id} to={`/board/${thread.id}`} className="block group">
+                                    <Card
+                                        variant="elevated"
+                                        className="hover:scale-[1.01] transition-transform duration-300"
+                                    >
+                                        <CardContent className="p-6">
+                                            <div className="flex items-start justify-between gap-4">
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        {thread.pinned && (
+                                                            <Badge variant="warning" className="flex items-center gap-1">
+                                                                <Pin className="w-3 h-3" />
+                                                                固定
+                                                            </Badge>
+                                                        )}
+                                                        {thread.locked && (
+                                                            <Badge variant="default" className="flex items-center gap-1">
+                                                                <Lock className="w-3 h-3" />
+                                                                ロック中
+                                                            </Badge>
+                                                        )}
+                                                    </div>
+                                                    <h2 className="apple-headline text-[#1D1D1F] dark:text-[#F5F5F7] mb-1 group-hover:text-[#0066CC] dark:group-hover:text-[#2997FF] transition-colors truncate">
+                                                        {thread.title}
+                                                    </h2>
+                                                    <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-3 line-clamp-2">
+                                                        {thread.body}
+                                                    </p>
+                                                    <div className="flex items-center gap-4 text-sm text-[#86868B] dark:text-[rgba(235,235,245,0.3)]">
+                                                        <span>{thread.displayName}</span>
+                                                        <span>•</span>
+                                                        <span>{formatDate(thread.createdAt)}</span>
+                                                        <span className="flex items-center gap-1">
+                                                            <MessageSquare className="w-4 h-4" />
+                                                            {thread.commentCount}
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                                <h2 className="apple-headline text-[#1D1D1F] dark:text-[#F5F5F7] mb-1 group-hover:text-[#0066CC] dark:group-hover:text-[#2997FF] transition-colors truncate">
-                                                    {thread.title}
-                                                </h2>
-                                                <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-3 line-clamp-2">
-                                                    {thread.body}
-                                                </p>
-                                                <div className="flex items-center gap-4 text-sm text-[#86868B] dark:text-[rgba(235,235,245,0.3)]">
-                                                    <span>{thread.displayName}</span>
-                                                    <span>•</span>
-                                                    <span>{formatDate(thread.createdAt)}</span>
-                                                    <span className="flex items-center gap-1">
-                                                        <MessageSquare className="w-4 h-4" />
-                                                        {thread.commentCount}
-                                                    </span>
-                                                </div>
+                                                <ArrowRight className="w-5 h-5 text-[#0071E3] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
                                             </div>
-                                            <ArrowRight className="w-5 h-5 text-[#0071E3] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </Link>
-                        ))}
-                    </div>
-                )}
-            </div>
+                                        </CardContent>
+                                    </Card>
+                                </Link>
+                            ))}
+                        </div>
+                    )
+                }
+            </div >
 
             {/* Create Thread Dialog */}
-            <Dialog
+            < Dialog
                 open={isCreateDialogOpen}
                 onClose={() => setIsCreateDialogOpen(false)}
                 title="新しいスレッドを作成"
@@ -256,7 +259,7 @@ export function Board() {
                         </Button>
                     </div>
                 </form>
-            </Dialog>
-        </div>
+            </Dialog >
+        </div >
     );
 }

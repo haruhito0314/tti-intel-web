@@ -110,8 +110,8 @@ export function Contact() {
                     <div className="md:col-span-1 space-y-6">
                         <Card variant="glass" padding="md">
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-xl gradient-bg flex items-center justify-center">
-                                    <Mail className="w-6 h-6 text-white" />
+                                <div className="w-12 h-12 rounded-full bg-[#0071E3]/10 dark:bg-[#2997FF]/10 flex items-center justify-center">
+                                    <Mail className="w-6 h-6 text-[#0071E3] dark:text-[#2997FF]" />
                                 </div>
                                 <div>
                                     <h3 className="font-medium text-[#1D1D1F] dark:text-[#F5F5F7]">
@@ -133,7 +133,6 @@ export function Contact() {
                             <ul className="space-y-2 text-sm text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
                                 <li>• サークルへの入会について</li>
                                 <li>• イベントへの参加申し込み</li>
-                                <li>• 取材・講演のご依頼</li>
                                 <li>• その他のお問い合わせ</li>
                             </ul>
                         </Card>
