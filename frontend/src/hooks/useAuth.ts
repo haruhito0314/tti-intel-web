@@ -6,10 +6,8 @@ import {
     GoogleAuthProvider,
     type User,
 } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
-
-// Admin email addresses - users with these emails get moderation privileges
-const ADMIN_EMAILS = ['tti.intel@gmail.com'];
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase';
 
 const googleProvider = new GoogleAuthProvider();
 
@@ -27,12 +25,30 @@ export function useAuth() {
     });
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (user) {
-                setAuthState({
-                    user,
-                    isAdmin: ADMIN_EMAILS.includes(user.email || ''),
-                    loading: false,
+        let unsubscribeAdmins: (() => void) | null = null;
+
+        const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+            // Clean up previous admins listener
+            if (unsubscribeAdmins) {
+                unsubscribeAdmins();
+                unsubscribeAdmins = null;
+            }
+
+            if (user && user.email) {
+                // Check if user email exists in admins collection
+                const q = query(
+                    collection(db, 'admins'),
+                    where('email', '==', user.email)
+                );
+                unsubscribeAdmins = onSnapshot(q, (snapshot) => {
+                    setAuthState({
+                        user,
+                        isAdmin: !snapshot.empty,
+                        loading: false,
+                    });
+                }, () => {
+                    // On error (e.g., no admins collection yet), fall back to not admin
+                    setAuthState({ user, isAdmin: false, loading: false });
                 });
             } else {
                 setAuthState({
@@ -43,7 +59,10 @@ export function useAuth() {
             }
         });
 
-        return () => unsubscribe();
+        return () => {
+            unsubscribeAuth();
+            if (unsubscribeAdmins) unsubscribeAdmins();
+        };
     }, []);
 
     const login = async () => {

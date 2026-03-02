@@ -24,6 +24,7 @@ const NewsDetail = lazy(() => import('@/pages/NewsDetail').then(m => ({ default:
 const Board = lazy(() => import('@/pages/Board').then(m => ({ default: m.Board })));
 const BoardDetail = lazy(() => import('@/pages/BoardDetail').then(m => ({ default: m.BoardDetail })));
 const Admin = lazy(() => import('@/pages/Admin').then(m => ({ default: m.Admin })));
+const AdminMembers = lazy(() => import('@/pages/AdminMembers').then(m => ({ default: m.AdminMembers })));
 
 function PageLoader() {
   return (
@@ -53,6 +54,7 @@ function App() {
               <Route path="board/:id" element={<Suspense fallback={<PageLoader />}><BoardDetail /></Suspense>} />
               <Route path="contact" element={<Contact />} />
               <Route path="admin" element={<Suspense fallback={<PageLoader />}><Admin /></Suspense>} />
+              <Route path="admin/members" element={<Suspense fallback={<PageLoader />}><AdminMembers /></Suspense>} />
               {/* 404 fallback */}
               <Route
                 path="*"

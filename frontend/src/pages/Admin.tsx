@@ -89,8 +89,8 @@ export function Admin() {
         {
             icon: Users,
             title: 'メンバー管理',
-            description: '管理者アカウントの管理（準備中）',
-            href: '#',
+            description: '管理者アカウントの追加・削除',
+            href: '/admin/members',
         },
         {
             icon: Settings,
