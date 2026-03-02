@@ -1,4 +1,5 @@
 import { useAuth } from '@/hooks/useAuth';
+import { Link } from 'react-router-dom';
 import { Shield, LogIn, LogOut, Users, FileText, MessageSquare, Settings } from 'lucide-react';
 import { Card, CardContent, Button } from '@/components/ui';
 
@@ -132,7 +133,7 @@ export function Admin() {
                     {adminMenuItems.map((item, index) => {
                         const Icon = item.icon;
                         const isDisabled = item.href === '#';
-                        return (
+                        const cardContent = (
                             <Card
                                 key={index}
                                 variant="elevated"
@@ -154,6 +155,11 @@ export function Admin() {
                                     </div>
                                 </CardContent>
                             </Card>
+                        );
+                        return isDisabled ? (
+                            <div key={index}>{cardContent}</div>
+                        ) : (
+                            <Link key={index} to={item.href}>{cardContent}</Link>
                         );
                     })}
                 </div>
