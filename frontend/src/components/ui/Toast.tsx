@@ -88,7 +88,7 @@ function ToastContainer({
                         key={toast.id}
                         className="
               glass rounded-xl p-4
-              bg-white dark:bg-surface-dark
+              bg-white dark:bg-[#1C1C1E]
               border border-[var(--border)]
               shadow-lg
               animate-slide-in
@@ -98,11 +98,11 @@ function ToastContainer({
                     >
                         <Icon className={`w-5 h-5 flex-shrink-0 mt-0.5 ${colorMap[toast.type]}`} />
                         <div className="flex-1 min-w-0">
-                            <p className="font-medium text-text-primary-light dark:text-text-primary-dark">
+                            <p className="font-medium text-[#1D1D1F] dark:text-[#F5F5F7]">
                                 {toast.title}
                             </p>
                             {toast.message && (
-                                <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">
+                                <p className="text-sm text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mt-1">
                                     {toast.message}
                                 </p>
                             )}
@@ -111,8 +111,8 @@ function ToastContainer({
                             onClick={() => removeToast(toast.id)}
                             className="
                 p-1 rounded-lg flex-shrink-0
-                text-text-muted-light dark:text-text-muted-dark
-                hover:bg-gray-100 dark:hover:bg-gray-800
+                text-[#86868B] dark:text-[rgba(235,235,245,0.3)]
+                hover:bg-[#F5F5F7] dark:hover:bg-[#1C1C1E]
                 transition-colors duration-200
               "
                             aria-label="Dismiss"

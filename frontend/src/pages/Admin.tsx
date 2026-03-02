@@ -37,17 +37,17 @@ export function Admin() {
                         <div className="w-16 h-16 rounded-2xl gradient-bg flex items-center justify-center mx-auto mb-6">
                             <Shield className="w-8 h-8 text-white" />
                         </div>
-                        <h1 className="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mb-2">
+                        <h1 className="text-2xl font-bold text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
                             管理者ログイン
                         </h1>
-                        <p className="text-text-secondary-light dark:text-text-secondary-dark mb-8">
+                        <p className="text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-8">
                             管理者としてログインしてください
                         </p>
                         <Button onClick={handleGoogleLogin} isLoading={isLoading} size="lg" className="w-full">
                             <LogIn className="w-5 h-5" />
                             Googleでログイン
                         </Button>
-                        <p className="mt-4 text-xs text-text-muted-light dark:text-text-muted-dark">
+                        <p className="mt-4 text-xs text-[#86868B] dark:text-[rgba(235,235,245,0.3)]">
                             ※ 事前に承認されたメールアドレスのみログイン可能です
                         </p>
                     </CardContent>
@@ -65,10 +65,10 @@ export function Admin() {
                         <div className="w-16 h-16 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-6">
                             <AlertTriangle className="w-8 h-8 text-red-500" />
                         </div>
-                        <h1 className="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mb-2">
+                        <h1 className="text-2xl font-bold text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
                             アクセス権限がありません
                         </h1>
-                        <p className="text-text-secondary-light dark:text-text-secondary-dark mb-8">
+                        <p className="text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-8">
                             このページにアクセスする権限がありません。
                             <br />
                             管理者権限が必要な場合は、運営にお問い合わせください。
@@ -91,10 +91,10 @@ export function Admin() {
                         <div className="w-16 h-16 rounded-2xl gradient-bg flex items-center justify-center mx-auto mb-6">
                             <Smartphone className="w-8 h-8 text-white" />
                         </div>
-                        <h1 className="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mb-2">
+                        <h1 className="text-2xl font-bold text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
                             端末登録が必要です
                         </h1>
-                        <p className="text-text-secondary-light dark:text-text-secondary-dark mb-6">
+                        <p className="text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-6">
                             この端末は登録されていません。
                             <br />
                             登録コードを入力して端末を登録してください。
@@ -102,17 +102,17 @@ export function Admin() {
 
                         <div className="space-y-4">
                             <div className="relative">
-                                <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted-light dark:text-text-muted-dark" />
+                                <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#86868B] dark:text-[rgba(235,235,245,0.3)]" />
                                 <input
                                     type="text"
                                     placeholder="登録コードを入力"
                                     className="
                     w-full pl-12 pr-4 py-3 rounded-xl
-                    bg-white dark:bg-surface-dark
+                    bg-white dark:bg-[#1C1C1E]
                     border border-[var(--border)]
-                    text-text-primary-light dark:text-text-primary-dark
+                    text-[#1D1D1F] dark:text-[#F5F5F7]
                     placeholder:text-text-muted-light dark:placeholder:text-text-muted-dark
-                    focus:outline-none focus:ring-2 focus:ring-primary-500
+                    focus:outline-none focus:ring-2 focus:ring-[#0071E3]
                     text-center text-lg tracking-wider font-mono
                   "
                                     maxLength={8}
@@ -125,7 +125,7 @@ export function Admin() {
 
                         <button
                             onClick={() => setAdminState('unauthenticated')}
-                            className="mt-6 text-sm text-text-muted-light dark:text-text-muted-dark hover:text-primary-600 dark:hover:text-primary-400"
+                            className="mt-6 text-sm text-[#86868B] dark:text-[rgba(235,235,245,0.3)] hover:text-[#0066CC] dark:hover:text-[#2997FF]"
                         >
                             別のアカウントでログイン
                         </button>
@@ -174,13 +174,13 @@ export function Admin() {
             {/* Header */}
             <section className="relative overflow-hidden">
                 <div className="absolute inset-0 gradient-bg-subtle opacity-30" />
-                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h1 className="text-3xl font-bold text-text-primary-light dark:text-text-primary-dark mb-2">
+                            <h1 className="text-3xl font-bold text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
                                 管理者ダッシュボード
                             </h1>
-                            <p className="text-text-secondary-light dark:text-text-secondary-dark">
+                            <p className="text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
                                 サイトの管理・設定を行います
                             </p>
                         </div>
@@ -195,7 +195,7 @@ export function Admin() {
             </section>
 
             {/* Dashboard */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {adminMenuItems.map((item, index) => {
                         const Icon = item.icon;
@@ -211,10 +211,10 @@ export function Admin() {
                                             <Icon className="w-6 h-6 text-white" />
                                         </div>
                                         <div>
-                                            <h3 className="font-semibold text-text-primary-light dark:text-text-primary-dark mb-1">
+                                            <h3 className="font-semibold text-[#1D1D1F] dark:text-[#F5F5F7] mb-1">
                                                 {item.title}
                                             </h3>
-                                            <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                                            <p className="text-sm text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
                                                 {item.description}
                                             </p>
                                         </div>
@@ -227,7 +227,7 @@ export function Admin() {
 
                 {/* Quick Stats (Demo) */}
                 <div className="mt-12">
-                    <h2 className="text-xl font-bold text-text-primary-light dark:text-text-primary-dark mb-6">
+                    <h2 className="text-xl font-bold text-[#1D1D1F] dark:text-[#F5F5F7] mb-6">
                         概要
                     </h2>
                     <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -238,7 +238,7 @@ export function Admin() {
                             { label: '登録端末', value: '2' },
                         ].map((stat, index) => (
                             <Card key={index} variant="default" padding="md">
-                                <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                                <p className="text-sm text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
                                     {stat.label}
                                 </p>
                                 <p className="text-3xl font-bold gradient-text mt-1">

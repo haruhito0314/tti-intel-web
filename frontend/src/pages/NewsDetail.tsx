@@ -95,10 +95,10 @@ export function NewsDetail() {
     if (!post) {
         return (
             <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-                <h1 className="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mb-4">
+                <h1 className="apple-section text-[#1D1D1F] dark:text-[#F5F5F7] mb-4">
                     記事が見つかりません
                 </h1>
-                <p className="text-text-secondary-light dark:text-text-secondary-dark mb-8">
+                <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-8">
                     お探しの記事は存在しないか、削除された可能性があります。
                 </p>
                 <Link to="/news">
@@ -131,7 +131,7 @@ export function NewsDetail() {
                 <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
                     <Link
                         to="/news"
-                        className="inline-flex items-center gap-2 text-primary-600 dark:text-primary-400 hover:underline mb-6"
+                        className="inline-flex items-center gap-2 text-[#0066CC] dark:text-[#2997FF] hover:underline mb-6"
                     >
                         <ArrowLeft className="w-4 h-4" />
                         記事一覧
@@ -146,11 +146,11 @@ export function NewsDetail() {
                         ))}
                     </div>
 
-                    <h1 className="text-3xl md:text-4xl font-bold text-text-primary-light dark:text-text-primary-dark mb-6">
+                    <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] mb-6">
                         {post.title}
                     </h1>
 
-                    <div className="flex flex-wrap items-center gap-6 text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                    <div className="flex flex-wrap items-center gap-6 text-sm text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
                         <div className="flex items-center gap-2">
                             <User className="w-4 h-4" />
                             {post.author}
@@ -161,7 +161,7 @@ export function NewsDetail() {
                         </div>
                         <button
                             onClick={handleShare}
-                            className="flex items-center gap-2 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                            className="flex items-center gap-2 hover:text-[#0066CC] dark:hover:text-[#2997FF] transition-colors"
                         >
                             <Share2 className="w-4 h-4" />
                             共有
@@ -178,32 +178,32 @@ export function NewsDetail() {
                         rehypePlugins={[rehypeSanitize]}
                         components={{
                             h2: ({ children }) => (
-                                <h2 className="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mt-8 mb-4">
+                                <h2 className="apple-title text-[#1D1D1F] dark:text-[#F5F5F7] mt-8 mb-4">
                                     {children}
                                 </h2>
                             ),
                             h3: ({ children }) => (
-                                <h3 className="text-xl font-semibold text-text-primary-light dark:text-text-primary-dark mt-6 mb-3">
+                                <h3 className="apple-headline text-[#1D1D1F] dark:text-[#F5F5F7] mt-6 mb-3">
                                     {children}
                                 </h3>
                             ),
                             p: ({ children }) => (
-                                <p className="text-text-secondary-light dark:text-text-secondary-dark mb-4 leading-relaxed">
+                                <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-4 leading-relaxed">
                                     {children}
                                 </p>
                             ),
                             ul: ({ children }) => (
-                                <ul className="list-disc list-inside space-y-2 mb-4 text-text-secondary-light dark:text-text-secondary-dark">
+                                <ul className="list-disc list-inside space-y-2 mb-4 text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
                                     {children}
                                 </ul>
                             ),
                             ol: ({ children }) => (
-                                <ol className="list-decimal list-inside space-y-2 mb-4 text-text-secondary-light dark:text-text-secondary-dark">
+                                <ol className="list-decimal list-inside space-y-2 mb-4 text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
                                     {children}
                                 </ol>
                             ),
                             blockquote: ({ children }) => (
-                                <blockquote className="border-l-4 border-primary-500 pl-4 italic text-text-secondary-light dark:text-text-secondary-dark my-4">
+                                <blockquote className="border-l-4 border-[#0071E3] pl-4 italic text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] my-4">
                                     {children}
                                 </blockquote>
                             ),
@@ -211,13 +211,13 @@ export function NewsDetail() {
                                 const isInline = !className;
                                 if (isInline) {
                                     return (
-                                        <code className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-primary-600 dark:text-primary-400 text-sm">
+                                        <code className="px-1.5 py-0.5 rounded bg-[#F5F5F7] dark:bg-[#1C1C1E] text-[#0066CC] dark:text-[#2997FF] text-sm">
                                             {children}
                                         </code>
                                     );
                                 }
                                 return (
-                                    <code className="block bg-gray-900 text-gray-100 p-4 rounded-xl overflow-x-auto my-4">
+                                    <code className="block bg-[#1C1C1E] text-[#F5F5F7] p-4 rounded-xl overflow-x-auto my-4">
                                         {children}
                                     </code>
                                 );
@@ -225,7 +225,7 @@ export function NewsDetail() {
                             a: ({ href, children }) => (
                                 <Link
                                     to={href || '#'}
-                                    className="text-primary-600 dark:text-primary-400 hover:underline"
+                                    className="text-[#0066CC] dark:text-[#2997FF] hover:underline"
                                 >
                                     {children}
                                 </Link>
@@ -239,16 +239,16 @@ export function NewsDetail() {
                 {/* Related Posts */}
                 {post.relatedPosts.length > 0 && (
                     <section className="mt-16 pt-8 border-t border-[var(--border)]">
-                        <h2 className="text-xl font-bold text-text-primary-light dark:text-text-primary-dark mb-6 flex items-center gap-2">
+                        <h2 className="apple-title text-[#1D1D1F] dark:text-[#F5F5F7] mb-6 flex items-center gap-2">
                             <Tag className="w-5 h-5" />
                             関連記事
                         </h2>
                         <div className="grid sm:grid-cols-2 gap-4">
                             {post.relatedPosts.map((related) => (
                                 <Link key={related.slug} to={`/news/${related.slug}`}>
-                                    <Card variant="default" className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                    <Card variant="default" className="hover:bg-[#F5F5F7] dark:hover:bg-[#1C1C1E] transition-colors">
                                         <CardContent className="p-4">
-                                            <h3 className="font-medium text-text-primary-light dark:text-text-primary-dark hover:text-primary-600 dark:hover:text-primary-400">
+                                            <h3 className="font-medium text-[#1D1D1F] dark:text-[#F5F5F7] hover:text-[#0066CC] dark:hover:text-[#2997FF]">
                                                 {related.title}
                                             </h3>
                                         </CardContent>

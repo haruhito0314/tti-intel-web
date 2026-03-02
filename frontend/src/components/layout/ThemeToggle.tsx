@@ -24,9 +24,9 @@ export function ThemeToggle() {
             onClick={cycleTheme}
             className="
         p-2 rounded-xl
-        text-text-secondary-light dark:text-text-secondary-dark
-        hover:bg-primary-100 dark:hover:bg-primary-900/50
-        hover:text-primary-600 dark:hover:text-primary-400
+        text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]
+        hover:bg-[#0071E3]/10 dark:hover:bg-[#2997FF]/10/50
+        hover:text-[#0066CC] dark:hover:text-[#2997FF]
         transition-all duration-200
       "
             aria-label={`テーマを切り替え (現在: ${themes[currentIndex].label})`}

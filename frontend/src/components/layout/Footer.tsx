@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
 import { siteConfig } from '@/config/site';
 
-// Social media icons as inline SVGs for consistency
+// Social media icons as inline SVGs
 function DiscordIcon({ className }: { className?: string }) {
     return (
         <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -37,25 +37,23 @@ export function Footer() {
     const currentYear = new Date().getFullYear();
 
     return (
-        <footer className="mt-auto border-t border-[var(--border)]">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <footer className="mt-auto bg-[#F5F5F7] dark:bg-[#1C1C1E] border-t border-[#D2D2D7] dark:border-[#38383A]">
+            <div className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     {/* Brand */}
                     <div className="md:col-span-2">
                         <Link to="/" className="flex items-center gap-2 mb-3">
-                            <div className="w-8 h-8 rounded-lg gradient-bg flex items-center justify-center">
-                                <Sparkles className="w-5 h-5 text-white" />
-                            </div>
-                            <span className="font-bold text-base gradient-text">
+                            <Sparkles className="w-5 h-5 text-[#0071E3] dark:text-[#2997FF]" />
+                            <span className="font-semibold text-sm text-[#1D1D1F] dark:text-[#F5F5F7]">
                                 {siteConfig.name}
                             </span>
                         </Link>
-                        <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark max-w-md leading-relaxed">
+                        <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] max-w-md leading-relaxed">
                             {siteConfig.description}
                         </p>
 
                         {/* Social Links */}
-                        <div className="flex items-center gap-4 mt-6">
+                        <div className="flex items-center gap-4 mt-5">
                             {Object.entries(siteConfig.social).map(([key, { url, label }]) => {
                                 const Icon = socialIcons[key as keyof typeof socialIcons];
                                 return (
@@ -65,15 +63,14 @@ export function Footer() {
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="
-                      p-1.5 rounded-lg
-                      text-text-secondary-light dark:text-text-secondary-dark
-                      hover:text-primary-600 dark:hover:text-primary-400
-                      hover:bg-primary-50 dark:hover:bg-primary-900/30
-                      transition-all duration-300
+                      p-1
+                      text-[#86868B] dark:text-[rgba(235,235,245,0.3)]
+                      hover:text-[#1D1D1F] dark:hover:text-[#F5F5F7]
+                      transition-colors duration-300
                     "
                                         aria-label={label}
                                     >
-                                        <Icon className="w-5 h-5" />
+                                        <Icon className="w-4 h-4" />
                                     </a>
                                 );
                             })}
@@ -82,7 +79,7 @@ export function Footer() {
 
                     {/* Menu Links */}
                     <div>
-                        <h3 className="font-semibold text-xs text-text-primary-light dark:text-text-primary-dark mb-3 uppercase tracking-wider">
+                        <h3 className="apple-footnote font-bold text-[#1D1D1F] dark:text-[#F5F5F7] mb-3">
                             メニュー
                         </h3>
                         <ul className="space-y-1.5">
@@ -91,8 +88,9 @@ export function Footer() {
                                     <Link
                                         to={link.href}
                                         className="
-                      text-xs text-text-secondary-light dark:text-text-secondary-dark
-                      hover:text-primary-600 dark:hover:text-primary-400
+                      apple-footnote text-[#424245] dark:text-[rgba(235,235,245,0.6)]
+                      hover:text-[#1D1D1F] dark:hover:text-[#F5F5F7]
+                      hover:underline
                       transition-colors duration-300
                     "
                                     >
@@ -105,7 +103,7 @@ export function Footer() {
 
                     {/* Admin & Legal */}
                     <div>
-                        <h3 className="font-semibold text-xs text-text-primary-light dark:text-text-primary-dark mb-3 uppercase tracking-wider">
+                        <h3 className="apple-footnote font-bold text-[#1D1D1F] dark:text-[#F5F5F7] mb-3">
                             その他
                         </h3>
                         <ul className="space-y-1.5">
@@ -113,10 +111,11 @@ export function Footer() {
                                 <Link
                                     to="/admin"
                                     className="
-                    text-xs text-text-secondary-light dark:text-text-secondary-dark
-                    hover:text-primary-600 dark:hover:text-primary-400
+                    apple-footnote text-[#424245] dark:text-[rgba(235,235,245,0.6)]
+                    hover:text-[#1D1D1F] dark:hover:text-[#F5F5F7]
+                    hover:underline
                     transition-colors duration-300
-                  "
+                   "
                                 >
                                     管理者ページ
                                 </Link>
@@ -126,8 +125,9 @@ export function Footer() {
                                     <Link
                                         to={link.href}
                                         className="
-                      text-xs text-text-secondary-light dark:text-text-secondary-dark
-                      hover:text-primary-600 dark:hover:text-primary-400
+                      apple-footnote text-[#424245] dark:text-[rgba(235,235,245,0.6)]
+                      hover:text-[#1D1D1F] dark:hover:text-[#F5F5F7]
+                      hover:underline
                       transition-colors duration-300
                     "
                                     >
@@ -140,8 +140,8 @@ export function Footer() {
                 </div>
 
                 {/* Copyright */}
-                <div className="mt-8 pt-6 border-t border-[var(--border)]">
-                    <p className="text-center text-[11px] text-text-muted-light dark:text-text-muted-dark">
+                <div className="mt-6 pt-4 border-t border-[#D2D2D7]/50 dark:border-[#38383A]/50">
+                    <p className="text-center text-[11px] text-[#86868B] dark:text-[rgba(235,235,245,0.3)]">
                         © {currentYear} {siteConfig.name}. All rights reserved.
                     </p>
                 </div>

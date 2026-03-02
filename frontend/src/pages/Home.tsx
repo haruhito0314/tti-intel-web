@@ -37,10 +37,10 @@ const latestPosts = [
 ];
 
 const nextEvent = {
-    title: '週次AI勉強会',
-    date: '2026年2月15日（土）14:00〜',
-    location: '豊田工業大学 8号館 3F',
-    description: 'Transformerアーキテクチャの基礎から応用まで学びます',
+    title: '応用情報技術者試験',
+    date: '2026年11月（秋期）',
+    location: '各地の試験会場',
+    description: 'メンバー有志で応用情報技術者試験に挑戦します。一緒に合格を目指しましょう！',
 };
 
 // Floating puzzle piece component
@@ -67,8 +67,8 @@ function FloatingPuzzle({
     const baseClasses = `absolute pointer-events-none ${className}`;
 
     const gradientBg = gradient
-        ? 'bg-gradient-to-br from-primary-400/20 to-accent-400/20 dark:from-primary-500/15 dark:to-accent-500/15'
-        : 'bg-primary-500/[0.06] dark:bg-primary-400/[0.06]';
+        ? 'bg-gradient-to-br from-[#0071E3]/20 to-[#00AFBE]/20 dark:from-[#0071E3]/15 dark:to-[#00AFBE]/15'
+        : 'bg-[#0071E3]/[0.06] dark:bg-[#2997FF]/[0.06]';
 
     if (shape === 'hexagon') {
         return (
@@ -79,7 +79,7 @@ function FloatingPuzzle({
                 <svg viewBox="0 0 100 115" className="w-full h-full">
                     <polygon
                         points="50,0 100,28.75 100,86.25 50,115 0,86.25 0,28.75"
-                        className={`${gradient ? 'fill-primary-400/20 dark:fill-primary-500/15' : 'fill-primary-500/10 dark:fill-primary-400/10'}`}
+                        className={`${gradient ? 'fill-[#0071E3]/20 dark:fill-[#2997FF]/15' : 'fill-[#0071E3]/10 dark:fill-[#2997FF]/10'}`}
                         stroke="currentColor"
                         strokeWidth="1"
                         strokeOpacity="0.2"
@@ -98,7 +98,7 @@ function FloatingPuzzle({
                 <svg viewBox="0 0 100 87" className="w-full h-full">
                     <polygon
                         points="50,0 100,87 0,87"
-                        className={`${gradient ? 'fill-accent-400/20 dark:fill-accent-500/15' : 'fill-accent-500/10 dark:fill-accent-400/10'}`}
+                        className={`${gradient ? 'fill-[#00AFBE]/20 dark:fill-[#00AFBE]/15' : 'fill-[#00AFBE]/10 dark:fill-[#00AFBE]/10'}`}
                         stroke="currentColor"
                         strokeWidth="1"
                         strokeOpacity="0.2"
@@ -117,7 +117,7 @@ function FloatingPuzzle({
                 <svg viewBox="0 0 100 100" className="w-full h-full">
                     <polygon
                         points="50,0 100,50 50,100 0,50"
-                        className={`${gradient ? 'fill-primary-400/25 dark:fill-primary-500/20' : 'fill-primary-500/15 dark:fill-primary-400/15'}`}
+                        className={`${gradient ? 'fill-[#0071E3]/25 dark:fill-[#2997FF]/20' : 'fill-[#0071E3]/15 dark:fill-[#2997FF]/15'}`}
                         stroke="currentColor"
                         strokeWidth="1"
                         strokeOpacity="0.2"
@@ -130,7 +130,7 @@ function FloatingPuzzle({
     if (shape === 'circle') {
         return (
             <div
-                className={`${baseClasses} rounded-full animate-pulse-slow ${gradientBg} border border-primary-400/20 dark:border-primary-500/20`}
+                className={`${baseClasses} rounded-full animate-pulse-slow ${gradientBg} border border-[#0071E3]/20 dark:border-[#2997FF]/20`}
                 style={{ ...animationStyle, width: size, height: size }}
             />
         );
@@ -145,7 +145,7 @@ function FloatingPuzzle({
                 <svg viewBox="0 0 100 100" className="w-full h-full">
                     <path
                         d="M35,0 L65,0 L65,35 L100,35 L100,65 L65,65 L65,100 L35,100 L35,65 L0,65 L0,35 L35,35 Z"
-                        className={`${gradient ? 'fill-accent-400/20 dark:fill-accent-500/15' : 'fill-accent-500/10 dark:fill-accent-400/10'}`}
+                        className={`${gradient ? 'fill-[#00AFBE]/20 dark:fill-[#00AFBE]/15' : 'fill-[#00AFBE]/10 dark:fill-[#00AFBE]/10'}`}
                         stroke="currentColor"
                         strokeWidth="1"
                         strokeOpacity="0.15"
@@ -158,7 +158,7 @@ function FloatingPuzzle({
     // Default: square with rounded corners
     return (
         <div
-            className={`${baseClasses} rounded-lg animate-float-slow ${gradientBg} border border-primary-400/20 dark:border-primary-500/20 backdrop-blur-sm`}
+            className={`${baseClasses} rounded-lg animate-float-slow ${gradientBg} border border-[#0071E3]/20 dark:border-[#2997FF]/20 backdrop-blur-sm`}
             style={{ ...animationStyle, width: size, height: size }}
         />
     );
@@ -222,22 +222,22 @@ export function Home() {
                 <FloatingPuzzle shape="circle" size={18} className="top-[30%] right-[35%]" delay={1.5} duration={6} gradient />
                 <FloatingPuzzle shape="circle" size={10} className="top-[68%] left-[55%]" delay={0.5} duration={5} />
 
-                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
+                <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
                     <div className="text-center">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-6 animate-shimmer bg-gradient-to-r from-transparent via-primary-200/30 to-transparent dark:via-primary-700/30">
-                            <Sparkles className="w-4 h-4 text-primary-500" />
-                            <span className="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-6">
+                            <Sparkles className="w-4 h-4 text-[#0071E3] dark:text-[#2997FF]" />
+                            <span className="text-sm font-medium text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
                                 TTI Intelligence
                             </span>
                         </div>
 
-                        <h1 className="text-[28px] md:text-6xl lg:text-6xl font-bold mb-6 leading-tight tracking-tight">
+                        <h1 className="apple-hero mb-6">
                             <span className="gradient-text">AIの未来を</span>
                             <br />
-                            <span className="text-text-primary-light dark:text-text-primary-dark">一緒に創ろう</span>
+                            <span className="text-[#1D1D1F] dark:text-[#F5F5F7]">一緒に創ろう</span>
                         </h1>
 
-                        <p className="text-[15px] md:text-xl text-text-secondary-light dark:text-text-secondary-dark max-w-2xl mx-auto mb-10 leading-relaxed">
+                        <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] max-w-2xl mx-auto mb-10 leading-relaxed">
                             TTI Intelligenceは、最新のAI技術を共に学び、
                             実践的な開発を通じてアイデアを形にする学生コミュニティです。
                         </p>
@@ -265,28 +265,28 @@ export function Home() {
             </section>
 
             {/* Next Event */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+            <section className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
                 <Card variant="glass" className="overflow-hidden">
                     <div className="flex flex-col md:flex-row">
                         <div className="md:w-1/3 gradient-bg p-8 flex items-center justify-center">
                             <div className="text-center text-white">
                                 <Calendar className="w-12 h-12 mx-auto mb-4" />
-                                <p className="text-base md:text-lg font-semibold">次回イベント</p>
+                                <p className="apple-headline">次回イベント</p>
                             </div>
                         </div>
                         <CardContent className="flex-1 p-8">
-                            <h3 className="text-base md:text-xl font-bold text-text-primary-light dark:text-text-primary-dark mb-2">
+                            <h3 className="apple-title text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
                                 {nextEvent.title}
                             </h3>
-                            <p className="text-text-secondary-light dark:text-text-secondary-dark mb-4">
+                            <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-4">
                                 {nextEvent.description}
                             </p>
                             <div className="flex flex-wrap gap-4 text-sm">
-                                <div className="flex items-center gap-2 text-primary-600 dark:text-primary-400">
+                                <div className="flex items-center gap-2 text-[#0071E3] dark:text-[#2997FF]">
                                     <Calendar className="w-4 h-4" />
                                     {nextEvent.date}
                                 </div>
-                                <div className="flex items-center gap-2 text-text-muted-light dark:text-text-muted-dark">
+                                <div className="flex items-center gap-2 text-[#86868B] dark:text-[rgba(235,235,245,0.3)]">
                                     📍 {nextEvent.location}
                                 </div>
                             </div>
@@ -296,14 +296,14 @@ export function Home() {
             </section>
 
             {/* Latest Posts */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+            <section className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
                 <div className="flex items-center justify-between mb-8">
-                    <h2 className="text-xl md:text-3xl font-bold text-text-primary-light dark:text-text-primary-dark tracking-tight">
+                    <h2 className="apple-section text-[#1D1D1F] dark:text-[#F5F5F7]">
                         最新のお知らせ
                     </h2>
                     <Link
                         to="/news"
-                        className="flex items-center gap-1 text-primary-600 dark:text-primary-400 hover:underline"
+                        className="flex items-center gap-1 text-[#0066CC] dark:text-[#2997FF] hover:underline apple-body"
                     >
                         すべて見る
                         <ArrowRight className="w-4 h-4" />
@@ -331,17 +331,17 @@ export function Home() {
                                             <Badge variant="warning">📌 固定</Badge>
                                         )}
                                     </div>
-                                    <h3 className="text-[15px] md:text-lg font-semibold text-text-primary-light dark:text-text-primary-dark mb-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                                    <h3 className="apple-headline text-[#1D1D1F] dark:text-[#F5F5F7] mb-2 group-hover:text-[#0066CC] dark:group-hover:text-[#2997FF] transition-colors">
                                         {post.title}
                                     </h3>
-                                    <p className="text-[13px] md:text-sm text-text-secondary-light dark:text-text-secondary-dark mb-4 line-clamp-2">
+                                    <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-4 line-clamp-2">
                                         {post.excerpt}
                                     </p>
                                     <div className="flex items-center justify-between">
-                                        <time className="text-xs text-text-muted-light dark:text-text-muted-dark">
+                                        <time className="apple-footnote text-[#86868B] dark:text-[rgba(235,235,245,0.3)]">
                                             {post.publishedAt}
                                         </time>
-                                        <ExternalLink className="w-4 h-4 text-primary-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        <ExternalLink className="w-4 h-4 text-[#0071E3] dark:text-[#2997FF] opacity-0 group-hover:opacity-100 transition-opacity" />
                                     </div>
                                 </CardContent>
                             </Card>
@@ -351,7 +351,7 @@ export function Home() {
             </section>
 
             {/* CTA Section */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+            <section className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
                 <Card variant="glass" padding="lg" className="text-center relative overflow-hidden">
                     {/* Floating elements in CTA */}
                     <FloatingPuzzle shape="hexagon" size={40} className="top-4 left-4" delay={0} duration={10} />
@@ -359,10 +359,10 @@ export function Home() {
                     <FloatingPuzzle shape="circle" size={20} className="bottom-4 left-[20%]" delay={2} duration={8} />
                     <FloatingPuzzle shape="triangle" size={35} className="bottom-6 right-[15%]" delay={0.5} duration={11} gradient />
 
-                    <h2 className="text-xl md:text-3xl font-bold gradient-text mb-4 relative z-10 tracking-tight">
+                    <h2 className="apple-section gradient-text mb-4 relative z-10">
                         一緒にAIを学びませんか？
                     </h2>
-                    <p className="text-text-secondary-light dark:text-text-secondary-dark max-w-2xl mx-auto mb-8 relative z-10">
+                    <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] max-w-2xl mx-auto mb-8 relative z-10">
                         経験や専攻は問いません。AIに興味がある方なら誰でも大歓迎です。
                         まずはお気軽にお問い合わせください。
                     </p>

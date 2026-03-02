@@ -107,13 +107,13 @@ export function Board() {
             {/* Header */}
             <section className="relative overflow-hidden">
                 <div className="absolute inset-0 gradient-bg-subtle opacity-30" />
-                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div>
-                            <h1 className="text-[28px] md:text-4xl font-bold text-text-primary-light dark:text-text-primary-dark mb-2 leading-tight tracking-tight">
+                            <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
                                 掲示板
                             </h1>
-                            <p className="text-[15px] md:text-base text-text-secondary-light dark:text-text-secondary-dark">
+                            <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
                                 サークルメンバー同士で情報交換しましょう
                             </p>
                         </div>
@@ -126,22 +126,22 @@ export function Board() {
             </section>
 
             {/* Threads List */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16">
+            <div className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16">
                 {isLoading ? (
                     <div className="space-y-4">
                         {[...Array(4)].map((_, i) => (
                             <div key={i} className="rounded-2xl border border-[var(--border)] bg-white/50 dark:bg-white/5 p-6 animate-pulse">
                                 <div className="flex items-start justify-between gap-4">
                                     <div className="flex-1 min-w-0 space-y-3">
-                                        <div className="h-5 bg-primary-200/40 dark:bg-primary-800/30 rounded-lg w-3/4" />
+                                        <div className="h-5 bg-[#D2D2D7]/40 dark:bg-[#38383A]/30 rounded-lg w-3/4" />
                                         <div className="space-y-2">
-                                            <div className="h-3.5 bg-gray-200/60 dark:bg-gray-700/40 rounded w-full" />
-                                            <div className="h-3.5 bg-gray-200/60 dark:bg-gray-700/40 rounded w-2/3" />
+                                            <div className="h-3.5 bg-[#D2D2D7]/60 dark:bg-[#38383A]/40 rounded w-full" />
+                                            <div className="h-3.5 bg-[#D2D2D7]/60 dark:bg-[#38383A]/40 rounded w-2/3" />
                                         </div>
                                         <div className="flex items-center gap-4">
-                                            <div className="h-3 bg-gray-200/50 dark:bg-gray-700/30 rounded w-16" />
-                                            <div className="h-3 bg-gray-200/50 dark:bg-gray-700/30 rounded w-24" />
-                                            <div className="h-3 bg-gray-200/50 dark:bg-gray-700/30 rounded w-10" />
+                                            <div className="h-3 bg-[#D2D2D7]/50 dark:bg-[#38383A]/30 rounded w-16" />
+                                            <div className="h-3 bg-[#D2D2D7]/50 dark:bg-[#38383A]/30 rounded w-24" />
+                                            <div className="h-3 bg-[#D2D2D7]/50 dark:bg-[#38383A]/30 rounded w-10" />
                                         </div>
                                     </div>
                                 </div>
@@ -151,14 +151,14 @@ export function Board() {
                 ) : sortedThreads.length === 0 ? (
                     <Card variant="glass" padding="lg" className="text-center py-16">
                         <div className="flex flex-col items-center gap-4">
-                            <div className="w-16 h-16 rounded-2xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-                                <MessageSquare className="w-8 h-8 text-primary-500" />
+                            <div className="w-16 h-16 rounded-2xl bg-[#0071E3]/10 dark:bg-[#2997FF]/10 flex items-center justify-center">
+                                <MessageSquare className="w-8 h-8 text-[#0071E3]" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-semibold text-text-primary-light dark:text-text-primary-dark mb-2">
+                                <h3 className="apple-headline text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
                                     まだスレッドがありません
                                 </h3>
-                                <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark max-w-md mx-auto">
+                                <p className="text-sm text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] max-w-md mx-auto">
                                     最初のスレッドを作成して、メンバー同士の交流を始めましょう！
                                 </p>
                             </div>
@@ -189,13 +189,13 @@ export function Board() {
                                                         </Badge>
                                                     )}
                                                 </div>
-                                                <h2 className="text-[15px] md:text-lg font-semibold text-text-primary-light dark:text-text-primary-dark mb-1 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors truncate">
+                                                <h2 className="apple-headline text-[#1D1D1F] dark:text-[#F5F5F7] mb-1 group-hover:text-[#0066CC] dark:group-hover:text-[#2997FF] transition-colors truncate">
                                                     {thread.title}
                                                 </h2>
-                                                <p className="text-[13px] md:text-sm text-text-secondary-light dark:text-text-secondary-dark mb-3 line-clamp-2">
+                                                <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-3 line-clamp-2">
                                                     {thread.body}
                                                 </p>
-                                                <div className="flex items-center gap-4 text-sm text-text-muted-light dark:text-text-muted-dark">
+                                                <div className="flex items-center gap-4 text-sm text-[#86868B] dark:text-[rgba(235,235,245,0.3)]">
                                                     <span>{thread.displayName}</span>
                                                     <span>•</span>
                                                     <span>{formatDate(thread.createdAt)}</span>
@@ -205,7 +205,7 @@ export function Board() {
                                                     </span>
                                                 </div>
                                             </div>
-                                            <ArrowRight className="w-5 h-5 text-primary-500 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                                            <ArrowRight className="w-5 h-5 text-[#0071E3] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
                                         </div>
                                     </CardContent>
                                 </Card>

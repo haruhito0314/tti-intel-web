@@ -12,11 +12,12 @@ export const siteConfig = {
 
     // Navigation links
     navigation: [
-        { name: 'Home', href: '/' },
+        { name: 'ホーム', href: '/' },
         { name: 'About', href: '/about' },
         { name: 'News', href: '/news' },
-        { name: 'Board', href: '/board' },
-        { name: 'Contact', href: '/contact' },
+        { name: 'App', href: '/app' },
+        { name: '掲示板', href: '/board' },
+        { name: 'お問い合わせ', href: '/contact' },
     ],
 
     // Social links (can be updated without code changes in future)
@@ -36,16 +37,17 @@ export const siteConfig = {
     },
 
     // Contact email (for display purposes)
-    contactEmail: 'ai-club@toyota-ti.ac.jp',
+    contactEmail: 'tti.intel@gmail.com',
 
     // Footer links
     footerLinks: {
         menu: [
-            { name: 'Home', href: '/' },
+            { name: 'ホーム', href: '/' },
             { name: 'About', href: '/about' },
             { name: 'News', href: '/news' },
-            { name: 'Board', href: '/board' },
-            { name: 'Contact', href: '/contact' },
+            { name: 'App', href: '/app' },
+            { name: '掲示板', href: '/board' },
+            { name: 'お問い合わせ', href: '/contact' },
         ],
         legal: [
             { name: 'プライバシーポリシー', href: '/privacy' },

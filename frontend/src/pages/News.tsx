@@ -92,23 +92,23 @@ export function News() {
             {/* Header */}
             <section className="relative overflow-hidden">
                 <div className="absolute inset-0 gradient-bg-subtle opacity-30" />
-                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-                    <h1 className="text-[28px] md:text-4xl font-bold text-text-primary-light dark:text-text-primary-dark mb-4 leading-tight tracking-tight">
+                <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                    <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] mb-4">
                         お知らせ・記事
                     </h1>
-                    <p className="text-[15px] md:text-base text-text-secondary-light dark:text-text-secondary-dark">
+                    <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
                         サークルの活動報告やお知らせ、技術記事を掲載しています
                     </p>
                 </div>
             </section>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16">
+            <div className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16">
                 <div className="flex flex-col lg:flex-row gap-8">
                     {/* Main Content */}
                     <div className="flex-1">
                         {/* Search */}
                         <div className="relative mb-6">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted-light dark:text-text-muted-dark" />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#86868B] dark:text-[rgba(235,235,245,0.3)]" />
                             <Input
                                 type="search"
                                 placeholder="記事を検索..."
@@ -136,7 +136,7 @@ export function News() {
                         <div className="space-y-6">
                             {sortedPosts.length === 0 ? (
                                 <Card variant="default" padding="lg" className="text-center">
-                                    <p className="text-text-secondary-light dark:text-text-secondary-dark">
+                                    <p className="text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
                                         該当する記事が見つかりませんでした
                                     </p>
                                 </Card>
@@ -159,10 +159,10 @@ export function News() {
                                                                 </Badge>
                                                             )}
                                                         </div>
-                                                        <h2 className="text-base md:text-xl font-semibold text-text-primary-light dark:text-text-primary-dark mb-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                                                        <h2 className="apple-headline text-[#1D1D1F] dark:text-[#F5F5F7] mb-2 group-hover:text-[#0066CC] dark:group-hover:text-[#2997FF] transition-colors">
                                                             {post.title}
                                                         </h2>
-                                                        <p className="text-[13px] md:text-base text-text-secondary-light dark:text-text-secondary-dark mb-4 line-clamp-2">
+                                                        <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-4 line-clamp-2">
                                                             {post.excerpt}
                                                         </p>
                                                         <div className="flex items-center justify-between">
@@ -170,18 +170,18 @@ export function News() {
                                                                 {post.tags.slice(0, 3).map((tag) => (
                                                                     <span
                                                                         key={tag}
-                                                                        className="text-xs text-text-muted-light dark:text-text-muted-dark"
+                                                                        className="text-xs text-[#86868B] dark:text-[rgba(235,235,245,0.3)]"
                                                                     >
                                                                         #{tag}
                                                                     </span>
                                                                 ))}
                                                             </div>
-                                                            <time className="text-sm text-text-muted-light dark:text-text-muted-dark">
+                                                            <time className="text-sm text-[#86868B] dark:text-[rgba(235,235,245,0.3)]">
                                                                 {post.publishedAt}
                                                             </time>
                                                         </div>
                                                     </div>
-                                                    <ArrowRight className="w-5 h-5 text-primary-500 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-1" />
+                                                    <ArrowRight className="w-5 h-5 text-[#0071E3] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-1" />
                                                 </div>
                                             </CardContent>
                                         </Card>
@@ -194,7 +194,7 @@ export function News() {
                     {/* Sidebar */}
                     <aside className="lg:w-72">
                         <Card variant="default" padding="md" className="sticky top-24">
-                            <h3 className="font-semibold text-text-primary-light dark:text-text-primary-dark mb-4 flex items-center gap-2">
+                            <h3 className="font-semibold text-[#1D1D1F] dark:text-[#F5F5F7] mb-4 flex items-center gap-2">
                                 <Tag className="w-4 h-4" />
                                 タグ
                             </h3>
@@ -206,8 +206,8 @@ export function News() {
                                         className={`
                       px-3 py-1 rounded-full text-sm transition-all duration-200
                       ${selectedTag === tag
-                                                ? 'bg-primary-500 text-white'
-                                                : 'bg-gray-100 dark:bg-gray-800 text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-200 dark:hover:bg-gray-700'
+                                                ? 'bg-[#0071E3] text-white'
+                                                : 'bg-[#F5F5F7] dark:bg-[#1C1C1E] text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] hover:bg-[#E8E8ED] dark:hover:bg-[#2C2C2E]'
                                             }
                     `}
                                     >
@@ -218,7 +218,7 @@ export function News() {
                             {selectedTag && (
                                 <button
                                     onClick={() => setSelectedTag(null)}
-                                    className="mt-4 text-sm text-primary-600 dark:text-primary-400 hover:underline"
+                                    className="mt-4 text-sm text-[#0066CC] dark:text-[#2997FF] hover:underline"
                                 >
                                     タグをクリア
                                 </button>

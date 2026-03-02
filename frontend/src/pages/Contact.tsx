@@ -71,10 +71,10 @@ export function Contact() {
                     <div className="w-20 h-20 rounded-full gradient-bg flex items-center justify-center mx-auto mb-6">
                         <CheckCircle className="w-10 h-10 text-white" />
                     </div>
-                    <h1 className="text-2xl md:text-3xl font-bold text-text-primary-light dark:text-text-primary-dark mb-4">
+                    <h1 className="apple-section text-[#1D1D1F] dark:text-[#F5F5F7] mb-4">
                         送信完了
                     </h1>
-                    <p className="text-text-secondary-light dark:text-text-secondary-dark mb-8">
+                    <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-8">
                         お問い合わせありがとうございます。
                         <br />
                         内容を確認の上、折り返しご連絡いたします。
@@ -92,12 +92,12 @@ export function Contact() {
             {/* Header */}
             <section className="relative overflow-hidden">
                 <div className="absolute inset-0 gradient-bg-subtle opacity-30" />
-                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16">
                     <div className="text-center">
-                        <h1 className="text-[28px] md:text-4xl font-bold text-text-primary-light dark:text-text-primary-dark mb-4 leading-tight tracking-tight">
-                            Contact
+                        <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] mb-4">
+                            お問い合わせ
                         </h1>
-                        <p className="text-[15px] md:text-base text-text-secondary-light dark:text-text-secondary-dark">
+                        <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
                             ご質問やお問い合わせはこちらからお気軽にどうぞ
                         </p>
                     </div>
@@ -114,11 +114,11 @@ export function Contact() {
                                     <Mail className="w-6 h-6 text-white" />
                                 </div>
                                 <div>
-                                    <h3 className="font-medium text-text-primary-light dark:text-text-primary-dark">
+                                    <h3 className="font-medium text-[#1D1D1F] dark:text-[#F5F5F7]">
                                         メール
                                     </h3>
-                                    <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">
-                                        <a href={`mailto:${siteConfig.contactEmail}`} className="hover:text-primary-600 dark:hover:text-primary-400 transition-colors underline underline-offset-4 decoration-primary-300 dark:decoration-primary-700">
+                                    <p className="text-sm text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
+                                        <a href={`mailto:${siteConfig.contactEmail}`} className="hover:text-[#0066CC] dark:hover:text-[#2997FF] transition-colors underline underline-offset-4 decoration-[#0071E3]/30 dark:decoration-[#2997FF]/30">
                                             {siteConfig.contactEmail}
                                         </a>
                                     </p>
@@ -127,10 +127,10 @@ export function Contact() {
                         </Card>
 
                         <Card variant="default" padding="md">
-                            <h3 className="font-semibold text-text-primary-light dark:text-text-primary-dark mb-3">
+                            <h3 className="font-semibold text-[#1D1D1F] dark:text-[#F5F5F7] mb-3">
                                 よくあるお問い合わせ
                             </h3>
-                            <ul className="space-y-2 text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                            <ul className="space-y-2 text-sm text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
                                 <li>• サークルへの入会について</li>
                                 <li>• イベントへの参加申し込み</li>
                                 <li>• 取材・講演のご依頼</li>
@@ -163,7 +163,7 @@ export function Contact() {
                                         <Input
                                             label="メールアドレス"
                                             type="email"
-                                            placeholder="example@toyota-ti.ac.jp"
+                                            placeholder="name@example.com"
                                             error={errors.email?.message}
                                             {...register('email')}
                                         />

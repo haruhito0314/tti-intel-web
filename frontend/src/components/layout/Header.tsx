@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { Menu, X, Sparkles } from 'lucide-react';
+import { Sparkles, Menu, X } from 'lucide-react';
 import { siteConfig } from '@/config/site';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -12,34 +12,33 @@ export function Header() {
             {/* Glass background */}
             <div className="absolute inset-0 glass" />
 
-            <nav className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center justify-between h-12">
+            <nav className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex items-center justify-between h-11">
                     {/* Logo */}
                     <Link
                         to="/"
                         className="flex items-center group"
                     >
                         <Sparkles className="
-              w-7 h-7
-              text-primary-500
+              w-6 h-6
+              text-[#0071E3] dark:text-[#2997FF]
               group-hover:scale-110
               transition-transform duration-300
-              animate-float
             " />
                     </Link>
 
                     {/* Desktop Navigation */}
-                    <div className="hidden md:flex items-center gap-1">
+                    <div className="hidden md:flex items-center gap-0">
                         {siteConfig.navigation.map((link) => (
                             <NavLink
                                 key={link.href}
                                 to={link.href}
                                 className={({ isActive }) => `
-                  px-3 py-1.5 rounded-lg text-[13px] font-medium
+                  px-3 py-1 apple-nav
                   transition-all duration-300
                   ${isActive
-                                        ? 'bg-primary-100 dark:bg-primary-900/50 text-primary-600 dark:text-primary-400'
-                                        : 'text-text-secondary-light dark:text-text-secondary-dark hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/30'
+                                        ? 'text-[#1D1D1F] dark:text-[#F5F5F7] font-medium'
+                                        : 'text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] hover:text-[#1D1D1F] dark:hover:text-[#F5F5F7]'
                                     }
                 `}
                             >
@@ -48,7 +47,7 @@ export function Header() {
                         ))}
                     </div>
 
-                    {/* Right side - Theme toggle & Mobile menu */}
+                    {/* Right side */}
                     <div className="flex items-center gap-2">
                         <ThemeToggle />
 
@@ -56,9 +55,9 @@ export function Header() {
                         <button
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             className="
-                md:hidden p-2 rounded-xl
-                text-text-secondary-light dark:text-text-secondary-dark
-                hover:bg-primary-100 dark:hover:bg-primary-900/50
+                md:hidden p-2 rounded-full
+                text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]
+                hover:bg-[#F5F5F7] dark:hover:bg-[#1C1C1E]
                 transition-colors duration-200
               "
                             aria-label="メニューを開く"
@@ -82,11 +81,11 @@ export function Header() {
                                     to={link.href}
                                     onClick={() => setIsMobileMenuOpen(false)}
                                     className={({ isActive }) => `
-                    px-4 py-3 rounded-xl text-sm font-medium
+                    px-4 py-3 rounded-xl text-[15px]
                     transition-all duration-200
                     ${isActive
-                                            ? 'bg-primary-100 dark:bg-primary-900/50 text-primary-600 dark:text-primary-400'
-                                            : 'text-text-secondary-light dark:text-text-secondary-dark hover:bg-primary-50 dark:hover:bg-primary-900/30'
+                                            ? 'bg-[#F5F5F7] dark:bg-[#1C1C1E] text-[#1D1D1F] dark:text-[#F5F5F7] font-medium'
+                                            : 'text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] hover:bg-[#F5F5F7] dark:hover:bg-[#1C1C1E]'
                                         }
                   `}
                                 >

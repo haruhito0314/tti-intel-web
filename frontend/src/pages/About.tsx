@@ -1,27 +1,27 @@
 import { Card, CardContent } from '@/components/ui';
-import { Brain, Users, Trophy, GraduationCap, ChevronDown } from 'lucide-react';
+import { BookOpen, Code, Cpu, MessageCircle, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 
 const activities = [
     {
-        icon: Brain,
-        title: '勉強会',
-        description: '最新のAI技術やMLフレームワークについて学ぶ定期勉強会を開催しています。',
+        icon: BookOpen,
+        title: '資格勉強',
+        description: '基本情報・応用情報技術者試験などのIT資格取得に向けた勉強会を実施しています。',
     },
     {
-        icon: Trophy,
-        title: 'コンペティション',
-        description: 'Kaggleや各種AIコンペへのチーム参加で実践的なスキルを磨きます。',
+        icon: Code,
+        title: '開発',
+        description: 'Webアプリやツールなど、チームで実践的なプロダクト開発に取り組んでいます。',
     },
     {
-        icon: Users,
-        title: 'プロジェクト開発',
-        description: 'チームでAIを活用したアプリケーションやサービスを開発しています。',
+        icon: Cpu,
+        title: 'AI研究',
+        description: '最新のAI技術や機械学習について学び、研究・実験を行っています。',
     },
     {
-        icon: GraduationCap,
-        title: '研究支援',
-        description: '卒業研究や論文執筆のサポート、研究者との交流機会を提供します。',
+        icon: MessageCircle,
+        title: '情報交流',
+        description: '技術トレンドや学習方法の共有、メンバー間のナレッジ交換を促進しています。',
     },
 ];
 
@@ -56,12 +56,12 @@ export function About() {
             {/* Hero Section */}
             <section className="relative overflow-hidden">
                 <div className="absolute inset-0 gradient-bg-subtle opacity-30" />
-                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+                <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-20">
                     <div className="text-center">
-                        <h1 className="text-[28px] md:text-5xl font-bold text-text-primary-light dark:text-text-primary-dark mb-6 leading-tight tracking-tight">
+                        <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] mb-6">
                             About <span className="gradient-text">TTI Intelligence</span>
                         </h1>
-                        <p className="text-[15px] md:text-lg text-text-secondary-light dark:text-text-secondary-dark max-w-3xl mx-auto leading-relaxed">
+                        <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] max-w-3xl mx-auto leading-relaxed">
                             私たちは豊田工業大学の学生を中心としたAIサークルです。
                             AI技術の学習・研究・開発を通じて、次世代のAIエンジニアを育成しています。
                         </p>
@@ -70,14 +70,14 @@ export function About() {
             </section>
 
             {/* Philosophy */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+            <section className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
                 <Card variant="glass" padding="lg">
                     <div className="text-center">
-                        <h2 className="text-xl md:text-3xl font-bold text-text-primary-light dark:text-text-primary-dark mb-6 tracking-tight">
+                        <h2 className="apple-section text-[#1D1D1F] dark:text-[#F5F5F7] mb-6">
                             理念
                         </h2>
-                        <p className="text-[15px] md:text-lg text-text-secondary-light dark:text-text-secondary-dark max-w-3xl mx-auto leading-relaxed">
-                            「<span className="font-semibold text-primary-600 dark:text-primary-400">学び、創り、共有する</span>」
+                        <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] max-w-3xl mx-auto leading-relaxed">
+                            「<span className="font-semibold text-[#0066CC] dark:text-[#2997FF]">学び、創り、共有する</span>」
                             <br className="hidden md:block" />
                             私たちは好奇心を大切にし、AI技術を通じて社会に貢献できる人材を育てます。
                             失敗を恐れず挑戦し、知識は惜しみなく共有する。
@@ -88,8 +88,8 @@ export function About() {
             </section>
 
             {/* Activities */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-                <h2 className="text-xl md:text-3xl font-bold text-text-primary-light dark:text-text-primary-dark text-center mb-10 tracking-tight">
+            <section className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+                <h2 className="apple-section text-[#1D1D1F] dark:text-[#F5F5F7] text-center mb-10">
                     活動内容
                 </h2>
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -103,13 +103,13 @@ export function About() {
                                 style={{ animationDelay: `${index * 100}ms` }}
                             >
                                 <CardContent className="p-6 text-center">
-                                    <div className="w-14 h-14 rounded-2xl gradient-bg flex items-center justify-center mx-auto mb-4">
-                                        <Icon className="w-7 h-7 text-white" />
+                                    <div className="w-14 h-14 rounded-full bg-[#0071E3]/10 dark:bg-[#2997FF]/10 flex items-center justify-center mx-auto mb-4">
+                                        <Icon className="w-7 h-7 text-[#0071E3] dark:text-[#2997FF]" />
                                     </div>
-                                    <h3 className="text-[15px] md:text-lg font-semibold text-text-primary-light dark:text-text-primary-dark mb-2">
+                                    <h3 className="apple-headline text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
                                         {activity.title}
                                     </h3>
-                                    <p className="text-[13px] md:text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                                    <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
                                         {activity.description}
                                     </p>
                                 </CardContent>
@@ -121,7 +121,7 @@ export function About() {
 
             {/* FAQ */}
             <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-                <h2 className="text-xl md:text-3xl font-bold text-text-primary-light dark:text-text-primary-dark text-center mb-10 tracking-tight">
+                <h2 className="apple-section text-[#1D1D1F] dark:text-[#F5F5F7] text-center mb-10">
                     よくある質問
                 </h2>
                 <div className="space-y-4">
@@ -134,13 +134,13 @@ export function About() {
                         >
                             <button
                                 onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                                className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                                className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-[#F5F5F7] dark:hover:bg-[#1C1C1E] transition-colors"
                             >
-                                <span className="font-medium text-text-primary-light dark:text-text-primary-dark">
+                                <span className="font-medium text-[#1D1D1F] dark:text-[#F5F5F7]">
                                     {faq.question}
                                 </span>
                                 <ChevronDown
-                                    className={`w-5 h-5 text-text-muted-light dark:text-text-muted-dark transition-transform duration-300 ${openFaq === index ? 'rotate-180' : ''
+                                    className={`w-5 h-5 text-[#86868B] dark:text-[rgba(235,235,245,0.3)] transition-transform duration-300 ${openFaq === index ? 'rotate-180' : ''
                                         }`}
                                 />
                             </button>
@@ -148,7 +148,7 @@ export function About() {
                                 className={`overflow-hidden transition-all duration-300 ease-in-out ${openFaq === index ? 'max-h-96' : 'max-h-0'
                                     }`}
                             >
-                                <p className="px-6 pb-4 text-text-secondary-light dark:text-text-secondary-dark">
+                                <p className="px-6 pb-4 apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
                                     {faq.answer}
                                 </p>
                             </div>
@@ -160,15 +160,15 @@ export function About() {
             {/* CTA Section */}
             <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
                 <Card variant="glass" padding="lg" className="text-center">
-                    <h2 className="text-xl md:text-2xl font-bold gradient-text mb-4 tracking-tight">
+                    <h2 className="apple-section gradient-text mb-4">
                         興味を持たれた方へ
                     </h2>
-                    <p className="text-[15px] md:text-base text-text-secondary-light dark:text-text-secondary-dark mb-6 max-w-xl mx-auto">
+                    <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-6 max-w-xl mx-auto">
                         経験や専攻は問いません。AIに興味がある方なら誰でも歓迎です。まずはお気軽にお問い合わせください。
                     </p>
                     <a
                         href="/contact"
-                        className="inline-flex items-center gap-2 px-6 py-3 rounded-xl gradient-bg text-white font-medium hover:opacity-90 transition-opacity"
+                        className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0071E3] text-white font-medium hover:bg-[#0077ED] transition-colors"
                     >
                         入会について問い合わせる
                         <ChevronDown className="w-4 h-4 -rotate-90" />

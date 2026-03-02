@@ -43,7 +43,7 @@ export function Dropdown({ trigger, items, onSelect, align = 'left' }: DropdownP
                     className={`
             absolute z-50 mt-2 min-w-[180px]
             glass rounded-xl py-1
-            bg-white dark:bg-surface-dark
+            bg-white dark:bg-[#1C1C1E]
             border border-[var(--border)]
             shadow-lg
             animate-fade-in
@@ -63,8 +63,8 @@ export function Dropdown({ trigger, items, onSelect, align = 'left' }: DropdownP
                   text-sm
                   transition-colors duration-150
                   ${item.disabled
-                                        ? 'text-text-muted-light dark:text-text-muted-dark cursor-not-allowed'
-                                        : 'text-text-primary-light dark:text-text-primary-dark hover:bg-primary-50 dark:hover:bg-primary-900/30'
+                                        ? 'text-[#86868B] dark:text-[rgba(235,235,245,0.3)] cursor-not-allowed'
+                                        : 'text-[#1D1D1F] dark:text-[#F5F5F7] hover:bg-[#F5F5F7] dark:hover:bg-[#1C1C1E]'
                                     }
                 `}
                             >
@@ -111,16 +111,16 @@ export function Select({ value, onChange, options, placeholder, className = '' }
                 onClick={() => setIsOpen(!isOpen)}
                 className="
           w-full px-4 py-3 rounded-xl
-          bg-white dark:bg-surface-dark
+          bg-white dark:bg-[#1C1C1E]
           border border-[var(--border)]
           text-left
           flex items-center justify-between
-          text-text-primary-light dark:text-text-primary-dark
-          focus:outline-none focus:ring-2 focus:ring-primary-500
+          text-[#1D1D1F] dark:text-[#F5F5F7]
+          focus:outline-none focus:ring-2 focus:ring-[#0071E3]
           transition-all duration-200
         "
             >
-                <span className={selectedOption ? '' : 'text-text-muted-light dark:text-text-muted-dark'}>
+                <span className={selectedOption ? '' : 'text-[#86868B] dark:text-[rgba(235,235,245,0.3)]'}>
                     {selectedOption?.label || placeholder || 'Select...'}
                 </span>
                 <ChevronDown
@@ -132,7 +132,7 @@ export function Select({ value, onChange, options, placeholder, className = '' }
                     className="
             absolute z-50 w-full mt-2
             glass rounded-xl py-1
-            bg-white dark:bg-surface-dark
+            bg-white dark:bg-[#1C1C1E]
             border border-[var(--border)]
             shadow-lg
             animate-fade-in
@@ -151,8 +151,8 @@ export function Select({ value, onChange, options, placeholder, className = '' }
                 w-full px-4 py-2 text-left text-sm
                 transition-colors duration-150
                 ${option.value === value
-                                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
-                                    : 'text-text-primary-light dark:text-text-primary-dark hover:bg-gray-50 dark:hover:bg-gray-800'
+                                    ? 'bg-[#0071E3]/5 dark:bg-[#2997FF]/5 text-[#0066CC] dark:text-[#2997FF]'
+                                    : 'text-[#1D1D1F] dark:text-[#F5F5F7] hover:bg-[#F5F5F7] dark:hover:bg-[#1C1C1E]'
                                 }
               `}
                         >

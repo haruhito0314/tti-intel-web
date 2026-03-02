@@ -135,27 +135,27 @@ export function BoardDetail() {
                 <section className="relative overflow-hidden">
                     <div className="absolute inset-0 gradient-bg-subtle opacity-30" />
                     <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                        <div className="h-4 bg-primary-200/40 dark:bg-primary-800/30 rounded w-20 mb-6" />
-                        <div className="h-8 bg-primary-200/40 dark:bg-primary-800/30 rounded-lg w-2/3 mb-4" />
+                        <div className="h-4 bg-[#D2D2D7]/40 dark:bg-[#38383A]/30 rounded w-20 mb-6" />
+                        <div className="h-8 bg-[#D2D2D7]/40 dark:bg-[#38383A]/30 rounded-lg w-2/3 mb-4" />
                     </div>
                 </section>
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-4 animate-pulse">
                     <div className="rounded-2xl border border-[var(--border)] bg-white/50 dark:bg-white/5 p-6 space-y-3">
-                        <div className="h-4 bg-gray-200/60 dark:bg-gray-700/40 rounded w-full" />
-                        <div className="h-4 bg-gray-200/60 dark:bg-gray-700/40 rounded w-5/6" />
-                        <div className="h-4 bg-gray-200/60 dark:bg-gray-700/40 rounded w-3/4" />
+                        <div className="h-4 bg-[#D2D2D7]/60 dark:bg-[#38383A]/40 rounded w-full" />
+                        <div className="h-4 bg-[#D2D2D7]/60 dark:bg-[#38383A]/40 rounded w-5/6" />
+                        <div className="h-4 bg-[#D2D2D7]/60 dark:bg-[#38383A]/40 rounded w-3/4" />
                         <div className="flex items-center gap-4 mt-4">
-                            <div className="h-3 bg-gray-200/50 dark:bg-gray-700/30 rounded w-16" />
-                            <div className="h-3 bg-gray-200/50 dark:bg-gray-700/30 rounded w-28" />
+                            <div className="h-3 bg-[#D2D2D7]/50 dark:bg-[#38383A]/30 rounded w-16" />
+                            <div className="h-3 bg-[#D2D2D7]/50 dark:bg-[#38383A]/30 rounded w-28" />
                         </div>
                     </div>
                     {[...Array(3)].map((_, i) => (
                         <div key={i} className="rounded-2xl border border-[var(--border)] bg-white/50 dark:bg-white/5 p-4 space-y-2">
-                            <div className="h-3.5 bg-gray-200/60 dark:bg-gray-700/40 rounded w-full" />
-                            <div className="h-3.5 bg-gray-200/60 dark:bg-gray-700/40 rounded w-1/2" />
+                            <div className="h-3.5 bg-[#D2D2D7]/60 dark:bg-[#38383A]/40 rounded w-full" />
+                            <div className="h-3.5 bg-[#D2D2D7]/60 dark:bg-[#38383A]/40 rounded w-1/2" />
                             <div className="flex items-center gap-4 mt-2">
-                                <div className="h-3 bg-gray-200/50 dark:bg-gray-700/30 rounded w-12" />
-                                <div className="h-3 bg-gray-200/50 dark:bg-gray-700/30 rounded w-24" />
+                                <div className="h-3 bg-[#D2D2D7]/50 dark:bg-[#38383A]/30 rounded w-12" />
+                                <div className="h-3 bg-[#D2D2D7]/50 dark:bg-[#38383A]/30 rounded w-24" />
                             </div>
                         </div>
                     ))}
@@ -167,10 +167,10 @@ export function BoardDetail() {
     if (threadNotFound || !thread) {
         return (
             <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-                <h1 className="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mb-4">
+                <h1 className="apple-section text-[#1D1D1F] dark:text-[#F5F5F7] mb-4">
                     スレッドが見つかりません
                 </h1>
-                <p className="text-text-secondary-light dark:text-text-secondary-dark mb-8">
+                <p className="text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-8">
                     お探しのスレッドは存在しないか、削除された可能性があります。
                 </p>
                 <Link to="/board">
@@ -191,7 +191,7 @@ export function BoardDetail() {
                 <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                     <Link
                         to="/board"
-                        className="inline-flex items-center gap-2 text-primary-600 dark:text-primary-400 hover:underline mb-6"
+                        className="inline-flex items-center gap-2 text-[#0066CC] dark:text-[#2997FF] hover:underline mb-6"
                     >
                         <ArrowLeft className="w-4 h-4" />
                         掲示板
@@ -212,7 +212,7 @@ export function BoardDetail() {
                         )}
                     </div>
 
-                    <h1 className="text-xl md:text-3xl font-bold text-text-primary-light dark:text-text-primary-dark mb-4 tracking-tight">
+                    <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] mb-4">
                         {thread.title}
                     </h1>
                 </div>
@@ -223,10 +223,10 @@ export function BoardDetail() {
                 {/* Original Post */}
                 <Card variant="elevated" className="mb-8">
                     <CardContent className="p-6">
-                        <p className="text-text-primary-light dark:text-text-primary-dark whitespace-pre-wrap mb-4">
+                        <p className="text-[#1D1D1F] dark:text-[#F5F5F7] whitespace-pre-wrap mb-4">
                             {thread.body}
                         </p>
-                        <div className="flex items-center gap-4 text-sm text-text-muted-light dark:text-text-muted-dark">
+                        <div className="flex items-center gap-4 text-sm text-[#86868B] dark:text-[rgba(235,235,245,0.3)]">
                             <span className="font-medium">{thread.displayName}</span>
                             <span>•</span>
                             <span>{formatDate(thread.createdAt)}</span>
@@ -236,26 +236,26 @@ export function BoardDetail() {
 
                 {/* Comments */}
                 <div className="space-y-4 mb-8">
-                    <h2 className="text-base md:text-lg font-semibold text-text-primary-light dark:text-text-primary-dark">
+                    <h2 className="text-base md:text-lg font-semibold text-[#1D1D1F] dark:text-[#F5F5F7]">
                         コメント ({thread.commentCount || 0})
                     </h2>
 
                     {isLoadingComments ? (
-                        <p className="text-text-secondary-light dark:text-text-secondary-dark text-center py-8">
+                        <p className="text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] text-center py-8">
                             コメントを読み込み中...
                         </p>
                     ) : comments.length === 0 ? (
-                        <p className="text-text-secondary-light dark:text-text-secondary-dark text-center py-8">
+                        <p className="text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] text-center py-8">
                             まだコメントはありません
                         </p>
                     ) : (
                         comments.map((comment, index) => (
                             <Card key={comment.id} variant="default" className="animate-fade-in" style={{ animationDelay: `${index * 50}ms` }}>
                                 <CardContent className="p-4">
-                                    <p className="text-text-primary-light dark:text-text-primary-dark whitespace-pre-wrap mb-3">
+                                    <p className="text-[#1D1D1F] dark:text-[#F5F5F7] whitespace-pre-wrap mb-3">
                                         {comment.body}
                                     </p>
-                                    <div className="flex items-center gap-4 text-sm text-text-muted-light dark:text-text-muted-dark">
+                                    <div className="flex items-center gap-4 text-sm text-[#86868B] dark:text-[rgba(235,235,245,0.3)]">
                                         <span className="font-medium">{comment.displayName}</span>
                                         <span>•</span>
                                         <span>{formatDate(comment.createdAt)}</span>
@@ -269,15 +269,15 @@ export function BoardDetail() {
                 {/* Comment Form */}
                 {thread.locked ? (
                     <Card variant="default" className="text-center py-8">
-                        <Lock className="w-8 h-8 mx-auto mb-2 text-text-muted-light dark:text-text-muted-dark" />
-                        <p className="text-text-secondary-light dark:text-text-secondary-dark">
+                        <Lock className="w-8 h-8 mx-auto mb-2 text-[#86868B] dark:text-[rgba(235,235,245,0.3)]" />
+                        <p className="text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
                             このスレッドはロックされているため、コメントできません
                         </p>
                     </Card>
                 ) : (
                     <Card variant="glass">
                         <CardContent className="p-6">
-                            <h3 className="text-base md:text-lg font-semibold text-text-primary-light dark:text-text-primary-dark mb-4">
+                            <h3 className="text-base md:text-lg font-semibold text-[#1D1D1F] dark:text-[#F5F5F7] mb-4">
                                 コメントを投稿
                             </h3>
                             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

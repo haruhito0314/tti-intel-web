@@ -8,16 +8,16 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
 
 const variantStyles = {
     default: `
-    bg-white dark:bg-surface-dark
-    border border-[var(--border)]
+    bg-white dark:bg-[#1C1C1E]
+    border border-[#D2D2D7] dark:border-[#38383A]
   `,
     glass: `
     glass
   `,
     elevated: `
-    bg-white dark:bg-surface-dark
-    shadow-lg shadow-black/[0.04] dark:shadow-primary-500/10
-    border border-[var(--border)]
+    bg-white dark:bg-[#1C1C1E]
+    shadow-lg shadow-black/[0.04] dark:shadow-white/[0.02]
+    border border-[#D2D2D7]/50 dark:border-[#38383A]/50
   `,
 };
 
@@ -62,7 +62,7 @@ export function CardHeader({ className = '', children, ...props }: HTMLAttribute
 export function CardTitle({ className = '', children, ...props }: HTMLAttributes<HTMLHeadingElement>) {
     return (
         <h3
-            className={`text-xl font-semibold text-text-primary-light dark:text-text-primary-dark ${className}`}
+            className={`text-xl font-semibold text-[#1D1D1F] dark:text-[#F5F5F7] ${className}`}
             {...props}
         >
             {children}
@@ -73,7 +73,7 @@ export function CardTitle({ className = '', children, ...props }: HTMLAttributes
 export function CardDescription({ className = '', children, ...props }: HTMLAttributes<HTMLParagraphElement>) {
     return (
         <p
-            className={`text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1 ${className}`}
+            className={`text-sm text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mt-1 ${className}`}
             {...props}
         >
             {children}

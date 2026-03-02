@@ -62,7 +62,7 @@ export function Dialog({ open, onClose, title, description, children }: DialogPr
             <div
                 className="
           glass rounded-2xl p-6
-          bg-white dark:bg-surface-dark
+          bg-white dark:bg-[#1C1C1E]
           border border-[var(--border)]
           shadow-xl
         "
@@ -71,12 +71,12 @@ export function Dialog({ open, onClose, title, description, children }: DialogPr
                 <div className="flex items-start justify-between mb-4">
                     <div>
                         {title && (
-                            <h2 className="text-xl font-semibold text-text-primary-light dark:text-text-primary-dark">
+                            <h2 className="text-xl font-semibold text-[#1D1D1F] dark:text-[#F5F5F7]">
                                 {title}
                             </h2>
                         )}
                         {description && (
-                            <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">
+                            <p className="text-sm text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mt-1">
                                 {description}
                             </p>
                         )}
@@ -85,8 +85,8 @@ export function Dialog({ open, onClose, title, description, children }: DialogPr
                         onClick={onClose}
                         className="
               p-2 rounded-lg
-              text-text-muted-light dark:text-text-muted-dark
-              hover:bg-gray-100 dark:hover:bg-gray-800
+              text-[#86868B] dark:text-[rgba(235,235,245,0.3)]
+              hover:bg-[#F5F5F7] dark:hover:bg-[#1C1C1E]
               transition-colors duration-200
             "
                         aria-label="Close dialog"
