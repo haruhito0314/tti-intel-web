@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Pin, Lock, MessageSquare, ArrowRight } from 'lucide-react';
+import { Plus, Pin, Lock, MessageSquare, ArrowRight, Trash2, PinOff, Unlock, Heart } from 'lucide-react';
 import { Card, CardContent, Badge, Button, Dialog, Input, Textarea } from '@/components/ui';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { collection, addDoc, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, query, orderBy, Timestamp, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { useAuth } from '@/hooks/useAuth';
 
 const createThreadSchema = z.object({
     title: z.string().min(1, 'タイトルを入力してください').max(100, 'タイトルは100文字以内で入力してください'),
@@ -23,11 +24,13 @@ interface Thread {
     displayName: string;
     createdAt: any; // Firestore Timestamp
     commentCount: number;
+    likeCount: number;
     pinned: boolean;
     locked: boolean;
 }
 
 export function Board() {
+    const { isAdmin } = useAuth();
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [threads, setThreads] = useState<Thread[]>([]);
@@ -68,6 +71,7 @@ export function Board() {
                 displayName: data.displayName || '匿名',
                 createdAt: Timestamp.now(),
                 commentCount: 0,
+                likeCount: 0,
                 pinned: false,
                 locked: false,
             });
@@ -79,6 +83,34 @@ export function Board() {
             alert('スレッドの作成に失敗しました');
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleDeleteThread = async (threadId: string) => {
+        if (!confirm('このスレッドを削除しますか？')) return;
+        try {
+            await deleteDoc(doc(db, 'threads', threadId));
+        } catch (error) {
+            console.error('Error deleting thread:', error);
+            alert('削除に失敗しました');
+        }
+    };
+
+    const handleTogglePin = async (threadId: string, currentPinned: boolean) => {
+        try {
+            await updateDoc(doc(db, 'threads', threadId), { pinned: !currentPinned });
+        } catch (error) {
+            console.error('Error toggling pin:', error);
+            alert('操作に失敗しました');
+        }
+    };
+
+    const handleToggleLock = async (threadId: string, currentLocked: boolean) => {
+        try {
+            await updateDoc(doc(db, 'threads', threadId), { locked: !currentLocked });
+        } catch (error) {
+            console.error('Error toggling lock:', error);
+            alert('操作に失敗しました');
         }
     };
 
@@ -205,10 +237,39 @@ export function Board() {
                                                             <MessageSquare className="w-4 h-4" />
                                                             {thread.commentCount}
                                                         </span>
+                                                        <span className="flex items-center gap-1">
+                                                            <Heart className="w-4 h-4" />
+                                                            {thread.likeCount || 0}
+                                                        </span>
                                                     </div>
                                                 </div>
                                                 <ArrowRight className="w-5 h-5 text-[#0071E3] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
                                             </div>
+                                            {isAdmin && (
+                                                <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[var(--border)]">
+                                                    <button
+                                                        onClick={(e) => { e.preventDefault(); handleTogglePin(thread.id, thread.pinned); }}
+                                                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-[#F5F5F7] dark:bg-[#2C2C2E] text-[#1D1D1F] dark:text-[#F5F5F7] hover:bg-[#E8E8ED] dark:hover:bg-[#3A3A3C] transition-colors"
+                                                    >
+                                                        {thread.pinned ? <PinOff className="w-3 h-3" /> : <Pin className="w-3 h-3" />}
+                                                        {thread.pinned ? '固定解除' : '固定'}
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => { e.preventDefault(); handleToggleLock(thread.id, thread.locked); }}
+                                                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-[#F5F5F7] dark:bg-[#2C2C2E] text-[#1D1D1F] dark:text-[#F5F5F7] hover:bg-[#E8E8ED] dark:hover:bg-[#3A3A3C] transition-colors"
+                                                    >
+                                                        {thread.locked ? <Unlock className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
+                                                        {thread.locked ? 'ロック解除' : 'ロック'}
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => { e.preventDefault(); handleDeleteThread(thread.id); }}
+                                                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors ml-auto"
+                                                    >
+                                                        <Trash2 className="w-3 h-3" />
+                                                        削除
+                                                    </button>
+                                                </div>
+                                            )}
                                         </CardContent>
                                     </Card>
                                 </Link>

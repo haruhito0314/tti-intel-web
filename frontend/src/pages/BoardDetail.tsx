@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Pin, Lock, Send } from 'lucide-react';
+import { ArrowLeft, Pin, Lock, Send, PinOff, Unlock, Trash2, Heart } from 'lucide-react';
 import { Card, CardContent, Badge, Button, Textarea, Input } from '@/components/ui';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { doc, collection, addDoc, onSnapshot, query, orderBy, Timestamp, increment, updateDoc } from 'firebase/firestore';
+import { doc, collection, addDoc, onSnapshot, query, orderBy, Timestamp, increment, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { useAuth } from '@/hooks/useAuth';
+import { useLikes } from '@/hooks/useLikes';
 
 const commentSchema = z.object({
     body: z.string().min(1, 'コメントを入力してください').max(500, 'コメントは500文字以内で入力してください'),
@@ -24,6 +26,7 @@ interface Thread {
     pinned: boolean;
     locked: boolean;
     commentCount: number;
+    likeCount: number;
 }
 
 interface Comment {
@@ -31,10 +34,13 @@ interface Comment {
     body: string;
     displayName: string;
     createdAt: any;
+    likeCount: number;
 }
 
 export function BoardDetail() {
     const { id } = useParams<{ id: string }>();
+    const { isAdmin } = useAuth();
+    const { isLiked, toggleLike } = useLikes();
     const [thread, setThread] = useState<Thread | null>(null);
     const [comments, setComments] = useState<Comment[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -129,6 +135,39 @@ export function BoardDetail() {
         }
     };
 
+    const handleTogglePin = async () => {
+        if (!id || !thread) return;
+        try {
+            await updateDoc(doc(db, 'threads', id), { pinned: !thread.pinned });
+        } catch (error) {
+            console.error('Error toggling pin:', error);
+            alert('操作に失敗しました');
+        }
+    };
+
+    const handleToggleLock = async () => {
+        if (!id || !thread) return;
+        try {
+            await updateDoc(doc(db, 'threads', id), { locked: !thread.locked });
+        } catch (error) {
+            console.error('Error toggling lock:', error);
+            alert('操作に失敗しました');
+        }
+    };
+
+    const handleDeleteComment = async (commentId: string) => {
+        if (!id || !confirm('このコメントを削除しますか？')) return;
+        try {
+            await deleteDoc(doc(db, 'threads', id, 'comments', commentId));
+            await updateDoc(doc(db, 'threads', id), {
+                commentCount: increment(-1)
+            });
+        } catch (error) {
+            console.error('Error deleting comment:', error);
+            alert('削除に失敗しました');
+        }
+    };
+
     if (isLoadingThread) {
         return (
             <div className="animate-fade-in">
@@ -215,6 +254,25 @@ export function BoardDetail() {
                     <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] mb-4">
                         {thread.title}
                     </h1>
+
+                    {isAdmin && (
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={handleTogglePin}
+                                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-[#F5F5F7] dark:bg-[#2C2C2E] text-[#1D1D1F] dark:text-[#F5F5F7] hover:bg-[#E8E8ED] dark:hover:bg-[#3A3A3C] transition-colors"
+                            >
+                                {thread.pinned ? <PinOff className="w-3 h-3" /> : <Pin className="w-3 h-3" />}
+                                {thread.pinned ? '固定解除' : '固定'}
+                            </button>
+                            <button
+                                onClick={handleToggleLock}
+                                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-[#F5F5F7] dark:bg-[#2C2C2E] text-[#1D1D1F] dark:text-[#F5F5F7] hover:bg-[#E8E8ED] dark:hover:bg-[#3A3A3C] transition-colors"
+                            >
+                                {thread.locked ? <Unlock className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
+                                {thread.locked ? 'ロック解除' : 'ロック'}
+                            </button>
+                        </div>
+                    )}
                 </div>
             </section>
 
@@ -230,6 +288,25 @@ export function BoardDetail() {
                             <span className="font-medium">{thread.displayName}</span>
                             <span>•</span>
                             <span>{formatDate(thread.createdAt)}</span>
+                            <button
+                                onClick={async () => {
+                                    const liked = isLiked(`thread-${thread.id}`);
+                                    toggleLike(`thread-${thread.id}`);
+                                    try {
+                                        await updateDoc(doc(db, 'threads', thread.id), { likeCount: increment(liked ? -1 : 1) });
+                                    } catch (error) {
+                                        toggleLike(`thread-${thread.id}`);
+                                        console.error('Error toggling like:', error);
+                                    }
+                                }}
+                                className={`ml-auto inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs transition-colors ${isLiked(`thread-${thread.id}`)
+                                        ? 'text-red-500 bg-red-50 dark:bg-red-500/10'
+                                        : 'text-[#86868B] hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10'
+                                    }`}
+                            >
+                                <Heart className={`w-3.5 h-3.5 ${isLiked(`thread-${thread.id}`) ? 'fill-current' : ''}`} />
+                                {thread.likeCount || 0}
+                            </button>
                         </div>
                     </CardContent>
                 </Card>
@@ -259,6 +336,35 @@ export function BoardDetail() {
                                         <span className="font-medium">{comment.displayName}</span>
                                         <span>•</span>
                                         <span>{formatDate(comment.createdAt)}</span>
+                                        <button
+                                            onClick={async () => {
+                                                if (!id) return;
+                                                const liked = isLiked(`comment-${comment.id}`);
+                                                toggleLike(`comment-${comment.id}`);
+                                                try {
+                                                    await updateDoc(doc(db, 'threads', id, 'comments', comment.id), { likeCount: increment(liked ? -1 : 1) });
+                                                } catch (error) {
+                                                    toggleLike(`comment-${comment.id}`);
+                                                    console.error('Error toggling like:', error);
+                                                }
+                                            }}
+                                            className={`ml-auto inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs transition-colors ${isLiked(`comment-${comment.id}`)
+                                                    ? 'text-red-500 bg-red-50 dark:bg-red-500/10'
+                                                    : 'text-[#86868B] hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10'
+                                                }`}
+                                        >
+                                            <Heart className={`w-3.5 h-3.5 ${isLiked(`comment-${comment.id}`) ? 'fill-current' : ''}`} />
+                                            {comment.likeCount || 0}
+                                        </button>
+                                        {isAdmin && (
+                                            <button
+                                                onClick={() => handleDeleteComment(comment.id)}
+                                                className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                                            >
+                                                <Trash2 className="w-3 h-3" />
+                                                削除
+                                            </button>
+                                        )}
                                     </div>
                                 </CardContent>
                             </Card>

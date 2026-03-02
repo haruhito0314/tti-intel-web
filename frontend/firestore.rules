@@ -2,6 +2,12 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // Helper: check if the request is from an admin
+    function isAdmin() {
+      return request.auth != null && 
+        request.auth.token.email in ['tti.intel@gmail.com'];
+    }
     
     // Threads collection
     match /threads/{threadId} {
@@ -11,23 +17,52 @@ service cloud.firestore {
       // Anyone can create a thread (anonymous posting)
       // Validate that required fields are present and types are correct
       allow create: if 
-        request.resource.data.keys().hasAll(['title', 'body', 'displayName', 'createdAt', 'commentCount', 'pinned', 'locked']) &&
+        request.resource.data.keys().hasAll(['title', 'body', 'displayName', 'createdAt', 'commentCount', 'likeCount', 'pinned', 'locked']) &&
         request.resource.data.title is string && request.resource.data.title.size() > 0 && request.resource.data.title.size() <= 100 &&
         request.resource.data.body is string && request.resource.data.body.size() > 0 && request.resource.data.body.size() <= 1000 &&
         request.resource.data.displayName is string && request.resource.data.displayName.size() <= 50 &&
         request.resource.data.commentCount == 0 &&
+        request.resource.data.likeCount == 0 &&
         request.resource.data.pinned == false &&
         request.resource.data.locked == false;
 
-      // Allow updating ONLY the commentCount field (for when a new comment is added)
-      // Prevent updating if the thread is locked
+      // Allow updating:
+      // 1. commentCount increment by anyone (for new comments)
+      // 2. pinned/locked fields by admins only
+      // 3. commentCount decrement by admins (for comment deletion)
+      // 4. likeCount increment/decrement by anyone (for likes)
       allow update: if 
-        resource.data.locked == false &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['commentCount']) &&
-        request.resource.data.commentCount == resource.data.commentCount + 1;
+        // Case 1: Anonymous user incrementing commentCount
+        (
+          resource.data.locked == false &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['commentCount']) &&
+          request.resource.data.commentCount == resource.data.commentCount + 1
+        ) ||
+        // Case 2: Admin toggling pinned
+        (
+          isAdmin() &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pinned'])
+        ) ||
+        // Case 3: Admin toggling locked
+        (
+          isAdmin() &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['locked'])
+        ) ||
+        // Case 4: Admin decrementing commentCount (comment deletion)
+        (
+          isAdmin() &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['commentCount']) &&
+          request.resource.data.commentCount == resource.data.commentCount - 1
+        ) ||
+        // Case 5: Anyone toggling likeCount (+1 or -1)
+        (
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likeCount']) &&
+          (request.resource.data.likeCount == resource.data.likeCount + 1 ||
+           request.resource.data.likeCount == resource.data.likeCount - 1)
+        );
         
-      // Only admins should be able to delete, pin, or lock (not implemented yet, so deny all)
-      allow delete: if false;
+      // Only admins can delete threads
+      allow delete: if isAdmin();
 
       // Comments subcollection
       match /comments/{commentId} {
@@ -41,8 +76,14 @@ service cloud.firestore {
           request.resource.data.body is string && request.resource.data.body.size() > 0 && request.resource.data.body.size() <= 500 &&
           request.resource.data.displayName is string && request.resource.data.displayName.size() <= 50;
 
-        // Comments cannot be updated or deleted by anonymous users
-        allow update, delete: if false;
+        // Comments can be updated only for likeCount
+        allow update: if 
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likeCount']) &&
+          (request.resource.data.likeCount == resource.data.likeCount + 1 ||
+           request.resource.data.likeCount == resource.data.likeCount - 1);
+        
+        // Only admins can delete comments
+        allow delete: if isAdmin();
       }
     }
   }
