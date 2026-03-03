@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, UserPlus, Trash2, Shield, Mail } from 'lucide-react';
 import { Card, CardContent, Button, Input } from '@/components/ui';
-import { collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, setDoc, deleteDoc, doc, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { z } from 'zod';
@@ -60,7 +60,7 @@ export function AdminMembers() {
         }
         setIsSubmitting(true);
         try {
-            await addDoc(collection(db, 'admins'), {
+            await setDoc(doc(db, 'admins', data.email), {
                 email: data.email,
                 addedAt: Timestamp.now(),
                 addedBy: user?.email || 'unknown',

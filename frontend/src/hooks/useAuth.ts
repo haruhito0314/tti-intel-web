@@ -3,13 +3,15 @@ import {
     onAuthStateChanged,
     signInWithPopup,
     signOut,
+    signInAnonymously as firebaseSignInAnonymously,
     GoogleAuthProvider,
     type User,
 } from 'firebase/auth';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 
 const googleProvider = new GoogleAuthProvider();
+const DEFAULT_ADMIN = 'tti.intel@gmail.com';
 
 interface AuthState {
     user: User | null;
@@ -35,20 +37,16 @@ export function useAuth() {
             }
 
             if (user && user.email) {
-                // Check if user email exists in admins collection
-                const q = query(
-                    collection(db, 'admins'),
-                    where('email', '==', user.email)
-                );
-                unsubscribeAdmins = onSnapshot(q, (snapshot) => {
+                // Check if user email exists in admins collection using email as document ID
+                unsubscribeAdmins = onSnapshot(doc(db, 'admins', user.email), (docSnap) => {
                     setAuthState({
                         user,
-                        isAdmin: !snapshot.empty,
+                        isAdmin: docSnap.exists() || user.email === DEFAULT_ADMIN,
                         loading: false,
                     });
                 }, () => {
-                    // On error (e.g., no admins collection yet), fall back to not admin
-                    setAuthState({ user, isAdmin: false, loading: false });
+                    // On error (e.g., no admins collection yet, permission denied), fall back to default admin check
+                    setAuthState({ user, isAdmin: user.email === DEFAULT_ADMIN, loading: false });
                 });
             } else {
                 setAuthState({
@@ -83,11 +81,21 @@ export function useAuth() {
         }
     };
 
+    const signInAnonymously = async () => {
+        try {
+            await firebaseSignInAnonymously(auth);
+        } catch (error) {
+            console.error('Anonymous login failed:', error);
+            throw error;
+        }
+    };
+
     return {
         user: authState.user,
         isAdmin: authState.isAdmin,
         loading: authState.loading,
         login,
         logout,
+        signInAnonymously,
     };
 }

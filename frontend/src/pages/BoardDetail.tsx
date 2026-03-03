@@ -33,13 +33,14 @@ interface Comment {
     id: string;
     body: string;
     displayName: string;
+    authorId: string;
     createdAt: any;
     likeCount: number;
 }
 
 export function BoardDetail() {
     const { id } = useParams<{ id: string }>();
-    const { isAdmin } = useAuth();
+    const { user, isAdmin, signInAnonymously } = useAuth();
     const { isLiked, toggleLike } = useLikes();
     const [thread, setThread] = useState<Thread | null>(null);
     const [comments, setComments] = useState<Comment[]>([]);
@@ -56,6 +57,13 @@ export function BoardDetail() {
     } = useForm<CommentForm>({
         resolver: zodResolver(commentSchema),
     });
+
+    // SignIn anonymously if not logged in
+    useEffect(() => {
+        if (!user) {
+            signInAnonymously().catch(console.error);
+        }
+    }, [user, signInAnonymously]);
 
     useEffect(() => {
         if (!id) return;
@@ -116,7 +124,9 @@ export function BoardDetail() {
             await addDoc(collection(db, 'threads', id, 'comments'), {
                 body: data.body,
                 displayName: data.displayName || '匿名',
+                authorId: user?.uid || 'anonymous',
                 createdAt: Timestamp.now(),
+                likeCount: 0,
             });
 
             // Increment comment count in thread document
@@ -300,8 +310,8 @@ export function BoardDetail() {
                                     }
                                 }}
                                 className={`ml-auto inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs transition-colors ${isLiked(`thread-${thread.id}`)
-                                        ? 'text-red-500 bg-red-50 dark:bg-red-500/10'
-                                        : 'text-[#86868B] hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10'
+                                    ? 'text-red-500 bg-red-50 dark:bg-red-500/10'
+                                    : 'text-[#86868B] hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10'
                                     }`}
                             >
                                 <Heart className={`w-3.5 h-3.5 ${isLiked(`thread-${thread.id}`) ? 'fill-current' : ''}`} />
@@ -349,8 +359,8 @@ export function BoardDetail() {
                                                 }
                                             }}
                                             className={`ml-auto inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs transition-colors ${isLiked(`comment-${comment.id}`)
-                                                    ? 'text-red-500 bg-red-50 dark:bg-red-500/10'
-                                                    : 'text-[#86868B] hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10'
+                                                ? 'text-red-500 bg-red-50 dark:bg-red-500/10'
+                                                : 'text-[#86868B] hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10'
                                                 }`}
                                         >
                                             <Heart className={`w-3.5 h-3.5 ${isLiked(`comment-${comment.id}`) ? 'fill-current' : ''}`} />

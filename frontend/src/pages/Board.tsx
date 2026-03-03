@@ -22,6 +22,7 @@ interface Thread {
     title: string;
     body: string;
     displayName: string;
+    authorId: string;
     createdAt: any; // Firestore Timestamp
     commentCount: number;
     likeCount: number;
@@ -30,7 +31,7 @@ interface Thread {
 }
 
 export function Board() {
-    const { isAdmin } = useAuth();
+    const { user, isAdmin, signInAnonymously } = useAuth();
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [threads, setThreads] = useState<Thread[]>([]);
@@ -62,6 +63,13 @@ export function Board() {
         return () => unsubscribe();
     }, []);
 
+    // SignIn anonymously if not logged in
+    useEffect(() => {
+        if (!user) {
+            signInAnonymously().catch(console.error);
+        }
+    }, [user, signInAnonymously]);
+
     const onSubmit = async (data: CreateThreadForm) => {
         setIsSubmitting(true);
         try {
@@ -69,6 +77,7 @@ export function Board() {
                 title: data.title,
                 body: data.body,
                 displayName: data.displayName || '匿名',
+                authorId: user?.uid || 'anonymous',
                 createdAt: Timestamp.now(),
                 commentCount: 0,
                 likeCount: 0,

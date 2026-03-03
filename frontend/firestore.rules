@@ -5,8 +5,16 @@ service cloud.firestore {
 
     // Helper: check if the request is from an admin
     function isAdmin() {
-      return request.auth != null && 
-        request.auth.token.email in ['tti.intel@gmail.com'];
+      return request.auth != null && (
+        request.auth.token.email == 'tti.intel@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.token.email))
+      );
+    }
+
+    // Admins collection
+    match /admins/{adminEmail} {
+      allow read: if request.auth != null; // Any authenticated user can check if they are an admin
+      allow write: if isAdmin(); // Only admins can add/remove other admins
     }
     
     // Threads collection
@@ -14,17 +22,19 @@ service cloud.firestore {
       // Anyone can read threads
       allow read: if true;
       
-      // Anyone can create a thread (anonymous posting)
-      // Validate that required fields are present and types are correct
+      // Validate that ONLY permitted fields are present, types are correct, and author matches auth ID
       allow create: if 
-        request.resource.data.keys().hasAll(['title', 'body', 'displayName', 'createdAt', 'commentCount', 'likeCount', 'pinned', 'locked']) &&
+        request.auth != null && 
+        request.resource.data.keys().hasOnly(['title', 'body', 'displayName', 'authorId', 'createdAt', 'commentCount', 'likeCount', 'pinned', 'locked']) &&
         request.resource.data.title is string && request.resource.data.title.size() > 0 && request.resource.data.title.size() <= 100 &&
         request.resource.data.body is string && request.resource.data.body.size() > 0 && request.resource.data.body.size() <= 1000 &&
         request.resource.data.displayName is string && request.resource.data.displayName.size() <= 50 &&
+        request.resource.data.authorId == request.auth.uid &&
         request.resource.data.commentCount == 0 &&
         request.resource.data.likeCount == 0 &&
         request.resource.data.pinned == false &&
-        request.resource.data.locked == false;
+        request.resource.data.locked == false &&
+        request.resource.data.createdAt == request.time;
 
       // Allow updating:
       // 1. commentCount increment by anyone (for new comments)
@@ -69,12 +79,16 @@ service cloud.firestore {
         // Anyone can read comments
         allow read: if true;
         
-        // Anyone can create a comment if the parent thread is NOT locked
+        // Require authenticated user (anonymous is fine), restrict fields, require matching authorId and server time
         allow create: if 
+          request.auth != null &&
           get(/databases/$(database)/documents/threads/$(threadId)).data.locked == false &&
-          request.resource.data.keys().hasAll(['body', 'displayName', 'createdAt']) &&
+          request.resource.data.keys().hasOnly(['body', 'displayName', 'authorId', 'createdAt', 'likeCount']) &&
           request.resource.data.body is string && request.resource.data.body.size() > 0 && request.resource.data.body.size() <= 500 &&
-          request.resource.data.displayName is string && request.resource.data.displayName.size() <= 50;
+          request.resource.data.displayName is string && request.resource.data.displayName.size() <= 50 &&
+          request.resource.data.authorId == request.auth.uid &&
+          (!request.resource.data.keys().hasAny(['likeCount']) || request.resource.data.likeCount == 0) &&
+          request.resource.data.createdAt == request.time;
 
         // Comments can be updated only for likeCount
         allow update: if 
