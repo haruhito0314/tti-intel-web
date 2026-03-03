@@ -33,14 +33,13 @@ interface Comment {
     id: string;
     body: string;
     displayName: string;
-    authorId: string;
     createdAt: any;
     likeCount: number;
 }
 
 export function BoardDetail() {
     const { id } = useParams<{ id: string }>();
-    const { user, isAdmin, signInAnonymously } = useAuth();
+    const { isAdmin } = useAuth();
     const { isLiked, toggleLike } = useLikes();
     const [thread, setThread] = useState<Thread | null>(null);
     const [comments, setComments] = useState<Comment[]>([]);
@@ -57,13 +56,6 @@ export function BoardDetail() {
     } = useForm<CommentForm>({
         resolver: zodResolver(commentSchema),
     });
-
-    // SignIn anonymously if not logged in
-    useEffect(() => {
-        if (!user) {
-            signInAnonymously().catch(console.error);
-        }
-    }, [user, signInAnonymously]);
 
     useEffect(() => {
         if (!id) return;
@@ -124,9 +116,7 @@ export function BoardDetail() {
             await addDoc(collection(db, 'threads', id, 'comments'), {
                 body: data.body,
                 displayName: data.displayName || '匿名',
-                authorId: user?.uid || 'anonymous',
                 createdAt: Timestamp.now(),
-                likeCount: 0,
             });
 
             // Increment comment count in thread document

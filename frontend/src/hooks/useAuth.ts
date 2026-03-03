@@ -3,7 +3,6 @@ import {
     onAuthStateChanged,
     signInWithPopup,
     signOut,
-    signInAnonymously as firebaseSignInAnonymously,
     GoogleAuthProvider,
     type User,
 } from 'firebase/auth';
@@ -81,21 +80,11 @@ export function useAuth() {
         }
     };
 
-    const signInAnonymously = async () => {
-        try {
-            await firebaseSignInAnonymously(auth);
-        } catch (error) {
-            console.error('Anonymous login failed:', error);
-            throw error;
-        }
-    };
-
     return {
         user: authState.user,
         isAdmin: authState.isAdmin,
         loading: authState.loading,
         login,
         logout,
-        signInAnonymously,
     };
 }
