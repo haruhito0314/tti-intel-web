@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui';
 import { Smartphone, ExternalLink, Rocket } from 'lucide-react';
 
@@ -7,8 +8,59 @@ const apps: {
     description: string;
     tags: string[];
     url?: string;
-    image?: string;
-}[] = [];
+    images?: string[];
+}[] = [
+    {
+        title: 'TOEIC Practice',
+        description: 'Appwriteを使ったTOEIC対策アプリ。Part別演習やタイムアタック機能を搭載し、学習履歴を管理できます。',
+        tags: ['React', 'TypeScript', 'Appwrite'],
+        url: 'https://toeic-practice.appwrite.network',
+        images: [
+            '/images/toeic-practice-1.png',
+            '/images/toeic-practice-2.png',
+            '/images/toeic-practice-3.png'
+        ]
+    }
+];
+
+function ImageCarousel({ images, title }: { images: string[]; title: string }) {
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    useEffect(() => {
+        if (images.length <= 1) return;
+        const interval = setInterval(() => {
+            setCurrentIndex((prev) => (prev + 1) % images.length);
+        }, 4000); // 4 seconds per slide
+        return () => clearInterval(interval);
+    }, [images.length]);
+
+    return (
+        <div className="aspect-video relative overflow-hidden bg-gray-100 dark:bg-gray-800">
+            {images.map((img, index) => (
+                <img
+                    key={img}
+                    src={img}
+                    alt={`${title} screenshot ${index + 1}`}
+                    className={`absolute inset-0 object-cover w-full h-full transition-opacity duration-[1500ms] ${
+                        index === currentIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                    }`}
+                />
+            ))}
+            {images.length > 1 && (
+                <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2 z-20">
+                    {images.map((_, index) => (
+                        <div
+                            key={index}
+                            className={`w-1.5 h-1.5 rounded-full transition-colors duration-500 ${
+                                index === currentIndex ? 'bg-white' : 'bg-white/40'
+                            }`}
+                        />
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
 
 export function AppShowcase() {
     return (
@@ -58,10 +110,14 @@ export function AppShowcase() {
                                 padding="none"
                                 className="overflow-hidden hover:scale-[1.015] transition-transform duration-300 group"
                             >
-                                {/* App Image Placeholder */}
-                                <div className="aspect-video bg-gradient-to-br from-[#0071E3]/10 to-[#00AFBE]/10 dark:from-[#0071E3]/20 dark:to-[#00AFBE]/20 flex items-center justify-center">
-                                    <Smartphone className="w-12 h-12 text-[#5DABFF]" />
-                                </div>
+                                {/* App Image */}
+                                {app.images && app.images.length > 0 ? (
+                                    <ImageCarousel images={app.images} title={app.title} />
+                                ) : (
+                                    <div className="aspect-video bg-gradient-to-br from-[#0071E3]/10 to-[#00AFBE]/10 dark:from-[#0071E3]/20 dark:to-[#00AFBE]/20 flex items-center justify-center">
+                                        <Smartphone className="w-12 h-12 text-[#5DABFF]" />
+                                    </div>
+                                )}
 
                                 <CardContent className="p-6">
                                     <h3 className="apple-headline text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
