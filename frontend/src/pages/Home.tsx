@@ -244,102 +244,104 @@ export function Home() {
                 <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[var(--background)] to-transparent" />
             </section>
 
-            {/* Next Event */}
-            <section className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-                <Card variant="glass" className="overflow-hidden">
-                    <div className="flex flex-col md:flex-row">
-                        <div className="md:w-1/3 gradient-bg p-8 flex items-center justify-center">
-                            <div className="text-center text-white">
-                                <Calendar className="w-12 h-12 mx-auto mb-4" />
-                                <p className="apple-headline">次回イベント</p>
-                            </div>
-                        </div>
-                        <CardContent className="flex-1 p-8">
-                            <h3 className="apple-title text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
-                                {nextEvent.title}
-                            </h3>
-                            <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-4">
-                                {nextEvent.description}
-                            </p>
-                            <div className="flex flex-wrap gap-4 text-sm">
-                                <div className="flex items-center gap-2 text-[#0071E3] dark:text-[#2997FF]">
-                                    <Calendar className="w-4 h-4" />
-                                    {nextEvent.date}
-                                </div>
-                                <div className="flex items-center gap-2 text-[#86868B] dark:text-[rgba(235,235,245,0.3)]">
-                                    📍 {nextEvent.location}
-                                </div>
-                            </div>
-                        </CardContent>
-                    </div>
-                </Card>
-            </section>
-
-            {/* Latest Posts */}
-            <section className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-                <div className="flex items-center justify-between mb-8">
-                    <h2 className="apple-section text-[#1D1D1F] dark:text-[#F5F5F7]">
-                        最新のお知らせ
-                    </h2>
-                    <Link
-                        to="/news"
-                        className="flex items-center gap-1 text-[#0066CC] dark:text-[#2997FF] hover:underline apple-body"
-                    >
-                        すべて見る
-                        <ArrowRight className="w-4 h-4" />
-                    </Link>
-                </div>
-
-                <div className="grid md:grid-cols-3 gap-6">
-                    {latestPosts.map((post, index) => (
+            <div className="home-main-color-flow">
+                {/* Latest Posts */}
+                <section className="home-flow-block home-flow-block-news max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24 relative z-10">
+                    <div className="flex items-center justify-between mb-8">
+                        <h2 className="apple-section text-[#1D1D1F] dark:text-[#F5F5F7]">
+                            最新のお知らせ
+                        </h2>
                         <Link
-                            key={post.id}
-                            to={`/news/${post.slug}`}
-                            className="group"
-                            style={{ animationDelay: `${index * 100}ms` }}
+                            to="/news"
+                            className="flex items-center gap-1 text-[#0066CC] dark:text-[#2997FF] hover:underline apple-body"
                         >
-                            <Card
-                                variant="elevated"
-                                className="h-full hover:scale-[1.015] transition-transform duration-300"
-                            >
-                                <CardContent className="p-6">
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <Badge variant={post.pinned ? 'primary' : 'default'}>
-                                            {post.category}
-                                        </Badge>
-                                        {post.pinned && (
-                                            <Badge variant="warning">📌 固定</Badge>
-                                        )}
-                                    </div>
-                                    <h3 className="apple-headline text-[#1D1D1F] dark:text-[#F5F5F7] mb-2 group-hover:text-[#0066CC] dark:group-hover:text-[#2997FF] transition-colors">
-                                        {post.title}
-                                    </h3>
-                                    <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-4 line-clamp-2">
-                                        {post.excerpt}
-                                    </p>
-                                    <div className="flex items-center justify-between">
-                                        <time className="apple-footnote text-[#86868B] dark:text-[rgba(235,235,245,0.3)]">
-                                            {post.publishedAt}
-                                        </time>
-                                        <ExternalLink className="w-4 h-4 text-[#0071E3] dark:text-[#2997FF] opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    </div>
-                                </CardContent>
-                            </Card>
+                            すべて見る
+                            <ArrowRight className="w-4 h-4" />
                         </Link>
-                    ))}
-                </div>
-            </section>
+                    </div>
+
+                    <div className="home-card-shell home-card-shell-news">
+                        <div className="home-card-backdrop home-card-backdrop-news home-card-backdrop-full-bleed" aria-hidden="true" />
+                        <div className="grid md:grid-cols-3 gap-6 relative z-10">
+                            {latestPosts.map((post, index) => (
+                                <Link
+                                    key={post.id}
+                                    to={`/news/${post.slug}`}
+                                    className="group"
+                                    style={{ animationDelay: `${index * 100}ms` }}
+                                >
+                                    <Card
+                                        variant="elevated"
+                                        className="h-full hover:scale-[1.015] transition-transform duration-300"
+                                    >
+                                        <CardContent className="p-6">
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <Badge variant={post.pinned ? 'primary' : 'default'}>
+                                                    {post.category}
+                                                </Badge>
+                                                {post.pinned && (
+                                                    <Badge variant="warning">📌 固定</Badge>
+                                                )}
+                                            </div>
+                                            <h3 className="apple-headline text-[#1D1D1F] dark:text-[#F5F5F7] mb-2 group-hover:text-[#0066CC] dark:group-hover:text-[#2997FF] transition-colors">
+                                                {post.title}
+                                            </h3>
+                                            <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-4 line-clamp-2">
+                                                {post.excerpt}
+                                            </p>
+                                            <div className="flex items-center justify-between">
+                                                <time className="apple-footnote text-[#86868B] dark:text-[rgba(235,235,245,0.3)]">
+                                                    {post.publishedAt}
+                                                </time>
+                                                <ExternalLink className="w-4 h-4 text-[#0071E3] dark:text-[#2997FF] opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* Next Event */}
+                <section className="home-flow-block home-flow-block-event max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24 relative z-10">
+                    <div className="home-card-shell home-card-shell-event">
+                        <div className="home-card-backdrop home-card-backdrop-event home-card-backdrop-full-bleed" aria-hidden="true" />
+                        <Card variant="glass" className="overflow-hidden relative z-10">
+                        <div className="flex flex-col md:flex-row">
+                            <div className="md:w-1/3 event-panel-bg p-8 flex items-center justify-center">
+                                <div className="text-center text-white">
+                                    <Calendar className="w-12 h-12 mx-auto mb-4" />
+                                    <p className="apple-headline">次回イベント</p>
+                                </div>
+                            </div>
+                            <CardContent className="flex-1 p-8">
+                                <h3 className="apple-title text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
+                                    {nextEvent.title}
+                                </h3>
+                                <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-4">
+                                    {nextEvent.description}
+                                </p>
+                                <div className="flex flex-wrap gap-4 text-sm">
+                                    <div className="flex items-center gap-2 text-[#5F9F1F] dark:text-[#A7E163]">
+                                        <Calendar className="w-4 h-4" />
+                                        {nextEvent.date}
+                                    </div>
+                                    <div className="flex items-center gap-2 text-[#86868B] dark:text-[rgba(235,235,245,0.3)]">
+                                        📍 {nextEvent.location}
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </div>
+                        </Card>
+                    </div>
+                </section>
+            </div>
 
             {/* CTA Section */}
             <section className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
                 <Card variant="glass" padding="lg" className="text-center relative overflow-hidden">
-                    {/* Floating elements in CTA */}
-                    <FloatingPuzzle shape="hexagon" size={40} className="top-4 left-4" delay={0} duration={10} />
-                    <FloatingPuzzle shape="diamond" size={30} className="top-8 right-8" delay={1} duration={12} gradient />
-                    <FloatingPuzzle shape="circle" size={20} className="bottom-4 left-[20%]" delay={2} duration={8} />
-                    <FloatingPuzzle shape="triangle" size={35} className="bottom-6 right-[15%]" delay={0.5} duration={11} gradient />
-
-                    <h2 className="apple-section gradient-text mb-4 relative z-10">
+                    <h2 className="apple-section text-[#1D1D1F] dark:text-[#F5F5F7] mb-4 relative z-10">
                         一緒にAIを学びませんか？
                     </h2>
                     <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] max-w-2xl mx-auto mb-8 relative z-10">
