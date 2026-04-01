@@ -1,5 +1,5 @@
 import { Card, CardContent } from '@/components/ui';
-import { BookOpen, Code, Cpu, MessageCircle, ChevronDown } from 'lucide-react';
+import { BookOpen, Code, Cpu, MessageCircle, ChevronDown, Calendar } from 'lucide-react';
 import { useState } from 'react';
 
 const activities = [
@@ -48,6 +48,13 @@ const faqs = [
     },
 ];
 
+const nextEvent = {
+    title: '応用情報技術者試験',
+    date: '2026年11月（秋期）',
+    location: '各地の試験会場',
+    description: 'メンバー有志で応用情報技術者試験に挑戦します。一緒に合格を目指しましょう！',
+};
+
 export function About() {
     const [openFaq, setOpenFaq] = useState<number | null>(null);
 
@@ -58,36 +65,19 @@ export function About() {
                 <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-20">
                     <div className="text-center">
                         <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] mb-6">
-                            About <span className="text-[#0066CC] dark:text-[var(--link)]">TTI Intelligence</span>
+                            About <span className="gradient-text">TTI Intelligence</span>
                         </h1>
                         <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] max-w-3xl mx-auto leading-relaxed">
                             私たちは豊田工業大学の学生を中心としたAIサークルです。
-                            AI技術の学習・研究・開発を通じて、次世代のAIエンジニアを育成しています。
+                            AI技術を活用しながら、学習・研究・開発をはじめ、
+                            多くのことに挑戦していきます。
                         </p>
                     </div>
                 </div>
             </section>
 
-            {/* Philosophy */}
-            <section className="about-band-white max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-                <Card variant="glass" padding="lg">
-                    <div className="text-center">
-                        <h2 className="apple-section text-[#1D1D1F] dark:text-[#F5F5F7] mb-6">
-                            理念
-                        </h2>
-                        <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] max-w-3xl mx-auto leading-relaxed">
-                            「<span className="font-semibold text-[#0066CC] dark:text-[#2997FF]">学び、創り、共有する</span>」
-                            <br className="hidden md:block" />
-                            私たちは好奇心を大切にし、AI技術を通じて社会に貢献できる人材を育てます。
-                            失敗を恐れず挑戦し、知識は惜しみなく共有する。
-                            そんなオープンで活発なコミュニティを目指しています。
-                        </p>
-                    </div>
-                </Card>
-            </section>
-
             {/* Activities */}
-            <section className="about-band-gray max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+            <section className="about-band-white max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
                 <h2 className="apple-section text-[#1D1D1F] dark:text-[#F5F5F7] text-center mb-10">
                     活動内容
                 </h2>
@@ -116,6 +106,37 @@ export function About() {
                         );
                     })}
                 </div>
+            </section>
+
+            {/* Next Event */}
+            <section className="about-band-gray max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+                <Card variant="glass" className="overflow-hidden bg-[#EBEBF0]/80 dark:bg-[var(--surface-2)]/75">
+                    <div className="flex flex-col md:flex-row">
+                        <div className="md:w-1/3 event-panel-bg p-8 flex items-center justify-center">
+                            <div className="text-center text-white">
+                                <Calendar className="w-12 h-12 mx-auto mb-4" />
+                                <p className="apple-headline">次回イベント</p>
+                            </div>
+                        </div>
+                        <CardContent className="flex-1 p-8">
+                            <h3 className="apple-title text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
+                                {nextEvent.title}
+                            </h3>
+                            <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-4">
+                                {nextEvent.description}
+                            </p>
+                            <div className="flex flex-wrap gap-4 text-sm">
+                                <div className="flex items-center gap-2 text-[#0071E3] dark:text-[#66B4FF]">
+                                    <Calendar className="w-4 h-4" />
+                                    {nextEvent.date}
+                                </div>
+                                <div className="flex items-center gap-2 text-[#86868B] dark:text-[rgba(235,235,245,0.3)]">
+                                    📍 {nextEvent.location}
+                                </div>
+                            </div>
+                        </CardContent>
+                    </div>
+                </Card>
             </section>
 
             {/* FAQ */}

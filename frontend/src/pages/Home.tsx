@@ -1,27 +1,40 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Calendar, Users, Sparkles, ExternalLink } from 'lucide-react';
+import { ArrowRight, Users, Sparkles, ExternalLink, Sigma } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 import { Button, Card, CardContent, Badge } from '@/components/ui';
+import {
+    DEFAULT_WEEKLY_MATH_PROBLEM,
+    getCurrentWeeklyMath,
+    type WeeklyMathProblem,
+} from '@/lib/weeklyMath';
 
 // Dummy data for MVP
 const latestPosts = [
     {
         id: '1',
+        slug: 'weekly-math-published-2026-04-01',
+        title: '今週の数学の問題を公開しました',
+        excerpt: 'ホームページに「今週の数学」コーナーを追加し、今週の問題を公開しました。ぜひチャレンジしてみてください。',
+        publishedAt: '2026-04-01',
+        category: 'お知らせ',
+        tags: ['今週の数学'],
+        pinned: true,
+    },
+    {
+        id: '2',
         slug: 'welcome-to-tti-ai-club',
         title: 'TTI Intelligenceへようこそ！',
         excerpt: '私たちは豊田工業大学の学生を中心としたAIサークルです。資格勉強、開発、AI研究、情報交流を中心に活動しています。',
         publishedAt: '2026-02-01',
         category: 'お知らせ',
         tags: ['サークル紹介'],
-        pinned: true,
+        pinned: false,
     },
 ];
-
-const nextEvent = {
-    title: '応用情報技術者試験',
-    date: '2026年11月（秋期）',
-    location: '各地の試験会場',
-    description: 'メンバー有志で応用情報技術者試験に挑戦します。一緒に合格を目指しましょう！',
-};
 
 // Floating puzzle piece component
 function FloatingPuzzle({
@@ -164,7 +177,35 @@ function GridLines() {
     );
 }
 
+function normalizeMathDelimiters(markdown: string): string {
+    return markdown
+        .replace(/\\\[((?:.|\n)*?)\\\]/g, (_, expr: string) => `$$${expr}$$`)
+        .replace(/\\\(((?:.|\n)*?)\\\)/g, (_, expr: string) => `$${expr}$`);
+}
+
 export function Home() {
+    const [weeklyMath, setWeeklyMath] = useState<WeeklyMathProblem | null>(null);
+    const displayedWeeklyMath = weeklyMath ?? DEFAULT_WEEKLY_MATH_PROBLEM;
+    const displayedWeeklyMathTitle =
+        displayedWeeklyMath.title === '今週の数学問題（一般化）'
+            ? '経路の場合の数'
+            : displayedWeeklyMath.title;
+
+    useEffect(() => {
+        let mounted = true;
+        (async () => {
+            try {
+                const data = await getCurrentWeeklyMath();
+                if (mounted) setWeeklyMath(data);
+            } catch (error) {
+                console.error('Failed to load weekly math:', error);
+            }
+        })();
+        return () => {
+            mounted = false;
+        };
+    }, []);
+
     return (
         <div className="animate-fade-in">
             {/* Hero Section */}
@@ -245,6 +286,43 @@ export function Home() {
             </section>
 
             <div className="home-main-color-flow">
+                {/* Weekly Math */}
+                <section className="home-flow-block home-flow-block-event max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16 relative z-10">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-10 h-10 rounded-full bg-[#0071E3]/10 dark:bg-[#2997FF]/10 flex items-center justify-center">
+                            <Sigma className="w-5 h-5 text-[#0071E3] dark:text-[#66B4FF]" />
+                        </div>
+                        <h2 className="apple-section text-[#1D1D1F] dark:text-[#F5F5F7]">
+                            今週の数学
+                        </h2>
+                    </div>
+
+                    <Card variant="elevated" className="relative overflow-hidden">
+                        <CardContent className="p-8">
+                            <>
+                                <h3 className="apple-title text-[#1D1D1F] dark:text-[#F5F5F7] mb-3">
+                                    {displayedWeeklyMathTitle}
+                                </h3>
+                                <div className="mb-5 [&_.katex-display]:my-4">
+                                    <ReactMarkdown
+                                        remarkPlugins={[remarkGfm, remarkMath]}
+                                        rehypePlugins={[rehypeKatex]}
+                                        components={{
+                                            p: ({ children }) => (
+                                                <p className="apple-body text-[#1D1D1F] dark:text-[#F5F5F7] leading-relaxed mb-4">
+                                                    {children}
+                                                </p>
+                                            ),
+                                        }}
+                                    >
+                                        {normalizeMathDelimiters(displayedWeeklyMath.problem)}
+                                    </ReactMarkdown>
+                                </div>
+                            </>
+                        </CardContent>
+                    </Card>
+                </section>
+
                 {/* Latest Posts */}
                 <section className="home-flow-block home-flow-block-news max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24 relative z-10">
                     <div className="flex items-center justify-between mb-8">
@@ -303,39 +381,6 @@ export function Home() {
                     </div>
                 </section>
 
-                {/* Next Event */}
-                <section className="home-flow-block home-flow-block-event max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24 relative z-10">
-                    <div className="home-card-shell home-card-shell-event">
-                        <div className="home-card-backdrop home-card-backdrop-event home-card-backdrop-full-bleed" aria-hidden="true" />
-                        <Card variant="glass" className="overflow-hidden relative z-10">
-                        <div className="flex flex-col md:flex-row">
-                            <div className="md:w-1/3 event-panel-bg p-8 flex items-center justify-center">
-                                <div className="text-center text-white">
-                                    <Calendar className="w-12 h-12 mx-auto mb-4" />
-                                    <p className="apple-headline">次回イベント</p>
-                                </div>
-                            </div>
-                            <CardContent className="flex-1 p-8">
-                                <h3 className="apple-title text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
-                                    {nextEvent.title}
-                                </h3>
-                                <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-4">
-                                    {nextEvent.description}
-                                </p>
-                                <div className="flex flex-wrap gap-4 text-sm">
-                                    <div className="flex items-center gap-2 text-[#5F9F1F] dark:text-[#66B4FF]">
-                                        <Calendar className="w-4 h-4" />
-                                        {nextEvent.date}
-                                    </div>
-                                    <div className="flex items-center gap-2 text-[#86868B] dark:text-[rgba(235,235,245,0.3)]">
-                                        📍 {nextEvent.location}
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </div>
-                        </Card>
-                    </div>
-                </section>
             </div>
 
             {/* CTA Section */}

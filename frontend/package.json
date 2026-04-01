@@ -13,14 +13,17 @@
     "@emailjs/browser": "^4.4.1",
     "@hookform/resolvers": "^5.2.2",
     "firebase": "^12.10.0",
+    "katex": "^0.16.44",
     "lucide-react": "^0.563.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-hook-form": "^7.71.1",
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.13.0",
+    "rehype-katex": "^7.0.1",
     "rehype-sanitize": "^6.0.0",
     "remark-gfm": "^4.0.1",
+    "remark-math": "^6.0.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

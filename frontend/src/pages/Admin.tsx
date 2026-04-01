@@ -1,6 +1,6 @@
 import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
-import { Shield, LogIn, LogOut, Users, FileText, MessageSquare, Settings } from 'lucide-react';
+import { Shield, LogIn, LogOut, Users, FileText, MessageSquare, Settings, Sigma } from 'lucide-react';
 import { Card, CardContent, Button } from '@/components/ui';
 
 export function Admin() {
@@ -91,6 +91,12 @@ export function Admin() {
             title: 'メンバー管理',
             description: '管理者アカウントの追加・削除',
             href: '/admin/members',
+        },
+        {
+            icon: Sigma,
+            title: '今週の数学 管理',
+            description: 'ホームの数学問題を週次更新',
+            href: '/admin/weekly-math',
         },
         {
             icon: Settings,

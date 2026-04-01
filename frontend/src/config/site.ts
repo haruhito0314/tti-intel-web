@@ -12,12 +12,12 @@ export const siteConfig = {
 
     // Navigation links
     navigation: [
-        { name: 'ホーム', href: '/' },
-        { name: 'About', href: '/about' },
+        { name: 'Home', href: '/' },
+        { name: 'About Us', href: '/about' },
         { name: 'News', href: '/news' },
-        { name: 'App', href: '/app' },
-        { name: '掲示板', href: '/board' },
-        { name: 'お問い合わせ', href: '/contact' },
+        { name: 'Apps', href: '/app' },
+        { name: 'Board', href: '/board' },
+        { name: 'Contact', href: '/contact' },
     ],
 
     // Social links (can be updated without code changes in future)

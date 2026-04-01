@@ -16,6 +16,12 @@ service cloud.firestore {
       allow read: if request.auth != null; // Any authenticated user can check if they are an admin
       allow write: if isAdmin(); // Only admins can add/remove other admins
     }
+
+    // Weekly Math (public read, admin write)
+    match /weeklyMath/{weekKey} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
     
     // Threads collection
     match /threads/{threadId} {
