@@ -21,7 +21,7 @@ const posts = [
         slug: 'welcome-to-tti-ai-club',
         title: 'TTI Intelligenceへようこそ！',
         excerpt: '私たちは豊田工業大学の学生を中心としたAIサークルです。資格勉強、開発、AI研究、情報交流を中心に活動しています。',
-        publishedAt: '2026-02-01',
+        publishedAt: '2026-04-01',
         category: 'お知らせ',
         tags: ['サークル紹介'],
         pinned: true,
@@ -68,7 +68,8 @@ export function News() {
                 </div>
             </section>
 
-            <div className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16">
+            <section className="about-band-white">
+                <div className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16">
                 <div className="flex flex-col lg:flex-row gap-8">
                     {/* Main Content */}
                     <div className="flex-1">
@@ -192,7 +193,8 @@ export function News() {
                         </Card>
                     </aside>
                 </div>
-            </div>
+                </div>
+            </section>
         </div>
     );
 }

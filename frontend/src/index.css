@@ -470,7 +470,7 @@
 }
 
 .about-band-hero::before {
-  background: #eaf4ff;
+  background: #f1f7ff;
 }
 
 .dark .about-band-white::before {
@@ -579,7 +579,7 @@
 }
 
 .dark .home-cta-band::before {
-  background: var(--surface-2);
+  background: var(--surface-1);
 }
 
 .home-cta-band {

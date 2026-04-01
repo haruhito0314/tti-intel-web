@@ -137,8 +137,7 @@ export function Board() {
     return (
         <div className="animate-fade-in">
             {/* Header */}
-            <section className="relative overflow-hidden">
-                <div className="absolute inset-0 gradient-bg-subtle opacity-30" />
+            <section className="about-band-hero relative overflow-hidden">
                 <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div>
@@ -158,7 +157,8 @@ export function Board() {
             </section >
 
             {/* Threads List */}
-            < div className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16" >
+            <section className="about-band-white">
+            <div className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16">
                 {
                     isLoading ? (
                         <div className="space-y-4" >
@@ -277,7 +277,8 @@ export function Board() {
                         </div>
                     )
                 }
-            </div >
+            </div>
+            </section>
 
             {/* Create Thread Dialog */}
             < Dialog

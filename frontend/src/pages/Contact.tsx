@@ -90,8 +90,7 @@ export function Contact() {
     return (
         <div className="animate-fade-in">
             {/* Header */}
-            <section className="relative overflow-hidden">
-                <div className="absolute inset-0 gradient-bg-subtle opacity-30" />
+            <section className="about-band-hero relative overflow-hidden">
                 <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16">
                     <div className="text-center">
                         <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] mb-4">
@@ -104,7 +103,8 @@ export function Contact() {
                 </div>
             </section>
 
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
+            <section className="about-band-white">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
                 <div className="grid md:grid-cols-3 gap-8">
                     {/* Contact Info */}
                     <div className="md:col-span-1 space-y-6">
@@ -199,7 +199,8 @@ export function Contact() {
                         </Card>
                     </div>
                 </div>
-            </div>
+                </div>
+            </section>
         </div>
     );
 }

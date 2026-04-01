@@ -11,7 +11,7 @@ const apps: {
     images?: string[];
 }[] = [
     {
-        title: 'TOEIC Practice',
+        title: 'TOEIC Practice (調整中)',
         description: 'Appwriteを使ったTOEIC対策アプリ。Part別演習やタイムアタック機能を搭載し、学習履歴を管理できます。',
         tags: ['React', 'TypeScript', 'Appwrite'],
         url: 'https://toeic-practice.appwrite.network',
@@ -66,8 +66,7 @@ export function AppShowcase() {
     return (
         <div className="min-h-screen">
             {/* Hero */}
-            <section className="relative overflow-hidden">
-                <div className="absolute inset-0 gradient-bg-subtle opacity-30" />
+            <section className="about-band-hero relative overflow-hidden">
                 <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
                     <div className="text-center">
                         <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] mb-6">
@@ -81,7 +80,8 @@ export function AppShowcase() {
             </section>
 
             {/* App Grid */}
-            <section className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+            <section className="about-band-white">
+                <div className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
                 {apps.length === 0 ? (
                     /* Empty State */
                     <Card variant="glass" padding="lg" className="text-center py-20">
@@ -156,6 +156,7 @@ export function AppShowcase() {
                         ))}
                     </div>
                 )}
+                </div>
             </section>
         </div>
     );
