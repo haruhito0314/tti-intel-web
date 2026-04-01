@@ -517,7 +517,7 @@
 }
 
 .dark .home-main-color-flow::before {
-  background: rgba(7, 11, 20, 0.94);
+  background: var(--background);
 }
 
 .home-flow-block {
@@ -537,7 +537,7 @@
 }
 
 .home-flow-block-event::before {
-  background: rgba(244, 252, 236, 0.9);
+  background: #e8f2ff;
 }
 
 .home-flow-block-news::before {
@@ -545,7 +545,7 @@
 }
 
 .dark .home-flow-block-event::before {
-  background: rgba(17, 35, 24, 0.84);
+  background: var(--dark-bg-news);
 }
 
 .event-panel-bg {
@@ -553,11 +553,41 @@
 }
 
 .dark .event-panel-bg {
-  background: linear-gradient(135deg, #2f6b41, #58b46f);
+  background: linear-gradient(135deg, #1f4f84, #2f79c7);
 }
 
 .dark .home-flow-block-news::before {
   background: var(--surface-2);
+}
+
+.home-cta-band {
+  position: relative;
+  isolation: isolate;
+}
+
+.home-cta-band::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: -1;
+  background: #f5f5f7;
+}
+
+.dark .home-cta-band::before {
+  background: var(--surface-2);
+}
+
+.home-cta-band {
+  border-top: 1px solid rgba(29, 29, 31, 0.14);
+}
+
+.dark .home-cta-band {
+  border-top: 1px solid var(--line-soft);
 }
 
 .home-flow-block + .home-flow-block::after {

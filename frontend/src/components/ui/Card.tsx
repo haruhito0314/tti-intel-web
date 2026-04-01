@@ -8,16 +8,16 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
 
 const variantStyles = {
     default: `
-    bg-white dark:bg-[#1C1C1E]
-    border border-[#D2D2D7] dark:border-[#38383A]
+    bg-white dark:bg-[var(--surface-2)]
+    border border-[#D2D2D7] dark:border-[var(--border)]
   `,
     glass: `
     glass
   `,
     elevated: `
-    bg-white dark:bg-[#1C1C1E]
+    bg-white dark:bg-[var(--surface-2)]
     shadow-lg shadow-black/[0.04] dark:shadow-white/[0.02]
-    border border-[#D2D2D7]/50 dark:border-[#38383A]/50
+    border border-[#D2D2D7]/50 dark:border-[var(--border)]/70
   `,
 };
 

@@ -323,7 +323,7 @@ export function Home() {
                                     {nextEvent.description}
                                 </p>
                                 <div className="flex flex-wrap gap-4 text-sm">
-                                    <div className="flex items-center gap-2 text-[#5F9F1F] dark:text-[#A7E163]">
+                                    <div className="flex items-center gap-2 text-[#5F9F1F] dark:text-[#66B4FF]">
                                         <Calendar className="w-4 h-4" />
                                         {nextEvent.date}
                                     </div>
@@ -339,7 +339,7 @@ export function Home() {
             </div>
 
             {/* CTA Section */}
-            <section className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+            <section className="home-cta-band max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
                 <Card variant="glass" padding="lg" className="text-center relative overflow-hidden">
                     <h2 className="apple-section text-[#1D1D1F] dark:text-[#F5F5F7] mb-4 relative z-10">
                         一緒にAIを学びませんか？

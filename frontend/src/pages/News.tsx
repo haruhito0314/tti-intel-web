@@ -46,8 +46,7 @@ export function News() {
     return (
         <div className="animate-fade-in">
             {/* Header */}
-            <section className="relative overflow-hidden">
-                <div className="absolute inset-0 gradient-bg-subtle opacity-30" />
+            <section className="about-band-hero relative overflow-hidden">
                 <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16">
                     <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] mb-4">
                         お知らせ・記事

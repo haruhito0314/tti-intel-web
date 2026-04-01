@@ -43,7 +43,7 @@ export function Dropdown({ trigger, items, onSelect, align = 'left' }: DropdownP
                     className={`
             absolute z-50 mt-2 min-w-[180px]
             glass rounded-xl py-1
-            bg-white dark:bg-[#1C1C1E]
+            bg-white dark:bg-[var(--surface-2)]
             border border-[var(--border)]
             shadow-lg
             animate-fade-in
@@ -64,7 +64,7 @@ export function Dropdown({ trigger, items, onSelect, align = 'left' }: DropdownP
                   transition-colors duration-150
                   ${item.disabled
                                         ? 'text-[#86868B] dark:text-[rgba(235,235,245,0.3)] cursor-not-allowed'
-                                        : 'text-[#1D1D1F] dark:text-[#F5F5F7] hover:bg-[#F5F5F7] dark:hover:bg-[#1C1C1E]'
+                                        : 'text-[#1D1D1F] dark:text-[#F5F5F7] hover:bg-[#F5F5F7] dark:hover:bg-[var(--surface-3)]'
                                     }
                 `}
                             >
@@ -111,7 +111,7 @@ export function Select({ value, onChange, options, placeholder, className = '' }
                 onClick={() => setIsOpen(!isOpen)}
                 className="
           w-full px-4 py-3 rounded-xl
-          bg-white dark:bg-[#1C1C1E]
+          bg-white dark:bg-[var(--surface-2)]
           border border-[var(--border)]
           text-left
           flex items-center justify-between
@@ -132,7 +132,7 @@ export function Select({ value, onChange, options, placeholder, className = '' }
                     className="
             absolute z-50 w-full mt-2
             glass rounded-xl py-1
-            bg-white dark:bg-[#1C1C1E]
+            bg-white dark:bg-[var(--surface-2)]
             border border-[var(--border)]
             shadow-lg
             animate-fade-in
@@ -152,7 +152,7 @@ export function Select({ value, onChange, options, placeholder, className = '' }
                 transition-colors duration-150
                 ${option.value === value
                                     ? 'bg-[#0071E3]/5 dark:bg-[#2997FF]/5 text-[#0066CC] dark:text-[#2997FF]'
-                                    : 'text-[#1D1D1F] dark:text-[#F5F5F7] hover:bg-[#F5F5F7] dark:hover:bg-[#1C1C1E]'
+                                    : 'text-[#1D1D1F] dark:text-[#F5F5F7] hover:bg-[#F5F5F7] dark:hover:bg-[var(--surface-3)]'
                                 }
               `}
                         >

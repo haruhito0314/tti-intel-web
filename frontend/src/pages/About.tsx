@@ -58,7 +58,7 @@ export function About() {
                 <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-20">
                     <div className="text-center">
                         <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] mb-6">
-                            About <span className="gradient-text">TTI Intelligence</span>
+                            About <span className="text-[#0066CC] dark:text-[var(--link)]">TTI Intelligence</span>
                         </h1>
                         <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] max-w-3xl mx-auto leading-relaxed">
                             私たちは豊田工業大学の学生を中心としたAIサークルです。

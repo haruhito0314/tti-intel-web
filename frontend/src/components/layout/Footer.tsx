@@ -37,7 +37,7 @@ export function Footer() {
     const currentYear = new Date().getFullYear();
 
     return (
-        <footer className="mt-auto bg-[#F5F5F7] dark:bg-[#1C1C1E] border-t border-[#D2D2D7] dark:border-[#38383A]">
+        <footer className="mt-auto bg-[#F5F5F7] dark:bg-[var(--surface-2)] border-t border-[#D2D2D7] dark:border-[var(--border)]">
             <div className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     {/* Brand */}
@@ -140,7 +140,7 @@ export function Footer() {
                 </div>
 
                 {/* Copyright */}
-                <div className="mt-6 pt-4 border-t border-[#D2D2D7]/50 dark:border-[#38383A]/50">
+                <div className="mt-6 pt-4 border-t border-[#D2D2D7]/50 dark:border-[var(--border)]/70">
                     <p className="text-center text-[11px] text-[#86868B] dark:text-[rgba(235,235,245,0.3)]">
                         © {currentYear} {siteConfig.name}. All rights reserved.
                     </p>

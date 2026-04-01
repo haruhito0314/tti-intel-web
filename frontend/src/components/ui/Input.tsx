@@ -25,13 +25,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                     id={inputId}
                     className={`
             w-full px-4 py-3 rounded-xl text-[17px]
-            bg-white dark:bg-[#1C1C1E]
+            bg-white dark:bg-[var(--surface-2)]
             border transition-all duration-200
             text-[#1D1D1F] dark:text-[#F5F5F7]
             placeholder:text-[#86868B] dark:placeholder:text-[rgba(235,235,245,0.3)]
             ${error
                             ? 'border-[#FF3B30] focus:border-[#FF3B30] focus:ring-[#FF3B30]'
-                            : 'border-[#D2D2D7] dark:border-[#38383A] focus:border-[#0071E3] focus:ring-[#0071E3]'
+                            : 'border-[#D2D2D7] dark:border-[var(--border)] focus:border-[#0071E3] focus:ring-[#0071E3]'
                         }
             focus:outline-none focus:ring-2 focus:ring-offset-0
             disabled:opacity-50 disabled:cursor-not-allowed

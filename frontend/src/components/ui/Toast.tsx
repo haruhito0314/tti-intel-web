@@ -88,7 +88,7 @@ function ToastContainer({
                         key={toast.id}
                         className="
               glass rounded-xl p-4
-              bg-white dark:bg-[#1C1C1E]
+              bg-white dark:bg-[var(--surface-2)]
               border border-[var(--border)]
               shadow-lg
               animate-slide-in
@@ -112,7 +112,7 @@ function ToastContainer({
                             className="
                 p-1 rounded-lg flex-shrink-0
                 text-[#86868B] dark:text-[rgba(235,235,245,0.3)]
-                hover:bg-[#F5F5F7] dark:hover:bg-[#1C1C1E]
+                hover:bg-[#F5F5F7] dark:hover:bg-[var(--surface-3)]
                 transition-colors duration-200
               "
                             aria-label="Dismiss"

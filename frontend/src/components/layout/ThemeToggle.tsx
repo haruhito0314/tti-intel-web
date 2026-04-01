@@ -25,8 +25,8 @@ export function ThemeToggle() {
             className="
         p-2 rounded-xl
         text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]
-        hover:bg-[#0071E3]/10 dark:hover:bg-[#2997FF]/10/50
-        hover:text-[#0066CC] dark:hover:text-[#2997FF]
+        hover:bg-[#0071E3]/10 dark:hover:bg-[var(--surface-3)]
+        hover:text-[#0066CC] dark:hover:text-[var(--link)]
         transition-all duration-200
       "
             aria-label={`テーマを切り替え (現在: ${themes[currentIndex].label})`}

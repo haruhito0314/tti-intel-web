@@ -57,7 +57,7 @@ export function Header() {
                             className="
                 md:hidden p-2 rounded-full
                 text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]
-                hover:bg-[#F5F5F7] dark:hover:bg-[#1C1C1E]
+                hover:bg-[#F5F5F7] dark:hover:bg-[var(--surface-2)]
                 transition-colors duration-200
               "
                             aria-label="メニューを開く"
@@ -84,8 +84,8 @@ export function Header() {
                     px-4 py-3 rounded-xl text-[15px]
                     transition-all duration-200
                     ${isActive
-                                            ? 'bg-[#F5F5F7] dark:bg-[#1C1C1E] text-[#1D1D1F] dark:text-[#F5F5F7] font-medium'
-                                            : 'text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] hover:bg-[#F5F5F7] dark:hover:bg-[#1C1C1E]'
+                                            ? 'bg-[#F5F5F7] dark:bg-[var(--surface-2)] text-[#1D1D1F] dark:text-[#F5F5F7] font-medium'
+                                            : 'text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] hover:bg-[#F5F5F7] dark:hover:bg-[var(--surface-2)]'
                                         }
                   `}
                                 >

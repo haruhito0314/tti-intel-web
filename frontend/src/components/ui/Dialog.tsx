@@ -62,7 +62,7 @@ export function Dialog({ open, onClose, title, description, children }: DialogPr
             <div
                 className="
           glass rounded-2xl p-6
-          bg-white dark:bg-[#1C1C1E]
+          bg-white dark:bg-[var(--surface-2)]
           border border-[var(--border)]
           shadow-xl
         "
@@ -86,7 +86,7 @@ export function Dialog({ open, onClose, title, description, children }: DialogPr
                         className="
               p-2 rounded-lg
               text-[#86868B] dark:text-[rgba(235,235,245,0.3)]
-              hover:bg-[#F5F5F7] dark:hover:bg-[#1C1C1E]
+              hover:bg-[#F5F5F7] dark:hover:bg-[var(--surface-3)]
               transition-colors duration-200
             "
                         aria-label="Close dialog"

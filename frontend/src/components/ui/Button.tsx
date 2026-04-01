@@ -18,16 +18,16 @@ const variantStyles: Record<ButtonVariant, string> = {
   `,
     secondary: `
     bg-[#F5F5F7] text-[#1D1D1F]
-    dark:bg-[#1C1C1E] dark:text-[#F5F5F7]
-    hover:bg-[#E8E8ED] dark:hover:bg-[#2C2C2E]
+    dark:bg-[var(--surface-2)] dark:text-[#F5F5F7]
+    hover:bg-[#E8E8ED] dark:hover:bg-[var(--surface-3)]
     focus-visible:ring-2 focus-visible:ring-[#0071E3] focus-visible:ring-offset-2
     disabled:opacity-50 disabled:cursor-not-allowed
   `,
     ghost: `
     text-[#1D1D1F] dark:text-[#F5F5F7]
-    bg-[#F5F5F7]/50 dark:bg-[#1C1C1E]/50
+    bg-[#F5F5F7]/50 dark:bg-[var(--surface-2)]/60
     border border-[var(--border)]
-    hover:bg-[#E8E8ED] dark:hover:bg-[#2C2C2E]
+    hover:bg-[#E8E8ED] dark:hover:bg-[var(--surface-3)]
     hover:border-[#0071E3]/30 dark:hover:border-[#2997FF]/30
     focus-visible:ring-2 focus-visible:ring-[#0071E3]
     disabled:opacity-50 disabled:cursor-not-allowed
