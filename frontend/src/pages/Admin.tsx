@@ -1,10 +1,30 @@
+import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
 import { Shield, LogIn, LogOut, Users, FileText, MessageSquare, Settings, Sigma } from 'lucide-react';
+import { FirebaseError } from 'firebase/app';
 import { Card, CardContent, Button } from '@/components/ui';
 
 export function Admin() {
     const { user, isAdmin, loading, login, logout } = useAuth();
+    const [loginError, setLoginError] = useState<string | null>(null);
+
+    const handleLogin = async () => {
+        try {
+            setLoginError(null);
+            await login();
+        } catch (error) {
+            if (error instanceof FirebaseError) {
+                if (error.code === 'auth/user-cancelled' || error.code === 'auth/popup-closed-by-user') {
+                    setLoginError('ログインがキャンセルされました。Googleアカウント選択後に「許可」を押してください。');
+                    return;
+                }
+                setLoginError(`ログインに失敗しました（${error.code}）。`);
+                return;
+            }
+            setLoginError('ログインに失敗しました。しばらくしてから再度お試しください。');
+        }
+    };
 
     if (loading) {
         return (
@@ -31,10 +51,15 @@ export function Admin() {
                         <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-8">
                             管理者としてログインしてください
                         </p>
-                        <Button onClick={login} size="lg" className="w-full rounded-full">
+                        <Button onClick={handleLogin} size="lg" className="w-full rounded-full">
                             <LogIn className="w-5 h-5" />
                             Googleでログイン
                         </Button>
+                        {loginError && (
+                            <p className="mt-3 text-sm text-red-600 dark:text-red-400">
+                                {loginError}
+                            </p>
+                        )}
                         <p className="mt-4 text-xs text-[#86868B] dark:text-[rgba(235,235,245,0.3)]">
                             ※ 事前に承認されたメールアドレスのみログイン可能です
                         </p>

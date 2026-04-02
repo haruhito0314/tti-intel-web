@@ -22,7 +22,7 @@ const latestPosts = [
         publishedAt: '2026-04-01',
         category: 'お知らせ',
         tags: ['今週の数学'],
-        pinned: true,
+        pinned: false,
     },
     {
         id: '2',
@@ -32,7 +32,7 @@ const latestPosts = [
         publishedAt: '2026-04-01',
         category: 'お知らせ',
         tags: ['サークル紹介'],
-        pinned: false,
+        pinned: true,
     },
 ];
 

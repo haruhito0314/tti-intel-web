@@ -26,6 +26,7 @@ const BoardDetail = lazy(() => import('@/pages/BoardDetail').then(m => ({ defaul
 const Admin = lazy(() => import('@/pages/Admin').then(m => ({ default: m.Admin })));
 const AdminMembers = lazy(() => import('@/pages/AdminMembers').then(m => ({ default: m.AdminMembers })));
 const AdminWeeklyMath = lazy(() => import('@/pages/AdminWeeklyMath').then(m => ({ default: m.AdminWeeklyMath })));
+const AdminWeeklyMathPreview = lazy(() => import('@/pages/AdminWeeklyMathPreview').then(m => ({ default: m.AdminWeeklyMathPreview })));
 
 function PageLoader() {
   return (
@@ -57,6 +58,7 @@ function App() {
               <Route path="admin" element={<Suspense fallback={<PageLoader />}><Admin /></Suspense>} />
               <Route path="admin/members" element={<Suspense fallback={<PageLoader />}><AdminMembers /></Suspense>} />
               <Route path="admin/weekly-math" element={<Suspense fallback={<PageLoader />}><AdminWeeklyMath /></Suspense>} />
+              <Route path="admin/weekly-math/preview" element={<Suspense fallback={<PageLoader />}><AdminWeeklyMathPreview /></Suspense>} />
               {/* 404 fallback */}
               <Route
                 path="*"

@@ -1,5 +1,6 @@
 import {
     collection,
+    deleteDoc,
     doc,
     getDoc,
     getDocs,
@@ -16,6 +17,7 @@ export interface WeeklyMathProblem {
     weekKey: string;
     title: string;
     problem: string;
+    periodMemo?: string;
     hint?: string;
     answer?: string;
     explanation?: string;
@@ -23,6 +25,8 @@ export interface WeeklyMathProblem {
     createdAt?: Timestamp;
     updatedAt?: Timestamp;
 }
+
+export const DEFAULT_WEEKLY_MATH_TEMPLATE_KEY = 'default-template';
 
 export const DEFAULT_WEEKLY_MATH_PROBLEM: WeeklyMathProblem = {
     weekKey: getCurrentWeekKey(),
@@ -71,6 +75,29 @@ export function getCurrentWeekKey(date: Date = new Date()): string {
     return `${year}-W${String(week).padStart(2, '0')}`;
 }
 
+export function getWeekDateRange(weekKey: string): { start: Date; end: Date } | null {
+    const match = /^(\d{4})-W(\d{2})$/.exec(weekKey);
+    if (!match) return null;
+
+    const year = Number(match[1]);
+    const week = Number(match[2]);
+    if (!Number.isFinite(year) || !Number.isFinite(week) || week < 1 || week > 53) return null;
+
+    // ISO week #1 is the week containing January 4th.
+    const jan4 = new Date(Date.UTC(year, 0, 4));
+    const jan4Day = jan4.getUTCDay() || 7; // 1(Mon) ... 7(Sun)
+    const week1Monday = new Date(jan4);
+    week1Monday.setUTCDate(jan4.getUTCDate() - (jan4Day - 1));
+
+    const start = new Date(week1Monday);
+    start.setUTCDate(week1Monday.getUTCDate() + (week - 1) * 7);
+
+    const end = new Date(start);
+    end.setUTCDate(start.getUTCDate() + 6);
+
+    return { start, end };
+}
+
 export async function getWeeklyMath(weekKey: string): Promise<WeeklyMathProblem | null> {
     const snap = await getDoc(doc(db, 'weeklyMath', weekKey));
     if (!snap.exists()) return null;
@@ -89,8 +116,27 @@ export async function getCurrentWeeklyMath(): Promise<WeeklyMathProblem | null> 
         limit(1)
     );
     const snap = await getDocs(q);
-    if (snap.empty) return null;
+    if (snap.empty) {
+        const template = await getDefaultWeeklyMathTemplate();
+        return template;
+    }
     return snap.docs[0].data() as WeeklyMathProblem;
+}
+
+export async function getWeeklyMathList(maxItems: number = 50): Promise<WeeklyMathProblem[]> {
+    const q = query(
+        collection(db, 'weeklyMath'),
+        orderBy('weekKey', 'desc'),
+        limit(maxItems)
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => d.data() as WeeklyMathProblem);
+}
+
+export async function getDefaultWeeklyMathTemplate(): Promise<WeeklyMathProblem | null> {
+    const snap = await getDoc(doc(db, 'weeklyMath', DEFAULT_WEEKLY_MATH_TEMPLATE_KEY));
+    if (!snap.exists()) return null;
+    return snap.data() as WeeklyMathProblem;
 }
 
 export async function upsertWeeklyMath(
@@ -103,6 +149,26 @@ export async function upsertWeeklyMath(
 
     await setDoc(ref, {
         weekKey,
+        ...input,
+        updatedBy,
+        createdAt: existing.exists() ? existing.data().createdAt : Timestamp.now(),
+        updatedAt: Timestamp.now(),
+    });
+}
+
+export async function deleteWeeklyMath(weekKey: string): Promise<void> {
+    await deleteDoc(doc(db, 'weeklyMath', weekKey));
+}
+
+export async function upsertDefaultWeeklyMathTemplate(
+    input: Omit<WeeklyMathProblem, 'weekKey' | 'createdAt' | 'updatedAt'>,
+    updatedBy: string
+): Promise<void> {
+    const ref = doc(db, 'weeklyMath', DEFAULT_WEEKLY_MATH_TEMPLATE_KEY);
+    const existing = await getDoc(ref);
+
+    await setDoc(ref, {
+        weekKey: DEFAULT_WEEKLY_MATH_TEMPLATE_KEY,
         ...input,
         updatedBy,
         createdAt: existing.exists() ? existing.data().createdAt : Timestamp.now(),
