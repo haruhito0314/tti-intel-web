@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { ToastProvider } from '@/components/ui';
@@ -39,10 +39,50 @@ function PageLoader() {
   );
 }
 
+function InitialSplash({ phase }: { phase: 'enter' | 'logo-out' | 'overlay-out' }) {
+  return (
+    <div
+      className={`initial-splash ${phase === 'overlay-out' ? 'is-overlay-out' : ''}`}
+      aria-hidden={phase === 'overlay-out'}
+    >
+      <img
+        src="/A-3.png"
+        alt="TTI Intelligence"
+        className={`initial-splash-logo ${phase !== 'enter' ? 'is-logo-out' : ''}`}
+      />
+    </div>
+  );
+}
+
 function App() {
+  const [showSplash, setShowSplash] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(max-width: 768px)').matches;
+  });
+  const [splashPhase, setSplashPhase] = useState<'enter' | 'logo-out' | 'overlay-out'>('enter');
+
+  useEffect(() => {
+    if (!showSplash) return;
+    const logoOutTimer = window.setTimeout(() => {
+      setSplashPhase('logo-out');
+    }, 2500);
+    const overlayOutTimer = window.setTimeout(() => {
+      setSplashPhase('overlay-out');
+    }, 2750);
+    const hideTimer = window.setTimeout(() => {
+      setShowSplash(false);
+    }, 3000);
+    return () => {
+      window.clearTimeout(logoOutTimer);
+      window.clearTimeout(overlayOutTimer);
+      window.clearTimeout(hideTimer);
+    };
+  }, [showSplash]);
+
   return (
     <ThemeProvider>
       <ToastProvider>
+        {showSplash && <InitialSplash phase={splashPhase} />}
         <BrowserRouter>
           <ScrollToTop />
           <Routes>

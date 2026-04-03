@@ -70,7 +70,7 @@ export function AppShowcase() {
                 <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
                     <div className="text-center">
                         <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] mb-6">
-                            App
+                            アプリケーション
                         </h1>
                         <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] max-w-2xl mx-auto leading-relaxed">
                             メンバーが開発したアプリケーションやプロジェクトを紹介します
