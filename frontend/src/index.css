@@ -718,7 +718,7 @@
     filter: saturate(0) brightness(1.04) drop-shadow(0 10px 24px rgba(245, 247, 255, 0.12));
   }
 
-  8% {
+  20% {
     opacity: 0;
     filter: saturate(0) brightness(1.04) drop-shadow(0 10px 24px rgba(245, 247, 255, 0.12));
   }
