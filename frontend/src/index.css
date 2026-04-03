@@ -470,7 +470,9 @@
 }
 
 .about-band-hero::before {
-  background: #f1f7ff;
+  background:
+    linear-gradient(rgba(241, 247, 255, 0.9), rgba(241, 247, 255, 0.9)),
+    url('/A-1.png') center / auto 82% no-repeat;
 }
 
 .dark .about-band-white::before {
@@ -482,7 +484,9 @@
 }
 
 .dark .about-band-hero::before {
-  background: #10213b;
+  background:
+    linear-gradient(rgba(16, 33, 59, 0.9), rgba(16, 33, 59, 0.9)),
+    url('/A-3.png') center / auto 110% no-repeat;
 }
 
 .about-band-white + .about-band-gray,

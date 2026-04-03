@@ -59,12 +59,14 @@ export function News() {
             {/* Header */}
             <section className="about-band-hero relative overflow-hidden">
                 <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16">
-                    <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] mb-4">
-                        お知らせ・記事
-                    </h1>
-                    <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
-                        サークルの活動報告やお知らせ、技術記事を掲載しています
-                    </p>
+                    <div className="text-center">
+                        <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] mb-4">
+                            お知らせ・記事
+                        </h1>
+                        <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] max-w-2xl mx-auto">
+                            サークルの活動報告やお知らせ、技術記事を掲載しています
+                        </p>
+                    </div>
                 </div>
             </section>
 

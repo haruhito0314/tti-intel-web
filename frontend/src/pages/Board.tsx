@@ -139,8 +139,8 @@ export function Board() {
             {/* Header */}
             <section className="about-band-hero relative overflow-hidden">
                 <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div>
+                    <div className="flex flex-col items-center gap-4 text-center">
+                        <div className="max-w-2xl">
                             <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
                                 掲示板
                             </h1>
