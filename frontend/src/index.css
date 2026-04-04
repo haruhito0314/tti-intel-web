@@ -741,7 +741,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
+  background: #F7F5EF;
   opacity: 1;
   transition: opacity 420ms ease;
 }
