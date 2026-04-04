@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
-import { ThemeProvider } from '@/contexts/ThemeContext';
+import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
 import { ToastProvider } from '@/components/ui';
 import { Layout } from '@/components/layout';
 
@@ -40,13 +40,14 @@ function PageLoader() {
 }
 
 function InitialSplash({ phase }: { phase: 'enter' | 'logo-out' | 'overlay-out' }) {
+  const { resolvedTheme } = useTheme();
   return (
     <div
       className={`initial-splash ${phase === 'overlay-out' ? 'is-overlay-out' : ''}`}
       aria-hidden={phase === 'overlay-out'}
     >
       <img
-        src="/A-3.png"
+        src={resolvedTheme === 'dark' ? '/A-3.png' : '/A-1.png'}
         alt="TTI Intelligence"
         className={`initial-splash-logo ${phase !== 'enter' ? 'is-logo-out' : ''}`}
       />
@@ -55,6 +56,11 @@ function InitialSplash({ phase }: { phase: 'enter' | 'logo-out' | 'overlay-out' 
 }
 
 function App() {
+  const SPLASH_TOTAL_MS = 4200;
+  const LOGO_RISE_MS = 2500;
+  const OVERLAY_FADE_MS = 420;
+  const LOGO_OUT_LEAD_MS = 680;
+
   const [showSplash, setShowSplash] = useState(() => {
     if (typeof window === 'undefined') return false;
     return window.matchMedia('(max-width: 768px)').matches;
@@ -63,19 +69,43 @@ function App() {
 
   useEffect(() => {
     if (!showSplash) return;
+    const overlayOutAt = Math.max(LOGO_RISE_MS, SPLASH_TOTAL_MS - OVERLAY_FADE_MS);
+    const logoOutAt = Math.max(LOGO_RISE_MS, overlayOutAt - LOGO_OUT_LEAD_MS);
+
     const logoOutTimer = window.setTimeout(() => {
       setSplashPhase('logo-out');
-    }, 2500);
+    }, logoOutAt);
     const overlayOutTimer = window.setTimeout(() => {
       setSplashPhase('overlay-out');
-    }, 2750);
+    }, overlayOutAt);
     const hideTimer = window.setTimeout(() => {
       setShowSplash(false);
-    }, 3000);
+    }, SPLASH_TOTAL_MS);
     return () => {
       window.clearTimeout(logoOutTimer);
       window.clearTimeout(overlayOutTimer);
       window.clearTimeout(hideTimer);
+    };
+  }, [showSplash, LOGO_RISE_MS, LOGO_OUT_LEAD_MS, OVERLAY_FADE_MS, SPLASH_TOTAL_MS]);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtmlOverflow = html.style.overflow;
+    const prevBodyOverflow = body.style.overflow;
+
+    if (showSplash) {
+      html.style.overflow = 'hidden';
+      body.style.overflow = 'hidden';
+    } else {
+      html.style.overflow = prevHtmlOverflow;
+      body.style.overflow = prevBodyOverflow;
+    }
+
+    return () => {
+      html.style.overflow = prevHtmlOverflow;
+      body.style.overflow = prevBodyOverflow;
     };
   }, [showSplash]);
 

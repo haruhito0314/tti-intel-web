@@ -207,7 +207,7 @@ export function Home() {
     }, []);
 
     return (
-        <div className="animate-fade-in">
+        <div className="animate-fade-in home-page">
             {/* Hero Section */}
             <section className="relative overflow-hidden min-h-[85vh] flex items-center">
                 {/* Background gradient */}

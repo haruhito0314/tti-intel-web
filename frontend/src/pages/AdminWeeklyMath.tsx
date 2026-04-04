@@ -6,6 +6,7 @@ import { deleteDoc, doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, Button, Input, Textarea } from '@/components/ui';
 import {
+    DEFAULT_WEEKLY_MATH_TEMPLATE_KEY,
     getCurrentWeekKey,
     getWeekDateRange,
     getWeeklyMath,
@@ -188,11 +189,14 @@ export function AdminWeeklyMath() {
             return;
         }
 
-        if (!/^\d{4}-W\d{2}$/.test(targetWeekKey.trim())) {
+        const normalizedWeekKey = targetWeekKey.trim();
+        const isDefaultTemplate = normalizedWeekKey === DEFAULT_WEEKLY_MATH_TEMPLATE_KEY;
+        const isIsoWeekKey = /^\d{4}-W\d{2}$/.test(normalizedWeekKey);
+        if (!isDefaultTemplate && !isIsoWeekKey) {
             addToast({
                 type: 'warning',
                 title: '週キーの形式が不正です',
-                message: 'YYYY-WNN 形式で入力してください（例: 2026-W14）。',
+                message: `YYYY-WNN 形式で入力してください（例: 2026-W14）。デフォルト問題は ${DEFAULT_WEEKLY_MATH_TEMPLATE_KEY} を指定します。`,
             });
             return;
         }
@@ -209,19 +213,19 @@ export function AdminWeeklyMath() {
             };
 
             await upsertWeeklyMath(
-                targetWeekKey.trim(),
+                normalizedWeekKey,
                 payload,
                 user?.email || 'unknown'
             );
             setExistingProblem({
-                weekKey: targetWeekKey.trim(),
+                weekKey: normalizedWeekKey,
                 ...payload,
             });
             await loadLatestItems();
             addToast({
                 type: 'success',
                 title: '保存しました',
-                message: `問題（${targetWeekKey.trim()}）を更新しました。`,
+                message: `問題（${normalizedWeekKey}）を更新しました。`,
             });
         } catch (error) {
             console.error('Failed to save weekly math:', error);
