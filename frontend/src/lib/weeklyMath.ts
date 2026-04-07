@@ -17,20 +17,27 @@ export interface WeeklyMathProblem {
     weekKey: string;
     title: string;
     problem: string;
+    problemPublished?: boolean;
     periodMemo?: string;
     hint?: string;
     answer?: string;
     explanation?: string;
+    solutionPublished?: boolean;
     updatedBy?: string;
     createdAt?: Timestamp;
     updatedAt?: Timestamp;
 }
 
 export const DEFAULT_WEEKLY_MATH_TEMPLATE_KEY = 'default-template';
+export const PUBLIC_DEFAULT_WEEKLY_MATH_KEY = 'default';
+const HOME_WEEKLY_MATH_SETTINGS_DOC = 'home-weekly-math';
+let homeWeeklyMathCache: WeeklyMathProblem | null | undefined = undefined;
+let homeWeeklyMathPromise: Promise<WeeklyMathProblem | null> | null = null;
 
 export const DEFAULT_WEEKLY_MATH_PROBLEM: WeeklyMathProblem = {
     weekKey: getCurrentWeekKey(),
     title: '経路の場合の数',
+    problemPublished: true,
     problem: `+1, -1, ×1, ÷1 がそれぞれ書かれた4種類のカードが、それぞれ十分な枚数あります。
 
 今、\\(a_0=1\\) として、毎回1枚のカードを引きます。  
@@ -46,7 +53,7 @@ export const DEFAULT_WEEKLY_MATH_PROBLEM: WeeklyMathProblem = {
 
 となります。
 
-\\(2n\\) 回の操作後、\\(a_{2n}=1\\) となるようなカードの引き方の総数を求めてください。`,
+\\(n\\)回の操作後、\\(a_n=1\\) となるようなカードの引き方の総数を求めてください。`,
     hint: `\\(+1\\) と \\(-1\\) は互いに打ち消し合い、\\(×1\\) と \\(÷1\\) は値を変えません。
 「\\(+1\\) と \\(-1\\) の使用回数が同じ」である条件を使って数え上げます。`,
     answer: `$$
@@ -59,6 +66,7 @@ $$`,
 \\(\\dfrac{(2n)!}{k!k!(2n-2k)!}\\) 通り。
 
 これを \\(k=0\\) から \\(n\\) まで合計して上式を得ます。`,
+    solutionPublished: true,
 };
 
 function getIsoWeekParts(date: Date): { year: number; week: number } {
@@ -104,6 +112,14 @@ export async function getWeeklyMath(weekKey: string): Promise<WeeklyMathProblem 
     return snap.data() as WeeklyMathProblem;
 }
 
+export function toPublicWeeklyMathKey(weekKey: string): string {
+    return weekKey === DEFAULT_WEEKLY_MATH_TEMPLATE_KEY ? PUBLIC_DEFAULT_WEEKLY_MATH_KEY : weekKey;
+}
+
+export function fromPublicWeeklyMathKey(weekKey: string): string {
+    return weekKey === PUBLIC_DEFAULT_WEEKLY_MATH_KEY ? DEFAULT_WEEKLY_MATH_TEMPLATE_KEY : weekKey;
+}
+
 export async function getCurrentWeeklyMath(): Promise<WeeklyMathProblem | null> {
     const currentWeekKey = getCurrentWeekKey();
     const current = await getWeeklyMath(currentWeekKey);
@@ -121,6 +137,79 @@ export async function getCurrentWeeklyMath(): Promise<WeeklyMathProblem | null> 
         return template;
     }
     return snap.docs[0].data() as WeeklyMathProblem;
+}
+
+export async function getHomeWeeklyMathKey(): Promise<string | null> {
+    const snap = await getDoc(doc(db, 'siteSettings', HOME_WEEKLY_MATH_SETTINGS_DOC));
+    if (!snap.exists()) return null;
+    const data = snap.data() as { weekKey?: unknown };
+    return typeof data.weekKey === 'string' && data.weekKey.trim() ? data.weekKey.trim() : null;
+}
+
+export async function setHomeWeeklyMathKey(weekKey: string, updatedBy: string): Promise<void> {
+    await setDoc(
+        doc(db, 'siteSettings', HOME_WEEKLY_MATH_SETTINGS_DOC),
+        {
+            weekKey,
+            updatedBy,
+            updatedAt: Timestamp.now(),
+        },
+        { merge: true }
+    );
+    clearHomeWeeklyMathCache();
+}
+
+async function fetchHomeWeeklyMathUncached(): Promise<WeeklyMathProblem | null> {
+    const configuredWeekKey = await getHomeWeeklyMathKey();
+    if (configuredWeekKey) {
+        const configured = await getWeeklyMath(configuredWeekKey);
+        if (configured && (configured.problemPublished ?? true)) return configured;
+    }
+
+    const currentWeekKey = getCurrentWeekKey();
+    const current = await getWeeklyMath(currentWeekKey);
+    if (current && (current.problemPublished ?? true)) return current;
+
+    const q = query(
+        collection(db, 'weeklyMath'),
+        where('weekKey', '<=', currentWeekKey),
+        orderBy('weekKey', 'desc'),
+        limit(50)
+    );
+    const snap = await getDocs(q);
+    const latestPublished = snap.docs
+        .map((d) => d.data() as WeeklyMathProblem)
+        .find((item) => (item.problemPublished ?? true));
+    if (latestPublished) return latestPublished;
+
+    const template = await getDefaultWeeklyMathTemplate();
+    if (template && (template.problemPublished ?? true)) return template;
+    return null;
+}
+
+export function getCachedHomeWeeklyMath(): WeeklyMathProblem | null | undefined {
+    return homeWeeklyMathCache;
+}
+
+export function clearHomeWeeklyMathCache(): void {
+    homeWeeklyMathCache = undefined;
+    homeWeeklyMathPromise = null;
+}
+
+export async function getHomeWeeklyMath(options?: { forceRefresh?: boolean }): Promise<WeeklyMathProblem | null> {
+    if (options?.forceRefresh) clearHomeWeeklyMathCache();
+    if (homeWeeklyMathCache !== undefined) return homeWeeklyMathCache;
+    if (homeWeeklyMathPromise) return homeWeeklyMathPromise;
+
+    homeWeeklyMathPromise = fetchHomeWeeklyMathUncached()
+        .then((result) => {
+            homeWeeklyMathCache = result;
+            return result;
+        })
+        .finally(() => {
+            homeWeeklyMathPromise = null;
+        });
+    return homeWeeklyMathPromise;
 }
 
 export async function getWeeklyMathList(maxItems: number = 50): Promise<WeeklyMathProblem[]> {
@@ -154,10 +243,12 @@ export async function upsertWeeklyMath(
         createdAt: existing.exists() ? existing.data().createdAt : Timestamp.now(),
         updatedAt: Timestamp.now(),
     });
+    clearHomeWeeklyMathCache();
 }
 
 export async function deleteWeeklyMath(weekKey: string): Promise<void> {
     await deleteDoc(doc(db, 'weeklyMath', weekKey));
+    clearHomeWeeklyMathCache();
 }
 
 export async function upsertDefaultWeeklyMathTemplate(
@@ -174,4 +265,5 @@ export async function upsertDefaultWeeklyMathTemplate(
         createdAt: existing.exists() ? existing.data().createdAt : Timestamp.now(),
         updatedAt: Timestamp.now(),
     });
+    clearHomeWeeklyMathCache();
 }

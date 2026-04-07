@@ -7,18 +7,7 @@ import { Card, CardContent, Badge, Input, Button } from '@/components/ui';
 const posts = [
     {
         id: '1',
-        slug: 'weekly-math-published-2026-04-01',
-        title: '今週の数学の問題を公開しました',
-        excerpt: 'ホームページに「今週の数学」コーナーを追加し、今週の問題を公開しました。ぜひチャレンジしてみてください。',
-        publishedAt: '2026-04-01',
-        category: 'お知らせ',
-        tags: ['今週の数学', 'サイト更新'],
-        pinned: false,
-        coverImageUrl: null,
-    },
-    {
-        id: '2',
-        slug: 'welcome-to-tti-ai-club',
+        slug: 'welcome-to-tti-intelligence',
         title: 'TTI Intelligenceへようこそ！',
         excerpt: '私たちは豊田工業大学の学生を中心としたAIサークルです。資格勉強、開発、AI研究、情報交流を中心に活動しています。',
         publishedAt: '2026-04-01',

@@ -1,5 +1,8 @@
 export { Home } from './Home';
 export { About } from './About';
+export { WeeklyMath } from './WeeklyMath';
+export { WeeklyMathDetail } from './WeeklyMathDetail';
+export { WeeklyMathSolution } from './WeeklyMathSolution';
 export { News } from './News';
 export { NewsDetail } from './NewsDetail';
 export { AppShowcase } from './AppShowcase';

@@ -21,6 +21,9 @@ import { AppShowcase } from '@/pages/AppShowcase';
 // Lazy load: pages with Firebase SDK or heavy dependencies
 const News = lazy(() => import('@/pages/News').then(m => ({ default: m.News })));
 const NewsDetail = lazy(() => import('@/pages/NewsDetail').then(m => ({ default: m.NewsDetail })));
+const WeeklyMath = lazy(() => import('@/pages/WeeklyMath').then(m => ({ default: m.WeeklyMath })));
+const WeeklyMathDetail = lazy(() => import('@/pages/WeeklyMathDetail').then(m => ({ default: m.WeeklyMathDetail })));
+const WeeklyMathSolution = lazy(() => import('@/pages/WeeklyMathSolution').then(m => ({ default: m.WeeklyMathSolution })));
 const Board = lazy(() => import('@/pages/Board').then(m => ({ default: m.Board })));
 const BoardDetail = lazy(() => import('@/pages/BoardDetail').then(m => ({ default: m.BoardDetail })));
 const Admin = lazy(() => import('@/pages/Admin').then(m => ({ default: m.Admin })));
@@ -119,6 +122,9 @@ function App() {
             <Route path="/" element={<Layout />}>
               <Route index element={<Home />} />
               <Route path="about" element={<About />} />
+              <Route path="weekly-math" element={<Suspense fallback={<PageLoader />}><WeeklyMath /></Suspense>} />
+              <Route path="weekly-math/:weekKey" element={<Suspense fallback={<PageLoader />}><WeeklyMathDetail /></Suspense>} />
+              <Route path="weekly-math/:weekKey/solution" element={<Suspense fallback={<PageLoader />}><WeeklyMathSolution /></Suspense>} />
               <Route path="news" element={<Suspense fallback={<PageLoader />}><News /></Suspense>} />
               <Route path="news/:slug" element={<Suspense fallback={<PageLoader />}><NewsDetail /></Suspense>} />
               <Route path="app" element={<AppShowcase />} />

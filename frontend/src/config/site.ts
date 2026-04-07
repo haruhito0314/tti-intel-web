@@ -14,6 +14,7 @@ export const siteConfig = {
     navigation: [
         { name: 'Home', href: '/' },
         { name: 'About Us', href: '/about' },
+        { name: 'Weekly Math', href: '/weekly-math' },
         { name: 'News', href: '/news' },
         { name: 'Apps', href: '/app' },
         { name: 'Board', href: '/board' },
@@ -44,6 +45,7 @@ export const siteConfig = {
         menu: [
             { name: 'Home', href: '/' },
             { name: 'About Us', href: '/about' },
+            { name: 'Weekly Math', href: '/weekly-math' },
             { name: 'News', href: '/news' },
             { name: 'Apps', href: '/app' },
             { name: 'Board', href: '/board' },

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Calculator, Plus, Save, Shield } from 'lucide-react';
 import { FirebaseError } from 'firebase/app';
 import { deleteDoc, doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
@@ -8,9 +8,12 @@ import { Card, CardContent, Button, Input, Textarea } from '@/components/ui';
 import {
     DEFAULT_WEEKLY_MATH_TEMPLATE_KEY,
     getCurrentWeekKey,
+    getDefaultWeeklyMathTemplate,
+    getHomeWeeklyMathKey,
     getWeekDateRange,
     getWeeklyMath,
     getWeeklyMathList,
+    setHomeWeeklyMathKey,
     type WeeklyMathProblem,
     upsertWeeklyMath,
 } from '@/lib/weeklyMath';
@@ -80,14 +83,17 @@ export function AdminWeeklyMath() {
     const { addToast } = useToast();
     const thisWeekKey = useMemo(() => getCurrentWeekKey(), []);
     const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
     const queryWeekKey = searchParams.get('week')?.trim() || '';
 
     const [title, setTitle] = useState('');
     const [periodMemo, setPeriodMemo] = useState('');
     const [problem, setProblem] = useState('');
+    const [problemPublished, setProblemPublished] = useState(true);
     const [hint, setHint] = useState('');
     const [answer, setAnswer] = useState('');
     const [explanation, setExplanation] = useState('');
+    const [solutionPublished, setSolutionPublished] = useState(true);
     const [loadingProblem, setLoadingProblem] = useState(true);
     const [existingProblem, setExistingProblem] = useState<WeeklyMathProblem | null>(null);
     const [latestItems, setLatestItems] = useState<WeeklyMathProblem[]>([]);
@@ -98,8 +104,35 @@ export function AdminWeeklyMath() {
     const [saving, setSaving] = useState(false);
     const [diagnosticResult, setDiagnosticResult] = useState<string | null>(null);
     const [runningDiagnostic, setRunningDiagnostic] = useState(false);
+    const [togglingPublishKey, setTogglingPublishKey] = useState<string | null>(null);
+    const [latestSearchQuery, setLatestSearchQuery] = useState('');
+    const [homeWeeklyMathKey, setHomeWeeklyMathKeyState] = useState<string>(DEFAULT_WEEKLY_MATH_TEMPLATE_KEY);
+    const [settingHomeWeekKey, setSettingHomeWeekKey] = useState<string | null>(null);
     const weekRange = useMemo(() => getWeekDateRange(targetWeekKey), [targetWeekKey]);
     const [editorAnchor, setEditorAnchor] = useState<HTMLDivElement | null>(null);
+
+    const handleGoBack = () => {
+        if (window.history.length > 1) {
+            navigate(-1);
+            return;
+        }
+        navigate('/admin');
+    };
+
+    const buildLatestAndAllItems = (
+        list: WeeklyMathProblem[],
+        defaultTemplate: WeeklyMathProblem | null
+    ): { latest: WeeklyMathProblem[]; all: WeeklyMathProblem[] } => {
+        const filtered = list
+            .filter((item) => item.weekKey !== DEFAULT_WEEKLY_MATH_TEMPLATE_KEY && item.weekKey !== 'diagnostic-test')
+            .sort((a, b) => b.weekKey.localeCompare(a.weekKey));
+
+        const latest = defaultTemplate
+            ? [...filtered.slice(0, 5), defaultTemplate]
+            : filtered.slice(0, 5);
+        const all = defaultTemplate ? [...filtered, defaultTemplate] : filtered;
+        return { latest, all };
+    };
 
     useEffect(() => {
         if (queryWeekKey) {
@@ -113,12 +146,20 @@ export function AdminWeeklyMath() {
 
     const loadLatestItems = async () => {
         try {
-            const list = await getWeeklyMathList(200);
-            const filtered = list
-                .filter((item) => item.weekKey !== 'default-template' && item.weekKey !== 'diagnostic-test')
-                .sort((a, b) => b.weekKey.localeCompare(a.weekKey));
-            setLatestItems(filtered.slice(0, 3));
-            setAllItems(filtered);
+            const [list, defaultTemplate] = await Promise.all([
+                getWeeklyMathList(200),
+                getDefaultWeeklyMathTemplate(),
+            ]);
+            const built = buildLatestAndAllItems(list, defaultTemplate);
+            setLatestItems(built.latest);
+            setAllItems(built.all);
+            try {
+                const configuredHomeKey = await getHomeWeeklyMathKey();
+                setHomeWeeklyMathKeyState(configuredHomeKey ?? DEFAULT_WEEKLY_MATH_TEMPLATE_KEY);
+            } catch (error) {
+                console.warn('Failed to load home weekly math key:', error);
+                setHomeWeeklyMathKeyState(DEFAULT_WEEKLY_MATH_TEMPLATE_KEY);
+            }
         } catch (error) {
             console.error('Failed to load latest weekly math list:', error);
         }
@@ -133,17 +174,23 @@ export function AdminWeeklyMath() {
         let mounted = true;
         (async () => {
             try {
-                const [data, list] = await Promise.all([
+                const [data, list, defaultTemplate] = await Promise.all([
                     getWeeklyMath(targetWeekKey),
-                    getWeeklyMathList(10),
+                    getWeeklyMathList(200),
+                    getDefaultWeeklyMathTemplate(),
                 ]);
                 if (!mounted) return;
                 setExistingProblem(data);
-                const filtered = list
-                    .filter((item) => item.weekKey !== 'default-template' && item.weekKey !== 'diagnostic-test')
-                    .sort((a, b) => b.weekKey.localeCompare(a.weekKey));
-                setLatestItems(filtered.slice(0, 3));
-                setAllItems(filtered);
+                const built = buildLatestAndAllItems(list, defaultTemplate);
+                setLatestItems(built.latest);
+                setAllItems(built.all);
+                try {
+                    const configuredHomeKey = await getHomeWeeklyMathKey();
+                    if (mounted) setHomeWeeklyMathKeyState(configuredHomeKey ?? DEFAULT_WEEKLY_MATH_TEMPLATE_KEY);
+                } catch (error) {
+                    console.warn('Failed to load home weekly math key:', error);
+                    if (mounted) setHomeWeeklyMathKeyState(DEFAULT_WEEKLY_MATH_TEMPLATE_KEY);
+                }
 
                 const shouldPrefillFromEditLink = Boolean(queryWeekKey) || forcePrefillOnLoad;
                 if (shouldPrefillFromEditLink) {
@@ -152,9 +199,11 @@ export function AdminWeeklyMath() {
                         setTitle(source.title ?? '');
                         setPeriodMemo(source.periodMemo ?? '');
                         setProblem(source.problem ?? '');
+                        setProblemPublished(source.problemPublished ?? true);
                         setHint(source.hint ?? '');
                         setAnswer(source.answer ?? '');
                         setExplanation(source.explanation ?? '');
+                        setSolutionPublished(source.solutionPublished ?? true);
                     }
                     setForcePrefillOnLoad(false);
                 }
@@ -207,9 +256,11 @@ export function AdminWeeklyMath() {
                 title: title.trim() || '経路の場合の数',
                 periodMemo: periodMemo.trim(),
                 problem: problem.trim(),
+                problemPublished,
                 hint: hint.trim(),
                 answer: answer.trim(),
                 explanation: explanation.trim(),
+                solutionPublished,
             };
 
             await upsertWeeklyMath(
@@ -247,9 +298,11 @@ export function AdminWeeklyMath() {
         setTitle(existingProblem.title ?? '');
         setPeriodMemo(existingProblem.periodMemo ?? '');
         setProblem(existingProblem.problem ?? '');
+        setProblemPublished(existingProblem.problemPublished ?? true);
         setHint(existingProblem.hint ?? '');
         setAnswer(existingProblem.answer ?? '');
         setExplanation(existingProblem.explanation ?? '');
+        setSolutionPublished(existingProblem.solutionPublished ?? true);
     };
 
     const startNewCreate = () => {
@@ -257,9 +310,11 @@ export function AdminWeeklyMath() {
         setTitle('');
         setPeriodMemo('');
         setProblem('');
+        setProblemPublished(true);
         setHint('');
         setAnswer('');
         setExplanation('');
+        setSolutionPublished(true);
         setFormOpen(true);
     };
 
@@ -270,6 +325,91 @@ export function AdminWeeklyMath() {
         window.setTimeout(() => {
             editorAnchor?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 50);
+    };
+
+    const handleTogglePublish = async (
+        item: WeeklyMathProblem,
+        field: 'problemPublished' | 'solutionPublished'
+    ) => {
+        if (!user || !isAdmin) return;
+
+        const nextValue = !(item[field] ?? true);
+        setTogglingPublishKey(`${item.weekKey}:${field}`);
+        try {
+            await upsertWeeklyMath(
+                item.weekKey,
+                {
+                    title: item.title ?? '経路の場合の数',
+                    periodMemo: item.periodMemo ?? '',
+                    problem: item.problem ?? '',
+                    problemPublished: field === 'problemPublished' ? nextValue : (item.problemPublished ?? true),
+                    hint: item.hint ?? '',
+                    answer: item.answer ?? '',
+                    explanation: item.explanation ?? '',
+                    solutionPublished: field === 'solutionPublished' ? nextValue : (item.solutionPublished ?? true),
+                },
+                user.email || 'unknown'
+            );
+            await loadLatestItems();
+            if (existingProblem?.weekKey === item.weekKey) {
+                setExistingProblem((prev) => prev ? ({
+                    ...prev,
+                    problemPublished: field === 'problemPublished' ? nextValue : (prev.problemPublished ?? true),
+                    solutionPublished: field === 'solutionPublished' ? nextValue : (prev.solutionPublished ?? true),
+                }) : prev);
+                if (field === 'problemPublished') setProblemPublished(nextValue);
+                if (field === 'solutionPublished') setSolutionPublished(nextValue);
+            }
+            addToast({
+                type: 'success',
+                title: '公開設定を更新しました',
+                message: `${item.weekKey} の${field === 'problemPublished' ? '問題' : '解答・解説'}を${nextValue ? '公開' : '非公開'}にしました。`,
+            });
+        } catch (error) {
+            const detail = error instanceof FirebaseError
+                ? `${error.code}${error.message ? `: ${error.message}` : ''}`
+                : '不明なエラー';
+            addToast({
+                type: 'error',
+                title: '公開設定の更新に失敗しました',
+                message: `権限または通信状態を確認してください。（${detail}）`,
+            });
+        } finally {
+            setTogglingPublishKey(null);
+        }
+    };
+
+    const handleSetHomeWeeklyMath = async (item: WeeklyMathProblem) => {
+        if (!user || !isAdmin) return;
+        if (!(item.problemPublished ?? true)) {
+            addToast({
+                type: 'warning',
+                title: 'ホーム表示に設定できません',
+                message: '問題が非公開のため、ホームには表示できません。先に問題を公開してください。',
+            });
+            return;
+        }
+        setSettingHomeWeekKey(item.weekKey);
+        try {
+            await setHomeWeeklyMathKey(item.weekKey, user.email || 'unknown');
+            setHomeWeeklyMathKeyState(item.weekKey);
+            addToast({
+                type: 'success',
+                title: 'ホーム表示を更新しました',
+                message: `${item.weekKey} をホーム表示に設定しました。`,
+            });
+        } catch (error) {
+            const detail = error instanceof FirebaseError
+                ? `${error.code}${error.message ? `: ${error.message}` : ''}`
+                : '不明なエラー';
+            addToast({
+                type: 'error',
+                title: 'ホーム表示の更新に失敗しました',
+                message: `権限または通信状態を確認してください。（${detail}）`,
+            });
+        } finally {
+            setSettingHomeWeekKey(null);
+        }
     };
 
     const latestCreatedRange = useMemo(() => {
@@ -310,6 +450,17 @@ export function AdminWeeklyMath() {
         }
         return cells;
     }, [calendarMonth, coveredDays]);
+
+    const searchedItems = useMemo(() => {
+        const q = latestSearchQuery.trim().toLowerCase();
+        if (!q) return [];
+        return allItems.filter((item) => {
+            const weekKey = item.weekKey?.toLowerCase() ?? '';
+            const titleText = item.title?.toLowerCase() ?? '';
+            const memoText = item.periodMemo?.toLowerCase() ?? '';
+            return weekKey.includes(q) || titleText.includes(q) || memoText.includes(q);
+        });
+    }, [allItems, latestSearchQuery]);
 
 
     const runDiagnostic = async () => {
@@ -473,13 +624,14 @@ export function AdminWeeklyMath() {
             <section className="relative overflow-hidden">
                 <div className="absolute inset-0 gradient-bg-subtle opacity-30" />
                 <div className="relative max-w-[1100px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                    <Link
-                        to="/admin"
+                    <button
+                        type="button"
+                        onClick={handleGoBack}
                         className="inline-flex items-center gap-2 text-[#0066CC] dark:text-[#2997FF] hover:underline mb-6"
                     >
                         <ArrowLeft className="w-4 h-4" />
-                        管理者ダッシュボード
-                    </Link>
+                        1つ戻る
+                    </button>
                     <div className="grid lg:grid-cols-[1fr_320px] gap-6 items-start">
                         <div>
                             <div className="flex items-center gap-3 mb-3">
@@ -499,12 +651,26 @@ export function AdminWeeklyMath() {
                                 </p>
                             )}
                             <div className="mt-4">
-                                <Link to="/admin/weekly-math/preview">
-                                    <Button variant="outline" size="sm" className="rounded-full">
-                                        保存済み問題のプレビューを開く
-                                        <ArrowRight className="w-4 h-4" />
-                                    </Button>
-                                </Link>
+                                <div className="flex flex-wrap gap-2">
+                                    <Link to="/admin/weekly-math/preview">
+                                        <Button variant="outline" size="sm" className="rounded-full">
+                                            保存済み問題のプレビューを開く
+                                            <ArrowRight className="w-4 h-4" />
+                                        </Button>
+                                    </Link>
+                                    <Link to={`/weekly-math/${encodeURIComponent(targetWeekKey)}`}>
+                                        <Button variant="outline" size="sm" className="rounded-full">
+                                            問題ページを確認
+                                            <ArrowRight className="w-4 h-4" />
+                                        </Button>
+                                    </Link>
+                                    <Link to={`/weekly-math/${encodeURIComponent(targetWeekKey)}/solution`}>
+                                        <Button variant="outline" size="sm" className="rounded-full">
+                                            解答・解説ページを確認
+                                            <ArrowRight className="w-4 h-4" />
+                                        </Button>
+                                    </Link>
+                                </div>
                             </div>
                         </div>
                         <Card variant="default">
@@ -541,19 +707,30 @@ export function AdminWeeklyMath() {
                     <CardContent className="p-5">
                         <div className="flex items-center justify-between gap-3 mb-3">
                             <h2 className="apple-headline text-[#1D1D1F] dark:text-[#F5F5F7]">
-                                最新3件
+                                最新5件
                             </h2>
                             <Link to="/admin/weekly-math/preview">
                                 <Button variant="outline" size="sm" className="rounded-full">一覧を見る</Button>
                             </Link>
                         </div>
-                        {latestItems.length === 0 ? (
+                        <Input
+                            placeholder="週キー・タイトル・期間メモで検索（全履歴）"
+                            value={latestSearchQuery}
+                            onChange={(e) => setLatestSearchQuery(e.target.value)}
+                            className="mb-3"
+                        />
+                        {latestSearchQuery.trim() ? (
+                            <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-3">
+                                検索結果: {searchedItems.length}件（対象: 過去の問題すべて）
+                            </p>
+                        ) : null}
+                        {(latestSearchQuery.trim() ? searchedItems : latestItems).length === 0 ? (
                             <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
-                                まだ保存された問題がありません。
+                                {latestSearchQuery.trim() ? '一致する問題が見つかりません。' : 'まだ保存された問題がありません。'}
                             </p>
                         ) : (
                             <div className="space-y-2">
-                                {latestItems.map((item) => (
+                                {(latestSearchQuery.trim() ? searchedItems : latestItems).map((item) => (
                                     <div key={item.weekKey} className="rounded-xl border border-[var(--border)] px-3 py-3 flex items-center justify-between gap-3">
                                         <div className="min-w-0">
                                             <p className="text-sm font-semibold text-[#1D1D1F] dark:text-[#F5F5F7] truncate">
@@ -562,6 +739,40 @@ export function AdminWeeklyMath() {
                                             <p className="text-xs text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] truncate">
                                                 {item.title || '経路の場合の数'}
                                             </p>
+                                            <p className="mt-1 text-xs text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] truncate">
+                                                問題: {(item.problemPublished ?? true) ? '公開' : '非公開'} / 解答・解説: {(item.solutionPublished ?? true) ? '公開' : '非公開'}
+                                            </p>
+                                            <div className="mt-2 flex flex-wrap gap-2">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    isLoading={togglingPublishKey === `${item.weekKey}:problemPublished`}
+                                                    onClick={() => handleTogglePublish(item, 'problemPublished')}
+                                                >
+                                                    問題を{(item.problemPublished ?? true) ? '非公開' : '公開'}
+                                                </Button>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    isLoading={togglingPublishKey === `${item.weekKey}:solutionPublished`}
+                                                    onClick={() => handleTogglePublish(item, 'solutionPublished')}
+                                                >
+                                                    解答・解説を{(item.solutionPublished ?? true) ? '非公開' : '公開'}
+                                                </Button>
+                                                <Button
+                                                    variant={homeWeeklyMathKey === item.weekKey ? 'primary' : 'outline'}
+                                                    size="sm"
+                                                    isLoading={settingHomeWeekKey === item.weekKey}
+                                                    onClick={() => handleSetHomeWeeklyMath(item)}
+                                                    disabled={homeWeeklyMathKey === item.weekKey || !(item.problemPublished ?? true)}
+                                                >
+                                                    {homeWeeklyMathKey === item.weekKey
+                                                        ? 'ホームに表示中'
+                                                        : (item.problemPublished ?? true)
+                                                            ? 'ホームに表示する'
+                                                            : '問題を公開すると設定可能'}
+                                                </Button>
+                                            </div>
                                         </div>
                                         <Link to={`/admin/weekly-math?week=${encodeURIComponent(item.weekKey)}`}>
                                             <Button variant="outline" size="sm" onClick={(e) => { e.preventDefault(); handleEditFromLatest(item.weekKey); }}>
@@ -669,6 +880,24 @@ export function AdminWeeklyMath() {
                                     onChange={(e) => setExplanation(e.target.value)}
                                     rows={4}
                                 />
+                                <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
+                                    <label className="flex items-center gap-3 cursor-pointer select-none">
+                                        <input
+                                            type="checkbox"
+                                            className="h-4 w-4 rounded border-[var(--border)]"
+                                            checked={solutionPublished}
+                                            onChange={(e) => setSolutionPublished(e.target.checked)}
+                                        />
+                                        <div>
+                                            <p className="text-sm font-semibold text-[#1D1D1F] dark:text-[#F5F5F7]">
+                                                解答・解説ページを公開する
+                                            </p>
+                                            <p className="text-xs text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
+                                                OFF の場合、問題ページから解答ページへ進めなくなります。
+                                            </p>
+                                        </div>
+                                    </label>
+                                </div>
                                 <div className="pt-2">
                                     <Button onClick={handleSave} isLoading={saving} className="rounded-full">
                                         <Save className="w-4 h-4" />

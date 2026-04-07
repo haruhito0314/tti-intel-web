@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Eye, PencilLine, Sigma, Trash2 } from 'lucide-react';
 import { FirebaseError } from 'firebase/app';
 import ReactMarkdown from 'react-markdown';
@@ -21,9 +21,33 @@ import { useToast } from '@/components/ui/Toast';
 
 function normalizeMathDelimiters(markdown: string): string {
     return markdown
+        .replace(/\\+[ \t]*\r?\n/g, '  \n')
+        .replace(/\\[ \t]+/g, '  \n')
+        .replace(/\\+$/g, '')
+        .replace(/\$?\{([^{}\n]+)\}_C_\{([^{}\n]+)\}\$?/g, (_m, n: string, r: string) => `$` + `{}_{${n}}C_{${r}}` + `$`)
+        .replace(/\$?\{([^{}\n]+)\}C\{([^{}\n]+)\}\$?/g, (_m, n: string, r: string) => `$` + `{}_{${n}}C_{${r}}` + `$`)
+        .replace(/\$?([A-Za-z0-9]+)_C_\{([^{}\n]+)\}\$?/g, (_m, n: string, r: string) => `$` + `{}_{${n}}C_{${r}}` + `$`)
+        .replace(/\$?([A-Za-z0-9]+)_C_([A-Za-z0-9]+)\$?/g, (_m, n: string, r: string) => `$` + `{}_{${n}}C_{${r}}` + `$`)
         .replace(/\\\[((?:.|\n)*?)\\\]/g, (_, expr: string) => `$$${expr}$$`)
         .replace(/\\\(((?:.|\n)*?)\\\)/g, (_, expr: string) => `$${expr}$`);
 }
+
+const ROUTE_COUNTING_EXPLANATION = String.raw`以下のようなスコアを考えます.\\
+$+$のカードを引いたときスコアを2得る.\\
+$\times,\div$のカードを引いたときスコアを1得る.\\
+$-$のカードを引いたときスコアを得ない.\\
+ここで$+$のカードと$-$のカードの引いた回数が等しければよく、この回数を$k$とおけばこの際のスコアはkによらず,
+$$
+2k+(n-k-k)+0k=n
+$$
+となります.ここで次の式を考えます。
+$$
+f(x)=(x^2+2x+1)^n
+$$
+これを展開して得られる整式$f(x)=\sigma_{k=0}^{n}A_kx^k$について$x^k$の係数$A_k$はスコアがkであるようなカードの引き方の総数に対応しています.($x^2$と$+$のカード,$x$と$\times$または$\div$のカード,定数項$1$と$-$のカードがそれぞれ対応しており,$(x^2+2x+1)$をかけるたびにカードを引くという操作が再現できます.)\\
+したがって求める値はスコアが$n$の時,つまり$A_n$に等しいです.今$f(x)=(1+x)^{2n}$なので二項定理から`;
+
+const ROUTE_COUNTING_ANSWER = '${}_{2n}C_{n}$';
 
 function formatDateLabel(date: Date): string {
     return date.toLocaleDateString('ja-JP', {
@@ -92,6 +116,15 @@ export function AdminWeeklyMathPreview() {
     const [deletingWeekKey, setDeletingWeekKey] = useState<string | null>(null);
     const defaultPreviewKey = '__default__';
     const [defaultTemplate, setDefaultTemplate] = useState<WeeklyMathProblem | null>(null);
+    const navigate = useNavigate();
+
+    const handleGoBack = () => {
+        if (window.history.length > 1) {
+            navigate(-1);
+            return;
+        }
+        navigate('/admin/weekly-math');
+    };
 
     useEffect(() => {
         let mounted = true;
@@ -164,7 +197,12 @@ export function AdminWeeklyMathPreview() {
     const previewTitle = previewItem.title?.trim() || '経路の場合の数';
     const previewPeriodMemo = previewItem.periodMemo?.trim() || '';
     const previewProblem = previewItem.problem?.trim() || '';
+    const fallbackRoute = previewTitle === '経路の場合の数';
+    const previewAnswer = previewItem.answer?.trim() || (fallbackRoute ? ROUTE_COUNTING_ANSWER : '');
+    const previewExplanation = previewItem.explanation?.trim() || (fallbackRoute ? ROUTE_COUNTING_EXPLANATION : '');
+    const previewSolutionPublished = previewItem.solutionPublished ?? true;
     const selectedRange = selectedItem ? getWeekDateRange(selectedItem.weekKey) : null;
+    const previewWeekKey = selectedItem?.weekKey ?? DEFAULT_WEEKLY_MATH_TEMPLATE_KEY;
 
     if (loading) {
         return (
@@ -203,13 +241,14 @@ export function AdminWeeklyMathPreview() {
             <section className="relative overflow-hidden">
                 <div className="absolute inset-0 gradient-bg-subtle opacity-30" />
                 <div className="relative max-w-[1100px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                    <Link
-                        to="/admin/weekly-math"
+                    <button
+                        type="button"
+                        onClick={handleGoBack}
                         className="inline-flex items-center gap-2 text-[#0066CC] dark:text-[#2997FF] hover:underline mb-6"
                     >
                         <ArrowLeft className="w-4 h-4" />
-                        今週の数学 管理に戻る
-                    </Link>
+                        1つ戻る
+                    </button>
                     <div className="flex items-center gap-3 mb-2">
                         <Eye className="w-5 h-5 text-[#0071E3] dark:text-[#2997FF]" />
                         <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7]">
@@ -273,6 +312,9 @@ export function AdminWeeklyMathPreview() {
                                             <p className="text-xs text-[#86868B] dark:text-[rgba(235,235,245,0.4)]">
                                                 デフォルト問題（管理画面から編集可）
                                             </p>
+                                            <p className="text-xs text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mt-1">
+                                                問題: {(defaultTemplate?.problemPublished ?? true) ? '公開' : '非公開'} / 解答・解説: {(defaultTemplate?.solutionPublished ?? true) ? '公開' : '非公開'}
+                                            </p>
                                             {formatUpdatedAtLabel(defaultTemplate?.updatedAt) && (
                                                 <p className="text-xs text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mt-1">
                                                     最終更新: {formatUpdatedAtLabel(defaultTemplate?.updatedAt)}
@@ -322,6 +364,9 @@ export function AdminWeeklyMathPreview() {
                                                             メモ: {item.periodMemo.trim()}
                                                         </p>
                                                     )}
+                                                    <p className="text-xs text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] truncate mb-1">
+                                                        問題: {(item.problemPublished ?? true) ? '公開' : '非公開'} / 解答・解説: {(item.solutionPublished ?? true) ? '公開' : '非公開'}
+                                                    </p>
                                                     {range && (
                                                         <p className="text-xs text-[#86868B] dark:text-[rgba(235,235,245,0.4)]">
                                                             {formatDateLabel(range.start)} 〜 {formatDateLabel(range.end)}
@@ -419,15 +464,82 @@ export function AdminWeeklyMathPreview() {
                                     </CardContent>
                                 </Card>
 
-                                <div className="mt-4">
-                                    <Link
-                                        to="/news/weekly-math-published-2026-04-01"
-                                        className="inline-flex items-center gap-1 text-[#0066CC] dark:text-[#66B4FF] hover:underline apple-body"
-                                    >
-                                        この問題のお知らせを見る
-                                        <ArrowRight className="w-4 h-4" />
+                                {(previewAnswer || previewExplanation) && (
+                                    <Card variant="default" className="mt-6">
+                                        <CardContent className="p-8">
+                                            <h3 className="apple-title text-[#1D1D1F] dark:text-[#F5F5F7] mb-3">
+                                                解答・解説プレビュー（管理者）
+                                            </h3>
+                                            {previewAnswer ? (
+                                                <div className="[&_.katex-display]:my-4 mb-4">
+                                                    <h4 className="text-sm font-semibold text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
+                                                        解答
+                                                    </h4>
+                                                    <ReactMarkdown
+                                                        remarkPlugins={[remarkGfm, remarkMath]}
+                                                        rehypePlugins={[rehypeKatex]}
+                                                        components={{
+                                                            p: ({ children }) => (
+                                                                <p className="apple-body text-[#1D1D1F] dark:text-[#F5F5F7] leading-relaxed mb-4">
+                                                                    {children}
+                                                                </p>
+                                                            ),
+                                                        }}
+                                                    >
+                                                        {normalizeMathDelimiters(previewAnswer)}
+                                                    </ReactMarkdown>
+                                                </div>
+                                            ) : (
+                                                <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-4">
+                                                    解答は未入力です。
+                                                </p>
+                                            )}
+                                            {previewExplanation ? (
+                                                <div className="[&_.katex-display]:my-4">
+                                                    <h4 className="text-sm font-semibold text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
+                                                        解説
+                                                    </h4>
+                                                    <ReactMarkdown
+                                                        remarkPlugins={[remarkGfm, remarkMath]}
+                                                        rehypePlugins={[rehypeKatex]}
+                                                        components={{
+                                                            p: ({ children }) => (
+                                                                <p className="apple-body text-[#1D1D1F] dark:text-[#F5F5F7] leading-relaxed mb-4">
+                                                                    {children}
+                                                                </p>
+                                                            ),
+                                                        }}
+                                                    >
+                                                        {normalizeMathDelimiters(previewExplanation)}
+                                                    </ReactMarkdown>
+                                                </div>
+                                            ) : (
+                                                <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
+                                                    解説は未入力です。
+                                                </p>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                <div className="mt-4 flex flex-wrap items-center gap-2">
+                                    <Link to={`/weekly-math/${encodeURIComponent(previewWeekKey)}`}>
+                                        <Button variant="outline" size="sm">
+                                            問題ページを開く
+                                            <ArrowRight className="w-4 h-4" />
+                                        </Button>
                                     </Link>
+                                    <Link to={`/weekly-math/${encodeURIComponent(previewWeekKey)}/solution`}>
+                                        <Button variant="outline" size="sm">
+                                            解答・解説ページを開く
+                                            <ArrowRight className="w-4 h-4" />
+                                        </Button>
+                                    </Link>
+                                    <span className="text-xs text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
+                                        公開状態: 問題 {((previewItem.problemPublished ?? true) ? '公開' : '非公開')} / 解答・解説 {(previewSolutionPublished ? '公開' : '非公開')}
+                                    </span>
                                 </div>
+
                             </section>
                     </div>
                 </div>

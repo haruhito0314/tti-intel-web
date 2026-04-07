@@ -8,7 +8,9 @@ import rehypeKatex from 'rehype-katex';
 import { Button, Card, CardContent, Badge } from '@/components/ui';
 import {
     DEFAULT_WEEKLY_MATH_PROBLEM,
-    getDefaultWeeklyMathTemplate,
+    getCachedHomeWeeklyMath,
+    getHomeWeeklyMath,
+    toPublicWeeklyMathKey,
     type WeeklyMathProblem,
 } from '@/lib/weeklyMath';
 
@@ -16,17 +18,7 @@ import {
 const latestPosts = [
     {
         id: '1',
-        slug: 'weekly-math-published-2026-04-01',
-        title: '今週の数学の問題を公開しました',
-        excerpt: 'ホームページに「今週の数学」コーナーを追加し、今週の問題を公開しました。ぜひチャレンジしてみてください。',
-        publishedAt: '2026-04-01',
-        category: 'お知らせ',
-        tags: ['今週の数学'],
-        pinned: false,
-    },
-    {
-        id: '2',
-        slug: 'welcome-to-tti-ai-club',
+        slug: 'welcome-to-tti-intelligence',
         title: 'TTI Intelligenceへようこそ！',
         excerpt: '私たちは豊田工業大学の学生を中心としたAIサークルです。資格勉強、開発、AI研究、情報交流を中心に活動しています。',
         publishedAt: '2026-04-01',
@@ -184,7 +176,9 @@ function normalizeMathDelimiters(markdown: string): string {
 }
 
 export function Home() {
-    const [weeklyMath, setWeeklyMath] = useState<WeeklyMathProblem | null>(null);
+    const cachedHomeWeeklyMath = getCachedHomeWeeklyMath();
+    const [weeklyMath, setWeeklyMath] = useState<WeeklyMathProblem | null>(cachedHomeWeeklyMath ?? null);
+    const [loadingWeeklyMath, setLoadingWeeklyMath] = useState(cachedHomeWeeklyMath === undefined);
     const displayedWeeklyMath = weeklyMath ?? DEFAULT_WEEKLY_MATH_PROBLEM;
     const displayedWeeklyMathTitle =
         displayedWeeklyMath.title === '今週の数学問題（一般化）'
@@ -192,13 +186,19 @@ export function Home() {
             : displayedWeeklyMath.title;
 
     useEffect(() => {
+        if (getCachedHomeWeeklyMath() !== undefined) {
+            setLoadingWeeklyMath(false);
+            return;
+        }
         let mounted = true;
         (async () => {
             try {
-                const data = await getDefaultWeeklyMathTemplate();
+                const data = await getHomeWeeklyMath();
                 if (mounted) setWeeklyMath(data);
             } catch (error) {
                 console.error('Failed to load weekly math:', error);
+            } finally {
+                if (mounted) setLoadingWeeklyMath(false);
             }
         })();
         return () => {
@@ -303,35 +303,45 @@ export function Home() {
                     </div>
 
                     <Card variant="elevated" className="relative overflow-hidden">
-                        <CardContent className="p-8">
-                            <>
-                                <h3 className="apple-title text-[#1D1D1F] dark:text-[#F5F5F7] mb-3">
-                                    {displayedWeeklyMathTitle}
-                                </h3>
-                                <div className="mb-5 [&_.katex-display]:my-4">
-                                    <ReactMarkdown
-                                        remarkPlugins={[remarkGfm, remarkMath]}
-                                        rehypePlugins={[rehypeKatex]}
-                                        components={{
-                                            p: ({ children }) => (
-                                                <p className="apple-body text-[#1D1D1F] dark:text-[#F5F5F7] leading-relaxed mb-4">
-                                                    {children}
-                                                </p>
-                                            ),
-                                        }}
-                                    >
-                                        {normalizeMathDelimiters(displayedWeeklyMath.problem)}
-                                    </ReactMarkdown>
-                                </div>
-                            </>
-                        </CardContent>
+                        {loadingWeeklyMath ? (
+                            <CardContent className="p-8">
+                                <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
+                                    読み込み中...
+                                </p>
+                            </CardContent>
+                        ) : (
+                            <Link to={`/weekly-math/${encodeURIComponent(toPublicWeeklyMathKey(weeklyMath?.weekKey || 'default-template'))}`} className="block group">
+                                <CardContent className="p-8">
+                                    <>
+                                        <h3 className="apple-title text-[#1D1D1F] dark:text-[#F5F5F7] mb-3 group-hover:text-[#0066CC] dark:group-hover:text-[#66B4FF] transition-colors">
+                                            {displayedWeeklyMathTitle}
+                                        </h3>
+                                        <div className="mb-5">
+                                            <ReactMarkdown
+                                                remarkPlugins={[remarkGfm, remarkMath]}
+                                                rehypePlugins={[rehypeKatex]}
+                                                components={{
+                                                    p: ({ children }) => (
+                                                        <p className="apple-body text-[#1D1D1F] dark:text-[#F5F5F7] leading-relaxed mb-4">
+                                                            {children}
+                                                        </p>
+                                                    ),
+                                                }}
+                                            >
+                                                {normalizeMathDelimiters(displayedWeeklyMath.problem)}
+                                            </ReactMarkdown>
+                                        </div>
+                                    </>
+                                </CardContent>
+                            </Link>
+                        )}
                     </Card>
                     <div className="mt-4">
                         <Link
-                            to="/news/weekly-math-published-2026-04-01"
+                            to="/weekly-math"
                             className="inline-flex items-center gap-1 text-[#0066CC] dark:text-[#66B4FF] hover:underline apple-body"
                         >
-                            この問題のお知らせを見る
+                            問題一覧を見る
                             <ArrowRight className="w-4 h-4" />
                         </Link>
                     </div>

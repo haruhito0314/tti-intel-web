@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, UserPlus, Trash2, Shield, Mail } from 'lucide-react';
 import { Card, CardContent, Button, Input } from '@/components/ui';
 import { collection, setDoc, deleteDoc, doc, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
@@ -24,9 +24,18 @@ interface AdminDoc {
 
 export function AdminMembers() {
     const { user, isAdmin, loading } = useAuth();
+    const navigate = useNavigate();
     const [admins, setAdmins] = useState<AdminDoc[]>([]);
     const [isLoadingAdmins, setIsLoadingAdmins] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleGoBack = () => {
+        if (window.history.length > 1) {
+            navigate(-1);
+            return;
+        }
+        navigate('/admin');
+    };
 
     const {
         register,
@@ -140,13 +149,14 @@ export function AdminMembers() {
             <section className="relative overflow-hidden">
                 <div className="absolute inset-0 gradient-bg-subtle opacity-30" />
                 <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                    <Link
-                        to="/admin"
+                    <button
+                        type="button"
+                        onClick={handleGoBack}
                         className="inline-flex items-center gap-2 text-[#0066CC] dark:text-[#2997FF] hover:underline mb-6"
                     >
                         <ArrowLeft className="w-4 h-4" />
-                        管理者ダッシュボード
-                    </Link>
+                        1つ戻る
+                    </button>
                     <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
                         メンバー管理
                     </h1>

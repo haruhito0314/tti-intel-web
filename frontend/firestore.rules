@@ -24,6 +24,14 @@ service cloud.firestore {
       // so weekly math editing works even when admin doc sync has issues.
       allow write: if request.auth != null;
     }
+
+    // Site settings
+    // - Read is public so the home page can resolve which weekly-math to display.
+    // - Write is admin-only.
+    match /siteSettings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
     
     // Threads collection
     match /threads/{threadId} {
