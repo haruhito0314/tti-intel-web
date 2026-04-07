@@ -151,7 +151,7 @@ export function WeeklyMathDetail() {
                     {isSolutionPublished ? (
                         <Link to={`/weekly-math/${encodeURIComponent(toPublicWeeklyMathKey(item.weekKey))}/solution`}>
                             <Button>
-                                答えを見る
+                                解説を見る
                                 <ArrowRight className="w-4 h-4" />
                             </Button>
                         </Link>
