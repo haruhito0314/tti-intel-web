@@ -8,7 +8,7 @@ import rehypeKatex from 'rehype-katex';
 import { Button, Card, CardContent, Badge } from '@/components/ui';
 import {
     DEFAULT_WEEKLY_MATH_PROBLEM,
-    getCurrentWeeklyMath,
+    getDefaultWeeklyMathTemplate,
     type WeeklyMathProblem,
 } from '@/lib/weeklyMath';
 
@@ -195,7 +195,7 @@ export function Home() {
         let mounted = true;
         (async () => {
             try {
-                const data = await getCurrentWeeklyMath();
+                const data = await getDefaultWeeklyMathTemplate();
                 if (mounted) setWeeklyMath(data);
             } catch (error) {
                 console.error('Failed to load weekly math:', error);
