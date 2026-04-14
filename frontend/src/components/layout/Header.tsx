@@ -6,6 +6,7 @@ import { ThemeToggle } from './ThemeToggle';
 
 export function Header() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const desktopNavigation = siteConfig.navigation.filter((link) => link.href !== '/settings');
 
     return (
         <header className="sticky top-0 z-40 w-full">
@@ -29,7 +30,7 @@ export function Header() {
 
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center gap-0">
-                        {siteConfig.navigation.map((link) => (
+                        {desktopNavigation.map((link) => (
                             <NavLink
                                 key={link.href}
                                 to={link.href}
