@@ -9,7 +9,7 @@ const posts = [
         id: '1',
         slug: 'welcome-to-tti-intelligence',
         title: 'TTI Intelligenceへようこそ！',
-        excerpt: '私たちは豊田工業大学の学生を中心としたAIサークルです。資格勉強、開発、AI研究、情報交流を中心に活動しています。',
+        excerpt: '私たちは豊田工業大学の学生を中心としたAIサークルです。開発、数学、ゲーム、解説動画を中心に活動しています。',
         publishedAt: '2026-04-01',
         category: 'お知らせ',
         tags: ['サークル紹介'],

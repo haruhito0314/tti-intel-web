@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
 import { ToastProvider } from '@/components/ui';
 import { Layout } from '@/components/layout';
+import { isMobileSplashDisabled } from '@/lib/splashSettings';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -17,6 +18,7 @@ import { Home } from '@/pages/Home';
 import { About } from '@/pages/About';
 import { Contact } from '@/pages/Contact';
 import { AppShowcase } from '@/pages/AppShowcase';
+import { Settings } from '@/pages/Settings';
 
 // Lazy load: pages with Firebase SDK or heavy dependencies
 const News = lazy(() => import('@/pages/News').then(m => ({ default: m.News })));
@@ -66,7 +68,8 @@ function App() {
 
   const [showSplash, setShowSplash] = useState(() => {
     if (typeof window === 'undefined') return false;
-    return window.matchMedia('(max-width: 768px)').matches;
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    return isMobile && !isMobileSplashDisabled();
   });
   const [splashPhase, setSplashPhase] = useState<'enter' | 'logo-out' | 'overlay-out'>('enter');
 
@@ -131,6 +134,7 @@ function App() {
               <Route path="board" element={<Suspense fallback={<PageLoader />}><Board /></Suspense>} />
               <Route path="board/:id" element={<Suspense fallback={<PageLoader />}><BoardDetail /></Suspense>} />
               <Route path="contact" element={<Contact />} />
+              <Route path="settings" element={<Settings />} />
               <Route path="admin" element={<Suspense fallback={<PageLoader />}><Admin /></Suspense>} />
               <Route path="admin/members" element={<Suspense fallback={<PageLoader />}><AdminMembers /></Suspense>} />
               <Route path="admin/weekly-math" element={<Suspense fallback={<PageLoader />}><AdminWeeklyMath /></Suspense>} />

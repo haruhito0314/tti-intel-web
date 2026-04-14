@@ -1,27 +1,27 @@
 import { Card, CardContent } from '@/components/ui';
-import { BookOpen, Code, Cpu, MessageCircle, ChevronDown, Calendar } from 'lucide-react';
+import { Code, Sigma, Gamepad2, Video, ChevronDown, Calendar } from 'lucide-react';
 import { useState } from 'react';
 
 const activities = [
     {
-        icon: BookOpen,
-        title: '資格勉強',
-        description: '基本情報・応用情報技術者試験などのIT資格取得に向けた勉強会を実施しています。',
-    },
-    {
         icon: Code,
         title: '開発',
-        description: 'Webアプリやツールなど、チームで実践的なプロダクト開発に取り組んでいます。',
+        description: 'AIを使ったvibe codingで、Webサイトやアプリケーションの開発をします。',
     },
     {
-        icon: Cpu,
-        title: 'AI研究',
-        description: '最新のAI技術や機械学習について学び、研究・実験を行っています。',
+        icon: Sigma,
+        title: '数学',
+        description: '自作問題を作ることをメインに、数学的な発想力と表現力を磨きます。',
     },
     {
-        icon: MessageCircle,
-        title: '情報交流',
-        description: '技術トレンドや学習方法の共有、メンバー間のナレッジ交換を促進しています。',
+        icon: Gamepad2,
+        title: 'ゲーム',
+        description: 'VALORANT、Apexを中心に、たまにフォートナイト。人数が集まればMinecraft Realms（Java版）も開く予定です。',
+    },
+    {
+        icon: Video,
+        title: '解説動画',
+        description: '点数を取るためだけでなく、科目の本質をついた真の理解を促す勉強解説動画を制作します。',
     },
 ];
 

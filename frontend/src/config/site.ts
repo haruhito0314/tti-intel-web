@@ -19,6 +19,7 @@ export const siteConfig = {
         { name: 'Apps', href: '/app' },
         { name: 'Board', href: '/board' },
         { name: 'Contact', href: '/contact' },
+        { name: 'Settings', href: '/settings' },
     ],
 
     // Social links (can be updated without code changes in future)
@@ -50,6 +51,7 @@ export const siteConfig = {
             { name: 'Apps', href: '/app' },
             { name: 'Board', href: '/board' },
             { name: 'Contact', href: '/contact' },
+            { name: 'Settings', href: '/settings' },
         ],
         legal: [
             { name: 'プライバシーポリシー', href: '/privacy' },
