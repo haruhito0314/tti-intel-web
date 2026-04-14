@@ -27,10 +27,19 @@ function GitHubIcon({ className }: { className?: string }) {
     );
 }
 
+function YouTubeIcon({ className }: { className?: string }) {
+    return (
+        <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+            <path d="M23.498 6.186a2.998 2.998 0 00-2.11-2.121C19.516 3.5 12 3.5 12 3.5s-7.516 0-9.388.565A2.998 2.998 0 00.502 6.186 31.31 31.31 0 000 12a31.31 31.31 0 00.502 5.814 2.998 2.998 0 002.11 2.121C4.484 20.5 12 20.5 12 20.5s7.516 0 9.388-.565a2.998 2.998 0 002.11-2.121A31.31 31.31 0 0024 12a31.31 31.31 0 00-.502-5.814zM9.6 15.568V8.432L15.82 12 9.6 15.568z" />
+        </svg>
+    );
+}
+
 const socialIcons = {
     discord: DiscordIcon,
     instagram: InstagramIcon,
     github: GitHubIcon,
+    youtube: YouTubeIcon,
 };
 
 export function Footer() {

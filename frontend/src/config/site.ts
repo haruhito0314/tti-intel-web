@@ -36,6 +36,10 @@ export const siteConfig = {
             url: 'https://github.com/haruhito0314',
             label: 'GitHub',
         },
+        youtube: {
+            url: 'https://www.youtube.com/@ttiintelligence',
+            label: 'YouTube',
+        },
     },
 
     // Contact email (for display purposes)
