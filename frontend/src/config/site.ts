@@ -25,7 +25,7 @@ export const siteConfig = {
     // Social links (can be updated without code changes in future)
     social: {
         discord: {
-            url: 'https://discord.gg/9WFFPdWD',
+            url: 'https://discord.gg/DFWs8GrHxF',
             label: 'Discord',
         },
         instagram: {
