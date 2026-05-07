@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Users, Sparkles, ExternalLink, Sigma } from 'lucide-react';
+import { ArrowRight, Users, Sparkles, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -26,6 +26,28 @@ const latestPosts = [
         tags: ['サークル紹介'],
         pinned: true,
     },
+];
+
+const explanationVideos = [
+    {
+        id: '2di9KexTvLw',
+        title: '応用数学 解説動画1',
+        subtitle: 'NEW',
+        url: 'https://www.youtube.com/watch?v=2di9KexTvLw',
+    },
+    {
+        id: 'MBZug3sWW7k',
+        title: '2025 力学レポート解説1',
+        subtitle: 'NEW',
+        url: 'https://youtu.be/MBZug3sWW7k?si=1S3duyMKuzePzAU0',
+    },
+    {
+        id: '3VP2Tedn6MY',
+        title: '2025 力学レポート解説2',
+        subtitle: 'NEW',
+        url: 'https://youtu.be/3VP2Tedn6MY?si=gOg-gOzTX9gu6Owp',
+    },
+    
 ];
 
 // Floating puzzle piece component
@@ -184,6 +206,10 @@ export function Home() {
         displayedWeeklyMath.title === '今週の数学問題（一般化）'
             ? '経路の場合の数'
             : displayedWeeklyMath.title;
+    const videosScrollerRef = useRef<HTMLDivElement | null>(null);
+    const [canScrollLeftVideos, setCanScrollLeftVideos] = useState(false);
+    const [canScrollRightVideos, setCanScrollRightVideos] = useState(false);
+    const [hasOverflowVideos, setHasOverflowVideos] = useState(false);
 
     useEffect(() => {
         if (getCachedHomeWeeklyMath() !== undefined) {
@@ -205,6 +231,42 @@ export function Home() {
             mounted = false;
         };
     }, []);
+
+    useEffect(() => {
+        const node = videosScrollerRef.current;
+        if (!node) return;
+
+        const updateScrollButtons = () => {
+            const maxScrollLeft = node.scrollWidth - node.clientWidth;
+            setHasOverflowVideos(maxScrollLeft > 2);
+            setCanScrollLeftVideos(node.scrollLeft > 2);
+            setCanScrollRightVideos(node.scrollLeft < maxScrollLeft - 2);
+        };
+
+        updateScrollButtons();
+        requestAnimationFrame(updateScrollButtons);
+        const timeoutId = window.setTimeout(updateScrollButtons, 120);
+        const resizeObserver = new ResizeObserver(updateScrollButtons);
+        resizeObserver.observe(node);
+        node.addEventListener('scroll', updateScrollButtons, { passive: true });
+        window.addEventListener('resize', updateScrollButtons);
+        return () => {
+            window.clearTimeout(timeoutId);
+            resizeObserver.disconnect();
+            node.removeEventListener('scroll', updateScrollButtons);
+            window.removeEventListener('resize', updateScrollButtons);
+        };
+    }, []);
+
+    const scrollVideos = (direction: 'left' | 'right') => {
+        const node = videosScrollerRef.current;
+        if (!node) return;
+        const distance = Math.min(420, node.clientWidth * 0.86);
+        node.scrollBy({
+            left: direction === 'right' ? distance : -distance,
+            behavior: 'smooth',
+        });
+    };
 
     return (
         <div className="animate-fade-in home-page">
@@ -285,24 +347,141 @@ export function Home() {
                 <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[var(--background)] to-transparent" />
             </section>
 
-            <div className="home-main-color-flow">
-                {/* Weekly Math */}
-                <section className="home-flow-block home-flow-block-event max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16 relative z-10">
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="w-10 h-10 rounded-full bg-[#0071E3]/10 dark:bg-[#2997FF]/10 flex items-center justify-center">
-                            <Sigma className="w-5 h-5 text-[#0071E3] dark:text-[#66B4FF]" />
+            <div className="home-main-color-flow bg-[#F5F5F7] dark:bg-[var(--surface-2)]">
+                {/* Explanation Videos */}
+                <section className="home-flow-block bg-[#F5F5F7] dark:bg-[#111113] w-full py-14 lg:py-16 relative z-10 border-y border-black/5 dark:border-white/10">
+                    <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex items-end justify-between mb-7 gap-4">
+                            <h2 className="text-[24px] sm:text-[34px] font-semibold tracking-[-0.03em] text-[#1D1D1F] dark:text-[#F5F5F7] leading-[1.06]">
+                                <span className="text-[#FF5A1F] dark:text-[#FF8A5C]">解説動画。</span>{' '}
+                                <span className="text-[#6E6E73] dark:text-[rgba(235,235,245,0.66)]">直近の投稿をチェック。</span>
+                            </h2>
+                            <a
+                                href="https://www.youtube.com/@ttiintelligence"
+                                target="_blank"
+                                rel="noreferrer"
+                                className="shrink-0 flex items-center gap-1 text-[12px] font-medium text-[#0071E3] dark:text-[#5CABFF] hover:underline"
+                            >
+                                チャンネルを見る
+                                <ExternalLink className="w-4 h-4" />
+                            </a>
                         </div>
+
+                        <div className="relative">
+                            <div ref={videosScrollerRef} className="overflow-x-auto pb-3 md:pb-2 scroll-smooth">
+                                <div className="flex gap-4 sm:gap-5 snap-x snap-mandatory pr-6">
+                                {explanationVideos.slice(0, 5).map((video, index) => (
+                                    <a
+                                        key={`${video.id}-${index}`}
+                                        href={video.url}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="group snap-start shrink-0 w-[82vw] max-w-[340px] md:w-[340px]"
+                                    >
+                                        <Card
+                                            variant="elevated"
+                                            className="h-full min-h-[380px] rounded-[24px] border border-black/5 dark:border-white/10 shadow-[0_6px_18px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:-translate-y-0.5 transition-all duration-300 overflow-hidden bg-white dark:bg-[#1C1C1E]"
+                                        >
+                                            <CardContent className="p-5 pb-0">
+                                                <p
+                                                    className={`text-[10px] font-semibold tracking-[0.04em] mb-2 min-h-[14px] ${
+                                                        index === 0
+                                                            ? 'text-[#FF5A1F] dark:text-[#FF8A5C]'
+                                                            : 'text-transparent'
+                                                    }`}
+                                                >
+                                                    {index === 0 ? video.subtitle : 'NEW'}
+                                                </p>
+                                                <h3 className="text-[18px] leading-[1.12] font-semibold tracking-[-0.025em] text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
+                                                    {video.title}
+                                                </h3>
+                                            </CardContent>
+                                            <div className="px-3 pt-2 pb-4 bg-[#FBFBFD] dark:bg-[#0C0C0D]">
+                                                <img
+                                                    src={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`}
+                                                    alt={video.title}
+                                                    className="w-full aspect-[16/10] object-cover rounded-2xl group-hover:scale-[1.01] transition-transform duration-500"
+                                                    loading="lazy"
+                                                />
+                                            </div>
+                                            <CardContent className="px-6 pt-2 pb-6 mt-auto">
+                                                <div className="flex items-center justify-between gap-3">
+                                                    <p className="text-[13px] tracking-[-0.01em] text-[#424245] dark:text-[rgba(235,235,245,0.82)]">
+                                                        YouTubeで視聴
+                                                    </p>
+                                                    <span className="inline-flex items-center rounded-full bg-[#0071E3] hover:bg-[#0077ED] text-white text-[12px] font-semibold px-4 py-2">
+                                                        視聴
+                                                    </span>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
+                        {(hasOverflowVideos || explanationVideos.length > 1) && (
+                            <>
+                                <div className="md:hidden mt-4 pr-1 flex justify-end items-center gap-2">
+                                    <button
+                                        type="button"
+                                        aria-label="左に移動"
+                                        onClick={() => scrollVideos('left')}
+                                        disabled={!canScrollLeftVideos}
+                                        className="h-11 w-11 rounded-full flex items-center justify-center transition-colors bg-[#D2D2D7]/95 text-[#5A5A5E] disabled:opacity-45 disabled:cursor-default"
+                                    >
+                                        <ChevronLeft className="w-8 h-8 text-[#636366] stroke-[2.5] shrink-0" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        aria-label="右に移動"
+                                        onClick={() => scrollVideos('right')}
+                                        disabled={!canScrollRightVideos}
+                                        className="h-11 w-11 rounded-full flex items-center justify-center transition-colors bg-[#D2D2D7]/95 text-[#5A5A5E] disabled:opacity-45 disabled:cursor-default"
+                                    >
+                                        <ChevronRight className="w-8 h-8 text-[#636366] stroke-[2.5] shrink-0" />
+                                    </button>
+                                </div>
+
+                                {canScrollLeftVideos && (
+                                    <button
+                                        type="button"
+                                        aria-label="左に移動"
+                                        onClick={() => scrollVideos('left')}
+                                        className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 z-20 h-12 w-12 rounded-full bg-[#D2D2D7]/90 hover:bg-[#C8C8CE] text-[#5A5A5E] items-center justify-center transition-colors"
+                                    >
+                                        <ChevronLeft className="w-7 h-7" />
+                                    </button>
+                                )}
+                                {canScrollRightVideos && (
+                                    <button
+                                        type="button"
+                                        aria-label="右に移動"
+                                        onClick={() => scrollVideos('right')}
+                                        className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 z-20 h-12 w-12 rounded-full bg-[#D2D2D7]/90 hover:bg-[#C8C8CE] text-[#5A5A5E] items-center justify-center transition-colors"
+                                    >
+                                        <ChevronRight className="w-7 h-7" />
+                                    </button>
+                                )}
+                            </>
+                        )}
+                        </div>
+                    </div>
+                </section>
+
+                {/* Weekly Math */}
+                <section className="home-flow-block max-w-[1120px] mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-16 relative z-10">
+                    <div className="flex items-center gap-3 mb-6">
                         <div className="flex flex-col sm:flex-row sm:items-end sm:gap-3">
-                            <h2 className="apple-section text-[#1D1D1F] dark:text-[#F5F5F7] leading-tight">
+                            <h2 className="text-[24px] sm:text-[34px] font-semibold tracking-[-0.03em] text-[#1D1D1F] dark:text-[#F5F5F7] leading-[1.06]">
                                 今週の数学
                             </h2>
-                            <span className="inline-flex items-center w-fit rounded-full px-3 py-1 text-xs font-semibold tracking-wide text-[#0066CC] dark:text-[#7FC2FF] bg-[#0071E3]/10 dark:bg-[#2997FF]/15 border border-[#0071E3]/20 dark:border-[#2997FF]/25">
+                            <span className="inline-flex items-center w-fit rounded-full px-3 py-1 text-[13px] font-medium tracking-[0.01em] text-[#0071E3] dark:text-[#5CABFF] bg-[#0071E3]/8 dark:bg-[#5CABFF]/12 border border-[#0071E3]/20 dark:border-[#5CABFF]/25">
                                 by EIKAKUHANSU
                             </span>
                         </div>
                     </div>
 
-                    <Card variant="elevated" className="relative overflow-hidden">
+                    <Card variant="elevated" className="relative overflow-hidden rounded-[24px] border border-black/5 dark:border-white/10 shadow-[0_8px_22px_rgba(0,0,0,0.08)]">
                         {loadingWeeklyMath ? (
                             <CardContent className="p-8">
                                 <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
@@ -313,7 +492,7 @@ export function Home() {
                             <Link to={`/weekly-math/${encodeURIComponent(toPublicWeeklyMathKey(weeklyMath?.weekKey || 'default-template'))}`} className="block group">
                                 <CardContent className="p-8">
                                     <>
-                                        <h3 className="apple-title text-[#1D1D1F] dark:text-[#F5F5F7] mb-3 group-hover:text-[#0066CC] dark:group-hover:text-[#66B4FF] transition-colors">
+                                        <h3 className="text-[26px] sm:text-[34px] font-semibold tracking-[-0.03em] text-[#1D1D1F] dark:text-[#F5F5F7] mb-3 leading-[1.08]">
                                             {displayedWeeklyMathTitle}
                                         </h3>
                                         <div className="mb-5">
@@ -322,7 +501,7 @@ export function Home() {
                                                 rehypePlugins={[rehypeKatex]}
                                                 components={{
                                                     p: ({ children }) => (
-                                                        <p className="apple-body text-[#1D1D1F] dark:text-[#F5F5F7] leading-relaxed mb-4">
+                                                        <p className="text-[17px] sm:text-[19px] text-[#1D1D1F] dark:text-[#F5F5F7] leading-[1.65] tracking-[-0.01em] mb-4">
                                                             {children}
                                                         </p>
                                                     ),
@@ -339,7 +518,7 @@ export function Home() {
                     <div className="mt-4">
                         <Link
                             to="/weekly-math"
-                            className="inline-flex items-center gap-1 text-[#0066CC] dark:text-[#66B4FF] hover:underline apple-body"
+                            className="inline-flex items-center gap-1 text-[#0071E3] dark:text-[#5CABFF] hover:underline text-[15px] font-medium"
                         >
                             問題一覧を見る
                             <ArrowRight className="w-4 h-4" />
@@ -348,14 +527,14 @@ export function Home() {
                 </section>
 
                 {/* Latest Posts */}
-                <section className="home-flow-block home-flow-block-news max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24 relative z-10">
+                <section className="home-flow-block home-flow-block-news max-w-[1120px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20 relative z-10">
                     <div className="flex items-center justify-between mb-8">
-                        <h2 className="apple-section text-[#1D1D1F] dark:text-[#F5F5F7]">
+                        <h2 className="text-[24px] sm:text-[34px] font-semibold tracking-[-0.03em] text-[#1D1D1F] dark:text-[#F5F5F7] leading-[1.06]">
                             最新のお知らせ
                         </h2>
                         <Link
                             to="/news"
-                            className="flex items-center gap-1 text-[#0066CC] dark:text-[#2997FF] hover:underline apple-body"
+                            className="flex items-center gap-1 text-[#0071E3] dark:text-[#5CABFF] hover:underline apple-body"
                         >
                             すべて見る
                             <ArrowRight className="w-4 h-4" />
@@ -364,7 +543,7 @@ export function Home() {
 
                     <div className="home-card-shell home-card-shell-news">
                         <div className="home-card-backdrop home-card-backdrop-news home-card-backdrop-full-bleed" aria-hidden="true" />
-                        <div className="grid md:grid-cols-3 gap-6 relative z-10">
+                        <div className="grid md:grid-cols-3 gap-7 relative z-10">
                             {latestPosts.map((post, index) => (
                                 <Link
                                     key={post.id}
@@ -374,9 +553,9 @@ export function Home() {
                                 >
                                     <Card
                                         variant="elevated"
-                                        className="h-full hover:scale-[1.015] transition-transform duration-300"
+                                        className="h-full rounded-[24px] border border-black/5 dark:border-white/10 shadow-[0_8px_20px_rgba(0,0,0,0.07)] hover:scale-[1.012] transition-transform duration-300"
                                     >
-                                        <CardContent className="p-6">
+                                        <CardContent className="p-7">
                                             <div className="flex items-center gap-2 mb-3">
                                                 <Badge variant={post.pinned ? 'primary' : 'default'}>
                                                     {post.category}
@@ -385,14 +564,14 @@ export function Home() {
                                                     <Badge variant="warning">📌 固定</Badge>
                                                 )}
                                             </div>
-                                            <h3 className="apple-headline text-[#1D1D1F] dark:text-[#F5F5F7] mb-2 group-hover:text-[#0066CC] dark:group-hover:text-[#2997FF] transition-colors">
+                                            <h3 className="text-[24px] font-semibold tracking-[-0.025em] text-[#1D1D1F] dark:text-[#F5F5F7] mb-2 leading-[1.12]">
                                                 {post.title}
                                             </h3>
-                                            <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-4 line-clamp-2">
+                                            <p className="text-[16px] text-[#6E6E73] dark:text-[rgba(235,235,245,0.7)] mb-5 line-clamp-2 leading-[1.6] tracking-[-0.005em]">
                                                 {post.excerpt}
                                             </p>
                                             <div className="flex items-center justify-between">
-                                                <time className="apple-footnote text-[#86868B] dark:text-[rgba(235,235,245,0.3)]">
+                                                <time className="text-[13px] text-[#86868B] dark:text-[rgba(235,235,245,0.35)]">
                                                     {post.publishedAt}
                                                 </time>
                                                 <ExternalLink className="w-4 h-4 text-[#0071E3] dark:text-[#2997FF] opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -408,17 +587,17 @@ export function Home() {
             </div>
 
             {/* CTA Section */}
-            <section className="home-cta-band max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-                <Card variant="glass" padding="lg" className="text-center relative overflow-hidden">
-                    <h2 className="apple-section text-[#1D1D1F] dark:text-[#F5F5F7] mb-4 relative z-10">
+            <section className="home-cta-band max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+                <Card variant="elevated" padding="md" className="text-center relative overflow-hidden rounded-[24px] border border-black/5 dark:border-white/10 !bg-white dark:!bg-[#1C1C1E] shadow-[0_8px_22px_rgba(0,0,0,0.07)]">
+                    <h2 className="text-[24px] sm:text-[34px] font-semibold tracking-[-0.03em] text-[#1D1D1F] dark:text-[#F5F5F7] mb-3 relative z-10 leading-[1.06]">
                         一緒にAIを学びませんか？
                     </h2>
-                    <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] max-w-2xl mx-auto mb-8 relative z-10">
+                    <p className="text-[16px] sm:text-[18px] text-[#515154] dark:text-[rgba(235,235,245,0.72)] max-w-2xl mx-auto mb-6 relative z-10 leading-[1.6] tracking-[-0.01em]">
                         経験や専攻は問いません。AIに興味がある方なら誰でも大歓迎です。
                         まずはお気軽にお問い合わせください。
                     </p>
                     <Link to="/contact" className="relative z-10">
-                        <Button size="lg">
+                        <Button size="md" className="rounded-full px-7">
                             入会について問い合わせる
                             <ArrowRight className="w-5 h-5" />
                         </Button>
