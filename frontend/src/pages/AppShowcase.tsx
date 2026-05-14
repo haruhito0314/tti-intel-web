@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui';
 import { Smartphone, ExternalLink, Rocket } from 'lucide-react';
 
@@ -8,6 +9,7 @@ const apps: {
     description: string;
     tags: string[];
     url?: string;
+    path?: string;
     images?: string[];
 }[] = [
     {
@@ -20,7 +22,13 @@ const apps: {
             '/images/toeic-practice-2.png',
             '/images/toeic-practice-3.png'
         ]
-    }
+    },
+    {
+        title: '卓球組み合わせ表ジェネレーター',
+        description: '40人（10台）向けの卓球組み合わせをクール単位で生成。番号シャッフルと台ローテーションに対応。',
+        tags: ['React', 'TypeScript', 'Sports'],
+        path: '/app/table-tennis',
+    },
 ];
 
 function ImageCarousel({ images, title }: { images: string[]; title: string }) {
@@ -140,7 +148,16 @@ export function AppShowcase() {
                                     </div>
 
                                     {/* Link */}
-                                    {app.url && (
+                                    {app.path && (
+                                        <Link
+                                            to={app.path}
+                                            className="inline-flex items-center gap-1.5 text-sm text-[#0066CC] dark:text-[#2997FF] hover:underline"
+                                        >
+                                            アプリを見る
+                                            <ExternalLink className="w-3.5 h-3.5" />
+                                        </Link>
+                                    )}
+                                    {!app.path && app.url && (
                                         <a
                                             href={app.url}
                                             target="_blank"

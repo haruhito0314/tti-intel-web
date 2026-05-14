@@ -18,6 +18,7 @@ import { Home } from '@/pages/Home';
 import { About } from '@/pages/About';
 import { Contact } from '@/pages/Contact';
 import { AppShowcase } from '@/pages/AppShowcase';
+import { TableTennisMatchMakerPage } from '@/pages/TableTennisMatchMaker';
 import { Settings } from '@/pages/Settings';
 
 // Lazy load: pages with Firebase SDK or heavy dependencies
@@ -131,6 +132,7 @@ function App() {
               <Route path="news" element={<Suspense fallback={<PageLoader />}><News /></Suspense>} />
               <Route path="news/:slug" element={<Suspense fallback={<PageLoader />}><NewsDetail /></Suspense>} />
               <Route path="app" element={<AppShowcase />} />
+              <Route path="app/table-tennis" element={<TableTennisMatchMakerPage />} />
               <Route path="board" element={<Suspense fallback={<PageLoader />}><Board /></Suspense>} />
               <Route path="board/:id" element={<Suspense fallback={<PageLoader />}><BoardDetail /></Suspense>} />
               <Route path="contact" element={<Contact />} />
