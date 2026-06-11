@@ -88,7 +88,7 @@ export function About() {
                             <Card
                                 key={index}
                                 variant="elevated"
-                                className="hover:scale-[1.015] transition-transform duration-300"
+                                className={`${index % 2 === 0 ? 'accent-card-soft' : 'accent-card-cool'} hover:scale-[1.015] transition-transform duration-300`}
                                 style={{ animationDelay: `${index * 100}ms` }}
                             >
                                 <CardContent className="p-6 text-center">

@@ -10,33 +10,6 @@ import {
     type WeeklyMathProblem,
 } from '@/lib/weeklyMath';
 
-function formatDateShortLabel(date: Date): string {
-    return date.toLocaleDateString('ja-JP', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-    });
-}
-
-function getWeekDateRange(weekKey: string): { start: Date; end: Date } | null {
-    const match = /^(\d{4})-W(\d{2})$/.exec(weekKey);
-    if (!match) return null;
-    const year = Number(match[1]);
-    const week = Number(match[2]);
-    if (!Number.isFinite(year) || !Number.isFinite(week) || week < 1 || week > 53) return null;
-
-    const jan4 = new Date(Date.UTC(year, 0, 4));
-    const jan4Day = jan4.getUTCDay() || 7;
-    const week1Monday = new Date(jan4);
-    week1Monday.setUTCDate(jan4.getUTCDate() - (jan4Day - 1));
-
-    const start = new Date(week1Monday);
-    start.setUTCDate(week1Monday.getUTCDate() + (week - 1) * 7);
-    const end = new Date(start);
-    end.setUTCDate(start.getUTCDate() + 6);
-    return { start, end };
-}
-
 export function WeeklyMath() {
     const [items, setItems] = useState<WeeklyMathProblem[]>([]);
     const [loadingItems, setLoadingItems] = useState(true);
@@ -99,19 +72,31 @@ export function WeeklyMath() {
                     </Card>
                 ) : (
                     <div className="space-y-5">
-                        {items.map((item) => {
-                            const range = getWeekDateRange(item.weekKey);
+                        {items.map((item, index) => {
+                            const accentClasses = [
+                                'from-[#0071E3]/16 via-[#5AC8FA]/8 to-transparent dark:from-[#2997FF]/22 dark:via-[#5AC8FA]/10',
+                                'from-[#34C759]/14 via-[#30D158]/8 to-transparent dark:from-[#30D158]/20 dark:via-[#34C759]/10',
+                                'from-[#AF52DE]/13 via-[#BF5AF2]/7 to-transparent dark:from-[#BF5AF2]/18 dark:via-[#AF52DE]/10',
+                                'from-[#5AC8FA]/14 via-[#64D2FF]/7 to-transparent dark:from-[#64D2FF]/18 dark:via-[#5AC8FA]/10',
+                            ][index % 4];
+                            const barClasses = [
+                                'bg-[#0071E3] dark:bg-[#2997FF]',
+                                'bg-[#34C759] dark:bg-[#30D158]',
+                                'bg-[#AF52DE] dark:bg-[#BF5AF2]',
+                                'bg-[#5AC8FA] dark:bg-[#64D2FF]',
+                            ][index % 4];
                             return (
                                 <Link key={item.weekKey} to={`/weekly-math/${encodeURIComponent(toPublicWeeklyMathKey(item.weekKey))}`} className="block group">
-                                    <Card variant="elevated" className="transition-transform duration-300 hover:scale-[1.01]">
-                                        <CardContent className="p-6 flex items-center justify-between gap-4">
-                                            <div className="min-w-0">
+                                    <Card variant="elevated" className="relative overflow-hidden transition-transform duration-300 hover:scale-[1.01]">
+                                        <div className={`absolute inset-y-0 right-0 w-32 bg-gradient-to-l ${accentClasses}`} aria-hidden="true" />
+                                        <div className={`absolute inset-y-0 right-0 w-1.5 ${barClasses}`} aria-hidden="true" />
+                                        <CardContent className="relative p-6 pr-9 flex items-center justify-between gap-4">
+                                            <div className="min-w-0 pr-6">
                                                 <h2 className="apple-headline text-[#1D1D1F] dark:text-[#F5F5F7] group-hover:text-[#0066CC] dark:group-hover:text-[#2997FF] transition-colors">
                                                     {item.title?.trim() || '経路の場合の数'}
                                                 </h2>
                                                 <p className="mt-1 text-xs text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] truncate">
                                                     {item.weekKey === DEFAULT_WEEKLY_MATH_TEMPLATE_KEY ? '最初の問題' : item.weekKey}
-                                                    {range ? `（${formatDateShortLabel(range.start)}〜${formatDateShortLabel(range.end)}）` : ''}
                                                 </p>
                                             </div>
                                             <ArrowRight className="w-5 h-5 text-[#0071E3] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />

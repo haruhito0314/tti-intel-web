@@ -19,7 +19,6 @@ import { About } from '@/pages/About';
 import { Contact } from '@/pages/Contact';
 import { AppShowcase } from '@/pages/AppShowcase';
 import { TableTennisMatchMakerPage } from '@/pages/TableTennisMatchMaker';
-import { Settings } from '@/pages/Settings';
 
 // Lazy load: pages with Firebase SDK or heavy dependencies
 const News = lazy(() => import('@/pages/News').then(m => ({ default: m.News })));
@@ -47,53 +46,112 @@ function PageLoader() {
 
 function InitialSplash({ phase }: { phase: 'enter' | 'logo-out' | 'overlay-out' }) {
   const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
+
   return (
     <div
-      className={`initial-splash ${phase === 'overlay-out' ? 'is-overlay-out' : ''}`}
+      className={`initial-splash ${isDark ? 'is-dark' : ''} ${phase === 'overlay-out' ? 'is-overlay-out' : ''}`}
       aria-hidden={phase === 'overlay-out'}
     >
-      <img
-        src={resolvedTheme === 'dark' ? '/A-3.png' : '/A-1.png'}
-        alt="TTI Intelligence"
-        className={`initial-splash-logo ${phase !== 'enter' ? 'is-logo-out' : ''}`}
-      />
+      <section className={`initial-splash-scene ${phase !== 'enter' ? 'is-scene-out' : ''}`}>
+        <div className="initial-splash-campus" aria-hidden="true">
+          <i />
+          <i />
+          <i />
+          <i />
+          <i />
+        </div>
+
+        <div className="initial-splash-tech" aria-hidden="true">
+          <div className="initial-splash-arc initial-splash-arc-large" />
+          <div className="initial-splash-arc initial-splash-arc-small" />
+          <div className="initial-splash-hex initial-splash-hex-one" />
+          <div className="initial-splash-hex initial-splash-hex-two" />
+          <div className="initial-splash-hex initial-splash-hex-three" />
+          <div className="initial-splash-node initial-splash-node-one" />
+          <div className="initial-splash-node initial-splash-node-two" />
+          <div className="initial-splash-dots" />
+          <div className="initial-splash-scan" />
+        </div>
+
+        <div className="initial-splash-brand">
+          <img
+            src={isDark ? '/load-assets/tti-lockup-tagline.png' : '/load-assets/tti-lockup-tagline-navy.png'}
+            alt="豊田工業大学 進むなら、足跡のない方へ。"
+          />
+        </div>
+
+        <div className="initial-splash-progress" aria-label="Loading">
+          <div className="initial-splash-progress-bar">
+            <span />
+          </div>
+          <p className="initial-splash-progress-label">Loading...</p>
+        </div>
+      </section>
     </div>
   );
 }
 
 function App() {
-  const SPLASH_TOTAL_MS = 4200;
-  const LOGO_RISE_MS = 2500;
+  const SPLASH_MIN_MS = 2200;
   const OVERLAY_FADE_MS = 420;
-  const LOGO_OUT_LEAD_MS = 680;
 
   const [showSplash, setShowSplash] = useState(() => {
     if (typeof window === 'undefined') return false;
-    const isMobile = window.matchMedia('(max-width: 768px)').matches;
-    return isMobile && !isMobileSplashDisabled();
+    return !isMobileSplashDisabled();
   });
   const [splashPhase, setSplashPhase] = useState<'enter' | 'logo-out' | 'overlay-out'>('enter');
 
   useEffect(() => {
     if (!showSplash) return;
-    const overlayOutAt = Math.max(LOGO_RISE_MS, SPLASH_TOTAL_MS - OVERLAY_FADE_MS);
-    const logoOutAt = Math.max(LOGO_RISE_MS, overlayOutAt - LOGO_OUT_LEAD_MS);
+    let firstFrameId = 0;
+    let secondFrameId = 0;
+    let hideTimer = 0;
+    let readyTimer = 0;
+    let isLoadComplete = document.readyState === 'complete';
+    let hasMinTimeElapsed = false;
 
-    const logoOutTimer = window.setTimeout(() => {
-      setSplashPhase('logo-out');
-    }, logoOutAt);
-    const overlayOutTimer = window.setTimeout(() => {
-      setSplashPhase('overlay-out');
-    }, overlayOutAt);
-    const hideTimer = window.setTimeout(() => {
-      setShowSplash(false);
-    }, SPLASH_TOTAL_MS);
+    const finishSplash = () => {
+      firstFrameId = window.requestAnimationFrame(() => {
+        secondFrameId = window.requestAnimationFrame(() => {
+          setSplashPhase('overlay-out');
+          hideTimer = window.setTimeout(() => {
+            setShowSplash(false);
+          }, OVERLAY_FADE_MS);
+        });
+      });
+    };
+
+    const tryFinishSplash = () => {
+      if (isLoadComplete && hasMinTimeElapsed) {
+        finishSplash();
+      }
+    };
+
+    const markLoadComplete = () => {
+      isLoadComplete = true;
+      tryFinishSplash();
+    };
+
+    readyTimer = window.setTimeout(() => {
+      hasMinTimeElapsed = true;
+      tryFinishSplash();
+    }, SPLASH_MIN_MS);
+
+    if (isLoadComplete) {
+      tryFinishSplash();
+    } else {
+      window.addEventListener('load', markLoadComplete, { once: true });
+    }
+
     return () => {
-      window.clearTimeout(logoOutTimer);
-      window.clearTimeout(overlayOutTimer);
+      window.removeEventListener('load', markLoadComplete);
+      window.cancelAnimationFrame(firstFrameId);
+      window.cancelAnimationFrame(secondFrameId);
+      window.clearTimeout(readyTimer);
       window.clearTimeout(hideTimer);
     };
-  }, [showSplash, LOGO_RISE_MS, LOGO_OUT_LEAD_MS, OVERLAY_FADE_MS, SPLASH_TOTAL_MS]);
+  }, [showSplash, SPLASH_MIN_MS, OVERLAY_FADE_MS]);
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -136,7 +194,6 @@ function App() {
               <Route path="board" element={<Suspense fallback={<PageLoader />}><Board /></Suspense>} />
               <Route path="board/:id" element={<Suspense fallback={<PageLoader />}><BoardDetail /></Suspense>} />
               <Route path="contact" element={<Contact />} />
-              <Route path="settings" element={<Settings />} />
               <Route path="admin" element={<Suspense fallback={<PageLoader />}><Admin /></Suspense>} />
               <Route path="admin/members" element={<Suspense fallback={<PageLoader />}><AdminMembers /></Suspense>} />
               <Route path="admin/weekly-math" element={<Suspense fallback={<PageLoader />}><AdminWeeklyMath /></Suspense>} />

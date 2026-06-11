@@ -200,11 +200,11 @@ export function Board() {
                         </Card>
                     ) : (
                         <div className="space-y-4">
-                            {sortedThreads.map((thread) => (
+                            {sortedThreads.map((thread, index) => (
                                 <Link key={thread.id} to={`/board/${thread.id}`} className="block group">
                                     <Card
                                         variant="elevated"
-                                        className="hover:scale-[1.01] transition-transform duration-300"
+                                        className={`${index % 2 === 0 ? 'accent-card-soft' : 'accent-card-cool'} hover:scale-[1.01] transition-transform duration-300`}
                                     >
                                         <CardContent className="p-6">
                                             <div className="flex items-start justify-between gap-4">

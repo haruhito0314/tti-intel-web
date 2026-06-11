@@ -108,7 +108,7 @@ export function Contact() {
                 <div className="grid md:grid-cols-3 gap-8">
                     {/* Contact Info */}
                     <div className="md:col-span-1 space-y-6">
-                        <Card variant="glass" padding="md">
+                        <Card variant="glass" padding="md" className="accent-card-soft">
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 rounded-full bg-[#0071E3]/10 dark:bg-[#2997FF]/10 flex items-center justify-center">
                                     <Mail className="w-6 h-6 text-[#0071E3] dark:text-[#2997FF]" />
@@ -126,7 +126,7 @@ export function Contact() {
                             </div>
                         </Card>
 
-                        <Card variant="default" padding="md">
+                        <Card variant="default" padding="md" className="accent-card-cool">
                             <h3 className="font-semibold text-[#1D1D1F] dark:text-[#F5F5F7] mb-3">
                                 よくあるお問い合わせ
                             </h3>
@@ -140,7 +140,7 @@ export function Contact() {
 
                     {/* Contact Form */}
                     <div className="md:col-span-2">
-                        <Card variant="elevated" padding="lg">
+                        <Card variant="elevated" padding="lg" className="accent-card-soft">
                             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                                 {submitStatus === 'error' && errorMessage && (
                                     <div className="flex items-center gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400">

@@ -14,20 +14,21 @@ const apps: {
 }[] = [
     {
         title: 'TOEIC Practice (調整中)',
-        description: 'Appwriteを使ったTOEIC対策アプリ。Part別演習やタイムアタック機能を搭載し、学習履歴を管理できます。',
+        description: 'TOEIC対策に使える練習アプリ。Part別演習やタイムアタックで、学習の進み具合を確認できます。',
         tags: ['React', 'TypeScript', 'Appwrite'],
         url: 'https://toeic-practice.appwrite.network',
         images: [
-            '/images/toeic-practice-1.png',
-            '/images/toeic-practice-2.png',
-            '/images/toeic-practice-3.png'
+            '/images/toeic-practice.png',
         ]
     },
     {
         title: '卓球組み合わせ表ジェネレーター',
-        description: '40人（10台）向けの卓球組み合わせをクール単位で生成。番号シャッフルと台ローテーションに対応。',
+        description: '人数とクール数を指定して、卓球の組み合わせを自動生成。番号シャッフル、休み枠、台ローテーションに対応。',
         tags: ['React', 'TypeScript', 'Sports'],
         path: '/app/table-tennis',
+        images: [
+            '/images/table-tennis-match-maker.png',
+        ],
     },
 ];
 
@@ -116,7 +117,7 @@ export function AppShowcase() {
                                 key={index}
                                 variant="elevated"
                                 padding="none"
-                                className="overflow-hidden hover:scale-[1.015] transition-transform duration-300 group"
+                                className={`${index % 2 === 0 ? 'accent-card-soft' : 'accent-card-cool'} overflow-hidden hover:scale-[1.015] transition-transform duration-300 group`}
                             >
                                 {/* App Image */}
                                 {app.images && app.images.length > 0 ? (

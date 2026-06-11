@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
 import { siteConfig } from '@/config/site';
+import { isMobileSplashDisabled, setMobileSplashDisabled } from '@/lib/splashSettings';
 
 // Social media icons as inline SVGs
 function DiscordIcon({ className }: { className?: string }) {
@@ -44,6 +46,13 @@ const socialIcons = {
 
 export function Footer() {
     const currentYear = new Date().getFullYear();
+    const [isSplashDisabled, setIsSplashDisabled] = useState(() => isMobileSplashDisabled());
+
+    const handleToggleSplash = () => {
+        const nextValue = !isSplashDisabled;
+        setIsSplashDisabled(nextValue);
+        setMobileSplashDisabled(nextValue);
+    };
 
     return (
         <footer className="mt-auto bg-[#F5F5F7] dark:bg-[var(--surface-2)] border-t border-[#D2D2D7] dark:border-[var(--border)]">
@@ -129,21 +138,22 @@ export function Footer() {
                                     管理者ページ
                                 </Link>
                             </li>
-                            {siteConfig.footerLinks.legal.map((link) => (
-                                <li key={link.href}>
-                                    <Link
-                                        to={link.href}
-                                        className="
-                      apple-footnote text-[#424245] dark:text-[rgba(235,235,245,0.6)]
-                      hover:text-[#1D1D1F] dark:hover:text-[#F5F5F7]
-                      hover:underline
-                      transition-colors duration-300
-                    "
-                                    >
-                                        {link.name}
-                                    </Link>
-                                </li>
-                            ))}
+                            <li>
+                                <button
+                                    type="button"
+                                    onClick={handleToggleSplash}
+                                    aria-label={`ロード画面を${isSplashDisabled ? 'オン' : 'オフ'}にする`}
+                                    aria-pressed={!isSplashDisabled}
+                                    className="
+                    apple-footnote text-left text-[#424245] dark:text-[rgba(235,235,245,0.6)]
+                    hover:text-[#1D1D1F] dark:hover:text-[#F5F5F7]
+                    hover:underline
+                    transition-colors duration-300
+                   "
+                                >
+                                    ロード画面: {isSplashDisabled ? 'オフ' : 'オン'}
+                                </button>
+                            </li>
                         </ul>
                     </div>
                 </div>

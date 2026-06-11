@@ -3,11 +3,13 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, FileDown, Shuffle, Trash2 } from 'lucide-react';
 import { Button, Card, CardContent } from '@/components/ui';
 
-type TableMatch = [number, number, number, number];
+type PlayerSlot = number | null;
+type TableMatch = [PlayerSlot, PlayerSlot, PlayerSlot, PlayerSlot];
 
 type HistoryEntry = {
     id: string;
     createdAt: string;
+    numPlayers?: number;
     numRounds: number;
     rotateTables: boolean;
     playerOrder: number[];
@@ -19,17 +21,17 @@ class TableTennisMatchMaker {
     numTables: number;
     tables: TableMatch[];
 
-    constructor(players: number[], numTables = 10) {
-        this.numTables = numTables;
+    constructor(players: number[]) {
+        this.numTables = Math.ceil(players.length / 4);
         this.tables = this.initializeTables(players);
     }
 
     initializeTables(players: number[]): TableMatch[] {
         return Array.from({ length: this.numTables }, (_, i) => [
-            players[4 * i],
-            players[4 * i + 1],
-            players[4 * i + 2],
-            players[4 * i + 3],
+            players[4 * i] ?? null,
+            players[4 * i + 1] ?? null,
+            players[4 * i + 2] ?? null,
+            players[4 * i + 3] ?? null,
         ]);
     }
 
@@ -40,14 +42,14 @@ class TableTennisMatchMaker {
             const currentMatches = this.tables.map((table) => [...table] as TableMatch);
 
             if (rotateTables) {
+                allRounds.push(currentMatches);
+            } else {
                 const shift = roundIndex % this.numTables;
                 if (shift === 0) {
                     allRounds.push(currentMatches);
                 } else {
                     allRounds.push([...currentMatches.slice(-shift), ...currentMatches.slice(0, -shift)]);
                 }
-            } else {
-                allRounds.push(currentMatches);
             }
 
             this.movePlayers();
@@ -84,7 +86,15 @@ function formatDateTime(iso: string): string {
     return new Date(iso).toLocaleString('ja-JP');
 }
 
-function buildPdfHtml(rounds: TableMatch[][], createdAt: string, numRounds: number, rotateTables: boolean): string {
+function formatPlayerSlot(value: PlayerSlot): string {
+    return value === null ? '休み' : String(value);
+}
+
+function formatMatch(table: TableMatch): string {
+    return `(${formatPlayerSlot(table[0])}, ${formatPlayerSlot(table[1])}) vs (${formatPlayerSlot(table[2])}, ${formatPlayerSlot(table[3])})`;
+}
+
+function buildPdfHtml(rounds: TableMatch[][], createdAt: string, numPlayers: number, numRounds: number, rotateTables: boolean): string {
     const sections = rounds
         .map(
             (round, roundIndex) => `
@@ -103,7 +113,7 @@ function buildPdfHtml(rounds: TableMatch[][], createdAt: string, numRounds: numb
                                 (table, tableIndex) => `
                                 <tr>
                                     <td style="border: 1px solid #ccc; padding: 6px;">台${tableIndex + 1}</td>
-                                    <td style="border: 1px solid #ccc; padding: 6px;">(${table[0]}, ${table[1]}) vs (${table[2]}, ${table[3]})</td>
+                                    <td style="border: 1px solid #ccc; padding: 6px;">${formatMatch(table)}</td>
                                 </tr>
                             `,
                             )
@@ -123,9 +133,9 @@ function buildPdfHtml(rounds: TableMatch[][], createdAt: string, numRounds: numb
         <title>卓球組み合わせ表</title>
     </head>
     <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 24px; color: #111;">
-        <h1 style="font-size: 22px; margin: 0 0 8px;">卓球組み合わせ表（40人）</h1>
+        <h1 style="font-size: 22px; margin: 0 0 8px;">卓球組み合わせ表（${numPlayers}人）</h1>
         <p style="margin: 0 0 4px; font-size: 12px;">作成日時: ${formatDateTime(createdAt)}</p>
-        <p style="margin: 0 0 18px; font-size: 12px;">クール数: ${numRounds} / 台ローテーション: ${rotateTables ? '有効' : '無効'}</p>
+        <p style="margin: 0 0 18px; font-size: 12px;">人数: ${numPlayers} / クール数: ${numRounds} / 台ローテーション: ${rotateTables ? '有効' : '無効'}</p>
         <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; align-items: start;">
             ${sections}
         </div>
@@ -135,6 +145,8 @@ function buildPdfHtml(rounds: TableMatch[][], createdAt: string, numRounds: numb
 }
 
 export function TableTennisMatchMakerPage() {
+    const [numPlayers, setNumPlayers] = useState(40);
+    const [numPlayersInput, setNumPlayersInput] = useState('40');
     const [numRounds, setNumRounds] = useState(10);
     const [numRoundsInput, setNumRoundsInput] = useState('10');
     const [rotateTables, setRotateTables] = useState(true);
@@ -146,7 +158,7 @@ export function TableTennisMatchMakerPage() {
     const [history, setHistory] = useState<HistoryEntry[]>([]);
 
     const tableTennisRounds = useMemo(
-        () => new TableTennisMatchMaker(playerOrder, 10).generateRounds(numRounds, rotateTables),
+        () => new TableTennisMatchMaker(playerOrder).generateRounds(numRounds, rotateTables),
         [numRounds, playerOrder, rotateTables],
     );
     const activeRound = tableTennisRounds[activeRoundIndex] ?? [];
@@ -157,6 +169,16 @@ export function TableTennisMatchMakerPage() {
         setNumRounds(next);
         setNumRoundsInput(String(next));
         setActiveRoundIndex((prev) => Math.min(prev, next - 1));
+    };
+
+    const applyNumPlayers = (rawValue: string) => {
+        const parsed = Number(rawValue);
+        const next = Number.isNaN(parsed) ? 40 : Math.min(80, Math.max(4, Math.floor(parsed)));
+        setNumPlayers(next);
+        setNumPlayersInput(String(next));
+        setPlayerOrder(Array.from({ length: next }, (_, index) => index + 1));
+        setCreatedAt(new Date().toISOString());
+        setActiveRoundIndex(0);
     };
 
     useEffect(() => {
@@ -188,6 +210,7 @@ export function TableTennisMatchMakerPage() {
         const entry: HistoryEntry = {
             id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
             createdAt: snapshotCreatedAt,
+            numPlayers,
             numRounds,
             rotateTables,
             playerOrder: snapshotOrder,
@@ -207,7 +230,7 @@ export function TableTennisMatchMakerPage() {
     };
 
     const handleExportPdf = () => {
-        const html = buildPdfHtml(tableTennisRounds, createdAt, numRounds, rotateTables);
+        const html = buildPdfHtml(tableTennisRounds, createdAt, numPlayers, numRounds, rotateTables);
         const printWindow = window.open('', '_blank');
         if (!printWindow) {
             window.alert('ポップアップがブロックされました。許可してから再度お試しください。');
@@ -231,11 +254,11 @@ export function TableTennisMatchMakerPage() {
                     Appsへ戻る
                 </Link>
 
-                <Card variant="elevated" className="rounded-[24px] border border-black/5 dark:border-white/10 shadow-[0_8px_20px_rgba(0,0,0,0.07)]">
+                <Card variant="elevated" className="accent-card-soft rounded-[24px] border border-black/5 dark:border-white/10 shadow-[0_8px_20px_rgba(0,0,0,0.07)]">
                     <CardContent className="p-6 sm:p-8">
                         <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
                             <h1 className="apple-headline text-[#1D1D1F] dark:text-[#F5F5F7]">
-                                卓球組み合わせ表ジェネレーター（40人）
+                                卓球組み合わせ表ジェネレーター（{numPlayers}人）
                             </h1>
                             <div className="flex items-center gap-2">
                                 <Button size="sm" variant="outline" onClick={handleExportPdf}>
@@ -249,13 +272,35 @@ export function TableTennisMatchMakerPage() {
                             </div>
                         </div>
                         <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-2">
-                            1〜40番の並びをシャッフルしてから、10台分の対戦をクールごとに自動生成します。
+                            人数とクール数を指定して、{Math.ceil(numPlayers / 4)}台分の対戦を自動生成します。4人に満たない台は休み枠として表示します。
                         </p>
                         <p className="text-xs text-[#8A8A8E] dark:text-[rgba(235,235,245,0.45)] mb-5">
                             作成日時: {formatDateTime(createdAt)}
                         </p>
 
                         <div className="flex flex-col sm:flex-row sm:items-end gap-4 mb-5">
+                            <label className="flex flex-col gap-2 text-[14px] text-[#515154] dark:text-[rgba(235,235,245,0.72)]">
+                                人数
+                                <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
+                                    value={numPlayersInput}
+                                    onChange={(event) => {
+                                        const digitsOnly = event.target.value.replace(/[^0-9]/g, '');
+                                        setNumPlayersInput(digitsOnly);
+                                    }}
+                                    onBlur={() => applyNumPlayers(numPlayersInput)}
+                                    onKeyDown={(event) => {
+                                        if (event.key === 'Enter') {
+                                            applyNumPlayers(numPlayersInput);
+                                            (event.currentTarget as HTMLInputElement).blur();
+                                        }
+                                    }}
+                                    className="w-28 rounded-lg border border-black/10 dark:border-white/20 bg-white dark:bg-[#1C1C1E] px-3 py-2 text-[15px] text-[#1D1D1F] dark:text-[#F5F5F7]"
+                                />
+                            </label>
+
                             <label className="flex flex-col gap-2 text-[14px] text-[#515154] dark:text-[rgba(235,235,245,0.72)]">
                                 クール数
                                 <input
@@ -318,7 +363,7 @@ export function TableTennisMatchMakerPage() {
                                 >
                                     <p className="text-[13px] font-semibold text-[#0071E3] dark:text-[#5CABFF] mb-1">台{tableIndex + 1}</p>
                                     <p className="text-[15px] text-[#1D1D1F] dark:text-[#F5F5F7] tracking-[-0.01em]">
-                                        ({table[0]}, {table[1]}) vs ({table[2]}, {table[3]})
+                                        {formatMatch(table)}
                                     </p>
                                 </div>
                             ))}
@@ -336,13 +381,16 @@ export function TableTennisMatchMakerPage() {
                                             className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-lg border border-black/10 dark:border-white/10 px-3 py-2"
                                         >
                                             <p className="text-sm text-[#1D1D1F] dark:text-[#F5F5F7]">
-                                                {formatDateTime(entry.createdAt)} / {entry.numRounds}クール / 台ローテーション:{' '}
+                                                {formatDateTime(entry.createdAt)} / {entry.numPlayers ?? entry.playerOrder.length}人 / {entry.numRounds}クール / 台ローテーション:{' '}
                                                 {entry.rotateTables ? '有効' : '無効'}
                                             </p>
                                             <Button
                                                 size="sm"
                                                 variant="outline"
                                                 onClick={() => {
+                                                    const restoredNumPlayers = entry.numPlayers ?? entry.playerOrder.length;
+                                                    setNumPlayers(restoredNumPlayers);
+                                                    setNumPlayersInput(String(restoredNumPlayers));
                                                     setPlayerOrder(entry.playerOrder);
                                                     setNumRounds(entry.numRounds);
                                                     setNumRoundsInput(String(entry.numRounds));

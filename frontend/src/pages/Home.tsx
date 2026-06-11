@@ -380,7 +380,7 @@ export function Home() {
                                     >
                                         <Card
                                             variant="elevated"
-                                            className="h-full min-h-[380px] rounded-[24px] border border-black/5 dark:border-white/10 shadow-[0_6px_18px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:-translate-y-0.5 transition-all duration-300 overflow-hidden bg-white dark:bg-[#1C1C1E]"
+                                            className="accent-card-cool h-full min-h-[380px] rounded-[24px] border border-black/5 dark:border-white/10 shadow-[0_6px_18px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:-translate-y-0.5 transition-all duration-300 overflow-hidden bg-white dark:bg-[#1C1C1E]"
                                         >
                                             <CardContent className="p-5 pb-0">
                                                 <p
@@ -481,7 +481,7 @@ export function Home() {
                         </div>
                     </div>
 
-                    <Card variant="elevated" className="relative overflow-hidden rounded-[24px] border border-black/5 dark:border-white/10 shadow-[0_8px_22px_rgba(0,0,0,0.08)]">
+                    <Card variant="elevated" className="accent-card-soft relative overflow-hidden rounded-[24px] border border-black/5 dark:border-white/10 shadow-[0_8px_22px_rgba(0,0,0,0.08)]">
                         {loadingWeeklyMath ? (
                             <CardContent className="p-8">
                                 <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
@@ -553,7 +553,7 @@ export function Home() {
                                 >
                                     <Card
                                         variant="elevated"
-                                        className="h-full rounded-[24px] border border-black/5 dark:border-white/10 shadow-[0_8px_20px_rgba(0,0,0,0.07)] hover:scale-[1.012] transition-transform duration-300"
+                                        className={`${index % 2 === 0 ? 'accent-card-soft' : 'accent-card-cool'} h-full rounded-[24px] border border-black/5 dark:border-white/10 shadow-[0_8px_20px_rgba(0,0,0,0.07)] hover:scale-[1.012] transition-transform duration-300`}
                                     >
                                         <CardContent className="p-7">
                                             <div className="flex items-center gap-2 mb-3">
@@ -588,7 +588,7 @@ export function Home() {
 
             {/* CTA Section */}
             <section className="home-cta-band max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-                <Card variant="elevated" padding="md" className="text-center relative overflow-hidden rounded-[24px] border border-black/5 dark:border-white/10 !bg-white dark:!bg-[#1C1C1E] shadow-[0_8px_22px_rgba(0,0,0,0.07)]">
+                <Card variant="elevated" padding="md" className="accent-card-soft text-center relative overflow-hidden rounded-[24px] border border-black/5 dark:border-white/10 !bg-white dark:!bg-[#1C1C1E] shadow-[0_8px_22px_rgba(0,0,0,0.07)]">
                     <h2 className="text-[24px] sm:text-[34px] font-semibold tracking-[-0.03em] text-[#1D1D1F] dark:text-[#F5F5F7] mb-3 relative z-10 leading-[1.06]">
                         一緒にAIを学びませんか？
                     </h2>

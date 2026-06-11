@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { Sparkles, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { siteConfig } from '@/config/site';
 import { ThemeToggle } from './ThemeToggle';
 
 export function Header() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const desktopNavigation = siteConfig.navigation.filter((link) => link.href !== '/settings');
 
     return (
         <header className="sticky top-0 z-40 w-full">
@@ -19,18 +18,18 @@ export function Header() {
                     <Link
                         to="/"
                         className="flex items-center group"
+                        aria-label={`${siteConfig.name} ホーム`}
                     >
-                        <Sparkles className="
-              w-6 h-6
-              text-[#0071E3] dark:text-[#2997FF]
-              group-hover:scale-110
-              transition-transform duration-300
-            " />
+                        <img
+                            src="/load-assets/tti-crest.png"
+                            alt={siteConfig.name}
+                            className="h-6 w-6 object-contain transition-opacity duration-300 group-hover:opacity-75"
+                        />
                     </Link>
 
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center gap-0">
-                        {desktopNavigation.map((link) => (
+                        {siteConfig.navigation.map((link) => (
                             <NavLink
                                 key={link.href}
                                 to={link.href}

@@ -99,11 +99,11 @@ export function News() {
                                     </p>
                                 </Card>
                             ) : (
-                                sortedPosts.map((post) => (
+                                sortedPosts.map((post, index) => (
                                     <Link key={post.id} to={`/news/${post.slug}`} className="block group">
                                         <Card
                                             variant="elevated"
-                                            className="hover:scale-[1.01] transition-transform duration-300"
+                                            className={`${index % 2 === 0 ? 'accent-card-soft' : 'accent-card-cool'} hover:scale-[1.01] transition-transform duration-300`}
                                         >
                                             <CardContent className="p-6">
                                                 <div className="flex items-start justify-between gap-4">
@@ -151,7 +151,7 @@ export function News() {
 
                     {/* Sidebar */}
                     <aside className="lg:w-72">
-                        <Card variant="default" padding="md" className="sticky top-24">
+                        <Card variant="default" padding="md" className="accent-card-soft sticky top-24">
                             <h3 className="font-semibold text-[#1D1D1F] dark:text-[#F5F5F7] mb-4 flex items-center gap-2">
                                 <Tag className="w-4 h-4" />
                                 タグ
