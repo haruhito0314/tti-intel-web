@@ -283,6 +283,39 @@ export function Home() {
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(78,179,218,0.15),transparent_50%)]" />
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_90%_10%,rgba(147,51,234,0.1),transparent_40%)]" />
 
+                <svg
+                    className="pointer-events-none absolute right-0 top-0 z-0 hidden h-[360px] w-[420px] text-[#0071E3] opacity-[0.09] dark:text-[#66B4FF] dark:opacity-[0.12] sm:block md:h-[420px] md:w-[500px]"
+                    viewBox="0 0 500 420"
+                    fill="none"
+                    aria-hidden="true"
+                >
+                    <g stroke="currentColor" strokeWidth="1" strokeLinecap="round">
+                        <path d="M294 72L358 44L430 86" />
+                        <path d="M358 44L382 128L468 166" />
+                        <path d="M294 72L254 146L322 204" />
+                        <path d="M382 128L322 204L410 260" />
+                        <path d="M254 146L190 220L270 286" />
+                        <path d="M322 204L270 286L350 336" />
+                    </g>
+                    <g fill="currentColor">
+                        <circle cx="294" cy="72" r="4" />
+                        <circle cx="358" cy="44" r="5" />
+                        <circle cx="430" cy="86" r="4" />
+                        <circle cx="382" cy="128" r="4" />
+                        <circle cx="468" cy="166" r="5" />
+                        <circle cx="322" cy="204" r="5" />
+                        <circle cx="254" cy="146" r="4" />
+                        <circle cx="190" cy="220" r="4" />
+                        <circle cx="270" cy="286" r="5" />
+                        <circle cx="410" cy="260" r="4" />
+                        <circle cx="350" cy="336" r="4" />
+                        <rect x="336" y="148" width="12" height="12" rx="3" />
+                        <rect x="226" y="102" width="10" height="10" rx="2" />
+                        <rect x="438" y="214" width="12" height="12" rx="3" />
+                        <rect x="236" y="324" width="10" height="10" rx="2" />
+                    </g>
+                </svg>
+
                 {/* Grid lines */}
                 <GridLines />
 
