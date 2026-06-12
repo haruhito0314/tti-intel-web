@@ -18,7 +18,7 @@ type AddAdminForm = z.infer<typeof addAdminSchema>;
 interface AdminDoc {
     id: string;
     email: string;
-    addedAt: any;
+    addedAt: unknown;
     addedBy: string;
 }
 
@@ -98,9 +98,11 @@ export function AdminMembers() {
         }
     };
 
-    const formatDate = (timestamp: any) => {
+    const formatDate = (timestamp: unknown) => {
         if (!timestamp) return '';
-        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+        const date = typeof timestamp === 'object' && timestamp !== null && 'toDate' in timestamp && typeof timestamp.toDate === 'function'
+            ? timestamp.toDate()
+            : new Date(timestamp as string | number | Date);
         return date.toLocaleDateString('ja-JP', {
             year: 'numeric',
             month: 'short',

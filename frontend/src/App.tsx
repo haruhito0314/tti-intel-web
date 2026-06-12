@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
-import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
+import { useTheme } from '@/contexts/useTheme';
 import { ToastProvider } from '@/components/ui';
 import { Layout } from '@/components/layout';
 import { isMobileSplashDisabled } from '@/lib/splashSettings';

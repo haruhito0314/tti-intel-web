@@ -6,4 +6,5 @@ export { Textarea } from './Textarea';
 export { Badge } from './Badge';
 export { Dialog } from './Dialog';
 export { Dropdown, Select } from './Dropdown';
-export { ToastProvider, useToast } from './Toast';
+export { ToastProvider } from './Toast';
+export { useToast } from './useToast';

@@ -22,7 +22,7 @@ interface Thread {
     title: string;
     body: string;
     displayName: string;
-    createdAt: any;
+    createdAt: unknown;
     pinned: boolean;
     locked: boolean;
     commentCount: number;
@@ -33,7 +33,7 @@ interface Comment {
     id: string;
     body: string;
     displayName: string;
-    createdAt: any;
+    createdAt: unknown;
     likeCount: number;
 }
 
@@ -96,9 +96,11 @@ export function BoardDetail() {
         };
     }, [id]);
 
-    const formatDate = (timestamp: any) => {
+    const formatDate = (timestamp: unknown) => {
         if (!timestamp) return '';
-        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+        const date = typeof timestamp === 'object' && timestamp !== null && 'toDate' in timestamp && typeof timestamp.toDate === 'function'
+            ? timestamp.toDate()
+            : new Date(timestamp as string | number | Date);
         return date.toLocaleDateString('ja-JP', {
             year: 'numeric',
             month: 'short',

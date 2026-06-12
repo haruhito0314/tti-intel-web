@@ -13,6 +13,7 @@ import {
     toPublicWeeklyMathKey,
     type WeeklyMathProblem,
 } from '@/lib/weeklyMath';
+import { normalizeMathDelimiters } from '@/lib/markdown';
 
 // Dummy data for MVP
 const latestPosts = [
@@ -194,12 +195,6 @@ function GridLines() {
             />
         </div>
     );
-}
-
-function normalizeMathDelimiters(markdown: string): string {
-    return markdown
-        .replace(/\\\[((?:.|\n)*?)\\\]/g, (_, expr: string) => `$$${expr}$$`)
-        .replace(/\\\(((?:.|\n)*?)\\\)/g, (_, expr: string) => `$${expr}$`);
 }
 
 export function Home() {

@@ -1,23 +1,6 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import { useState, useCallback, type ReactNode } from 'react';
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
-
-type ToastType = 'success' | 'error' | 'info' | 'warning';
-
-interface Toast {
-    id: string;
-    type: ToastType;
-    title: string;
-    message?: string;
-    duration?: number;
-}
-
-interface ToastContextType {
-    toasts: Toast[];
-    addToast: (toast: Omit<Toast, 'id'>) => void;
-    removeToast: (id: string) => void;
-}
-
-const ToastContext = createContext<ToastContextType | undefined>(undefined);
+import { ToastContext, type Toast, type ToastType } from './toastContext';
 
 export function ToastProvider({ children }: { children: ReactNode }) {
     const [toasts, setToasts] = useState<Toast[]>([]);
@@ -46,14 +29,6 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             <ToastContainer toasts={toasts} removeToast={removeToast} />
         </ToastContext.Provider>
     );
-}
-
-export function useToast() {
-    const context = useContext(ToastContext);
-    if (context === undefined) {
-        throw new Error('useToast must be used within a ToastProvider');
-    }
-    return context;
 }
 
 const iconMap: Record<ToastType, React.ElementType> = {

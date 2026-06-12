@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, FileDown, Shuffle, Trash2 } from 'lucide-react';
 import { Button, Card, CardContent } from '@/components/ui';
@@ -144,6 +144,18 @@ function buildPdfHtml(rounds: TableMatch[][], createdAt: string, numPlayers: num
     `;
 }
 
+function loadHistory(): HistoryEntry[] {
+    try {
+        const raw = localStorage.getItem(HISTORY_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed as HistoryEntry[] : [];
+    } catch (error) {
+        console.error('Failed to load history:', error);
+        return [];
+    }
+}
+
 export function TableTennisMatchMakerPage() {
     const [numPlayers, setNumPlayers] = useState(40);
     const [numPlayersInput, setNumPlayersInput] = useState('40');
@@ -155,7 +167,7 @@ export function TableTennisMatchMakerPage() {
         Array.from({ length: 40 }, (_, index) => index + 1),
     );
     const [createdAt, setCreatedAt] = useState(new Date().toISOString());
-    const [history, setHistory] = useState<HistoryEntry[]>([]);
+    const [history, setHistory] = useState<HistoryEntry[]>(loadHistory);
 
     const tableTennisRounds = useMemo(
         () => new TableTennisMatchMaker(playerOrder).generateRounds(numRounds, rotateTables),
@@ -180,19 +192,6 @@ export function TableTennisMatchMakerPage() {
         setCreatedAt(new Date().toISOString());
         setActiveRoundIndex(0);
     };
-
-    useEffect(() => {
-        try {
-            const raw = localStorage.getItem(HISTORY_KEY);
-            if (!raw) return;
-            const parsed = JSON.parse(raw) as HistoryEntry[];
-            if (Array.isArray(parsed)) {
-                setHistory(parsed);
-            }
-        } catch (error) {
-            console.error('Failed to load history:', error);
-        }
-    }, []);
 
     const persistHistory = (entries: HistoryEntry[]) => {
         setHistory(entries);

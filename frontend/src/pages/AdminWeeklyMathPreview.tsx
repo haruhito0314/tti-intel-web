@@ -17,95 +17,10 @@ import {
     getWeeklyMathList,
     type WeeklyMathProblem,
 } from '@/lib/weeklyMath';
-import { useToast } from '@/components/ui/Toast';
-
-function normalizeMathDelimiters(markdown: string): string {
-    return markdown
-        .replace(/\\+[ \t]*\r?\n/g, '  \n')
-        .replace(/\\[ \t]+/g, '  \n')
-        .replace(/\\+$/g, '')
-        .replace(/\$?\{([^{}\n]+)\}_C_\{([^{}\n]+)\}\$?/g, (_m, n: string, r: string) => `$` + `{}_{${n}}C_{${r}}` + `$`)
-        .replace(/\$?\{([^{}\n]+)\}C\{([^{}\n]+)\}\$?/g, (_m, n: string, r: string) => `$` + `{}_{${n}}C_{${r}}` + `$`)
-        .replace(/\$?([A-Za-z0-9]+)_C_\{([^{}\n]+)\}\$?/g, (_m, n: string, r: string) => `$` + `{}_{${n}}C_{${r}}` + `$`)
-        .replace(/\$?([A-Za-z0-9]+)_C_([A-Za-z0-9]+)\$?/g, (_m, n: string, r: string) => `$` + `{}_{${n}}C_{${r}}` + `$`)
-        .replace(/\\\[((?:.|\n)*?)\\\]/g, (_, expr: string) => `$$${expr}$$`)
-        .replace(/\\\(((?:.|\n)*?)\\\)/g, (_, expr: string) => `$${expr}$`);
-}
-
-const ROUTE_COUNTING_EXPLANATION = String.raw`以下のようなスコアを考えます.\\
-$+$のカードを引いたときスコアを2得る.\\
-$\times,\div$のカードを引いたときスコアを1得る.\\
-$-$のカードを引いたときスコアを得ない.\\
-ここで$+$のカードと$-$のカードの引いた回数が等しければよく、この回数を$k$とおけばこの際のスコアはkによらず,
-$$
-2k+(n-k-k)+0k=n
-$$
-となります.ここで次の式を考えます。
-$$
-f(x)=(x^2+2x+1)^n
-$$
-これを展開して得られる整式$f(x)=\sigma_{k=0}^{n}A_kx^k$について$x^k$の係数$A_k$はスコアがkであるようなカードの引き方の総数に対応しています.($x^2$と$+$のカード,$x$と$\times$または$\div$のカード,定数項$1$と$-$のカードがそれぞれ対応しており,$(x^2+2x+1)$をかけるたびにカードを引くという操作が再現できます.)\\
-したがって求める値はスコアが$n$の時,つまり$A_n$に等しいです.今$f(x)=(1+x)^{2n}$なので二項定理から`;
-
-const ROUTE_COUNTING_ANSWER = '${}_{2n}C_{n}$';
-
-function formatDateLabel(date: Date): string {
-    return date.toLocaleDateString('ja-JP', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        weekday: 'short',
-    });
-}
-
-function formatDateShortLabel(date: Date): string {
-    return date.toLocaleDateString('ja-JP', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-    });
-}
-
-function formatWeekKeyWithRange(weekKey: string): string {
-    const range = getWeekDateRange(weekKey);
-    if (!range) return weekKey;
-    return `${weekKey}（${formatDateShortLabel(range.start)}〜${formatDateShortLabel(range.end)}）`;
-}
-
-function formatUpdatedAtLabel(value: unknown): string | null {
-    if (!value) return null;
-    let date: Date | null = null;
-
-    if (value instanceof Date) {
-        date = value;
-    } else if (typeof value === 'object' && value !== null) {
-        const maybeTimestamp = value as {
-            toDate?: () => Date;
-            seconds?: number;
-            nanoseconds?: number;
-            _seconds?: number;
-            _nanoseconds?: number;
-        };
-        if (typeof maybeTimestamp.toDate === 'function') {
-            date = maybeTimestamp.toDate();
-        } else if (typeof maybeTimestamp.seconds === 'number') {
-            date = new Date(maybeTimestamp.seconds * 1000 + (maybeTimestamp.nanoseconds ?? 0) / 1_000_000);
-        } else if (typeof maybeTimestamp._seconds === 'number') {
-            date = new Date(maybeTimestamp._seconds * 1000 + (maybeTimestamp._nanoseconds ?? 0) / 1_000_000);
-        }
-    } else if (typeof value === 'number') {
-        date = new Date(value);
-    }
-
-    if (!date || Number.isNaN(date.getTime())) return null;
-    return date.toLocaleString('ja-JP', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-    });
-}
+import { useToast } from '@/components/ui/useToast';
+import { formatDateLabel, formatUpdatedAtLabel, formatWeekKeyWithRange } from '@/lib/dateFormat';
+import { normalizeMathDelimiters } from '@/lib/markdown';
+import { ROUTE_COUNTING_ANSWER, ROUTE_COUNTING_EXPLANATION } from '@/lib/weeklyMathFallbacks';
 
 export function AdminWeeklyMathPreview() {
     const { user, isAdmin, loading } = useAuth();
