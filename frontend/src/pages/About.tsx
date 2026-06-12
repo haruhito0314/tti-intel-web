@@ -1,5 +1,5 @@
 import { Card, CardContent } from '@/components/ui';
-import { Code, Sigma, Gamepad2, Video, ChevronDown, Calendar } from 'lucide-react';
+import { Check, Code, Sigma, Gamepad2, Video, ChevronDown, Calendar } from 'lucide-react';
 import { useState } from 'react';
 
 const activities = [
@@ -110,12 +110,41 @@ export function About() {
 
             {/* Next Event */}
             <section className="about-band-gray max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-                <Card variant="glass" className="overflow-hidden bg-[#EBEBF0]/80 dark:bg-[var(--surface-2)]/75">
+                <Card variant="default" className="overflow-hidden !bg-transparent dark:!bg-transparent border-[#D2D2D7]/60 dark:border-white/10 shadow-none">
                     <div className="flex flex-col md:flex-row">
-                        <div className="md:w-1/3 event-panel-bg p-8 flex items-center justify-center">
-                            <div className="text-center text-white">
-                                <Calendar className="w-12 h-12 mx-auto mb-4" />
-                                <p className="apple-headline">次回イベント</p>
+                        <div className="md:w-[42%] p-6 md:p-8 flex items-center justify-center border-b md:border-b-0 md:border-r border-[#D2D2D7]/60 dark:border-white/10">
+                            <div className="relative w-full max-w-[280px] overflow-hidden rounded-3xl bg-white/45 dark:bg-white/[0.03] border border-[#D2D2D7]/60 dark:border-white/10 p-6">
+                                <div className="absolute right-5 top-5 h-12 w-12 rounded-full bg-[#E8EEF9] dark:bg-[#1D2A42]" />
+                                <div className="absolute left-6 bottom-6 h-8 w-8 rounded-full bg-[#D8E3FA] dark:bg-[#233B68]" />
+                                <div className="relative z-10 flex min-h-[260px] flex-col justify-between gap-7">
+                                    <div className="min-w-0">
+                                        <p className="text-[11px] font-semibold tracking-[0.3em] text-[#8AA0C1] dark:text-[#7FA7E8]">
+                                            NEXT EVENT
+                                        </p>
+                                        <p className="mt-2 text-[clamp(22px,7vw,28px)] font-semibold tracking-[-0.03em] leading-tight text-[#0B1B35] dark:text-[#F5F7FB]">
+                                            次回イベント
+                                        </p>
+                                        <div className="mt-4 h-0.5 w-16 bg-[#5A86F7] dark:bg-[#7FA7FF]" />
+                                    </div>
+                                    <div className="relative ml-auto h-[116px] w-[116px] shrink-0 rounded-[28px] border border-[#DCE5F6] dark:border-white/10 bg-white/85 dark:bg-[#151D2C] shadow-[0_14px_35px_rgba(32,73,145,0.12)] dark:shadow-none">
+                                        <div className="h-9 rounded-t-[28px] bg-[#AFC3FA] dark:bg-[#355AAB]" />
+                                        <div className="grid grid-cols-4 gap-2 p-4">
+                                            {Array.from({ length: 12 }).map((_, index) => (
+                                                <span
+                                                    key={index}
+                                                    className={`h-3 rounded-[4px] ${
+                                                        index === 7
+                                                            ? 'bg-[#5D7DF4] dark:bg-[#7FA7FF]'
+                                                            : 'bg-[#E8EEF8] dark:bg-[#26344D]'
+                                                    }`}
+                                                />
+                                            ))}
+                                        </div>
+                                        <div className="absolute -bottom-3 -right-3 flex h-12 w-12 items-center justify-center rounded-full bg-[#5D7DF4] dark:bg-[#7FA7FF] text-white dark:text-[#071225] shadow-[0_10px_22px_rgba(74,105,230,0.34)]">
+                                            <Check className="h-7 w-7 stroke-[3]" />
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <CardContent className="flex-1 p-8">
