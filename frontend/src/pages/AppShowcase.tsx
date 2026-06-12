@@ -123,7 +123,7 @@ export function AppShowcase() {
                                 {app.images && app.images.length > 0 ? (
                                     <ImageCarousel images={app.images} title={app.title} />
                                 ) : (
-                                    <div className="aspect-video bg-gradient-to-br from-[#0071E3]/10 to-[#00AFBE]/10 dark:from-[#0071E3]/20 dark:to-[#00AFBE]/20 flex items-center justify-center">
+                                    <div className="aspect-video bg-[#F5F5F7] dark:bg-[#111113] flex items-center justify-center">
                                         <Smartphone className="w-12 h-12 text-[#5DABFF]" />
                                     </div>
                                 )}

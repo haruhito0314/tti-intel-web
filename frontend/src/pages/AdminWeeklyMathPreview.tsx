@@ -418,9 +418,6 @@ export function AdminWeeklyMathPreview() {
                                         <h2 className="apple-section text-[#1D1D1F] dark:text-[#F5F5F7] leading-tight">
                                             今週の数学
                                         </h2>
-                                        <span className="inline-flex items-center w-fit rounded-full px-3 py-1 text-xs font-semibold tracking-wide text-[#0066CC] dark:text-[#7FC2FF] bg-[#0071E3]/10 dark:bg-[#2997FF]/15 border border-[#0071E3]/20 dark:border-[#2997FF]/25">
-                                            by EIKAKUHANSU
-                                        </span>
                                     </div>
                                 </div>
 

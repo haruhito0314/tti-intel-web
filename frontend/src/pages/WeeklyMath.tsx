@@ -73,12 +73,6 @@ export function WeeklyMath() {
                 ) : (
                     <div className="space-y-5">
                         {items.map((item, index) => {
-                            const accentClasses = [
-                                'from-[#0071E3]/16 via-[#5AC8FA]/8 to-transparent dark:from-[#2997FF]/22 dark:via-[#5AC8FA]/10',
-                                'from-[#34C759]/14 via-[#30D158]/8 to-transparent dark:from-[#30D158]/20 dark:via-[#34C759]/10',
-                                'from-[#AF52DE]/13 via-[#BF5AF2]/7 to-transparent dark:from-[#BF5AF2]/18 dark:via-[#AF52DE]/10',
-                                'from-[#5AC8FA]/14 via-[#64D2FF]/7 to-transparent dark:from-[#64D2FF]/18 dark:via-[#5AC8FA]/10',
-                            ][index % 4];
                             const barClasses = [
                                 'bg-[#0071E3] dark:bg-[#2997FF]',
                                 'bg-[#34C759] dark:bg-[#30D158]',
@@ -88,7 +82,6 @@ export function WeeklyMath() {
                             return (
                                 <Link key={item.weekKey} to={`/weekly-math/${encodeURIComponent(toPublicWeeklyMathKey(item.weekKey))}`} className="block group">
                                     <Card variant="elevated" className="relative overflow-hidden transition-transform duration-300 hover:scale-[1.01]">
-                                        <div className={`absolute inset-y-0 right-0 w-32 bg-gradient-to-l ${accentClasses}`} aria-hidden="true" />
                                         <div className={`absolute inset-y-0 right-0 w-1.5 ${barClasses}`} aria-hidden="true" />
                                         <CardContent className="relative p-6 pr-9 flex items-center justify-between gap-4">
                                             <div className="min-w-0 pr-6">

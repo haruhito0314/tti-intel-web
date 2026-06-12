@@ -271,7 +271,7 @@ export function Home() {
     return (
         <div className="animate-fade-in home-page">
             {/* Hero Section */}
-            <section className="relative overflow-hidden min-h-[85vh] flex items-center">
+            <section className="home-hero relative overflow-hidden min-h-[85vh] flex items-center">
                 {/* Background gradient */}
                 <div className="absolute inset-0 gradient-bg-subtle opacity-50" />
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(120,119,198,0.15),transparent_50%)]" />
@@ -475,9 +475,6 @@ export function Home() {
                             <h2 className="text-[24px] sm:text-[34px] font-semibold tracking-[-0.03em] text-[#1D1D1F] dark:text-[#F5F5F7] leading-[1.06]">
                                 今週の数学
                             </h2>
-                            <span className="inline-flex items-center w-fit rounded-full px-3 py-1 text-[13px] font-medium tracking-[0.01em] text-[#0071E3] dark:text-[#5CABFF] bg-[#0071E3]/8 dark:bg-[#5CABFF]/12 border border-[#0071E3]/20 dark:border-[#5CABFF]/25">
-                                by EIKAKUHANSU
-                            </span>
                         </div>
                     </div>
 

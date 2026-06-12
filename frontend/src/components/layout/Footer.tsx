@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles } from 'lucide-react';
+import { Mail, MapPin, Sparkles } from 'lucide-react';
 import { siteConfig } from '@/config/site';
 import { isMobileSplashDisabled, setMobileSplashDisabled } from '@/lib/splashSettings';
 
@@ -69,6 +69,36 @@ export function Footer() {
                         <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] max-w-md leading-relaxed">
                             {siteConfig.description}
                         </p>
+                        <div className="mt-5 max-w-md border-l border-[#D2D2D7] dark:border-white/10 pl-4">
+                            <h3 className="apple-footnote font-bold text-[#1D1D1F] dark:text-[#F5F5F7] mb-3">
+                                連絡先情報
+                            </h3>
+                            <address className="not-italic space-y-3 apple-footnote text-[#424245] dark:text-[rgba(235,235,245,0.68)] leading-relaxed">
+                                <div className="flex gap-3">
+                                    <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#0071E3] dark:text-[#5CABFF]" aria-hidden="true" />
+                                    <p>
+                                        <span className="block text-[#6E6E73] dark:text-[rgba(235,235,245,0.45)]">
+                                            住所
+                                        </span>
+                                        〒468-8511 名古屋市天白区久方二丁目12番地1 豊田工業大学
+                                    </p>
+                                </div>
+                                <div className="flex gap-3">
+                                    <Mail className="mt-0.5 h-4 w-4 shrink-0 text-[#0071E3] dark:text-[#5CABFF]" aria-hidden="true" />
+                                    <p>
+                                        <span className="block text-[#6E6E73] dark:text-[rgba(235,235,245,0.45)]">
+                                            Email
+                                        </span>
+                                        <a
+                                            href={`mailto:${siteConfig.contactEmail}`}
+                                            className="font-medium text-[#1D1D1F] dark:text-[#F5F5F7] hover:text-[#0066CC] dark:hover:text-[#5CABFF] hover:underline underline-offset-4 transition-colors duration-300"
+                                        >
+                                            {siteConfig.contactEmail}
+                                        </a>
+                                    </p>
+                                </div>
+                            </address>
+                        </div>
 
                         {/* Social Links */}
                         <div className="flex items-center gap-4 mt-5">
