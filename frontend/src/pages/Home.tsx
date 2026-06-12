@@ -50,6 +50,11 @@ const explanationVideos = [
     
 ];
 
+const youtubeThumbnailVersion = '2026-06-12';
+
+const getYoutubeThumbnailUrl = (videoId: string, quality: 'maxresdefault' | 'hqdefault' = 'maxresdefault') =>
+    `https://i.ytimg.com/vi/${videoId}/${quality}.jpg?v=${youtubeThumbnailVersion}`;
+
 // Floating puzzle piece component
 function FloatingPuzzle({
     className = '',
@@ -398,10 +403,13 @@ export function Home() {
                                             </CardContent>
                                             <div className="px-3 pt-2 pb-4 bg-[#FBFBFD] dark:bg-[#0C0C0D]">
                                                 <img
-                                                    src={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`}
+                                                    src={getYoutubeThumbnailUrl(video.id)}
                                                     alt={video.title}
                                                     className="w-full aspect-[16/10] object-cover rounded-2xl group-hover:scale-[1.01] transition-transform duration-500"
                                                     loading="lazy"
+                                                    onError={(event) => {
+                                                        event.currentTarget.src = getYoutubeThumbnailUrl(video.id, 'hqdefault');
+                                                    }}
                                                 />
                                             </div>
                                             <CardContent className="px-6 pt-2 pb-6 mt-auto">
