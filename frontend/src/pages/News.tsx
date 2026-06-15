@@ -150,19 +150,19 @@ export function News() {
                     </div>
 
                     {/* Sidebar */}
-                    <aside className="lg:w-72">
-                        <Card variant="default" padding="md" className="accent-card-soft sticky top-24">
+                    <aside className="w-full lg:w-72">
+                        <Card variant="default" padding="none" className="accent-card-soft p-4 sm:p-6 lg:sticky lg:top-24">
                             <h3 className="font-semibold text-[#1D1D1F] dark:text-[#F5F5F7] mb-4 flex items-center gap-2">
                                 <Tag className="w-4 h-4" />
                                 タグ
                             </h3>
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap items-start gap-2">
                                 {allTags.map((tag) => (
                                     <button
                                         key={tag}
                                         onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
                                         className={`
-                      px-3 py-1 rounded-full text-sm transition-all duration-200
+                      max-w-full px-3 py-1 rounded-full text-sm leading-snug break-words text-left transition-all duration-200
                       ${selectedTag === tag
                                                 ? 'bg-[#0071E3] text-white'
                                                 : 'bg-[#F5F5F7] dark:bg-[#1C1C1E] text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] hover:bg-[#E8E8ED] dark:hover:bg-[#2C2C2E]'
