@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, FileDown, Shuffle, Trash2 } from 'lucide-react';
+import { ArrowLeft, FileDown, Trash2 } from 'lucide-react';
 import { Button, Card, CardContent } from '@/components/ui';
 
 type PlayerSlot = number | string | null;
@@ -270,15 +270,6 @@ export function TableTennisMatchMakerPage() {
         persistHistory(updated);
     };
 
-    const handleShuffle = () => {
-        const shuffled = shufflePlayers(playerOrder);
-        const now = new Date().toISOString();
-        setPlayerOrder(shuffled);
-        setCreatedAt(now);
-        setActiveRoundIndex(0);
-        saveCurrentToHistory(now, shuffled);
-    };
-
     const handleExportPdf = () => {
         const html = buildPdfHtml(tableTennisRounds, createdAt, numPlayers, numRounds);
         const printWindow = window.open('', '_blank');
@@ -314,10 +305,6 @@ export function TableTennisMatchMakerPage() {
                                 <Button size="sm" variant="outline" onClick={handleExportPdf}>
                                     <FileDown className="w-4 h-4" />
                                     PDF出力
-                                </Button>
-                                <Button size="sm" variant="outline" onClick={handleShuffle}>
-                                    <Shuffle className="w-4 h-4" />
-                                    番号をシャッフル
                                 </Button>
                             </div>
                         </div>
