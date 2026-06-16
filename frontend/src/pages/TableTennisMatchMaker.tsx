@@ -150,7 +150,7 @@ function buildPdfHtml(rounds: OptimizedRound[], createdAt: string, numPlayers: n
         .map(
             (round, roundIndex) => `
             <section style="margin-bottom: 16px; page-break-inside: avoid; break-inside: avoid; border: 1px solid #ddd; border-radius: 8px; padding: 10px;">
-                <h2 style="font-size: 16px; margin: 0 0 8px;">${roundIndex + 1}クール目（稼働${round.activeTables}台 / 重複 ${round.penaltyScore}）</h2>
+                <h2 style="font-size: 16px; margin: 0 0 8px;">${roundIndex + 1}クール目（稼働${round.activeTables}台 / 重複組合せ ${round.penaltyScore}）</h2>
                 <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
                     <thead>
                         <tr>
@@ -384,7 +384,7 @@ export function TableTennisMatchMakerPage() {
 
                         {activeRound && (
                             <p className="text-xs text-[#8A8A8E] dark:text-[rgba(235,235,245,0.45)] mb-3">
-                                稼働台数: {activeRound.activeTables}台 / 重複スコア: {activeRound.penaltyScore}
+                                稼働台数: {activeRound.activeTables}台 / 重複組合せ: {activeRound.penaltyScore}
                             </p>
                         )}
 
