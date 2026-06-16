@@ -3,8 +3,13 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, FileDown, Shuffle, Trash2 } from 'lucide-react';
 import { Button, Card, CardContent } from '@/components/ui';
 
-type PlayerSlot = number | null;
+type PlayerSlot = number | string | null;
 type TableMatch = [PlayerSlot, PlayerSlot, PlayerSlot, PlayerSlot];
+type OptimizedRound = {
+    activeTables: number;
+    matches: TableMatch[];
+    penaltyScore: number;
+};
 
 type HistoryEntry = {
     id: string;
@@ -17,63 +22,107 @@ type HistoryEntry = {
 
 const HISTORY_KEY = 'table-tennis-history-v1';
 
-class TableTennisMatchMaker {
-    numTables: number;
-    tables: TableMatch[];
+class OptimizedTableTennisMatchMaker {
+    players: PlayerSlot[];
+    maxTables: number;
 
-    constructor(players: number[]) {
-        this.numTables = Math.ceil(players.length / 4);
-        this.tables = this.initializeTables(players);
+    constructor(players: number[], maxTables = 10) {
+        this.maxTables = maxTables;
+        this.players = this.buildPlayers(players);
     }
 
-    initializeTables(players: number[]): TableMatch[] {
-        return Array.from({ length: this.numTables }, (_, i) => [
-            players[4 * i] ?? null,
-            players[4 * i + 1] ?? null,
-            players[4 * i + 2] ?? null,
-            players[4 * i + 3] ?? null,
-        ]);
+    buildPlayers(players: number[]): PlayerSlot[] {
+        const activeTables = Math.min(this.maxTables, Math.ceil(players.length / 4));
+        const slotsPerRound = activeTables * 4;
+        const allPlayers: PlayerSlot[] = [...players];
+
+        if (players.length < slotsPerRound) {
+            allPlayers.push(...Array.from({ length: slotsPerRound - players.length }, (_, index) => `架空${index + 1}`));
+        }
+
+        return allPlayers;
     }
 
-    generateRounds(numRounds: number, rotateTables = true): TableMatch[][] {
-        const allRounds: TableMatch[][] = [];
+    generateRounds(numRounds: number): OptimizedRound[] {
+        const activeTables = Math.min(this.maxTables, Math.ceil(this.players.length / 4));
+        const slotsPerRound = activeTables * 4;
+        const encounterHistory = new Map<string, Map<string, number>>();
+        let rotationQueue = [...this.players];
 
-        for (let roundIndex = 0; roundIndex < numRounds; roundIndex += 1) {
-            const currentMatches = this.tables.map((table) => [...table] as TableMatch);
+        this.players.forEach((player) => {
+            encounterHistory.set(this.playerKey(player), new Map(this.players.map((other) => [this.playerKey(other), 0])));
+        });
 
-            if (rotateTables) {
-                allRounds.push(currentMatches);
-            } else {
-                const shift = roundIndex % this.numTables;
-                if (shift === 0) {
-                    allRounds.push(currentMatches);
-                } else {
-                    allRounds.push([...currentMatches.slice(-shift), ...currentMatches.slice(0, -shift)]);
+        return Array.from({ length: numRounds }, () => {
+            const currentPlayers = this.players.length <= slotsPerRound
+                ? [...this.players]
+                : rotationQueue.slice(0, slotsPerRound);
+
+            if (this.players.length > slotsPerRound) {
+                rotationQueue = [...rotationQueue.slice(slotsPerRound), ...currentPlayers];
+            }
+
+            let bestMatches: TableMatch[] = [];
+            let bestPenalty = Number.POSITIVE_INFINITY;
+
+            for (let attempt = 0; attempt < 100; attempt += 1) {
+                const candidatePlayers = shufflePlayers(currentPlayers);
+                const candidateMatches: TableMatch[] = [];
+                let penalty = 0;
+
+                for (let tableIndex = 0; tableIndex < activeTables; tableIndex += 1) {
+                    const tablePlayers = candidatePlayers.slice(tableIndex * 4, tableIndex * 4 + 4) as TableMatch;
+
+                    for (let i = 0; i < tablePlayers.length; i += 1) {
+                        for (let j = i + 1; j < tablePlayers.length; j += 1) {
+                            penalty += this.getEncounterCount(encounterHistory, tablePlayers[i], tablePlayers[j]);
+                        }
+                    }
+
+                    candidateMatches.push(tablePlayers);
+                }
+
+                if (penalty < bestPenalty) {
+                    bestPenalty = penalty;
+                    bestMatches = candidateMatches;
+
+                    if (bestPenalty === 0) break;
                 }
             }
 
-            this.movePlayers();
-        }
+            bestMatches.forEach((match) => {
+                for (let i = 0; i < match.length; i += 1) {
+                    for (let j = i + 1; j < match.length; j += 1) {
+                        this.incrementEncounter(encounterHistory, match[i], match[j]);
+                        this.incrementEncounter(encounterHistory, match[j], match[i]);
+                    }
+                }
+            });
 
-        return allRounds;
+            return {
+                activeTables,
+                matches: bestMatches,
+                penaltyScore: bestPenalty,
+            };
+        });
     }
 
-    movePlayers(): void {
-        const nextTables: TableMatch[] = Array.from({ length: this.numTables }, () => [0, 0, 0, 0]);
+    playerKey(player: PlayerSlot): string {
+        return player === null ? 'rest' : String(player);
+    }
 
-        for (let i = 0; i < this.numTables; i += 1) {
-            const prevTableIndex = (i - 1 + this.numTables) % this.numTables;
-            nextTables[prevTableIndex][3] = this.tables[i][0];
-            nextTables[prevTableIndex][1] = this.tables[i][1];
-            nextTables[i][2] = this.tables[i][2];
-            nextTables[i][0] = this.tables[i][3];
-        }
+    getEncounterCount(history: Map<string, Map<string, number>>, player: PlayerSlot, other: PlayerSlot): number {
+        return history.get(this.playerKey(player))?.get(this.playerKey(other)) ?? 0;
+    }
 
-        this.tables = nextTables;
+    incrementEncounter(history: Map<string, Map<string, number>>, player: PlayerSlot, other: PlayerSlot): void {
+        const playerHistory = history.get(this.playerKey(player));
+        if (!playerHistory) return;
+        playerHistory.set(this.playerKey(other), this.getEncounterCount(history, player, other) + 1);
     }
 }
 
-function shufflePlayers(values: number[]): number[] {
+function shufflePlayers<T>(values: T[]): T[] {
     const arr = [...values];
     for (let i = arr.length - 1; i > 0; i -= 1) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -87,19 +136,21 @@ function formatDateTime(iso: string): string {
 }
 
 function formatPlayerSlot(value: PlayerSlot): string {
-    return value === null ? '休み' : String(value);
+    if (value === null) return '休み';
+    if (typeof value === 'string' && value.startsWith('架空')) return '休み';
+    return String(value);
 }
 
 function formatMatch(table: TableMatch): string {
     return `(${formatPlayerSlot(table[0])}, ${formatPlayerSlot(table[1])}) vs (${formatPlayerSlot(table[2])}, ${formatPlayerSlot(table[3])})`;
 }
 
-function buildPdfHtml(rounds: TableMatch[][], createdAt: string, numPlayers: number, numRounds: number, rotateTables: boolean): string {
+function buildPdfHtml(rounds: OptimizedRound[], createdAt: string, numPlayers: number, numRounds: number): string {
     const sections = rounds
         .map(
             (round, roundIndex) => `
             <section style="margin-bottom: 16px; page-break-inside: avoid; break-inside: avoid; border: 1px solid #ddd; border-radius: 8px; padding: 10px;">
-                <h2 style="font-size: 16px; margin: 0 0 8px;">${roundIndex + 1}クール目</h2>
+                <h2 style="font-size: 16px; margin: 0 0 8px;">${roundIndex + 1}クール目（稼働${round.activeTables}台 / 重複 ${round.penaltyScore}）</h2>
                 <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
                     <thead>
                         <tr>
@@ -108,7 +159,7 @@ function buildPdfHtml(rounds: TableMatch[][], createdAt: string, numPlayers: num
                         </tr>
                     </thead>
                     <tbody>
-                        ${round
+                        ${round.matches
                             .map(
                                 (table, tableIndex) => `
                                 <tr>
@@ -135,7 +186,7 @@ function buildPdfHtml(rounds: TableMatch[][], createdAt: string, numPlayers: num
     <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 24px; color: #111;">
         <h1 style="font-size: 22px; margin: 0 0 8px;">卓球組み合わせ表（${numPlayers}人）</h1>
         <p style="margin: 0 0 4px; font-size: 12px;">作成日時: ${formatDateTime(createdAt)}</p>
-        <p style="margin: 0 0 18px; font-size: 12px;">人数: ${numPlayers} / クール数: ${numRounds} / 台ローテーション: ${rotateTables ? '有効' : '無効'}</p>
+        <p style="margin: 0 0 18px; font-size: 12px;">人数: ${numPlayers} / クール数: ${numRounds} / 最大10台 / 重複が少ない組み合わせを自動採用</p>
         <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; align-items: start;">
             ${sections}
         </div>
@@ -161,7 +212,7 @@ export function TableTennisMatchMakerPage() {
     const [numPlayersInput, setNumPlayersInput] = useState('40');
     const [numRounds, setNumRounds] = useState(10);
     const [numRoundsInput, setNumRoundsInput] = useState('10');
-    const [rotateTables, setRotateTables] = useState(true);
+    const [rotateTables, setRotateTables] = useState(false);
     const [activeRoundIndex, setActiveRoundIndex] = useState(0);
     const [playerOrder, setPlayerOrder] = useState<number[]>(
         Array.from({ length: 40 }, (_, index) => index + 1),
@@ -170,10 +221,10 @@ export function TableTennisMatchMakerPage() {
     const [history, setHistory] = useState<HistoryEntry[]>(loadHistory);
 
     const tableTennisRounds = useMemo(
-        () => new TableTennisMatchMaker(playerOrder).generateRounds(numRounds, rotateTables),
-        [numRounds, playerOrder, rotateTables],
+        () => new OptimizedTableTennisMatchMaker(playerOrder).generateRounds(numRounds),
+        [numRounds, playerOrder],
     );
-    const activeRound = tableTennisRounds[activeRoundIndex] ?? [];
+    const activeRound = tableTennisRounds[activeRoundIndex];
 
     const applyNumRounds = (rawValue: string) => {
         const parsed = Number(rawValue);
@@ -229,7 +280,7 @@ export function TableTennisMatchMakerPage() {
     };
 
     const handleExportPdf = () => {
-        const html = buildPdfHtml(tableTennisRounds, createdAt, numPlayers, numRounds, rotateTables);
+        const html = buildPdfHtml(tableTennisRounds, createdAt, numPlayers, numRounds);
         const printWindow = window.open('', '_blank');
         if (!printWindow) {
             window.alert('ポップアップがブロックされました。許可してから再度お試しください。');
@@ -271,7 +322,7 @@ export function TableTennisMatchMakerPage() {
                             </div>
                         </div>
                         <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-2">
-                            人数とクール数を指定して、{Math.ceil(numPlayers / 4)}台分の対戦を自動生成します。4人に満たない台は休み枠として表示します。
+                            人数とクール数を指定して、最大10台までの対戦を自動生成します。各クールで過去に同じ台になった人がなるべく重ならない組み合わせを選びます。
                         </p>
                         <p className="text-xs text-[#8A8A8E] dark:text-[rgba(235,235,245,0.45)] mb-5">
                             作成日時: {formatDateTime(createdAt)}
@@ -322,16 +373,6 @@ export function TableTennisMatchMakerPage() {
                                 />
                             </label>
 
-                            <label className="inline-flex items-center gap-2 text-[14px] text-[#515154] dark:text-[rgba(235,235,245,0.72)]">
-                                <input
-                                    type="checkbox"
-                                    checked={rotateTables}
-                                    onChange={(event) => setRotateTables(event.target.checked)}
-                                    className="h-4 w-4"
-                                />
-                                台ローテーションを有効化
-                            </label>
-
                             <Button size="sm" variant="outline" onClick={() => saveCurrentToHistory()}>
                                 現在の設定を履歴保存
                             </Button>
@@ -354,8 +395,14 @@ export function TableTennisMatchMakerPage() {
                             ))}
                         </div>
 
+                        {activeRound && (
+                            <p className="text-xs text-[#8A8A8E] dark:text-[rgba(235,235,245,0.45)] mb-3">
+                                稼働台数: {activeRound.activeTables}台 / 重複スコア: {activeRound.penaltyScore}
+                            </p>
+                        )}
+
                         <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3 mb-6">
-                            {activeRound.map((table, tableIndex) => (
+                            {activeRound?.matches.map((table, tableIndex) => (
                                 <div
                                     key={`table-${tableIndex + 1}`}
                                     className="rounded-xl border border-black/10 dark:border-white/15 bg-[#FAFAFC] dark:bg-[#1A1A1C] p-4"
@@ -380,8 +427,7 @@ export function TableTennisMatchMakerPage() {
                                             className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-lg border border-black/10 dark:border-white/10 px-3 py-2"
                                         >
                                             <p className="text-sm text-[#1D1D1F] dark:text-[#F5F5F7]">
-                                                {formatDateTime(entry.createdAt)} / {entry.numPlayers ?? entry.playerOrder.length}人 / {entry.numRounds}クール / 台ローテーション:{' '}
-                                                {entry.rotateTables ? '有効' : '無効'}
+                                                {formatDateTime(entry.createdAt)} / {entry.numPlayers ?? entry.playerOrder.length}人 / {entry.numRounds}クール / 最適化生成
                                             </p>
                                             <Button
                                                 size="sm"
