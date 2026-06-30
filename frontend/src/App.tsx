@@ -20,6 +20,7 @@ import { About } from '@/pages/About';
 import { Contact } from '@/pages/Contact';
 import { AppShowcase } from '@/pages/AppShowcase';
 import { TableTennisMatchMakerPage } from '@/pages/TableTennisMatchMaker';
+import { ColorSortPuzzlePage } from '@/pages/ColorSortPuzzle';
 
 // Lazy load: pages with Firebase SDK or heavy dependencies
 const News = lazy(() => import('@/pages/News').then(m => ({ default: m.News })));
@@ -192,6 +193,7 @@ function App() {
               <Route path="news/:slug" element={<Suspense fallback={<PageLoader />}><NewsDetail /></Suspense>} />
               <Route path="app" element={<AppShowcase />} />
               <Route path="app/table-tennis" element={<TableTennisMatchMakerPage />} />
+              <Route path="app/color-sort" element={<ColorSortPuzzlePage />} />
               <Route path="board" element={<Suspense fallback={<PageLoader />}><Board /></Suspense>} />
               <Route path="board/:id" element={<Suspense fallback={<PageLoader />}><BoardDetail /></Suspense>} />
               <Route path="contact" element={<Contact />} />

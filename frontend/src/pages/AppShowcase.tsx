@@ -30,6 +30,15 @@ const apps: {
             '/images/table-tennis-match-maker-v4.png',
         ],
     },
+    {
+        title: 'カラーソートパズル',
+        description: '透明なボトルに入った色を移し替えて、同じ色ごとに揃えるミニパズル。',
+        tags: ['React', 'TypeScript', 'Puzzle'],
+        path: '/app/color-sort',
+        images: [
+            '/images/color-sort-puzzle.png',
+        ],
+    },
 ];
 
 function ImageCarousel({ images, title }: { images: string[]; title: string }) {
