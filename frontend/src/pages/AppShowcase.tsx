@@ -18,7 +18,7 @@ const apps: {
         tags: ['React', 'TypeScript', 'Appwrite'],
         url: 'https://toeic-practice.appwrite.network',
         images: [
-            '/images/toeic-practice.png',
+            '/images/toeic-practice-v4.png',
         ]
     },
     {
@@ -27,7 +27,7 @@ const apps: {
         tags: ['React', 'TypeScript', 'Sports'],
         path: '/app/table-tennis',
         images: [
-            '/images/table-tennis-match-maker.png',
+            '/images/table-tennis-match-maker-v4.png',
         ],
     },
 ];

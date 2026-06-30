@@ -48,7 +48,13 @@ const explanationVideos = [
         subtitle: 'NEW',
         url: 'https://youtu.be/3VP2Tedn6MY?si=gOg-gOzTX9gu6Owp',
     },
-    
+    {
+        id: 'Hsict4E99Og',
+        title: '卓球表作成 for 豊田工業大学',
+        subtitle: 'NEW',
+        url: 'https://youtu.be/Hsict4E99Og?si=7uTTVRy7EEH1CsKy',
+        thumbnail: '/images/table-tennis-match-maker-v4.png',
+    },
 ];
 
 const youtubeThumbnailVersion = '2026-06-12';
@@ -431,7 +437,7 @@ export function Home() {
                                             </CardContent>
                                             <div className="px-3 pt-2 pb-4 bg-[#FBFBFD] dark:bg-[#0C0C0D]">
                                                 <img
-                                                    src={getYoutubeThumbnailUrl(video.id)}
+                                                    src={video.thumbnail ?? getYoutubeThumbnailUrl(video.id)}
                                                     alt={video.title}
                                                     className="w-full aspect-[16/10] object-cover rounded-2xl group-hover:scale-[1.01] transition-transform duration-500"
                                                     loading="lazy"
