@@ -7,9 +7,9 @@ type ColorToken = 'sky' | 'mint' | 'coral' | 'sun' | 'violet' | 'rose';
 type Bottle = ColorToken[];
 
 const BOTTLE_SIZE = 8;
-const PUZZLE_COLORS: ColorToken[] = ['sky', 'mint', 'coral', 'sun', 'violet'];
-const HARD_PUZZLE_COLORS: ColorToken[] = ['sky', 'mint', 'coral', 'sun', 'violet', 'rose'];
-const NORMAL_BOTTLE_COUNT = 7;
+const PUZZLE_COLORS: ColorToken[] = ['sky', 'mint', 'coral', 'sun'];
+const HARD_PUZZLE_COLORS: ColorToken[] = ['sky', 'mint', 'coral', 'sun', 'violet'];
+const NORMAL_BOTTLE_COUNT = 6;
 const PUZZLE_COUNT = 8;
 const HARD_PUZZLE_COUNT = 10;
 const GENERATION_ATTEMPTS = 120;
@@ -318,7 +318,7 @@ function buildHardPuzzlePreset(seed: number): Bottle[] {
             bestSolvableScore = score;
         }
 
-        if (solvable && solvedBottleCount === 0 && partialBottleCount >= 6 && !hasLargeBlock) {
+        if (solvable && solvedBottleCount === 0 && partialBottleCount >= 5 && !hasLargeBlock) {
             return puzzle;
         }
     }
