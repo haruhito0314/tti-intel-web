@@ -1,4 +1,5 @@
 import { Card, CardContent } from '@/components/ui';
+import { PageSeo } from '@/components/PageSeo';
 import { Check, Code, Sigma, Gamepad2, Video, ChevronDown, Calendar } from 'lucide-react';
 import { useState } from 'react';
 
@@ -6,7 +7,7 @@ const activities = [
     {
         icon: Code,
         title: '開発',
-        description: 'AIを使ったvibe codingで、Webサイトやアプリケーションの開発をします。',
+        description: '最新のAIモデルを活用しながら、バイブコーディングでWebサイトやアプリを開発しています。最近はMCPを使ったゲーム開発にも挑戦しています。',
     },
     {
         icon: Sigma,
@@ -15,8 +16,8 @@ const activities = [
     },
     {
         icon: Gamepad2,
-        title: 'ゲーム',
-        description: 'VALORANT、Apexを中心に、たまにフォートナイト。人数が集まればMinecraft Realms（Java版）も開く予定です。',
+        title: 'ゲーム交流',
+        description: 'VALORANTやApex Legendsを中心に、メンバー同士で気軽にゲームを楽しんでいます。人数が集まればMinecraft Realms（Java版）の運用も予定しています。',
     },
     {
         icon: Video,
@@ -60,45 +61,49 @@ export function About() {
 
     return (
         <div className="animate-fade-in">
+            <PageSeo
+                title="About Us | TTI Intelligence"
+                description="TTI Intelligenceの活動内容、参加条件、開催予定、よくある質問を紹介します。"
+            />
             {/* Hero Section */}
             <section className="about-band-hero relative overflow-hidden">
-                <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-20">
+                <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
                     <div className="text-center">
-                        <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] mb-6">
+                        <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] mb-5">
                             About <span className="gradient-text">TTI Intelligence</span>
                         </h1>
-                        <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] max-w-3xl mx-auto leading-relaxed">
+                        <p className="apple-body text-pretty text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] max-w-[36em] mx-auto leading-[1.8]">
                             私たちは豊田工業大学の学生を中心としたAIサークルです。
-                            AI技術を活用しながら、学習・研究・開発をはじめ、
-                            多くのことに挑戦していきます。
+                            <br className="hidden sm:block" />
+                            AI技術を活用しながら、学習・研究・開発をはじめ、多くのことに挑戦していきます。
                         </p>
                     </div>
                 </div>
             </section>
 
             {/* Activities */}
-            <section className="about-band-white max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-                <h2 className="apple-section text-[#1D1D1F] dark:text-[#F5F5F7] text-center mb-10">
+            <section className="about-band-white max-w-[1120px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+                <h2 className="apple-section text-[#1D1D1F] dark:text-[#F5F5F7] text-center mb-12">
                     活動内容
                 </h2>
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {activities.map((activity, index) => {
                         const Icon = activity.icon;
                         return (
                             <Card
                                 key={index}
                                 variant="elevated"
-                                className={`${index % 2 === 0 ? 'accent-card-soft' : 'accent-card-cool'} hover:scale-[1.015] transition-transform duration-300`}
+                                className={`${index % 2 === 0 ? 'accent-card-soft' : 'accent-card-cool'} h-full min-h-[230px] hover:scale-[1.015] transition-transform duration-300`}
                                 style={{ animationDelay: `${index * 100}ms` }}
                             >
-                                <CardContent className="p-6 text-center">
-                                    <div className="w-14 h-14 rounded-full bg-[#0071E3]/10 dark:bg-[#2997FF]/10 flex items-center justify-center mx-auto mb-4">
+                                <CardContent className="h-full p-6 text-center flex flex-col items-center">
+                                    <div className="w-14 h-14 rounded-full bg-[#0071E3]/10 dark:bg-[#2997FF]/10 flex items-center justify-center mx-auto mb-5">
                                         <Icon className="w-7 h-7 text-[#0071E3] dark:text-[#2997FF]" />
                                     </div>
-                                    <h3 className="apple-headline text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
+                                    <h3 className="apple-headline text-[#1D1D1F] dark:text-[#F5F5F7] mb-3">
                                         {activity.title}
                                     </h3>
-                                    <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
+                                    <p className="text-pretty text-left text-[15px] leading-[1.75] text-[#6E6E73] dark:text-[rgba(235,235,245,0.66)]">
                                         {activity.description}
                                     </p>
                                 </CardContent>
@@ -197,7 +202,7 @@ export function About() {
                                 className={`overflow-hidden transition-all duration-300 ease-in-out ${openFaq === index ? 'max-h-96' : 'max-h-0'
                                     }`}
                             >
-                                <p className="px-6 pb-4 apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
+                                <p className="px-6 pb-5 pt-1 apple-body text-pretty leading-[1.75] text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
                                     {faq.answer}
                                 </p>
                             </div>

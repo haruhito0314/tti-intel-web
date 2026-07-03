@@ -2,11 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Eye, PencilLine, Sigma, Trash2 } from 'lucide-react';
 import { FirebaseError } from 'firebase/app';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
 import { useAuth } from '@/hooks/useAuth';
+import { MathMarkdown } from '@/components/MathMarkdown';
 import { Badge, Button, Card, CardContent } from '@/components/ui';
 import {
     DEFAULT_WEEKLY_MATH_TEMPLATE_KEY,
@@ -19,7 +16,6 @@ import {
 } from '@/lib/weeklyMath';
 import { useToast } from '@/components/ui/useToast';
 import { formatDateLabel, formatUpdatedAtLabel, formatWeekKeyWithRange } from '@/lib/dateFormat';
-import { normalizeMathDelimiters } from '@/lib/markdown';
 import { ROUTE_COUNTING_ANSWER, ROUTE_COUNTING_EXPLANATION } from '@/lib/weeklyMathFallbacks';
 
 export function AdminWeeklyMathPreview() {
@@ -352,21 +348,11 @@ export function AdminWeeklyMathPreview() {
                                         <h3 className="apple-title text-[#1D1D1F] dark:text-[#F5F5F7] mb-3">
                                             {previewTitle}
                                         </h3>
-                                        {previewProblem ? (
-                                            <div className="mb-5 [&_.katex-display]:my-4">
-                                                <ReactMarkdown
-                                                    remarkPlugins={[remarkGfm, remarkMath]}
-                                                    rehypePlugins={[rehypeKatex]}
-                                                    components={{
-                                                        p: ({ children }) => (
-                                                            <p className="apple-body text-[#1D1D1F] dark:text-[#F5F5F7] leading-relaxed mb-4">
-                                                                {children}
-                                                            </p>
-                                                        ),
-                                                    }}
-                                                >
-                                                    {normalizeMathDelimiters(previewProblem)}
-                                                </ReactMarkdown>
+                                            {previewProblem ? (
+                                                <div className="mb-5 [&_.katex-display]:my-4">
+                                                <MathMarkdown paragraphClassName="apple-body text-[#1D1D1F] dark:text-[#F5F5F7] leading-relaxed mb-4">
+                                                    {previewProblem}
+                                                </MathMarkdown>
                                             </div>
                                         ) : (
                                             <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
@@ -387,19 +373,9 @@ export function AdminWeeklyMathPreview() {
                                                     <h4 className="text-sm font-semibold text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
                                                         解答
                                                     </h4>
-                                                    <ReactMarkdown
-                                                        remarkPlugins={[remarkGfm, remarkMath]}
-                                                        rehypePlugins={[rehypeKatex]}
-                                                        components={{
-                                                            p: ({ children }) => (
-                                                                <p className="apple-body text-[#1D1D1F] dark:text-[#F5F5F7] leading-relaxed mb-4">
-                                                                    {children}
-                                                                </p>
-                                                            ),
-                                                        }}
-                                                    >
-                                                        {normalizeMathDelimiters(previewAnswer)}
-                                                    </ReactMarkdown>
+                                                    <MathMarkdown paragraphClassName="apple-body text-[#1D1D1F] dark:text-[#F5F5F7] leading-relaxed mb-4">
+                                                        {previewAnswer}
+                                                    </MathMarkdown>
                                                 </div>
                                             ) : (
                                                 <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-4">
@@ -411,19 +387,9 @@ export function AdminWeeklyMathPreview() {
                                                     <h4 className="text-sm font-semibold text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
                                                         解説
                                                     </h4>
-                                                    <ReactMarkdown
-                                                        remarkPlugins={[remarkGfm, remarkMath]}
-                                                        rehypePlugins={[rehypeKatex]}
-                                                        components={{
-                                                            p: ({ children }) => (
-                                                                <p className="apple-body text-[#1D1D1F] dark:text-[#F5F5F7] leading-relaxed mb-4">
-                                                                    {children}
-                                                                </p>
-                                                            ),
-                                                        }}
-                                                    >
-                                                        {normalizeMathDelimiters(previewExplanation)}
-                                                    </ReactMarkdown>
+                                                    <MathMarkdown paragraphClassName="apple-body text-[#1D1D1F] dark:text-[#F5F5F7] leading-relaxed mb-4">
+                                                        {previewExplanation}
+                                                    </MathMarkdown>
                                                 </div>
                                             ) : (
                                                 <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">

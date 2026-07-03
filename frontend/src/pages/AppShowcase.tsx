@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, CardContent } from '@/components/ui';
+import { Badge, Card, CardContent } from '@/components/ui';
+import { PageSeo } from '@/components/PageSeo';
 import { Smartphone, ExternalLink, Rocket } from 'lucide-react';
 
 // Future: Load from Firestore or CMS
 const apps: {
     title: string;
+    status: 'available' | 'wip';
     description: string;
     tags: string[];
     url?: string;
@@ -13,30 +15,33 @@ const apps: {
     images?: string[];
 }[] = [
     {
-        title: 'TOEIC Practice (調整中)',
+        title: 'TOEIC Practice',
+        status: 'wip',
         description: 'TOEIC対策に使える練習アプリ。Part別演習やタイムアタックで、学習の進み具合を確認できます。',
         tags: ['React', 'TypeScript', 'Appwrite'],
         url: 'https://toeic-practice.appwrite.network',
         images: [
-            '/images/toeic-practice-v4.png',
+            '/images/toeic-practice.webp',
         ]
     },
     {
         title: '卓球組み合わせ表ジェネレーター',
+        status: 'available',
         description: '人数とクール数を指定して、卓球の組み合わせを自動生成。番号シャッフル、休み枠、台ローテーションに対応。',
         tags: ['React', 'TypeScript', 'Sports'],
         path: '/app/table-tennis',
         images: [
-            '/images/table-tennis-match-maker-v4.png',
+            '/images/table-tennis-match-maker.webp',
         ],
     },
     {
         title: 'カラーソートパズル',
+        status: 'available',
         description: '透明なボトルに入った色を移し替えて、同じ色ごとに揃えるミニパズル。',
         tags: ['React', 'TypeScript', 'Puzzle'],
         path: '/app/color-sort',
         images: [
-            '/images/color-sort-puzzle.png',
+            '/images/color-sort-puzzle.webp',
         ],
     },
 ];
@@ -59,6 +64,9 @@ function ImageCarousel({ images, title }: { images: string[]; title: string }) {
                     key={img}
                     src={img}
                     alt={`${title} screenshot ${index + 1}`}
+                    width={800}
+                    height={450}
+                    loading="lazy"
                     className={`absolute inset-0 object-cover w-full h-full transition-opacity duration-[1500ms] ${
                         index === currentIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
                     }`}
@@ -83,11 +91,15 @@ function ImageCarousel({ images, title }: { images: string[]; title: string }) {
 export function AppShowcase() {
     return (
         <div className="min-h-screen">
+            <PageSeo
+                title="Apps | TTI Intelligence"
+                description="TTI Intelligenceのメンバーが開発したアプリケーションやプロジェクトを紹介します。"
+            />
             {/* Hero */}
             <section className="about-band-hero relative overflow-hidden">
                 <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
                     <div className="text-center">
-                        <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] mb-6">
+                        <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] mb-5">
                             アプリケーション
                         </h1>
                         <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] max-w-2xl mx-auto leading-relaxed">
@@ -138,9 +150,14 @@ export function AppShowcase() {
                                 )}
 
                                 <CardContent className="p-6">
-                                    <h3 className="apple-headline text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
-                                        {app.title}
-                                    </h3>
+                                    <div className="mb-2 flex flex-wrap items-center gap-2">
+                                        <h3 className="apple-headline text-[#1D1D1F] dark:text-[#F5F5F7]">
+                                            {app.title}
+                                        </h3>
+                                        <Badge variant={app.status === 'available' ? 'success' : 'warning'}>
+                                            {app.status === 'available' ? '公開中' : '調整中'}
+                                        </Badge>
+                                    </div>
                                     <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-4 line-clamp-3">
                                         {app.description}
                                     </p>

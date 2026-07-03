@@ -4,7 +4,11 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import { useTheme } from '@/contexts/useTheme';
 import { ToastProvider } from '@/components/ui';
 import { Layout } from '@/components/layout';
-import { isMobileSplashDisabled } from '@/lib/splashSettings';
+import {
+  hasSeenInitialSplashThisSession,
+  isMobileSplashDisabled,
+  markInitialSplashSeenThisSession,
+} from '@/lib/splashSettings';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -100,12 +104,13 @@ function App() {
 
   const [showSplash, setShowSplash] = useState(() => {
     if (typeof window === 'undefined') return false;
-    return !isMobileSplashDisabled();
+    return !isMobileSplashDisabled() && !hasSeenInitialSplashThisSession();
   });
   const [splashPhase, setSplashPhase] = useState<'enter' | 'logo-out' | 'overlay-out'>('enter');
 
   useEffect(() => {
     if (!showSplash) return;
+    markInitialSplashSeenThisSession();
     let firstFrameId = 0;
     let secondFrameId = 0;
     let hideTimer = 0;

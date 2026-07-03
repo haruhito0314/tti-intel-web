@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Pin, Lock, MessageSquare, ArrowRight, Trash2, PinOff, Unlock, Heart } from 'lucide-react';
+import { Plus, Pin, Lock, MessageSquare, MessageSquarePlus, ArrowRight, Trash2, PinOff, Unlock, Heart } from 'lucide-react';
+import { PageSeo } from '@/components/PageSeo';
 import { Card, CardContent, Badge, Button, Dialog, Input, Textarea } from '@/components/ui';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -137,9 +138,13 @@ export function Board() {
 
     return (
         <div className="animate-fade-in">
+            <PageSeo
+                title="Board | TTI Intelligence"
+                description="TTI Intelligenceの掲示板です。質問、相談、活動に関する投稿を確認できます。"
+            />
             {/* Header */}
             <section className="about-band-hero relative overflow-hidden">
-                <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
                     <div className="flex flex-col items-center gap-4 text-center">
                         <div className="max-w-2xl">
                             <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
@@ -184,19 +189,23 @@ export function Board() {
                             }
                         </div >
                     ) : sortedThreads.length === 0 ? (
-                        <Card variant="glass" padding="lg" className="text-center py-16">
-                            <div className="flex flex-col items-center gap-4">
-                                <div className="w-16 h-16 rounded-2xl bg-[#0071E3]/10 dark:bg-[#2997FF]/10 flex items-center justify-center">
-                                    <MessageSquare className="w-8 h-8 text-[#0071E3]" />
+                        <Card variant="glass" padding="lg" className="text-center py-18">
+                            <div className="flex flex-col items-center gap-5">
+                                        <div className="w-16 h-16 rounded-2xl bg-[#0071E3]/10 dark:bg-[#2997FF]/10 flex items-center justify-center">
+                                    <MessageSquarePlus className="w-8 h-8 text-[#0071E3] dark:text-[#2997FF]" />
                                 </div>
                                 <div>
                                     <h3 className="apple-headline text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
                                         まだスレッドがありません
                                     </h3>
                                     <p className="text-sm text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] max-w-md mx-auto">
-                                        最初のスレッドを作成して、メンバー同士の交流を始めましょう！
+                                        最初のスレッドを立てて、質問や相談を気軽に共有してみませんか？
                                     </p>
                                 </div>
+                                <Button onClick={() => setIsCreateDialogOpen(true)}>
+                                    <Plus className="w-5 h-5" />
+                                    スレッドを作成
+                                </Button>
                             </div>
                         </Card>
                     ) : (

@@ -3,6 +3,8 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
+import { PageSeo } from '@/components/PageSeo';
 import { ArrowLeft, Calendar, User, Tag, Share2 } from 'lucide-react';
 import { Badge, Card, CardContent, Button } from '@/components/ui';
 
@@ -105,6 +107,10 @@ export function NewsDetail() {
 
     return (
         <article className="animate-fade-in">
+            <PageSeo
+                title={`${post.title} | TTI Intelligence`}
+                description={post.content.replace(/\s+/g, ' ').trim().slice(0, 120)}
+            />
             {/* Header */}
             <header className="relative overflow-hidden">
                 <div className="absolute inset-0 gradient-bg-subtle opacity-30" />

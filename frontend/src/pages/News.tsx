@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Tag, ArrowRight, Pin } from 'lucide-react';
+import { PageSeo } from '@/components/PageSeo';
 import { Card, CardContent, Badge, Input, Button } from '@/components/ui';
 
 // Dummy data for MVP
@@ -45,11 +46,15 @@ export function News() {
 
     return (
         <div className="animate-fade-in">
+            <PageSeo
+                title="お知らせ・記事 | TTI Intelligence"
+                description="TTI Intelligenceの活動報告、お知らせ、イベント情報、技術記事を掲載しています。"
+            />
             {/* Header */}
             <section className="about-band-hero relative overflow-hidden">
-                <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
                     <div className="text-center">
-                        <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] mb-4">
+                        <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] mb-5">
                             お知らせ・記事
                         </h1>
                         <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] max-w-2xl mx-auto">

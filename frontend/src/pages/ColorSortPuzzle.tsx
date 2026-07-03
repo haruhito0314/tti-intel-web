@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, RotateCcw, Share2, Sparkles, Star, Undo2 } from 'lucide-react';
+import { PageSeo } from '@/components/PageSeo';
 import { Button } from '@/components/ui';
 
 type ColorToken = 'sky' | 'mint' | 'coral' | 'sun' | 'violet' | 'rose';
@@ -10,8 +11,8 @@ const BOTTLE_SIZE = 8;
 const PUZZLE_COLORS: ColorToken[] = ['sky', 'mint', 'coral', 'sun'];
 const HARD_PUZZLE_COLORS: ColorToken[] = ['sky', 'mint', 'coral', 'sun', 'violet'];
 const NORMAL_BOTTLE_COUNT = 6;
-const PUZZLE_COUNT = 8;
-const HARD_PUZZLE_COUNT = 10;
+const NORMAL_EMPTY_BOTTLE_COUNT = NORMAL_BOTTLE_COUNT - PUZZLE_COLORS.length;
+const HARD_EMPTY_BOTTLE_COUNT = NORMAL_BOTTLE_COUNT - HARD_PUZZLE_COLORS.length;
 const GENERATION_ATTEMPTS = 120;
 const HARD_GENERATION_ATTEMPTS = 180;
 const MAX_LONGEST_RUN = 5;
@@ -50,13 +51,15 @@ function createSeededRandom(seed: number): () => number {
     };
 }
 
-function shuffleWithSeed<T>(values: T[], random: () => number): T[] {
-    const next = [...values];
-    for (let index = next.length - 1; index > 0; index -= 1) {
-        const swapIndex = Math.floor(random() * (index + 1));
-        [next[index], next[swapIndex]] = [next[swapIndex], next[index]];
+function createPuzzleSeed(): number {
+    let cryptoSeed = 0;
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+        const values = new Uint32Array(1);
+        crypto.getRandomValues(values);
+        cryptoSeed = values[0] ?? 0;
     }
-    return next;
+
+    return (Date.now() ^ Math.floor(Math.random() * 0xffffffff) ^ cryptoSeed) >>> 0;
 }
 
 function getLongestRun(bottle: Bottle): number {
@@ -182,13 +185,6 @@ function canSolvePuzzle(puzzle: Bottle[], maxDepth: number, maxStates: number): 
     return false;
 }
 
-function buildFallbackPuzzle(): Bottle[] {
-    const colors = PUZZLE_COLORS.flatMap((color) => Array.from({ length: BOTTLE_SIZE }, () => color));
-    return Array.from({ length: NORMAL_BOTTLE_COUNT }, (_, index) => (
-        colors.slice(index * BOTTLE_SIZE, (index + 1) * BOTTLE_SIZE)
-    ));
-}
-
 function buildSolvedPuzzle(colors: ColorToken[], emptyBottleCount: number): Bottle[] {
     return [
         ...colors.map((color) => Array.from({ length: BOTTLE_SIZE }, () => color)),
@@ -215,77 +211,40 @@ function scoreRandomness(puzzle: Bottle[]): number {
     return partialBottleBonus * 3 + topColorVariety - longestRunPenalty * 2 - fullSameColorPenalty;
 }
 
-function buildRandomDistributionPreset(seed: number): Bottle[] {
-    const colors = PUZZLE_COLORS.flatMap((color) => Array.from({ length: BOTTLE_SIZE }, () => color));
+function buildScrambledPuzzlePreset({
+    colors,
+    emptyBottleCount,
+    seed,
+    attempts,
+    scrambleSteps,
+    solverDepth,
+    solverStates,
+    minPartialBottleCount,
+    maxLongestRun,
+    requireNoSolvedBottle,
+    scorePuzzle,
+}: {
+    colors: ColorToken[];
+    emptyBottleCount: number;
+    seed: number;
+    attempts: number;
+    scrambleSteps: number;
+    solverDepth: number;
+    solverStates: number;
+    minPartialBottleCount: number;
+    maxLongestRun: number;
+    requireNoSolvedBottle: boolean;
+    scorePuzzle: (puzzle: Bottle[]) => number;
+}): Bottle[] {
     let bestSolvablePuzzle: Bottle[] | null = null;
     let bestSolvableScore = Number.NEGATIVE_INFINITY;
 
-    for (let attempt = 0; attempt < GENERATION_ATTEMPTS; attempt += 1) {
+    for (let attempt = 0; attempt < attempts; attempt += 1) {
         const random = createSeededRandom(seed + attempt * 9973);
-        const shuffled = shuffleWithSeed(colors, random);
-        const bottleSizes = buildRandomBottleSizes(shuffled.length, NORMAL_BOTTLE_COUNT, random);
-        const puzzle = bottleSizes.reduce<Bottle[]>((bottles, size) => {
-            const used = bottles.reduce((count, bottle) => count + bottle.length, 0);
-            bottles.push(shuffled.slice(used, used + size));
-            return bottles;
-        }, []);
-        const score = scoreRandomness(puzzle);
-
-        const hasLargeBlock = puzzle.some((bottle) => getLongestRun(bottle) > MAX_LONGEST_RUN);
-        const hasSolvedBottle = puzzle.some((bottle) => bottle.length === BOTTLE_SIZE && bottle.every((color) => color === bottle[0]));
-        const emptyBottleCount = puzzle.filter((bottle) => bottle.length === 0).length;
-        const solvable = canSolvePuzzle(puzzle, NORMAL_SOLVER_DEPTH, NORMAL_SOLVER_STATES);
-
-        if (solvable && score > bestSolvableScore) {
-            bestSolvablePuzzle = puzzle;
-            bestSolvableScore = score;
-        }
-
-        if (solvable && !hasLargeBlock && !hasSolvedBottle && emptyBottleCount <= 1) {
-            return puzzle;
-        }
-    }
-
-    return bestSolvablePuzzle ?? buildFallbackPuzzle();
-}
-
-function buildRandomBottleSizes(totalLayers: number, bottleCount: number, random: () => number): number[] {
-    const sizes = Array.from({ length: bottleCount }, () => 0);
-
-    for (let layer = 0; layer < totalLayers; layer += 1) {
-        const availableIndexes = sizes
-            .map((size, index) => ({ size, index }))
-            .filter(({ size }) => size < BOTTLE_SIZE)
-            .map(({ index }) => index);
-        const index = availableIndexes[Math.floor(random() * availableIndexes.length)];
-        sizes[index] += 1;
-    }
-
-    return sizes;
-}
-
-function scoreHardness(puzzle: Bottle[]): number {
-    const filledBottles = puzzle.filter((bottle) => bottle.length > 0);
-    const partialBottleCount = filledBottles.filter((bottle) => bottle.length < BOTTLE_SIZE).length;
-    const topColorVariety = new Set(filledBottles.map((bottle) => bottle.at(-1))).size;
-    const solvedBottlePenalty = filledBottles.filter((bottle) => (
-        bottle.length === BOTTLE_SIZE && bottle.every((color) => color === bottle[0])
-    )).length * 8;
-    const longRunPenalty = filledBottles.reduce((score, bottle) => score + Math.max(0, getLongestRun(bottle) - 3), 0) * 3;
-
-    return partialBottleCount * 4 + topColorVariety - solvedBottlePenalty - longRunPenalty;
-}
-
-function buildHardPuzzlePreset(seed: number): Bottle[] {
-    let bestSolvablePuzzle: Bottle[] | null = null;
-    let bestSolvableScore = Number.NEGATIVE_INFINITY;
-
-    for (let attempt = 0; attempt < HARD_GENERATION_ATTEMPTS; attempt += 1) {
-        const random = createSeededRandom(seed + attempt * 12007);
-        let puzzle = buildSolvedPuzzle(HARD_PUZZLE_COLORS, 1);
+        let puzzle = buildSolvedPuzzle(colors, emptyBottleCount);
         let previousMove: { from: number; to: number } | null = null;
 
-        for (let step = 0; step < 260; step += 1) {
+        for (let step = 0; step < scrambleSteps; step += 1) {
             const moves: { from: number; to: number }[] = [];
 
             for (let from = 0; from < puzzle.length; from += 1) {
@@ -305,33 +264,75 @@ function buildHardPuzzlePreset(seed: number): Bottle[] {
             previousMove = move;
         }
 
-        const score = scoreHardness(puzzle);
+        const score = scorePuzzle(puzzle);
         const solvedBottleCount = puzzle.filter((bottle) => (
             bottle.length === BOTTLE_SIZE && bottle.every((color) => color === bottle[0])
         )).length;
         const partialBottleCount = puzzle.filter((bottle) => bottle.length > 0 && bottle.length < BOTTLE_SIZE).length;
-        const hasLargeBlock = puzzle.some((bottle) => getLongestRun(bottle) > 4);
-        const solvable = canSolvePuzzle(puzzle, HARD_SOLVER_DEPTH, HARD_SOLVER_STATES);
+        const hasLargeBlock = puzzle.some((bottle) => getLongestRun(bottle) > maxLongestRun);
+        const solvable = canSolvePuzzle(puzzle, solverDepth, solverStates);
 
         if (solvable && score > bestSolvableScore) {
             bestSolvablePuzzle = puzzle;
             bestSolvableScore = score;
         }
 
-        if (solvable && solvedBottleCount === 0 && partialBottleCount >= 5 && !hasLargeBlock) {
+        if (
+            solvable &&
+            partialBottleCount >= minPartialBottleCount &&
+            !hasLargeBlock &&
+            (!requireNoSolvedBottle || solvedBottleCount === 0)
+        ) {
             return puzzle;
         }
     }
 
-    return bestSolvablePuzzle ?? buildSolvedPuzzle(HARD_PUZZLE_COLORS, 1);
+    return bestSolvablePuzzle ?? buildSolvedPuzzle(colors, emptyBottleCount);
 }
 
-const puzzlePresets = Array.from({ length: PUZZLE_COUNT }, (_, index) => (
-    buildRandomDistributionPreset(209759 + index * 8191)
-));
-const hardPuzzlePresets = Array.from({ length: HARD_PUZZLE_COUNT }, (_, index) => (
-    buildHardPuzzlePreset(314159 + index * 8191)
-));
+function buildRandomDistributionPreset(seed: number): Bottle[] {
+    return buildScrambledPuzzlePreset({
+        colors: PUZZLE_COLORS,
+        emptyBottleCount: NORMAL_EMPTY_BOTTLE_COUNT,
+        seed,
+        attempts: GENERATION_ATTEMPTS,
+        scrambleSteps: 180,
+        solverDepth: NORMAL_SOLVER_DEPTH,
+        solverStates: NORMAL_SOLVER_STATES,
+        minPartialBottleCount: 4,
+        maxLongestRun: MAX_LONGEST_RUN,
+        requireNoSolvedBottle: false,
+        scorePuzzle: scoreRandomness,
+    });
+}
+
+function scoreHardness(puzzle: Bottle[]): number {
+    const filledBottles = puzzle.filter((bottle) => bottle.length > 0);
+    const partialBottleCount = filledBottles.filter((bottle) => bottle.length < BOTTLE_SIZE).length;
+    const topColorVariety = new Set(filledBottles.map((bottle) => bottle.at(-1))).size;
+    const solvedBottlePenalty = filledBottles.filter((bottle) => (
+        bottle.length === BOTTLE_SIZE && bottle.every((color) => color === bottle[0])
+    )).length * 8;
+    const longRunPenalty = filledBottles.reduce((score, bottle) => score + Math.max(0, getLongestRun(bottle) - 3), 0) * 3;
+
+    return partialBottleCount * 4 + topColorVariety - solvedBottlePenalty - longRunPenalty;
+}
+
+function buildHardPuzzlePreset(seed: number): Bottle[] {
+    return buildScrambledPuzzlePreset({
+        colors: HARD_PUZZLE_COLORS,
+        emptyBottleCount: HARD_EMPTY_BOTTLE_COUNT,
+        seed,
+        attempts: HARD_GENERATION_ATTEMPTS,
+        scrambleSteps: 260,
+        solverDepth: HARD_SOLVER_DEPTH,
+        solverStates: HARD_SOLVER_STATES,
+        minPartialBottleCount: 5,
+        maxLongestRun: 4,
+        requireNoSolvedBottle: true,
+        scorePuzzle: scoreHardness,
+    });
+}
 
 function isSolved(puzzle: Bottle[]): boolean {
     return puzzle.every((bottle) => {
@@ -500,10 +501,11 @@ function BottleView({
 
 export function ColorSortPuzzlePage() {
     const [presetIndex, setPresetIndex] = useState(0);
-    const [hardPresetIndex, setHardPresetIndex] = useState(0);
     const [isHardPuzzle, setIsHardPuzzle] = useState(false);
-    const [initialPuzzle, setInitialPuzzle] = useState<Bottle[]>(() => clonePuzzle(puzzlePresets[0]));
-    const [puzzle, setPuzzle] = useState<Bottle[]>(() => clonePuzzle(puzzlePresets[0]));
+    const [initialPuzzle, setInitialPuzzle] = useState<Bottle[]>(() => (
+        buildRandomDistributionPreset(createPuzzleSeed())
+    ));
+    const [puzzle, setPuzzle] = useState<Bottle[]>(() => clonePuzzle(initialPuzzle));
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
     const [history, setHistory] = useState<Bottle[][]>([]);
     const [moveHint, setMoveHint] = useState('');
@@ -517,12 +519,12 @@ export function ColorSortPuzzlePage() {
     ), [puzzle, selectedIndex]);
 
     const loadPreset = (nextIndex: number) => {
-        const normalizedIndex = nextIndex % puzzlePresets.length;
-        const nextPuzzleState = clonePuzzle(puzzlePresets[normalizedIndex]);
+        const normalizedIndex = Math.max(0, nextIndex);
+        const nextPuzzleState = buildRandomDistributionPreset(createPuzzleSeed() + normalizedIndex * 8191);
         setPresetIndex(normalizedIndex);
         setIsHardPuzzle(false);
         setInitialPuzzle(clonePuzzle(nextPuzzleState));
-        setPuzzle(nextPuzzleState);
+        setPuzzle(clonePuzzle(nextPuzzleState));
         setSelectedIndex(null);
         setHistory([]);
         setMoveHint('');
@@ -534,12 +536,10 @@ export function ColorSortPuzzlePage() {
             return;
         }
 
-        const normalizedIndex = hardPresetIndex % hardPuzzlePresets.length;
-        const nextPuzzleState = clonePuzzle(hardPuzzlePresets[normalizedIndex]);
-        setHardPresetIndex((prev) => (prev + 1) % hardPuzzlePresets.length);
+        const nextPuzzleState = buildHardPuzzlePreset(createPuzzleSeed());
         setIsHardPuzzle(true);
         setInitialPuzzle(clonePuzzle(nextPuzzleState));
-        setPuzzle(nextPuzzleState);
+        setPuzzle(clonePuzzle(nextPuzzleState));
         setSelectedIndex(null);
         setHistory([]);
         setMoveHint('星モードです。');
@@ -635,6 +635,10 @@ export function ColorSortPuzzlePage() {
 
     return (
         <div className="min-h-screen bg-[#F5F5F7] text-[#1D1D1F] dark:bg-[#000] dark:text-[#F5F5F7]">
+            <PageSeo
+                title="カラーソートパズル | TTI Intelligence"
+                description="透明なボトルの色を揃える、TTI Intelligenceのミニパズルアプリです。"
+            />
             <section className="relative overflow-hidden border-b border-black/5 dark:border-white/10 bg-white dark:bg-[#050505]">
                 <div className="mx-auto max-w-[1120px] px-4 sm:px-6 lg:px-8 py-10 lg:py-14">
                     <Link

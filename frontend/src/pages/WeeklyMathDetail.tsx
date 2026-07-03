@@ -1,19 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Sigma } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
+import { PageSeo } from '@/components/PageSeo';
 import { Card, CardContent, Button } from '@/components/ui';
+import { MathMarkdown } from '@/components/MathMarkdown';
 import {
-    DEFAULT_WEEKLY_MATH_TEMPLATE_KEY,
     fromPublicWeeklyMathKey,
     getWeeklyMath,
     toPublicWeeklyMathKey,
     type WeeklyMathProblem,
 } from '@/lib/weeklyMath';
-import { normalizeMathDelimiters } from '@/lib/markdown';
 
 export function WeeklyMathDetail() {
     const { weekKey } = useParams<{ weekKey: string }>();
@@ -91,6 +87,10 @@ export function WeeklyMathDetail() {
 
     return (
         <div className="animate-fade-in">
+            <PageSeo
+                title={`${item.title?.trim() || '今週の数学'} | TTI Intelligence`}
+                description="TTI Intelligenceの今週の数学の問題詳細ページです。"
+            />
             <section className="relative overflow-hidden">
                 <div className="absolute inset-0 gradient-bg-subtle opacity-30" />
                 <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -107,9 +107,6 @@ export function WeeklyMathDetail() {
                             {item.title?.trim() || '経路の場合の数'}
                         </h1>
                     </div>
-                    <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
-                        {item.weekKey === DEFAULT_WEEKLY_MATH_TEMPLATE_KEY ? '最初の問題' : item.weekKey}
-                    </p>
                 </div>
             </section>
 
@@ -117,19 +114,9 @@ export function WeeklyMathDetail() {
                 <Card variant="elevated">
                     <CardContent className="p-8">
                         <div className="[&_.katex-display]:my-4">
-                            <ReactMarkdown
-                                remarkPlugins={[remarkGfm, remarkMath]}
-                                rehypePlugins={[rehypeKatex]}
-                                components={{
-                                    p: ({ children }) => (
-                                        <p className="apple-body text-[#1D1D1F] dark:text-[#F5F5F7] leading-relaxed mb-4">
-                                            {children}
-                                        </p>
-                                    ),
-                                }}
-                            >
-                                {normalizeMathDelimiters(item.problem || '')}
-                            </ReactMarkdown>
+                            <MathMarkdown paragraphClassName="apple-body text-[#1D1D1F] dark:text-[#F5F5F7] leading-relaxed mb-4">
+                                {item.problem || ''}
+                            </MathMarkdown>
                         </div>
                     </CardContent>
                 </Card>

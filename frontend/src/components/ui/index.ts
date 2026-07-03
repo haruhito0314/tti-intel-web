@@ -4,6 +4,7 @@ export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 export { Input } from './Input';
 export { Textarea } from './Textarea';
 export { Badge } from './Badge';
+export { Skeleton } from './Skeleton';
 export { Dialog } from './Dialog';
 export { Dropdown, Select } from './Dropdown';
 export { ToastProvider } from './Toast';

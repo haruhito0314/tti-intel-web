@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Send, Mail, CheckCircle, AlertCircle } from 'lucide-react';
 import { Card, Button, Input, Textarea } from '@/components/ui';
+import { PageSeo } from '@/components/PageSeo';
 import { siteConfig } from '@/config/site';
 import emailjs from '@emailjs/browser';
 
@@ -89,11 +90,15 @@ export function Contact() {
 
     return (
         <div className="animate-fade-in">
+            <PageSeo
+                title="Contact | TTI Intelligence"
+                description="TTI Intelligenceへのお問い合わせページです。参加相談や活動に関する質問を送信できます。"
+            />
             {/* Header */}
             <section className="about-band-hero relative overflow-hidden">
-                <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
                     <div className="text-center">
-                        <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] mb-4">
+                        <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] mb-5">
                             お問い合わせ
                         </h1>
                         <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">

@@ -8,7 +8,7 @@ export const siteConfig = {
     name: 'TTI Intelligence',
     shortName: 'TTI Intelligence',
     description: 'TTI Intelligenceは、最新のAI技術を共に学び、実践的な開発を通じてアイデアを形にする学生コミュニティです。',
-    url: 'https://ai.toyota-ti.ac.jp', // Replace with actual URL
+    url: 'https://tti-intel.com',
 
     // Navigation links
     navigation: [

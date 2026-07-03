@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, MapPin, Sparkles } from 'lucide-react';
+import { Mail, MapPin } from 'lucide-react';
 import { siteConfig } from '@/config/site';
 import { isMobileSplashDisabled, setMobileSplashDisabled } from '@/lib/splashSettings';
 
@@ -56,12 +56,14 @@ export function Footer() {
 
     return (
         <footer className="mt-auto bg-[#F5F5F7] dark:bg-[var(--surface-2)] border-t border-[#D2D2D7] dark:border-[var(--border)]">
-            <div className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-12">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-8">
                     {/* Brand */}
                     <div className="md:col-span-2">
                         <Link to="/" className="flex items-center gap-2 mb-3">
-                            <Sparkles className="w-5 h-5 text-[#0071E3] dark:text-[#2997FF]" />
+                            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/75 ring-1 ring-black/10 shadow-sm dark:bg-white dark:ring-white/20">
+                                <img src="/load-assets/tti-crest.png" alt="" className="h-6 w-6 object-contain" />
+                            </span>
                             <span className="font-semibold text-sm text-[#1D1D1F] dark:text-[#F5F5F7]">
                                 {siteConfig.name}
                             </span>
@@ -168,31 +170,24 @@ export function Footer() {
                                     管理者ページ
                                 </Link>
                             </li>
-                            <li>
-                                <button
-                                    type="button"
-                                    onClick={handleToggleSplash}
-                                    aria-label={`ロード画面を${isSplashDisabled ? 'オン' : 'オフ'}にする`}
-                                    aria-pressed={!isSplashDisabled}
-                                    className="
-                    apple-footnote text-left text-[#424245] dark:text-[rgba(235,235,245,0.6)]
-                    hover:text-[#1D1D1F] dark:hover:text-[#F5F5F7]
-                    hover:underline
-                    transition-colors duration-300
-                   "
-                                >
-                                    ロード画面: {isSplashDisabled ? 'オフ' : 'オン'}
-                                </button>
-                            </li>
                         </ul>
                     </div>
                 </div>
 
                 {/* Copyright */}
-                <div className="mt-6 pt-4 border-t border-[#D2D2D7]/50 dark:border-[var(--border)]/70">
+                <div className="mt-10 pt-5 border-t border-[#D2D2D7]/50 dark:border-[var(--border)]/70 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
                     <p className="text-center text-[11px] text-[#86868B] dark:text-[rgba(235,235,245,0.3)]">
                         © {currentYear} {siteConfig.name}. All rights reserved.
                     </p>
+                    <button
+                        type="button"
+                        onClick={handleToggleSplash}
+                        aria-label={`ロード画面を${isSplashDisabled ? 'オン' : 'オフ'}にする`}
+                        aria-pressed={!isSplashDisabled}
+                        className="text-[10px] text-[#A1A1A6] dark:text-[rgba(235,235,245,0.24)] hover:text-[#6E6E73] dark:hover:text-[rgba(235,235,245,0.52)] hover:underline transition-colors duration-300"
+                    >
+                        ロード画面: {isSplashDisabled ? 'オフ' : 'オン'}
+                    </button>
                 </div>
             </div>
         </footer>

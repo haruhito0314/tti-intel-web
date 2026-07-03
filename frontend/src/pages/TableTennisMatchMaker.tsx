@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, FileDown, Trash2 } from 'lucide-react';
+import { PageSeo } from '@/components/PageSeo';
 import { Button, Card, CardContent } from '@/components/ui';
 
 type PlayerSlot = number | string | null;
@@ -286,6 +287,10 @@ export function TableTennisMatchMakerPage() {
 
     return (
         <div className="min-h-screen about-band-white">
+            <PageSeo
+                title="卓球組み合わせ表ジェネレーター | TTI Intelligence"
+                description="人数とクール数から卓球の組み合わせ表を自動生成するアプリです。"
+            />
             <div className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
                 <Link
                     to="/app"

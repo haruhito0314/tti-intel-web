@@ -2,10 +2,27 @@
 <html lang="ja">
 
 <head>
+  <script>
+    (function () {
+      try {
+        var theme = window.localStorage.getItem('tti-ai-theme') || 'system';
+        var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (theme === 'dark' || (theme === 'system' && prefersDark)) {
+          document.documentElement.classList.add('dark');
+        }
+      } catch (_) {}
+    })();
+  </script>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/logo.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="TTI Intelligenceの公式Webサイトです。AI技術の学習・研究活動を行っています。" />
+  <meta property="og:title" content="TTI Intelligence 公式Webサイト" />
+  <meta property="og:description" content="豊田工業大学の学生を中心に、AI技術、開発、数学、ゲーム、解説動画へ取り組む学生コミュニティです。" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://tti-intel.com/" />
+  <meta property="og:image" content="https://tti-intel.com/load-assets/tti-lockup-tagline-navy.png" />
+  <meta name="twitter:card" content="summary_large_image" />
   <title>TTI Intelligence 公式Webサイト</title>
   <!-- Preconnect to Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">

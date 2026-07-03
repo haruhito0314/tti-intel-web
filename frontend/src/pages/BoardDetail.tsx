@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Pin, Lock, Send, PinOff, Unlock, Trash2, Heart } from 'lucide-react';
+import { PageSeo } from '@/components/PageSeo';
 import { Card, CardContent, Badge, Button, Textarea, Input } from '@/components/ui';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -226,6 +227,10 @@ export function BoardDetail() {
 
     return (
         <div className="animate-fade-in">
+            <PageSeo
+                title={`${thread.title} | Board | TTI Intelligence`}
+                description={thread.body}
+            />
             {/* Header */}
             <section className="relative overflow-hidden">
                 <div className="absolute inset-0 gradient-bg-subtle opacity-30" />

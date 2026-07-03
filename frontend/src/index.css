@@ -112,6 +112,13 @@
     outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
+
+  /* Balanced line breaks for headings +
+     proportional CJK kerning (palt) for tighter, Apple-like Japanese headlines */
+  h1, h2, h3 {
+    text-wrap: balance;
+    font-feature-settings: "palt" 1;
+  }
 }
 
 /* ===================================
@@ -123,7 +130,8 @@
   /* --- Typography scale --- */
   .apple-hero {
     font-size: 28px;
-    line-height: 1.07;
+    /* 1.07 is tuned for Latin; Japanese glyphs need slightly more air */
+    line-height: 1.12;
     font-weight: 600;
     letter-spacing: -0.015em;
   }
@@ -1246,6 +1254,18 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .animate-float-slow,
+  .animate-float-fast,
+  .animate-float-diagonal,
+  .animate-float-orbit,
+  .animate-pulse-slow,
+  .home-card-backdrop,
+  .home-card-backdrop::before,
+  .home-card-backdrop::after {
+    animation: none !important;
+  }
+
   .initial-splash,
   .initial-splash *,
   .initial-splash *::before,
