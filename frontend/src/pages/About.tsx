@@ -120,9 +120,6 @@ export function About() {
             </section>
 
             <section className="about-activities-section">
-                <h2 className="apple-section text-[#1D1D1F] text-center">
-                    活動内容
-                </h2>
                 <div className="activities-grid">
                     {activityShowcases.map((item) => (
                         <article
