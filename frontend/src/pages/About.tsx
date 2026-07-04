@@ -1,28 +1,66 @@
+import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui';
 import { PageSeo } from '@/components/PageSeo';
-import { Check, Code, Sigma, Gamepad2, Video, ChevronDown, Calendar } from 'lucide-react';
+import { Check, ChevronDown, Calendar } from 'lucide-react';
 import { useState } from 'react';
 
-const activities = [
+const activityShowcases = [
     {
-        icon: Code,
-        title: '開発',
-        description: '最新のAIモデルを活用しながら、バイブコーディングでWebサイトやアプリを開発しています。最近はMCPを使ったゲーム開発にも挑戦しています。',
-    },
-    {
-        icon: Sigma,
-        title: '数学',
-        description: '自作問題を作ることをメインに、数学的な発想力と表現力を磨きます。',
-    },
-    {
-        icon: Gamepad2,
-        title: 'ゲーム交流',
-        description: 'VALORANTやApex Legendsを中心に、メンバー同士で気軽にゲームを楽しんでいます。人数が集まればMinecraft Realms（Java版）の運用も予定しています。',
-    },
-    {
-        icon: Video,
         title: '解説動画',
-        description: '点数を取るためだけでなく、科目の本質をついた真の理解を促す勉強解説動画を制作します。',
+        description: '科目の本質に踏み込む解説動画を制作し、学びを共有しています。',
+        image: '/images/about/video-card.png',
+        imageAlt: '動画編集用のモニター、マイク、キーボード、トラックパッド',
+        actions: [
+            {
+                label: 'YouTubeを見る',
+                href: 'https://www.youtube.com/@ttiintelligence',
+                external: true,
+            },
+        ],
+        cardClass: 'activity-card--video',
+        textPosition: 'text-top',
+    },
+    {
+        title: '開発',
+        description: '最新のAIモデルやMCPを活用し、Web・アプリ・ゲーム開発に挑戦しています。',
+        image: '/images/about/dev-card.png',
+        imageAlt: 'コードエディタを表示したノートPC',
+        actions: [
+            {
+                label: 'アプリケーション',
+                href: '/app',
+                external: false,
+            },
+            {
+                label: '準備中',
+            },
+        ],
+        cardClass: 'activity-card--dev',
+        textPosition: 'text-bottom',
+    },
+    {
+        title: 'ゲーム交流',
+        description: 'VALORANTやApex Legendsを中心に、メンバー同士で気軽に遊んでいます。',
+        image: '/images/about/game-card.png',
+        imageAlt: 'ゲームコントローラーとヘッドセット',
+        actions: [{ label: '準備中' }],
+        cardClass: 'activity-card--game',
+        textPosition: 'text-top',
+    },
+    {
+        title: '今週の数学',
+        description: '自作問題を通して、数学的な発想力と表現力を磨いています。',
+        image: '/images/about/math-card.png',
+        imageAlt: '数学の図形が表示されたタブレットとペン',
+        actions: [
+            {
+                label: '問題を見る',
+                href: '/weekly-math',
+                external: false,
+            },
+        ],
+        cardClass: 'activity-card--math',
+        textPosition: 'text-bottom',
     },
 ];
 
@@ -81,35 +119,61 @@ export function About() {
                 </div>
             </section>
 
-            {/* Activities */}
-            <section className="about-band-white max-w-[1120px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-                <h2 className="apple-section text-[#1D1D1F] dark:text-[#F5F5F7] text-center mb-12">
+            <section className="about-activities-section">
+                <h2 className="apple-section text-[#1D1D1F] text-center">
                     活動内容
                 </h2>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {activities.map((activity, index) => {
-                        const Icon = activity.icon;
-                        return (
-                            <Card
-                                key={index}
-                                variant="elevated"
-                                className={`${index % 2 === 0 ? 'accent-card-soft' : 'accent-card-cool'} h-full min-h-[230px] hover:scale-[1.015] transition-transform duration-300`}
-                                style={{ animationDelay: `${index * 100}ms` }}
-                            >
-                                <CardContent className="h-full p-6 text-center flex flex-col items-center">
-                                    <div className="w-14 h-14 rounded-full bg-[#0071E3]/10 dark:bg-[#2997FF]/10 flex items-center justify-center mx-auto mb-5">
-                                        <Icon className="w-7 h-7 text-[#0071E3] dark:text-[#2997FF]" />
-                                    </div>
-                                    <h3 className="apple-headline text-[#1D1D1F] dark:text-[#F5F5F7] mb-3">
-                                        {activity.title}
-                                    </h3>
-                                    <p className="text-pretty text-left text-[15px] leading-[1.75] text-[#6E6E73] dark:text-[rgba(235,235,245,0.66)]">
-                                        {activity.description}
-                                    </p>
-                                </CardContent>
-                            </Card>
-                        );
-                    })}
+                <div className="activities-grid">
+                    {activityShowcases.map((item) => (
+                        <article
+                            key={item.title}
+                            className={`activity-card ${item.cardClass} ${item.textPosition}`}
+                        >
+                            <div className="activity-copy">
+                                <h3>{item.title}</h3>
+                                <p>{item.description}</p>
+                                <div className="activity-actions">
+                                    {item.actions.map((action) => {
+                                        if (!action.href) {
+                                            return (
+                                                <span key={action.label} className="activity-button disabled" aria-disabled="true">
+                                                    {action.label}
+                                                </span>
+                                            );
+                                        }
+
+                                        if (action.external) {
+                                            return (
+                                                <a
+                                                    key={action.label}
+                                                    href={action.href}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="activity-button primary"
+                                                >
+                                                    {action.label}
+                                                </a>
+                                            );
+                                        }
+
+                                        return (
+                                            <Link key={action.label} to={action.href} className="activity-button primary">
+                                                {action.label}
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                            <img
+                                className="activity-visual"
+                                src={item.image}
+                                alt={item.imageAlt}
+                                width={1600}
+                                height={1024}
+                                loading="lazy"
+                            />
+                        </article>
+                    ))}
                 </div>
             </section>
 

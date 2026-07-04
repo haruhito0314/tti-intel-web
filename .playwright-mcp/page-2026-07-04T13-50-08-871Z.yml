@@ -1,0 +1,157 @@
+- generic [ref=f6e3]:
+  - banner [ref=f6e4]:
+    - navigation [ref=f6e6]:
+      - generic [ref=f6e7]:
+        - link "TTI Intelligence ホーム" [ref=f6e8] [cursor=pointer]:
+          - /url: /
+        - generic [ref=f6e10]:
+          - 'button "テーマを切り替え (現在: ダークモード)" [ref=f6e11]':
+            - img [ref=f6e12]
+          - button "メニューを開く" [ref=f6e14]:
+            - img [ref=f6e15]
+  - main [ref=f6e16]:
+    - generic [ref=f6e17]:
+      - generic [ref=f6e20]:
+        - heading "About TTI Intelligence" [level=1] [ref=f6e21]:
+          - text: About
+          - generic [ref=f6e22]: TTI Intelligence
+        - paragraph [ref=f6e23]: 私たちは豊田工業大学の学生を中心としたAIサークルです。 AI技術を活用しながら、学習・研究・開発をはじめ、多くのことに挑戦していきます。
+      - generic [ref=f6e24]:
+        - heading "活動内容" [level=2] [ref=f6e25]
+        - generic [ref=f6e26]:
+          - article [ref=f6e27]:
+            - generic [ref=f6e28]:
+              - heading "解説動画" [level=3] [ref=f6e29]
+              - paragraph [ref=f6e30]: 科目の本質に踏み込む解説動画を制作し、学びを共有しています。
+              - link "YouTubeを見る" [ref=f6e31] [cursor=pointer]:
+                - /url: https://www.youtube.com/@ttiintelligence
+            - img "動画編集用のモニター、マイク、キーボード、トラックパッド"
+          - article [ref=f6e32]:
+            - generic [ref=f6e33]:
+              - heading "ゲーム交流" [level=3] [ref=f6e34]
+              - paragraph [ref=f6e35]: VALORANTやApex Legendsを中心に、メンバー同士で気軽に遊んでいます。
+              - generic [ref=f6e36]: 準備中
+            - img "ゲームコントローラーとヘッドセット"
+          - article [ref=f6e37]:
+            - generic [ref=f6e38]:
+              - heading "開発" [level=3] [ref=f6e39]
+              - paragraph [ref=f6e40]: 最新のAIモデルやMCPを活用し、Web・アプリ・ゲーム開発に挑戦しています。
+              - generic [ref=f6e41]: 準備中
+            - img "コードエディタを表示したノートPC"
+          - article [ref=f6e42]:
+            - generic [ref=f6e43]:
+              - heading "今週の数学" [level=3] [ref=f6e44]
+              - paragraph [ref=f6e45]: 自作問題を通して、数学的な発想力と表現力を磨いています。
+              - link "問題を見る" [ref=f6e46] [cursor=pointer]:
+                - /url: /weekly-math
+            - img "数学の図形が表示されたタブレットとペン"
+      - generic [ref=f6e49]:
+        - generic [ref=f6e54]:
+          - generic [ref=f6e55]:
+            - paragraph [ref=f6e56]: NEXT EVENT
+            - paragraph [ref=f6e57]: 次回イベント
+          - img [ref=f6e75]
+        - generic [ref=f6e77]:
+          - heading "応用情報技術者試験" [level=3] [ref=f6e78]
+          - paragraph [ref=f6e79]: メンバー有志で応用情報技術者試験に挑戦します。一緒に合格を目指しましょう！
+          - generic [ref=f6e80]:
+            - generic [ref=f6e81]:
+              - img [ref=f6e82]
+              - text: 2026年11月（秋期）
+            - generic [ref=f6e84]: 📍 各地の試験会場
+      - generic [ref=f6e85]:
+        - heading "よくある質問" [level=2] [ref=f6e86]
+        - generic [ref=f6e87]:
+          - generic [ref=f6e88]:
+            - button "プログラミング未経験でも参加できますか？" [ref=f6e89]:
+              - generic [ref=f6e90]: プログラミング未経験でも参加できますか？
+              - img [ref=f6e91]
+            - paragraph [ref=f6e93]: はい、もちろんです！未経験の方にも基礎から丁寧にお教えします。わからないところは1から全部サポートするので、安心して参加してください。
+          - generic [ref=f6e94]:
+            - button "活動頻度はどのくらいですか？" [ref=f6e95]:
+              - generic [ref=f6e96]: 活動頻度はどのくらいですか？
+              - img [ref=f6e97]
+            - paragraph [ref=f6e99]: 主に土日に活動しています。参加は自由で、都合の良いときに参加できます。自分のペースで無理なく続けられる環境です。
+          - generic [ref=f6e100]:
+            - button "費用はかかりますか？" [ref=f6e101]:
+              - generic [ref=f6e102]: 費用はかかりますか？
+              - img [ref=f6e103]
+            - paragraph [ref=f6e105]: サークルの参加費用は無料です。ただし、AIツールのサブスクリプションなど個人で利用するサービスの費用は各自でご負担いただいています。
+          - generic [ref=f6e106]:
+            - button "学部や学年に制限はありますか？" [ref=f6e107]:
+              - generic [ref=f6e108]: 学部や学年に制限はありますか？
+              - img [ref=f6e109]
+            - paragraph [ref=f6e111]: ありません。学部1年生から大学院生まで、すべての学生が参加できます。他大学の学生も歓迎しています。
+          - generic [ref=f6e112]:
+            - button "どんなAIツールを使いますか？" [ref=f6e113]:
+              - generic [ref=f6e114]: どんなAIツールを使いますか？
+              - img [ref=f6e115]
+            - paragraph [ref=f6e117]: OpenAI Codex、Google Antigravity、Claude Codeなどの最新AIコーディングツールを活用しています。実際の開発を通じて、これらのツールの効果的な使い方を学びます。
+  - contentinfo [ref=f6e118]:
+    - generic [ref=f6e119]:
+      - generic [ref=f6e120]:
+        - generic [ref=f6e121]:
+          - link "TTI Intelligence" [ref=f6e122] [cursor=pointer]:
+            - /url: /
+            - generic [ref=f6e124]: TTI Intelligence
+          - paragraph [ref=f6e125]: TTI Intelligenceは、最新のAI技術を共に学び、実践的な開発を通じてアイデアを形にする学生コミュニティです。
+          - generic [ref=f6e126]:
+            - heading "連絡先情報" [level=3] [ref=f6e127]
+            - generic [ref=f6e128]:
+              - generic [ref=f6e129]:
+                - img [ref=f6e130]
+                - paragraph [ref=f6e133]:
+                  - generic [ref=f6e134]: 住所
+                  - text: 〒468-8511 名古屋市天白区久方二丁目12番地1 豊田工業大学
+              - generic [ref=f6e135]:
+                - img [ref=f6e136]
+                - paragraph [ref=f6e139]:
+                  - generic [ref=f6e140]: Email
+                  - link "tti.intel@gmail.com" [ref=f6e141] [cursor=pointer]:
+                    - /url: mailto:tti.intel@gmail.com
+          - generic [ref=f6e142]:
+            - link "Discord" [ref=f6e143] [cursor=pointer]:
+              - /url: https://discord.gg/DFWs8GrHxF
+              - img [ref=f6e144]
+            - link "Instagram" [ref=f6e146] [cursor=pointer]:
+              - /url: https://instagram.com/haruhito_314
+              - img [ref=f6e147]
+            - link "GitHub" [ref=f6e149] [cursor=pointer]:
+              - /url: https://github.com/haruhito0314
+              - img [ref=f6e150]
+            - link "YouTube" [ref=f6e152] [cursor=pointer]:
+              - /url: https://www.youtube.com/@ttiintelligence
+              - img [ref=f6e153]
+        - generic [ref=f6e155]:
+          - heading "メニュー" [level=3] [ref=f6e156]
+          - list [ref=f6e157]:
+            - listitem [ref=f6e158]:
+              - link "Home" [ref=f6e159] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=f6e160]:
+              - link "About Us" [ref=f6e161] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=f6e162]:
+              - link "Weekly Math" [ref=f6e163] [cursor=pointer]:
+                - /url: /weekly-math
+            - listitem [ref=f6e164]:
+              - link "News" [ref=f6e165] [cursor=pointer]:
+                - /url: /news
+            - listitem [ref=f6e166]:
+              - link "Apps" [ref=f6e167] [cursor=pointer]:
+                - /url: /app
+            - listitem [ref=f6e168]:
+              - link "Board" [ref=f6e169] [cursor=pointer]:
+                - /url: /board
+            - listitem [ref=f6e170]:
+              - link "Contact" [ref=f6e171] [cursor=pointer]:
+                - /url: /contact
+        - generic [ref=f6e172]:
+          - heading "その他" [level=3] [ref=f6e173]
+          - list [ref=f6e174]:
+            - listitem [ref=f6e175]:
+              - link "管理者ページ" [ref=f6e176] [cursor=pointer]:
+                - /url: /admin
+      - generic [ref=f6e177]:
+        - paragraph [ref=f6e178]: © 2026 TTI Intelligence. All rights reserved.
+        - button "ロード画面をオフにする" [pressed] [ref=f6e179]: "ロード画面: オン"
