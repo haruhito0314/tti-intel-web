@@ -1,0 +1,898 @@
+[    4287ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:20102
+[   93516ms] ReferenceError: projects is not defined
+    at Development (http://localhost:5175/src/pages/Development.tsx?t=1783202424807:229:89)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:11827:37)
+[   93501ms] [WARNING] %s
+
+%s
+ An error occurred in the <Development> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:6965
+[  138012ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:20102
+[  483612ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:20102
+[  572317ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:20102
+[  603654ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[  795892ms] TypeError: Cannot read properties of undefined (reading 'title')
+    at TechBrandIcon (http://localhost:5175/src/components/development/TechBrandIcon.tsx:19:58)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[  795890ms] [WARNING] %s
+
+%s
+ An error occurred in the <TechBrandIcon> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[  799051ms] ReferenceError: techCategories is not defined
+    at Development (http://localhost:5175/src/pages/Development.tsx?t=1783203130401:73:95)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[  799050ms] [WARNING] %s
+
+%s
+ An error occurred in the <Development> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[  890586ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[  892296ms] TypeError: Cannot read properties of undefined (reading 'title')
+    at TechBrandIcon (http://localhost:5175/src/components/development/TechBrandIcon.tsx?t=1783203127636:34:58)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[  892295ms] [WARNING] %s
+
+%s
+ An error occurred in the <TechBrandIcon> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[  970736ms] ReferenceError: aiTools is not defined
+    at Development (http://localhost:5175/src/pages/Development.tsx?t=1783203302086:120:115)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[  970734ms] [WARNING] %s
+
+%s
+ An error occurred in the <Development> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 1046560ms] ReferenceError: Layers is not defined
+    at Development (http://localhost:5175/src/pages/Development.tsx?t=1783203377900:40:32)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 1046559ms] [WARNING] %s
+
+%s
+ An error occurred in the <Development> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 1138368ms] ReferenceError: Sparkles is not defined
+    at Development (http://localhost:5175/src/pages/Development.tsx?t=1783203469719:38:32)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 1138367ms] [WARNING] %s
+
+%s
+ An error occurred in the <Development> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 1144033ms] ReferenceError: getVisualChapterMotion is not defined
+    at DevHeroScene5 (http://localhost:5175/src/components/development/DevHeroScene5.tsx?t=1783203475375:19:24)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 1144032ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroScene5> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 1295690ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[ 1408005ms] TypeError: Cannot read properties of undefined (reading 'hex')
+    at TechBrandIcon (http://localhost:5175/src/components/development/TechBrandIcon.tsx?t=1783203309705:44:48)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 1408002ms] [WARNING] %s
+
+%s
+ An error occurred in the <TechBrandIcon> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 1408523ms] TypeError: Cannot read properties of undefined (reading 'hex')
+    at TechBrandIcon (http://localhost:5175/src/components/development/TechBrandIcon.tsx?t=1783203309705:44:48)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 1408523ms] [WARNING] %s
+
+%s
+ An error occurred in the <TechBrandIcon> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 1408914ms] TypeError: Cannot read properties of undefined (reading 'hex')
+    at TechBrandIcon (http://localhost:5175/src/components/development/TechBrandIcon.tsx?t=1783203309705:44:48)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 1408914ms] [WARNING] %s
+
+%s
+ An error occurred in the <TechBrandIcon> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 1409265ms] TypeError: Cannot read properties of undefined (reading 'hex')
+    at TechBrandIcon (http://localhost:5175/src/components/development/TechBrandIcon.tsx?t=1783203309705:44:48)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 1409265ms] [WARNING] %s
+
+%s
+ An error occurred in the <TechBrandIcon> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 1409536ms] TypeError: Cannot read properties of undefined (reading 'hex')
+    at TechBrandIcon (http://localhost:5175/src/components/development/TechBrandIcon.tsx?t=1783203309705:44:48)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 1409535ms] [WARNING] %s
+
+%s
+ An error occurred in the <TechBrandIcon> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 1410136ms] TypeError: Cannot read properties of undefined (reading 'hex')
+    at TechBrandIcon (http://localhost:5175/src/components/development/TechBrandIcon.tsx?t=1783203309705:44:48)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 1410136ms] [WARNING] %s
+
+%s
+ An error occurred in the <TechBrandIcon> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 1455617ms] TypeError: Cannot read properties of undefined (reading 'hex')
+    at TechBrandIcon (http://localhost:5175/src/components/development/TechBrandIcon.tsx?t=1783203754311:59:48)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 1455615ms] [WARNING] %s
+
+%s
+ An error occurred in the <TechBrandIcon> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 1664592ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[ 1767827ms] [ERROR] Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. [object Object] @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:4924
+[ 1767827ms] [ERROR] Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. [object Object] @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:4924
+[ 1767830ms] [ERROR] Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. [object Object] @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:4924
+[ 1767830ms] [ERROR] Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. [object Object] @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:4924
+[ 1767833ms] Error: Objects are not valid as a React child (found: object with keys {name, icon}). If you meant to render a collection of children, use an array instead.
+    at throwOnInvalidObjectTypeImpl (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:4598:15)
+    at throwOnInvalidObjectType (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:4606:13)
+    at reconcileChildFibersImpl (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5217:13)
+    at http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5237:35
+    at reconcileChildren (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7182:53)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8701:104)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+[ 1767831ms] [WARNING] %s
+
+%s
+ An error occurred in the <span> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 1768252ms] [ERROR] Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. [object Object] @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:4924
+[ 1768252ms] [ERROR] Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. [object Object] @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:4924
+[ 1768260ms] [ERROR] Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. [object Object] @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:4924
+[ 1768260ms] [ERROR] Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. [object Object] @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:4924
+[ 1768260ms] Error: Objects are not valid as a React child (found: object with keys {name, icon}). If you meant to render a collection of children, use an array instead.
+    at throwOnInvalidObjectTypeImpl (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:4598:15)
+    at throwOnInvalidObjectType (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:4606:13)
+    at reconcileChildFibersImpl (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5217:13)
+    at http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5237:35
+    at reconcileChildren (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7182:53)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8701:104)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+[ 1768260ms] [WARNING] %s
+
+%s
+ An error occurred in the <span> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 2027471ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/sceneUtils.ts?t=1783204358824' does not provide an export named 'MCP_NODES' @ http://localhost:5175/@vite/client:808
+[ 2027471ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene3.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 2107058ms] ReferenceError: getVisualChapterMotion is not defined
+    at DevHeroScene3 (http://localhost:5175/src/components/development/DevHeroScene3.tsx?t=1783204438402:41:24)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 2107057ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroScene3> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 2107974ms] ReferenceError: getVisualChapterMotion is not defined
+    at DevHeroScene3 (http://localhost:5175/src/components/development/DevHeroScene3.tsx?t=1783204439297:45:24)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 2107974ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroScene3> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 2249314ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[ 2591461ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[ 2958359ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783204437748' does not provide an export named 'CHAPTER_COPY_ENTER_END' @ http://localhost:5175/@vite/client:808
+[ 2958359ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene4.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 2958359ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783204437748' does not provide an export named 'CHAPTER_COPY_ENTER_END' @ http://localhost:5175/@vite/client:808
+[ 2958359ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene5.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 2958359ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783204437748' does not provide an export named 'CHAPTER_COPY_ENTER_END' @ http://localhost:5175/@vite/client:808
+[ 2958359ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroCopy.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 2958359ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783204437748' does not provide an export named 'CHAPTER_COPY_ENTER_END' @ http://localhost:5175/@vite/client:808
+[ 2958359ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene1.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 2958359ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783204437748' does not provide an export named 'CHAPTER_COPY_ENTER_END' @ http://localhost:5175/@vite/client:808
+[ 2958359ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene2.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 2958359ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783204437748' does not provide an export named 'CHAPTER_COPY_ENTER_END' @ http://localhost:5175/@vite/client:808
+[ 2958359ms] [ERROR] [vite] Failed to reload /src/components/development/DevHero.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 2958359ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783204437748' does not provide an export named 'CHAPTER_COPY_ENTER_END' @ http://localhost:5175/@vite/client:808
+[ 2958360ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene3.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 2958737ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783204437748' does not provide an export named 'CHAPTER_COPY_ENTER_END' @ http://localhost:5175/@vite/client:808
+[ 2958738ms] [ERROR] [vite] Failed to reload /src/components/development/DevHero.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 2958738ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783204437748' does not provide an export named 'CHAPTER_COPY_ENTER_END' @ http://localhost:5175/@vite/client:808
+[ 2958738ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene4.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 2958738ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783204437748' does not provide an export named 'CHAPTER_COPY_ENTER_END' @ http://localhost:5175/@vite/client:808
+[ 2958738ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroCopy.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 2958738ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783204437748' does not provide an export named 'CHAPTER_COPY_ENTER_END' @ http://localhost:5175/@vite/client:808
+[ 2958738ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene1.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 2958738ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783204437748' does not provide an export named 'CHAPTER_COPY_ENTER_END' @ http://localhost:5175/@vite/client:808
+[ 2958738ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene2.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 2958738ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783204437748' does not provide an export named 'CHAPTER_COPY_ENTER_END' @ http://localhost:5175/@vite/client:808
+[ 2958738ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene5.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 2958738ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783204437748' does not provide an export named 'CHAPTER_COPY_ENTER_END' @ http://localhost:5175/@vite/client:808
+[ 2958738ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene3.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 2961205ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783205292569' does not provide an export named 'getScene3VisualMotion' @ http://localhost:5175/@vite/client:808
+[ 2961205ms] [ERROR] [vite] Failed to reload /src/components/development/DevHero.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 2961205ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783205292569' does not provide an export named 'getScene4VisualMotion' @ http://localhost:5175/@vite/client:808
+[ 2961205ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene4.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 2961206ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783205292569' does not provide an export named 'getScene3VisualMotion' @ http://localhost:5175/@vite/client:808
+[ 2961206ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene3.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 2961641ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783205292569' does not provide an export named 'getScene3VisualMotion' @ http://localhost:5175/@vite/client:808
+[ 2961641ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene3.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 2961641ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/sceneUtils.ts?t=1783205292998' does not provide an export named 'getScene1VisualMotion' @ http://localhost:5175/@vite/client:808
+[ 2961641ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene1.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 2965021ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783205292569' does not provide an export named 'getScene3VisualMotion' @ http://localhost:5175/@vite/client:808
+[ 2965021ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene3.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 2965233ms] ReferenceError: getScene3VisualMotion is not defined
+    at DevHeroScene3 (http://localhost:5175/src/components/development/DevHeroScene3.tsx?t=1783205296582:53:24)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 2965231ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroScene3> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 2966003ms] ReferenceError: getScene4VisualMotion is not defined
+    at DevHeroScene4 (http://localhost:5175/src/components/development/DevHeroScene4.tsx?t=1783205297360:18:24)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 2966003ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroScene4> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 2968179ms] ReferenceError: CHAPTER_VISUAL_REVEAL_START is not defined
+    at DevHeroScene1 (http://localhost:5175/src/components/development/DevHeroScene1.tsx?t=1783205299533:14:62)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 2968179ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroScene1> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 3117546ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[ 3428958ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783205760299' does not provide an export named 'getStackGridStageMotion' @ http://localhost:5175/@vite/client:808
+[ 3428961ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene5.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3428977ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783205760299' does not provide an export named 'getStackGridStageMotion' @ http://localhost:5175/@vite/client:808
+[ 3428977ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene2.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3428978ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783205760299' does not provide an export named 'getStackGridStageMotion' @ http://localhost:5175/@vite/client:808
+[ 3428978ms] [ERROR] [vite] Failed to reload /src/components/development/DevHero.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3429129ms] ReferenceError: getStackGridStageMotion is not defined
+    at DevHeroScene2 (http://localhost:5175/src/components/development/DevHeroScene2.tsx?t=1783205760471:28:23)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 3429124ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroScene2> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 3429447ms] ReferenceError: getStackGridStageMotion is not defined
+    at DevHeroScene2 (http://localhost:5175/src/components/development/DevHeroScene2.tsx?t=1783205760778:27:23)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 3429447ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroScene2> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 3430069ms] ReferenceError: stageMotion is not defined
+    at DevHeroScene2 (http://localhost:5175/src/components/development/DevHeroScene2.tsx?t=1783205761419:49:26)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 3430069ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroScene2> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 3430585ms] ReferenceError: getStackGridStageMotion is not defined
+    at DevHeroScene5 (http://localhost:5175/src/components/development/DevHeroScene5.tsx?t=1783205761943:24:23)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 3430584ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroScene5> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 3430959ms] ReferenceError: getStackGridStageMotion is not defined
+    at DevHeroScene5 (http://localhost:5175/src/components/development/DevHeroScene5.tsx?t=1783205762280:23:23)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 3430959ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroScene5> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 3431289ms] ReferenceError: stageMotion is not defined
+    at DevHeroScene5 (http://localhost:5175/src/components/development/DevHeroScene5.tsx?t=1783205762615:45:26)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 3431289ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroScene5> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 3581403ms] ReferenceError: getVisualChapterMotion is not defined
+    at DevHeroScene2 (http://localhost:5175/src/components/development/DevHeroScene2.tsx?t=1783205912742:26:24)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 3581402ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroScene2> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 3581516ms] ReferenceError: getVisualChapterMotion is not defined
+    at DevHeroScene2 (http://localhost:5175/src/components/development/DevHeroScene2.tsx?t=1783205912845:26:24)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 3581516ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroScene2> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 3583172ms] ReferenceError: getVisualChapterMotion is not defined
+    at DevHeroScene5 (http://localhost:5175/src/components/development/DevHeroScene5.tsx?t=1783205914529:22:24)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 3583171ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroScene5> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 3588984ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[ 3589314ms] ReferenceError: getVisualChapterMotion is not defined
+    at DevHeroScene5 (http://localhost:5175/src/components/development/DevHeroScene5.tsx?t=1783205914529:22:24)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 3589314ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroScene5> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 3598561ms] ReferenceError: STACK_GRID_COPY_COUNTS is not defined
+    at http://localhost:5175/src/components/development/DevHeroCopy.tsx?t=1783205929916:111:24
+    at Array.map (<anonymous>)
+    at DevHeroCopy (http://localhost:5175/src/components/development/DevHeroCopy.tsx?t=1783205929916:103:121)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+[ 3598560ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroCopy> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 3601483ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[ 3601804ms] ReferenceError: STACK_GRID_COPY_COUNTS is not defined
+    at http://localhost:5175/src/components/development/DevHeroCopy.tsx?t=1783205929916:111:24
+    at Array.map (<anonymous>)
+    at DevHeroCopy (http://localhost:5175/src/components/development/DevHeroCopy.tsx?t=1783205929916:103:121)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+[ 3601803ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroCopy> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 3668409ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783205999763' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3668409ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene5.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3668409ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783205999763' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3668409ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene2.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3668409ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783205999763' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3668409ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene1.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3668410ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783205999763' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3668410ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene4.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3668410ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783205999763' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3668410ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroCopy.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3668410ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783205999763' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3668410ms] [ERROR] [vite] Failed to reload /src/components/development/DevHero.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3668410ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783205999763' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3668410ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene3.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3668801ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783206000172' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3668801ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene5.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3668801ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783206000172' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3668801ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroCopy.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3668802ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783206000172' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3668802ms] [ERROR] [vite] Failed to reload /src/components/development/DevHero.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3668802ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783206000172' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3668802ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene3.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3668802ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783206000172' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3668802ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene4.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3668802ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783206000172' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3668802ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene2.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3668802ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783206000172' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3668802ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene1.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3669817ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783206001174' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3669818ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene3.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3669818ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783206001174' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3669818ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene1.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3669818ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783206001174' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3669818ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene5.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3669818ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783206001174' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3669818ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroCopy.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3669818ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783206001174' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3669818ms] [ERROR] [vite] Failed to reload /src/components/development/DevHero.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3669818ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783206001174' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3669818ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene2.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3669818ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783206001174' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3669818ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene4.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3669902ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783206001275' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3669902ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene1.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3669902ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783206001275' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3669902ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene5.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3669902ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783206001275' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3669902ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene3.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3669902ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783206001275' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3669902ms] [ERROR] [vite] Failed to reload /src/components/development/DevHero.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3669902ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783206001275' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3669902ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene2.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3669902ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783206001275' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3669902ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene4.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3669902ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783206001275' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3669902ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroCopy.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3670041ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783206001275' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3670041ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene2.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3670400ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/chapterMotion.ts?t=1783206001275' does not provide an export named 'STACK_GRID_EXIT_START' @ http://localhost:5175/@vite/client:808
+[ 3670400ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene5.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3670801ms] ReferenceError: STACK_GRID_EXIT_START is not defined
+    at http://localhost:5175/src/components/development/DevHeroCopy.tsx?t=1783206002133:119:7
+    at Array.map (<anonymous>)
+    at DevHeroCopy (http://localhost:5175/src/components/development/DevHeroCopy.tsx?t=1783206002133:108:121)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+[ 3670799ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroCopy> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 3777246ms] ReferenceError: STACK_GRID_EXIT_STAGGER is not defined
+    at getStackLayerExitProgress (http://localhost:5175/src/components/development/chapterMotion.ts?t=1783206108548:89:64)
+    at getStackGridLayerMotion (http://localhost:5175/src/components/development/chapterMotion.ts?t=1783206108548:110:16)
+    at http://localhost:5175/src/components/development/DevHeroScene2.tsx?t=1783206108548:44:26
+    at Array.map (<anonymous>)
+    at DevHeroScene2 (http://localhost:5175/src/components/development/DevHeroScene2.tsx?t=1783206108548:43:117)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+[ 3777243ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroScene2> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 3777830ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/src/components/development/chapterMotion.ts?t=1783206109188:0
+[ 3777830ms] [ERROR] [vite] Failed to reload /src/components/development/DevHero.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3777830ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene1.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3777830ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene2.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3777830ms] [ERROR] [vite] Failed to reload /src/components/development/DevPagePreview.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3777830ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene5.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3777830ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroCopy.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3777830ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene4.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3777830ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene3.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 3791114ms] ReferenceError: getSceneLocalProgress is not defined
+    at DevHeroScene2 (http://localhost:5175/src/components/development/DevHeroScene2.tsx?t=1783206122473:25:17)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 3791113ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroScene2> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 3791686ms] ReferenceError: getSceneLocalProgress is not defined
+    at DevHeroScene5 (http://localhost:5175/src/components/development/DevHeroScene5.tsx?t=1783206123042:21:17)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 3791685ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroScene5> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 3791851ms] ReferenceError: getSceneLocalProgress is not defined
+    at DevHeroScene5 (http://localhost:5175/src/components/development/DevHeroScene5.tsx?t=1783206123042:21:17)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 3791852ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroScene5> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 3792412ms] ReferenceError: getSceneLocalProgress is not defined
+    at DevHeroScene5 (http://localhost:5175/src/components/development/DevHeroScene5.tsx?t=1783206123746:22:17)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 3792409ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroScene5> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 3889826ms] ReferenceError: Card is not defined
+    at http://localhost:5175/src/pages/Development.tsx?t=1783206221024:69:49
+    at Array.map (<anonymous>)
+    at Development (http://localhost:5175/src/pages/Development.tsx?t=1783206221024:68:124)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+[ 3889825ms] [WARNING] %s
+
+%s
+ An error occurred in the <Development> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 4126406ms] [ERROR] [vite] SyntaxError: Identifier 'STACK_GRID_SCENE_COUNTS' has already been declared @ http://localhost:5175/@vite/client:808
+[ 4126406ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroCopy.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 4126406ms] [ERROR] [vite] SyntaxError: Identifier 'STACK_GRID_SCENE_COUNTS' has already been declared @ http://localhost:5175/@vite/client:808
+[ 4126406ms] [ERROR] [vite] Failed to reload /src/components/development/DevHero.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 4126406ms] [ERROR] [vite] SyntaxError: Identifier 'STACK_GRID_SCENE_COUNTS' has already been declared @ http://localhost:5175/@vite/client:808
+[ 4126406ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene5.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 4126406ms] [ERROR] [vite] SyntaxError: Identifier 'STACK_GRID_SCENE_COUNTS' has already been declared @ http://localhost:5175/@vite/client:808
+[ 4126406ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene2.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 4126406ms] [ERROR] [vite] SyntaxError: Identifier 'STACK_GRID_SCENE_COUNTS' has already been declared @ http://localhost:5175/@vite/client:808
+[ 4126406ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene3.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 4126406ms] [ERROR] [vite] SyntaxError: Identifier 'STACK_GRID_SCENE_COUNTS' has already been declared @ http://localhost:5175/@vite/client:808
+[ 4126407ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene4.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 4126407ms] [ERROR] [vite] SyntaxError: Identifier 'STACK_GRID_SCENE_COUNTS' has already been declared @ http://localhost:5175/@vite/client:808
+[ 4126407ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene1.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 4133794ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:5175/src/components/development/DevPageEpilogue.tsx?t=1783206465137:0
+[ 4133795ms] [ERROR] [vite] Failed to reload /src/components/development/DevPageEpilogue.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 4139972ms] ReferenceError: getVisualChapterMotion is not defined
+    at DevHeroScene7 (http://localhost:5175/src/components/development/DevHeroScene7.tsx?t=1783206471318:10:24)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 4139970ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroScene7> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 4141019ms] ReferenceError: Cannot access 'isFinalChapter' before initialization
+    at http://localhost:5175/src/components/development/DevHeroCopy.tsx?t=1783206472375:140:24
+    at Array.map (<anonymous>)
+    at DevHeroCopy (http://localhost:5175/src/components/development/DevHeroCopy.tsx?t=1783206472375:135:121)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+[ 4141018ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroCopy> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 4141121ms] ReferenceError: Cannot access 'isFinalChapter' before initialization
+    at http://localhost:5175/src/components/development/DevHeroCopy.tsx?t=1783206472476:140:24
+    at Array.map (<anonymous>)
+    at DevHeroCopy (http://localhost:5175/src/components/development/DevHeroCopy.tsx?t=1783206472476:135:121)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+[ 4141121ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroCopy> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 4143714ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[ 4144042ms] ReferenceError: Cannot access 'isFinalChapter' before initialization
+    at http://localhost:5175/src/components/development/DevHeroCopy.tsx?t=1783206472476:140:24
+    at Array.map (<anonymous>)
+    at DevHeroCopy (http://localhost:5175/src/components/development/DevHeroCopy.tsx?t=1783206472476:135:121)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+[ 4144042ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroCopy> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 4147371ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/src/components/development/DevHeroCopy.tsx?t=1783206478695:0
+[ 4147372ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroCopy.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 4498415ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/src/components/development/DevHeroScene6.tsx?t=1783206829783:0
+[ 4498415ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene6.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 4627168ms] ReferenceError: getVisualChapterMotion is not defined
+    at DevHeroScene6 (http://localhost:5175/src/components/development/DevHeroScene6.tsx?t=1783206958512:193:24)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 4627167ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroScene6> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 4765147ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/src/index.css?t=1783207096518:0
+[ 4765147ms] [ERROR] [vite] Failed to reload /src/index.css. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 4809902ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102

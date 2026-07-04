@@ -32,6 +32,7 @@ const NewsDetail = lazy(() => import('@/pages/NewsDetail').then(m => ({ default:
 const WeeklyMath = lazy(() => import('@/pages/WeeklyMath').then(m => ({ default: m.WeeklyMath })));
 const WeeklyMathDetail = lazy(() => import('@/pages/WeeklyMathDetail').then(m => ({ default: m.WeeklyMathDetail })));
 const WeeklyMathSolution = lazy(() => import('@/pages/WeeklyMathSolution').then(m => ({ default: m.WeeklyMathSolution })));
+const Development = lazy(() => import('@/pages/Development').then(m => ({ default: m.Development })));
 const Board = lazy(() => import('@/pages/Board').then(m => ({ default: m.Board })));
 const BoardDetail = lazy(() => import('@/pages/BoardDetail').then(m => ({ default: m.BoardDetail })));
 const Admin = lazy(() => import('@/pages/Admin').then(m => ({ default: m.Admin })));
@@ -197,6 +198,7 @@ function App() {
               <Route path="news" element={<Suspense fallback={<PageLoader />}><News /></Suspense>} />
               <Route path="news/:slug" element={<Suspense fallback={<PageLoader />}><NewsDetail /></Suspense>} />
               <Route path="app" element={<AppShowcase />} />
+              <Route path="development" element={<Suspense fallback={<PageLoader />}><Development /></Suspense>} />
               <Route path="app/table-tennis" element={<TableTennisMatchMakerPage />} />
               <Route path="app/color-sort" element={<ColorSortPuzzlePage />} />
               <Route path="board" element={<Suspense fallback={<PageLoader />}><Board /></Suspense>} />

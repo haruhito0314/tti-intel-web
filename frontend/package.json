@@ -25,6 +25,7 @@
     "rehype-sanitize": "^6.0.0",
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
+    "simple-icons": "^15.22.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

@@ -32,7 +32,9 @@ const activityShowcases = [
                 external: false,
             },
             {
-                label: '準備中',
+                label: '開発について',
+                href: '/development',
+                external: false,
             },
         ],
         cardClass: 'activity-card--dev',
@@ -131,7 +133,7 @@ export function About() {
                                 <p>{item.description}</p>
                                 <div className="activity-actions">
                                     {item.actions.map((action) => {
-                                        if (!action.href) {
+                                        if (!('href' in action) || !action.href) {
                                             return (
                                                 <span key={action.label} className="activity-button disabled" aria-disabled="true">
                                                     {action.label}
