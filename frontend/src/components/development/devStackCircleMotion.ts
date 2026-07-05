@@ -17,13 +17,17 @@ const STACK2_HOLD = 0.14;
 const STACK2_LINE_HOLD = 0.018;
 const STACK2_LINE_STAGGER = 0.012;
 const STACK2_LINE_CARD_SPAN = 0.042;
-const STACK2_PAN_SCROLL_SPAN = 0.16;
+const STACK2_PAN_SCROLL_SPAN = 0.32;
 const STACK2_MORPH_CIRCLE_SPAN = 0.2;
 const STACK2_CIRCLE_HOLD = 0.035;
 const STACK2_EXIT_STAGGER = 0.042;
 const STACK2_EXIT_SPAN = 0.056;
 const STACK2_EXIT_LIFT = 36;
 const STACK2_CIRCLE_RADIUS_SCALE = 1.5;
+
+/** Chapter-local progress when every card has finished exiting (hold follows before chapter end) */
+export const STACK2_EXIT_COMPLETE_LOCAL = 0.9;
+const STACK2_SHELL_FADE_LOCAL = 0.96;
 
 function copyZoneHeight(): number {
     if (typeof window === 'undefined') return 240;
@@ -59,7 +63,7 @@ export function stack2AnimLocal(local: number): number {
 }
 
 function stack2TimelineEnd(): number {
-    return stack2ShellFadeStart();
+    return stack2ExitComplete() / STACK2_EXIT_COMPLETE_LOCAL;
 }
 
 export type Stack2StageLayout = {
@@ -142,6 +146,10 @@ export function stack2ExitComplete(): number {
 
 export function stack2ShellFadeStart(): number {
     return stack2ExitComplete() + 0.02;
+}
+
+export function stack2ShellFadeEndLocal(): number {
+    return STACK2_SHELL_FADE_LOCAL;
 }
 
 export function stack2MorphLineProgress(local: number, index: number): number {

@@ -7,6 +7,21 @@ const STACK2_TARGET_BOTTOM_RATIO = 2 / 3;
 const STACK2_PAN_START = 0.18;
 const STACK2_PAN_END = 0.9;
 const STACK2_VISIBLE_ROWS = 2;
+const STACK2_MOBILE_EXIT_START = 0.72;
+const STACK2_MOBILE_EXIT_STAGGER = 0.016;
+const STACK2_MOBILE_EXIT_SPAN = 0.042;
+
+export function stack2MobileExitCompleteLocal(cardCount: number): number {
+    return (
+        STACK2_MOBILE_EXIT_START +
+        Math.max(0, cardCount - 1) * STACK2_MOBILE_EXIT_STAGGER +
+        STACK2_MOBILE_EXIT_SPAN
+    );
+}
+
+export function stack2MobileShellFadeEndLocal(cardCount: number): number {
+    return Math.min(1, stack2MobileExitCompleteLocal(cardCount) + 0.05);
+}
 
 export type Stack2MobileMetrics = {
     contentH: number;
@@ -57,6 +72,15 @@ export function stack2MobileCardReveal(local: number, index: number, cardCount: 
     const end = Math.min(1, start + slot * 0.82);
 
     return reveal(panT, start, end);
+}
+
+/** Mobile ch2 — cards exit one-by-one, all hidden before chapter transition */
+export function stack2MobileCardExit(local: number, index: number): number {
+    const start = STACK2_MOBILE_EXIT_START + index * STACK2_MOBILE_EXIT_STAGGER;
+    const end = start + STACK2_MOBILE_EXIT_SPAN;
+    if (local <= start) return 1;
+    if (local >= end) return 0;
+    return 1 - reveal(local, start, end);
 }
 
 export function useStack2MobileMetrics(

@@ -8,11 +8,13 @@ import {
 import {
     isStack2CircleChapter,
     isStack2MobileGridChapter,
+    STACK2_EXIT_COMPLETE_LOCAL,
     stack2AnimLocal,
     stack2CopyFadeEnd,
     stack2CopyFadeStart,
-    stack2ShellFadeStart,
+    stack2ShellFadeEndLocal,
 } from './devStackCircleMotion';
+import { stack2MobileExitCompleteLocal, stack2MobileShellFadeEndLocal } from './devStack2MobileMotion';
 
 function usesStackGridShell(chapterIndex: number, mobileLayout: boolean): boolean {
     if (STACK_GRID_CHAPTER_INDICES.has(chapterIndex)) return true;
@@ -43,13 +45,25 @@ export function getStackChapterOpacity(
         return clamp01((progress - start) / fade);
     }
 
+    if (isStack2CircleChapter(chapterIndex, mobileLayout)) {
+        if (local >= STACK2_EXIT_COMPLETE_LOCAL) {
+            return exit(local, STACK2_EXIT_COMPLETE_LOCAL, stack2ShellFadeEndLocal());
+        }
+        return 1;
+    }
+
+    if (isStack2MobileGridChapter(chapterIndex, mobileLayout)) {
+        const exitCompleteLocal = stack2MobileExitCompleteLocal(cardCount);
+        if (local >= exitCompleteLocal) {
+            return exit(local, exitCompleteLocal, stack2MobileShellFadeEndLocal(cardCount));
+        }
+        return 1;
+    }
+
     const columns = stackGridColumns(mobileLayout);
-    const shellFadeStart = isStack2CircleChapter(chapterIndex, mobileLayout)
-        ? stack2ShellFadeStart()
-        : stackGridShellFadeStart(cardCount, columns);
-    const motionLocal = isStack2CircleChapter(chapterIndex, mobileLayout) ? stack2AnimLocal(local) : local;
-    if (motionLocal >= shellFadeStart) {
-        return exit(motionLocal, shellFadeStart, 1);
+    const shellFadeStart = stackGridShellFadeStart(cardCount, columns);
+    if (local >= shellFadeStart) {
+        return exit(local, shellFadeStart, 1);
     }
 
     return 1;

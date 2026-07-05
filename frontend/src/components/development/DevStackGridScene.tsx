@@ -6,6 +6,7 @@ import { getChapterLocal } from './devScrollMath';
 import { stackCardExit, stackCardReveal, stackGridColumns } from './devSceneMotion';
 import {
     computeStack2MobileTranslateY,
+    stack2MobileCardExit,
     stack2MobileCardReveal,
     useStack2MobileMetrics,
 } from './devStack2MobileMotion';
@@ -61,7 +62,11 @@ export function DevStackGridScene({
             : isScroll
               ? stackCardReveal(local, index, chapterIndex, columns)
               : 1;
-        const exitProgress = isScroll ? stackCardExit(local, index, cardCount, columns) : 1;
+        const exitProgress = isCh2Mobile && isScroll
+            ? stack2MobileCardExit(local, index)
+            : isScroll
+              ? stackCardExit(local, index, cardCount, columns)
+              : 1;
         return (
             <div
                 key={layer.name}
