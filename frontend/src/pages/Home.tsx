@@ -4,7 +4,7 @@ import { ArrowRight, Users, Sparkles, ExternalLink, ChevronLeft, ChevronRight } 
 import { PageSeo } from '@/components/PageSeo';
 import { Button, Card, CardContent, Badge, Skeleton } from '@/components/ui';
 import {
-    DEFAULT_WEEKLY_MATH_PROBLEM,
+    getDefaultWeeklyMathProblem,
     getCachedHomeWeeklyMath,
     getHomeWeeklyMath,
     toPublicWeeklyMathKey,
@@ -216,7 +216,7 @@ export function Home() {
     const cachedHomeWeeklyMath = getCachedHomeWeeklyMath();
     const [weeklyMath, setWeeklyMath] = useState<WeeklyMathProblem | null>(cachedHomeWeeklyMath ?? null);
     const [loadingWeeklyMath, setLoadingWeeklyMath] = useState(cachedHomeWeeklyMath === undefined);
-    const displayedWeeklyMath = weeklyMath ?? DEFAULT_WEEKLY_MATH_PROBLEM;
+    const displayedWeeklyMath = weeklyMath ?? getDefaultWeeklyMathProblem();
     const displayedWeeklyMathTitle =
         displayedWeeklyMath.title === '今週の数学問題（一般化）'
             ? '経路の場合の数'
@@ -549,7 +549,7 @@ export function Home() {
                                 </div>
                             </CardContent>
                         ) : (
-                            <Link to={`/weekly-math/${encodeURIComponent(toPublicWeeklyMathKey(weeklyMath?.weekKey || 'default-template'))}`} className="block group">
+                            <Link to={`/weekly-math/${encodeURIComponent(toPublicWeeklyMathKey(displayedWeeklyMath.weekKey))}`} className="block group">
                                 <CardContent className="p-8">
                                     <>
                                         <h3 className="text-[26px] sm:text-[34px] font-semibold tracking-[-0.03em] text-[#1D1D1F] dark:text-[#F5F5F7] mb-3 leading-[1.08]">

@@ -51,47 +51,9 @@ export function Card({
     );
 }
 
-export function CardHeader({ className = '', children, ...props }: HTMLAttributes<HTMLDivElement>) {
-    return (
-        <div className={`mb-4 ${className}`} {...props}>
-            {children}
-        </div>
-    );
-}
-
-export function CardTitle({ className = '', children, ...props }: HTMLAttributes<HTMLHeadingElement>) {
-    return (
-        <h3
-            className={`text-xl font-semibold text-[#1D1D1F] dark:text-[#F5F5F7] ${className}`}
-            {...props}
-        >
-            {children}
-        </h3>
-    );
-}
-
-export function CardDescription({ className = '', children, ...props }: HTMLAttributes<HTMLParagraphElement>) {
-    return (
-        <p
-            className={`text-sm text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mt-1 ${className}`}
-            {...props}
-        >
-            {children}
-        </p>
-    );
-}
-
 export function CardContent({ className = '', children, ...props }: HTMLAttributes<HTMLDivElement>) {
     return (
         <div className={className} {...props}>
-            {children}
-        </div>
-    );
-}
-
-export function CardFooter({ className = '', children, ...props }: HTMLAttributes<HTMLDivElement>) {
-    return (
-        <div className={`mt-4 flex items-center gap-4 ${className}`} {...props}>
             {children}
         </div>
     );

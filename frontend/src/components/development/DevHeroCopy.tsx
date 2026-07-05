@@ -98,28 +98,33 @@ function useVisualStageSize(visualRef?: RefObject<HTMLElement | null>) {
     return size;
 }
 
-export function DevHeroCopy(props: DevHeroCopyProps) {
-    if (props.blockIndex !== undefined) {
-        const block = COPY_BLOCKS[props.blockIndex];
-        if (!block) return null;
-        const Heading = block.headingLevel;
-        return (
-            <div
-                className={`dev-hero-copy-block dev-hero-copy-block--static${
-                    props.blockIndex === 0 ? ' dev-hero-copy-block--intro' : ''
-                }${props.blockIndex === 2 ? ' dev-hero-copy-block--mcp' : ''}${
-                    props.compact || props.blockIndex >= 4 ? ' dev-hero-copy-block--compact' : ''
-                }`}
-            >
-                <Heading className={`dev-hero-title ${block.large ? '' : 'dev-hero-title--sm'}`}>
-                    {block.title}
-                </Heading>
-                <p className="dev-hero-subtitle">{block.subtitle}</p>
-            </div>
-        );
-    }
+function DevHeroCopyStatic({ blockIndex, compact }: { blockIndex: number; compact?: boolean }) {
+    const block = COPY_BLOCKS[blockIndex];
+    if (!block) return null;
+    const Heading = block.headingLevel;
+    return (
+        <div
+            className={`dev-hero-copy-block dev-hero-copy-block--static${
+                blockIndex === 0 ? ' dev-hero-copy-block--intro' : ''
+            }${blockIndex === 2 ? ' dev-hero-copy-block--mcp' : ''}${
+                compact || blockIndex >= 4 ? ' dev-hero-copy-block--compact' : ''
+            }`}
+        >
+            <Heading className={`dev-hero-title ${block.large ? '' : 'dev-hero-title--sm'}`}>
+                {block.title}
+            </Heading>
+            <p className="dev-hero-subtitle">{block.subtitle}</p>
+        </div>
+    );
+}
 
-    const { progress, visualRef } = props;
+function DevHeroCopyScroll({
+    progress,
+    visualRef,
+}: {
+    progress: number;
+    visualRef?: RefObject<HTMLElement | null>;
+}) {
     const mobileLayout = useDevMobileLayout();
     const visualSize = useVisualStageSize(visualRef);
     const stackLocal = getChapterLocal(progress, STACK_CHAPTER_INDEX);
@@ -136,7 +141,7 @@ export function DevHeroCopy(props: DevHeroCopyProps) {
                         ? getStack2CopyOpacity(progress, index, cardCount ?? STACK_LAYERS.length, mobileLayout)
                         : cardCount !== undefined
                           ? getStackChapterOpacity(progress, index, cardCount, mobileLayout)
-                          : getChapterOpacity(progress, index, mobileLayout);
+                          : getChapterOpacity(progress, index);
                 const isActive = opacity > 0.5;
                 const Heading = block.headingLevel;
                 const panX = index === STACK_CHAPTER_INDEX ? stackPanX : 0;
@@ -164,4 +169,12 @@ export function DevHeroCopy(props: DevHeroCopyProps) {
             })}
         </div>
     );
+}
+
+export function DevHeroCopy(props: DevHeroCopyProps) {
+    if (props.blockIndex !== undefined) {
+        return <DevHeroCopyStatic blockIndex={props.blockIndex} compact={props.compact} />;
+    }
+
+    return <DevHeroCopyScroll progress={props.progress} visualRef={props.visualRef} />;
 }

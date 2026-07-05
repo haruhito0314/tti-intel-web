@@ -10,14 +10,15 @@ export function ThemeToggle({ overlay = false }: { overlay?: boolean }) {
         { value: 'system', icon: Monitor, label: 'システム設定' },
     ] as const;
 
-    const currentIndex = themes.findIndex((t) => t.value === theme);
+    const currentIndex = Math.max(0, themes.findIndex((t) => t.value === theme));
+    const activeTheme = themes[currentIndex] ?? themes[0];
 
     const cycleTheme = () => {
         const nextIndex = (currentIndex + 1) % themes.length;
         setTheme(themes[nextIndex].value);
     };
 
-    const CurrentIcon = themes[currentIndex].icon;
+    const CurrentIcon = activeTheme.icon;
 
     return (
         <button
@@ -30,8 +31,8 @@ export function ThemeToggle({ overlay = false }: { overlay?: boolean }) {
                 : 'text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] hover:bg-[#0071E3]/10 dark:hover:bg-[var(--surface-3)] hover:text-[#0066CC] dark:hover:text-[var(--link)]'
         }
       `}
-            aria-label={`テーマを切り替え (現在: ${themes[currentIndex].label})`}
-            title={themes[currentIndex].label}
+            aria-label={`テーマを切り替え (現在: ${activeTheme.label})`}
+            title={activeTheme.label}
         >
             <CurrentIcon className="w-5 h-5" />
         </button>

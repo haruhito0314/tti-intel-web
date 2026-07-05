@@ -178,25 +178,27 @@ function ConnectorRail({ d, progress }: { d: string; progress: number }) {
 
 function ConnectorSegment({ d, gradientId, defaultTip, progress, glowId }: ConnectorSegmentProps & { glowId: string }) {
     const pathRef = useRef<SVGPathElement>(null);
-    const pathLengthRef = useRef(1);
-    const [, setMeasureTick] = useState(0);
+    const [segmentMetrics, setSegmentMetrics] = useState({
+        pathLength: 1,
+        tip: defaultTip,
+    });
 
     useLayoutEffect(() => {
         const path = pathRef.current;
         if (!path) return;
         const length = path.getTotalLength() || 1;
-        if (length !== pathLengthRef.current) {
-            pathLengthRef.current = length;
-            setMeasureTick((tick) => tick + 1);
-        }
-    }, [d]);
+        const clamped = Math.min(1, Math.max(0, progress));
+        const nextTip = getPathTip(path, length, clamped);
+        setSegmentMetrics((current) => {
+            if (current.pathLength === length && current.tip.x === nextTip.x && current.tip.y === nextTip.y && current.tip.angle === nextTip.angle) {
+                return current;
+            }
+            return { pathLength: length, tip: nextTip };
+        });
+    }, [d, progress, defaultTip]);
 
-    const pathLength = pathLengthRef.current;
+    const { pathLength, tip } = segmentMetrics;
     const clamped = Math.min(1, Math.max(0, progress));
-    const tip =
-        pathRef.current != null
-            ? getPathTip(pathRef.current, pathLength, clamped)
-            : defaultTip;
 
     return (
         <>

@@ -36,6 +36,7 @@ export function Board() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [threads, setThreads] = useState<Thread[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [loadError, setLoadError] = useState(false);
 
     const {
         register,
@@ -54,9 +55,11 @@ export function Board() {
                 threadsData.push({ id: doc.id, ...doc.data() } as Thread);
             });
             setThreads(threadsData);
+            setLoadError(false);
             setIsLoading(false);
         }, (error) => {
             console.error("Error fetching threads:", error);
+            setLoadError(true);
             setIsLoading(false);
         });
 
@@ -166,7 +169,13 @@ export function Board() {
             <section className="about-band-white">
             <div className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16">
                 {
-                    isLoading ? (
+                    loadError ? (
+                        <Card variant="glass" padding="lg" className="text-center py-12">
+                            <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
+                                掲示板の読み込みに失敗しました。時間をおいて再度お試しください。
+                            </p>
+                        </Card>
+                    ) : isLoading ? (
                         <div className="space-y-4" >
                             {[...Array(4)].map((_, i) => (
                                 <div key={i} className="rounded-2xl border border-[var(--border)] bg-white/50 dark:bg-white/5 p-6 animate-pulse">

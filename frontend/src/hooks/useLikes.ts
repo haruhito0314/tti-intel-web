@@ -12,7 +12,11 @@ function getLikedIds(): Set<string> {
 }
 
 function saveLikedIds(ids: Set<string>) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([...ids]));
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify([...ids]));
+    } catch {
+        // Ignore quota / private mode failures
+    }
 }
 
 export function useLikes() {

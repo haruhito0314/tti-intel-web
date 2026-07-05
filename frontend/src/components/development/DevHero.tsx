@@ -7,7 +7,7 @@ import { DevHeroScene4 } from './DevHeroScene4';
 import { DevHeroScene5 } from './DevHeroScene5';
 import { DevHeroScene6 } from './DevHeroScene6';
 import { DevHeroScene7 } from './DevHeroScene7';
-import { getChapterIndex, getChapterOpacity } from './devScrollMath';
+import { getChapterIndex } from './devScrollMath';
 import { useDevScrollProgress } from './useDevScrollProgress';
 
 export function DevHero() {
@@ -56,5 +56,3 @@ export function DevHero() {
         </section>
     );
 }
-
-export { getChapterOpacity };

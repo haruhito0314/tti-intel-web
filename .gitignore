@@ -1,0 +1,6 @@
+.DS_Store
+.playwright-cli/
+.playwright-mcp/
+.tmp-video-frames/
+output/
+about-*.png

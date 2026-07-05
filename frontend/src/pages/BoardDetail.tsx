@@ -48,6 +48,7 @@ export function BoardDetail() {
     const [isLoadingThread, setIsLoadingThread] = useState(true);
     const [isLoadingComments, setIsLoadingComments] = useState(true);
     const [threadNotFound, setThreadNotFound] = useState(false);
+    const [loadError, setLoadError] = useState(false);
 
     const {
         register,
@@ -61,6 +62,13 @@ export function BoardDetail() {
     useEffect(() => {
         if (!id) return;
 
+        setIsLoadingThread(true);
+        setIsLoadingComments(true);
+        setThread(null);
+        setComments([]);
+        setThreadNotFound(false);
+        setLoadError(false);
+
         // Fetch Thread details
         const threadRef = doc(db, 'threads', id);
         const unsubscribeThread = onSnapshot(threadRef, (docSnap) => {
@@ -73,6 +81,7 @@ export function BoardDetail() {
             setIsLoadingThread(false);
         }, (error) => {
             console.error("Error fetching thread:", error);
+            setLoadError(true);
             setIsLoadingThread(false);
         });
 
@@ -202,6 +211,25 @@ export function BoardDetail() {
                         </div>
                     ))}
                 </div>
+            </div>
+        );
+    }
+
+    if (loadError) {
+        return (
+            <div className="max-w-4xl mx-auto px-4 py-16 text-center">
+                <h1 className="apple-section text-[#1D1D1F] dark:text-[#F5F5F7] mb-4">
+                    読み込みに失敗しました
+                </h1>
+                <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-8">
+                    スレッドの取得中にエラーが発生しました。時間をおいて再度お試しください。
+                </p>
+                <Link to="/board">
+                    <Button variant="outline">
+                        <ArrowLeft className="w-4 h-4" />
+                        掲示板へ戻る
+                    </Button>
+                </Link>
             </div>
         );
     }

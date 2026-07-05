@@ -51,7 +51,7 @@ export function DevStackGridScene({
     const isCh2Mobile = isStack2MobileGridChapter(chapterIndex, mobileLayout);
     const scrollRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
-    const metrics = useStack2MobileMetrics(isCh2Mobile, scrollRef, contentRef, local);
+    const metrics = useStack2MobileMetrics(isCh2Mobile, scrollRef, contentRef);
     const flowTranslateY = isCh2Mobile
         ? computeStack2MobileTranslateY(local, metrics)
         : 0;

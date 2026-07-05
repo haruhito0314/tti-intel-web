@@ -1,9 +1,10 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, Link } from 'react-router-dom';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { useTheme } from '@/contexts/useTheme';
 import { ToastProvider } from '@/components/ui';
 import { Layout } from '@/components/layout';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { markInitialSplashSeenThisSession, shouldShowInitialSplash } from '@/lib/splashSettings';
 
 function ScrollToTop() {
@@ -29,6 +30,9 @@ const WeeklyMath = lazy(() => import('@/pages/WeeklyMath').then(m => ({ default:
 const WeeklyMathDetail = lazy(() => import('@/pages/WeeklyMathDetail').then(m => ({ default: m.WeeklyMathDetail })));
 const WeeklyMathSolution = lazy(() => import('@/pages/WeeklyMathSolution').then(m => ({ default: m.WeeklyMathSolution })));
 const Development = lazy(() => import('@/pages/Development').then(m => ({ default: m.Development })));
+const DevelopmentZoomPrototype = import.meta.env.DEV
+  ? lazy(() => import('@/pages/DevelopmentZoomPrototype').then(m => ({ default: m.DevelopmentZoomPrototype })))
+  : null;
 const Board = lazy(() => import('@/pages/Board').then(m => ({ default: m.Board })));
 const BoardDetail = lazy(() => import('@/pages/BoardDetail').then(m => ({ default: m.BoardDetail })));
 const Admin = lazy(() => import('@/pages/Admin').then(m => ({ default: m.Admin })));
@@ -174,20 +178,15 @@ function App() {
     if (typeof document === 'undefined') return;
     const html = document.documentElement;
     const body = document.body;
-    const prevHtmlOverflow = html.style.overflow;
-    const prevBodyOverflow = body.style.overflow;
 
-    if (showSplash) {
-      html.style.overflow = 'hidden';
-      body.style.overflow = 'hidden';
-    } else {
-      html.style.overflow = prevHtmlOverflow;
-      body.style.overflow = prevBodyOverflow;
-    }
+    if (!showSplash) return;
+
+    html.classList.add('splash-scroll-lock');
+    body.classList.add('splash-scroll-lock');
 
     return () => {
-      html.style.overflow = prevHtmlOverflow;
-      body.style.overflow = prevBodyOverflow;
+      html.classList.remove('splash-scroll-lock');
+      body.classList.remove('splash-scroll-lock');
     };
   }, [showSplash]);
 
@@ -195,6 +194,7 @@ function App() {
     <ThemeProvider>
       <ToastProvider>
         {showSplash && <InitialSplash isFadingOut={isSplashFadingOut} progress={splashProgress} />}
+        <ErrorBoundary>
         <BrowserRouter>
           <ScrollToTop />
           <Routes>
@@ -208,6 +208,9 @@ function App() {
               <Route path="news/:slug" element={<Suspense fallback={<PageLoader />}><NewsDetail /></Suspense>} />
               <Route path="app" element={<AppShowcase />} />
               <Route path="development" element={<Suspense fallback={<PageLoader />}><Development /></Suspense>} />
+              {DevelopmentZoomPrototype && (
+                <Route path="development/zoom-prototype" element={<Suspense fallback={<PageLoader />}><DevelopmentZoomPrototype /></Suspense>} />
+              )}
               <Route path="app/table-tennis" element={<TableTennisMatchMakerPage />} />
               <Route path="app/color-sort" element={<ColorSortPuzzlePage />} />
               <Route path="board" element={<Suspense fallback={<PageLoader />}><Board /></Suspense>} />
@@ -227,12 +230,12 @@ function App() {
                       <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-8">
                         ページが見つかりません
                       </p>
-                      <a
-                        href="/"
+                      <Link
+                        to="/"
                         className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0071E3] text-white font-medium hover:bg-[#0077ED] transition-colors"
                       >
                         ホームに戻る
-                      </a>
+                      </Link>
                     </div>
                   </div>
                 }
@@ -240,6 +243,7 @@ function App() {
             </Route>
           </Routes>
         </BrowserRouter>
+        </ErrorBoundary>
       </ToastProvider>
     </ThemeProvider>
   );

@@ -420,11 +420,12 @@ export function AdminWeeklyMath() {
             }
 
             const token = await currentUser.getIdTokenResult();
-            const adminPath = `admins/${currentUser.email || '(none)'}`;
+            const adminEmail = (currentUser.email || 'unknown').trim().toLowerCase();
+            const adminPath = `admins/${adminEmail}`;
             let adminRead = 'NG';
             let adminDocExists = 'unknown';
             try {
-                const adminSnap = await getDoc(doc(db, 'admins', currentUser.email || 'unknown'));
+                const adminSnap = await getDoc(doc(db, 'admins', adminEmail));
                 adminRead = 'OK';
                 adminDocExists = adminSnap.exists() ? 'YES' : 'NO';
             } catch {
@@ -432,13 +433,9 @@ export function AdminWeeklyMath() {
                 adminDocExists = 'unknown';
             }
 
-            let adminWrite = 'NG';
             let weeklyMathWrite = 'NG';
-            let weeklymathWrite = 'NG';
             let weeklyMathRead = 'NG';
-            let weeklymathRead = 'NG';
             let weeklyMathWriteErr = '';
-            let weeklymathWriteErr = '';
 
             try {
                 await getDoc(doc(db, 'weeklyMath', 'diagnostic-test'));
@@ -446,28 +443,6 @@ export function AdminWeeklyMath() {
             } catch (e) {
                 const err = e as { code?: string; message?: string };
                 weeklyMathRead = `NG(${err.code ?? 'unknown'})`;
-            }
-
-            try {
-                await getDoc(doc(db, 'weeklymath', 'diagnostic-test'));
-                weeklymathRead = 'OK';
-            } catch (e) {
-                const err = e as { code?: string; message?: string };
-                weeklymathRead = `NG(${err.code ?? 'unknown'})`;
-            }
-
-            try {
-                await setDoc(
-                    doc(db, 'admins', currentUser.email || 'unknown'),
-                    {
-                        diagnosticPingAt: Timestamp.now(),
-                        diagnosticPingBy: currentUser.email || 'unknown',
-                    },
-                    { merge: true }
-                );
-                adminWrite = 'OK';
-            } catch {
-                adminWrite = 'NG';
             }
 
             try {
@@ -490,36 +465,13 @@ export function AdminWeeklyMath() {
                 weeklyMathWriteErr = `${err.code ?? 'unknown'}${err.message ? `: ${err.message}` : ''}`;
             }
 
-            try {
-                await setDoc(
-                    doc(db, 'weeklymath', 'diagnostic-test'),
-                    {
-                        weekKey: 'diagnostic-test',
-                        title: 'diagnostic',
-                        problem: 'diagnostic',
-                        updatedBy: currentUser.email || 'unknown',
-                        updatedAt: Timestamp.now(),
-                    },
-                    { merge: true }
-                );
-                weeklymathWrite = 'OK';
-            } catch (e) {
-                weeklymathWrite = 'NG';
-                const err = e as { code?: string; message?: string };
-                weeklymathWriteErr = `${err.code ?? 'unknown'}${err.message ? `: ${err.message}` : ''}`;
-            }
-
             if (weeklyMathWrite === 'OK') {
                 setDiagnosticResult(
-                    `OK: weeklyMath書き込み成功 / envProjectId=${envProjectId} / appProjectId=${appProjectId} / db=${dbName} / email=${currentUser.email} / uid=${currentUser.uid} / tokenEmail=${token.claims.email ?? '(none)'} / read(${adminPath})=${adminRead} / exists(${adminPath})=${adminDocExists} / write(${adminPath})=${adminWrite} / read(weeklyMath/diagnostic-test)=${weeklyMathRead} / write(weeklyMath/diagnostic-test)=${weeklyMathWrite} / read(weeklymath/diagnostic-test)=${weeklymathRead} / write(weeklymath/diagnostic-test)=${weeklymathWrite}`
+                    `OK: weeklyMath書き込み成功 / envProjectId=${envProjectId} / appProjectId=${appProjectId} / db=${dbName} / email=${currentUser.email} / uid=${currentUser.uid} / tokenEmail=${token.claims.email ?? '(none)'} / read(${adminPath})=${adminRead} / exists(${adminPath})=${adminDocExists} / read(weeklyMath/diagnostic-test)=${weeklyMathRead} / write(weeklyMath/diagnostic-test)=${weeklyMathWrite}`
                 );
             } else {
-                const error = new FirebaseError('diagnostic/write-failed', 'weeklyMath write failed');
-                const detail = error instanceof FirebaseError
-                    ? `${error.code}${error.message ? `: ${error.message}` : ''}`
-                    : 'unknown';
                 setDiagnosticResult(
-                    `NG: weeklyMath書き込み失敗 / envProjectId=${envProjectId} / appProjectId=${appProjectId} / db=${dbName} / email=${currentUser.email} / uid=${currentUser.uid} / tokenEmail=${token.claims.email ?? '(none)'} / read(${adminPath})=${adminRead} / exists(${adminPath})=${adminDocExists} / write(${adminPath})=${adminWrite} / read(weeklyMath/diagnostic-test)=${weeklyMathRead} / write(weeklyMath/diagnostic-test)=${weeklyMathWrite}${weeklyMathWriteErr ? `(${weeklyMathWriteErr})` : ''} / read(weeklymath/diagnostic-test)=${weeklymathRead} / write(weeklymath/diagnostic-test)=${weeklymathWrite}${weeklymathWriteErr ? `(${weeklymathWriteErr})` : ''} / ${detail}`
+                    `NG: weeklyMath書き込み失敗 / envProjectId=${envProjectId} / appProjectId=${appProjectId} / db=${dbName} / email=${currentUser.email} / uid=${currentUser.uid} / tokenEmail=${token.claims.email ?? '(none)'} / read(${adminPath})=${adminRead} / exists(${adminPath})=${adminDocExists} / read(weeklyMath/diagnostic-test)=${weeklyMathRead} / write(weeklyMath/diagnostic-test)=${weeklyMathWrite}${weeklyMathWriteErr ? `(${weeklyMathWriteErr})` : ''}`
                 );
             }
         } finally {

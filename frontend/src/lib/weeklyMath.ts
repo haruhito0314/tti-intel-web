@@ -34,8 +34,7 @@ const HOME_WEEKLY_MATH_SETTINGS_DOC = 'home-weekly-math';
 let homeWeeklyMathCache: WeeklyMathProblem | null | undefined = undefined;
 let homeWeeklyMathPromise: Promise<WeeklyMathProblem | null> | null = null;
 
-export const DEFAULT_WEEKLY_MATH_PROBLEM: WeeklyMathProblem = {
-    weekKey: getCurrentWeekKey(),
+const DEFAULT_WEEKLY_MATH_PROBLEM_BODY: Omit<WeeklyMathProblem, 'weekKey'> = {
     title: '経路の場合の数',
     problemPublished: true,
     problem: `+1, -1, ×1, ÷1 がそれぞれ書かれた4種類のカードが、それぞれ十分な枚数あります。
@@ -68,6 +67,13 @@ $$`,
 これを \\(k=0\\) から \\(n\\) まで合計して上式を得ます。`,
     solutionPublished: true,
 };
+
+export function getDefaultWeeklyMathProblem(): WeeklyMathProblem {
+    return {
+        ...DEFAULT_WEEKLY_MATH_PROBLEM_BODY,
+        weekKey: getCurrentWeekKey(),
+    };
+}
 
 function getIsoWeekParts(date: Date): { year: number; week: number } {
     const utc = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));

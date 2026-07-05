@@ -87,7 +87,6 @@ export function useStack2MobileMetrics(
     enabled: boolean,
     scrollRef: RefObject<HTMLDivElement | null>,
     contentRef: RefObject<HTMLDivElement | null>,
-    remeasureKey = 0,
 ): Stack2MobileMetrics {
     const [metrics, setMetrics] = useState<Stack2MobileMetrics>({
         contentH: 0,
@@ -97,7 +96,6 @@ export function useStack2MobileMetrics(
     });
 
     useLayoutEffect(() => {
-        void remeasureKey;
         if (!enabled) return;
 
         const scroll = scrollRef.current;
@@ -126,13 +124,14 @@ export function useStack2MobileMetrics(
         const observer = new ResizeObserver(sync);
         observer.observe(scroll);
         observer.observe(content);
-        observer.observe(scroll.closest('.dev-hero-stage')!);
+        const stage = scroll.closest('.dev-hero-stage');
+        if (stage) observer.observe(stage);
         window.addEventListener('resize', sync);
         return () => {
             observer.disconnect();
             window.removeEventListener('resize', sync);
         };
-    }, [enabled, scrollRef, contentRef, remeasureKey]);
+    }, [enabled, scrollRef, contentRef]);
 
     return metrics;
 }

@@ -6,11 +6,19 @@ import {
     GoogleAuthProvider,
     type User,
 } from 'firebase/auth';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 
 const googleProvider = new GoogleAuthProvider();
 const DEFAULT_ADMIN = 'tti.intel@gmail.com';
+
+function normalizeEmail(email: string): string {
+    return email.trim().toLowerCase();
+}
+
+function isDefaultAdmin(email: string): boolean {
+    return normalizeEmail(email) === DEFAULT_ADMIN;
+}
 
 interface AuthState {
     user: User | null;
@@ -29,24 +37,40 @@ export function useAuth() {
         let unsubscribeAdmins: (() => void) | null = null;
 
         const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
-            // Clean up previous admins listener
             if (unsubscribeAdmins) {
                 unsubscribeAdmins();
                 unsubscribeAdmins = null;
             }
 
-            if (user && user.email) {
-                // Check if user email exists in admins collection using email as document ID
-                unsubscribeAdmins = onSnapshot(doc(db, 'admins', user.email), (docSnap) => {
-                    setAuthState({
-                        user,
-                        isAdmin: docSnap.exists() || user.email === DEFAULT_ADMIN,
-                        loading: false,
-                    });
-                }, () => {
-                    // On error (e.g., no admins collection yet, permission denied), fall back to default admin check
-                    setAuthState({ user, isAdmin: user.email === DEFAULT_ADMIN, loading: false });
-                });
+            if (user?.email) {
+                const adminEmail = normalizeEmail(user.email);
+                unsubscribeAdmins = onSnapshot(
+                    doc(db, 'admins', adminEmail),
+                    (docSnap) => {
+                        setAuthState({
+                            user,
+                            isAdmin: docSnap.exists() || isDefaultAdmin(user.email!),
+                            loading: false,
+                        });
+                    },
+                    () => {
+                        void getDoc(doc(db, 'admins', adminEmail))
+                            .then((docSnap) => {
+                                setAuthState({
+                                    user,
+                                    isAdmin: docSnap.exists() || isDefaultAdmin(user.email!),
+                                    loading: false,
+                                });
+                            })
+                            .catch(() => {
+                                setAuthState({
+                                    user,
+                                    isAdmin: isDefaultAdmin(user.email!),
+                                    loading: false,
+                                });
+                            });
+                    },
+                );
             } else {
                 setAuthState({
                     user: null,

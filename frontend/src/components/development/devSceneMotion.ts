@@ -10,7 +10,6 @@ export function motionLocal(local: number, chapterIndex?: number): number {
 // —— Section 1 ——
 export const SCENE1_TYPEWRITER_END = 0.42;
 export const SCENE1_TERMINAL_END = 0.22;
-export const SCENE1_COMPLETE = 0.55;
 export const SCENE1_FLOAT_BASE = 0.22;
 export const SCENE1_FLOAT_STAGGER = 0.045;
 export const SCENE1_FLOAT_SPAN = 0.14;

@@ -93,15 +93,24 @@ export function NewsDetail() {
         );
     }
 
-    const handleShare = () => {
+    const handleShare = async () => {
         if (navigator.share) {
-            navigator.share({
-                title: post.title,
-                url: window.location.href,
-            });
-        } else {
-            navigator.clipboard.writeText(window.location.href);
+            try {
+                await navigator.share({
+                    title: post.title,
+                    url: window.location.href,
+                });
+            } catch {
+                // User cancelled share sheet
+            }
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(window.location.href);
             alert('URLをコピーしました');
+        } catch {
+            alert('URLのコピーに失敗しました');
         }
     };
 
@@ -208,14 +217,33 @@ export function NewsDetail() {
                                     </code>
                                 );
                             },
-                            a: ({ href, children }) => (
-                                <Link
-                                    to={href || '#'}
-                                    className="text-[#0066CC] dark:text-[#2997FF] hover:underline"
-                                >
-                                    {children}
-                                </Link>
-                            ),
+                            a: ({ href, children }) => {
+                                const target = href ?? '';
+                                const isExternal =
+                                    /^(https?:|mailto:|tel:)/.test(target) || target.startsWith('//');
+
+                                if (isExternal) {
+                                    return (
+                                        <a
+                                            href={target}
+                                            className="text-[#0066CC] dark:text-[#2997FF] hover:underline"
+                                            target={target.startsWith('http') ? '_blank' : undefined}
+                                            rel={target.startsWith('http') ? 'noopener noreferrer' : undefined}
+                                        >
+                                            {children}
+                                        </a>
+                                    );
+                                }
+
+                                return (
+                                    <Link
+                                        to={target || '#'}
+                                        className="text-[#0066CC] dark:text-[#2997FF] hover:underline"
+                                    >
+                                        {children}
+                                    </Link>
+                                );
+                            },
                         }}
                     >
                         {post.content}

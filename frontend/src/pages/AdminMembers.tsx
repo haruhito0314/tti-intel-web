@@ -22,6 +22,10 @@ interface AdminDoc {
     addedBy: string;
 }
 
+function normalizeAdminEmail(email: string): string {
+    return email.trim().toLowerCase();
+}
+
 export function AdminMembers() {
     const { user, isAdmin, loading } = useAuth();
     const navigate = useNavigate();
@@ -47,6 +51,11 @@ export function AdminMembers() {
     });
 
     useEffect(() => {
+        if (!user || !isAdmin) {
+            setIsLoadingAdmins(false);
+            return;
+        }
+
         const q = query(collection(db, 'admins'), orderBy('addedAt', 'desc'));
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const data: AdminDoc[] = [];
@@ -59,18 +68,24 @@ export function AdminMembers() {
             setIsLoadingAdmins(false);
         });
         return () => unsubscribe();
-    }, []);
+    }, [user, isAdmin]);
 
     const onSubmit = async (data: AddAdminForm) => {
+        const normalizedEmail = normalizeAdminEmail(data.email);
+        if (!normalizedEmail) {
+            alert('有効なメールアドレスを入力してください');
+            return;
+        }
+
         // Check if email is already an admin
-        if (admins.some((a) => a.email === data.email)) {
+        if (admins.some((a) => normalizeAdminEmail(a.email) === normalizedEmail || a.id === normalizedEmail)) {
             alert('このメールアドレスは既に管理者です');
             return;
         }
         setIsSubmitting(true);
         try {
-            await setDoc(doc(db, 'admins', data.email), {
-                email: data.email,
+            await setDoc(doc(db, 'admins', normalizedEmail), {
+                email: normalizedEmail,
                 addedAt: Timestamp.now(),
                 addedBy: user?.email || 'unknown',
             });

@@ -24,11 +24,7 @@ export function DevHeader() {
                 isMobileMenuOpen ? 'dev-header--mobile-open' : ''
             }`}
         >
-            <div
-                className={`absolute inset-0 ${
-                    isMobileMenuOpen ? 'dev-header-mobile-bg' : 'dev-header-bar-bg'
-                }`}
-            />
+            {isMobileMenuOpen && <div className="absolute inset-0 dev-header-mobile-bg" />}
 
             <nav className="dev-header-nav relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="relative flex items-center justify-between h-11 shrink-0">

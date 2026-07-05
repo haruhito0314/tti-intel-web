@@ -18,6 +18,7 @@ export function WeeklyMathSolution() {
     const resolvedWeekKey = useMemo(() => fromPublicWeeklyMathKey(decodedWeekKey), [decodedWeekKey]);
     const [item, setItem] = useState<WeeklyMathProblem | null>(null);
     const [loadingItem, setLoadingItem] = useState(true);
+    const [fetchError, setFetchError] = useState(false);
 
     const fallbackRoute = item?.title?.trim() === '経路の場合の数';
     const answerMarkdown = item?.answer?.trim() || (fallbackRoute ? ROUTE_COUNTING_ANSWER : '');
@@ -27,6 +28,10 @@ export function WeeklyMathSolution() {
 
     useEffect(() => {
         let mounted = true;
+        setLoadingItem(true);
+        setItem(null);
+        setFetchError(false);
+
         (async () => {
             try {
                 if (!resolvedWeekKey) {
@@ -37,7 +42,10 @@ export function WeeklyMathSolution() {
                 if (mounted) setItem(data);
             } catch (error) {
                 console.error('Failed to load weekly math solution:', error);
-                if (mounted) setItem(null);
+                if (mounted) {
+                    setItem(null);
+                    setFetchError(true);
+                }
             } finally {
                 if (mounted) setLoadingItem(false);
             }
@@ -52,6 +60,23 @@ export function WeeklyMathSolution() {
         return (
             <div className="max-w-[980px] mx-auto px-4 py-12">
                 <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">読み込み中...</p>
+            </div>
+        );
+    }
+
+    if (fetchError) {
+        return (
+            <div className="max-w-[980px] mx-auto px-4 py-12">
+                <h1 className="apple-section text-[#1D1D1F] dark:text-[#F5F5F7] mb-3">読み込みに失敗しました</h1>
+                <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-6">
+                    問題の取得中にエラーが発生しました。時間をおいて再度お試しください。
+                </p>
+                <Link to="/weekly-math">
+                    <Button variant="outline">
+                        <ArrowLeft className="w-4 h-4" />
+                        一覧へ戻る
+                    </Button>
+                </Link>
             </div>
         );
     }

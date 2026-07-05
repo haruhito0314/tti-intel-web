@@ -9,7 +9,6 @@ export const STACK2_CARD_COUNT = STACK_LAYERS.length;
 const STACK2_COLS = 4;
 const STAGE_MAX_W = 920;
 const STAGE_PAD_X = 12;
-const STAGE_PAD_Y = 16;
 const STACK2_CARD_H_DESKTOP = 120;
 const STACK2_CARD_H_MOBILE = 100;
 
@@ -72,11 +71,9 @@ export type Stack2StageLayout = {
     cellW: number;
     cellH: number;
     gap: number;
-    safeX: number;
-    safeY: number;
 };
 
-export function computeStack2StageLayout(width: number, height: number): Stack2StageLayout {
+function computeStack2StageLayout(width: number, height: number): Stack2StageLayout {
     const stageW = Math.min(width, STAGE_MAX_W);
     const gap = Math.max(7.2, Math.min(12, stageW * 0.015));
     const availW = stageW - STAGE_PAD_X * 2;
@@ -84,14 +81,10 @@ export function computeStack2StageLayout(width: number, height: number): Stack2S
     const cellW = (availW - (STACK2_COLS - 1) * gap) / STACK2_COLS;
     const cellH = width < 768 ? STACK2_CARD_H_MOBILE : STACK2_CARD_H_DESKTOP;
 
-    const halfDiag = Math.sqrt((cellW / 2) ** 2 + (cellH / 2) ** 2);
-    const safeX = Math.max(28, stageW / 2 - halfDiag - STAGE_PAD_X);
-    const safeY = Math.max(24, height / 2 - halfDiag - STAGE_PAD_Y);
-
-    return { width: stageW, height, cellW, cellH, gap, safeX, safeY };
+    return { width: stageW, height, cellW, cellH, gap };
 }
 
-export function stack2MorphLineStart(): number {
+function stack2MorphLineStart(): number {
     return stackGridEnterComplete(STACK2_CARD_COUNT) + STACK2_HOLD;
 }
 
@@ -103,13 +96,8 @@ function stack2LineMorphEnd(index: number): number {
     return stack2LineMorphStart(index) + STACK2_LINE_CARD_SPAN;
 }
 
-/** Pan + copy scroll begin after the full horizontal row is formed */
-export function stack2PanScrollStart(): number {
+function stack2PanScrollStart(): number {
     return stack2MorphLineComplete() + STACK2_LINE_HOLD;
-}
-
-export function stack2LineScrollStart(): number {
-    return stack2PanScrollStart();
 }
 
 export function stack2CopyFadeStart(): number {
@@ -120,49 +108,45 @@ export function stack2CopyFadeEnd(): number {
     return stack2CopyFadeStart() + 0.055;
 }
 
-export function stack2PanScrollEnd(): number {
+function stack2PanScrollEnd(): number {
     return stack2PanScrollStart() + STACK2_PAN_SCROLL_SPAN;
 }
 
-export function stack2MorphLineComplete(): number {
+function stack2MorphLineComplete(): number {
     return stack2LineMorphEnd(STACK2_CARD_COUNT - 1);
 }
 
-export function stack2MorphCircleStart(): number {
+function stack2MorphCircleStart(): number {
     return stack2PanScrollEnd() + 0.01;
 }
 
-export function stack2MorphCircleEnd(): number {
+function stack2MorphCircleEnd(): number {
     return stack2MorphCircleStart() + STACK2_MORPH_CIRCLE_SPAN;
 }
 
-export function stack2ExitPhaseStart(): number {
+function stack2ExitPhaseStart(): number {
     return stack2MorphCircleEnd() + STACK2_CIRCLE_HOLD;
 }
 
-export function stack2ExitComplete(): number {
+function stack2ExitComplete(): number {
     return stack2ExitPhaseStart() + (STACK2_CARD_COUNT - 1) * STACK2_EXIT_STAGGER + STACK2_EXIT_SPAN;
-}
-
-export function stack2ShellFadeStart(): number {
-    return stack2ExitComplete() + 0.02;
 }
 
 export function stack2ShellFadeEndLocal(): number {
     return STACK2_SHELL_FADE_LOCAL;
 }
 
-export function stack2MorphLineProgress(local: number, index: number): number {
+function stack2MorphLineProgress(local: number, index: number): number {
     const t = stack2AnimLocal(local);
     return reveal(t, stack2LineMorphStart(index), stack2LineMorphEnd(index));
 }
 
-export function stack2MorphCircleProgress(local: number): number {
+function stack2MorphCircleProgress(local: number): number {
     const t = stack2AnimLocal(local);
     return reveal(t, stack2MorphCircleStart(), stack2MorphCircleEnd());
 }
 
-export function stack2CardExitProgress(local: number, index: number): number {
+function stack2CardExitProgress(local: number, index: number): number {
     const t = stack2AnimLocal(local);
     const start = stack2ExitPhaseStart() + index * STACK2_EXIT_STAGGER;
     const end = start + STACK2_EXIT_SPAN;
@@ -190,22 +174,13 @@ function gridPoint(index: number, cardCount: number, layout: Stack2StageLayout):
     };
 }
 
-function lineMetrics(layout: Stack2StageLayout, cardCount: number) {
-    const { cellW, gap, width } = layout;
-    const spacing = cellW + gap * 0.55;
-    const totalLineW = (cardCount - 1) * spacing + cellW;
-    const viewportW = width - STAGE_PAD_X * 2;
-    const overscroll = Math.max(0, totalLineW - viewportW * 0.88);
-    return { spacing, totalLineW, overscroll };
-}
-
 function lineRowStartX(layout: Stack2StageLayout): number {
     const halfW = layout.width / 2;
     return -halfW + STAGE_PAD_X + layout.cellW * 0.5;
 }
 
-function linePoint(index: number, cardCount: number, layout: Stack2StageLayout): Point {
-    const { spacing } = lineMetrics(layout, cardCount);
+function linePoint(index: number, layout: Stack2StageLayout): Point {
+    const spacing = layout.cellW + layout.gap * 0.55;
     return { x: lineRowStartX(layout) + index * spacing, y: 0 };
 }
 
@@ -213,7 +188,7 @@ function linePanTarget(layout: Stack2StageLayout, cardCount: number): number {
     const halfW = layout.width / 2;
     const maxRight = halfW - STAGE_PAD_X - layout.cellW * 0.5;
 
-    const tailX = linePoint(cardCount - 1, cardCount, layout).x;
+    const tailX = linePoint(cardCount - 1, layout).x;
 
     if (tailX + layout.cellW * 0.5 <= maxRight) return 0;
     return maxRight - layout.cellW * 0.5 - tailX;
@@ -268,7 +243,7 @@ export function stack2CardLayout(
     const morphCircle = stack2MorphCircleProgress(local);
 
     const grid = gridPoint(index, cardCount, layout);
-    const line = linePoint(index, cardCount, layout);
+    const line = linePoint(index, layout);
     const circle = circlePoint(index, cardCount, layout);
 
     let x: number;

@@ -7,7 +7,7 @@ import { MathMarkdown } from '@/components/MathMarkdown';
 import { Badge, Button, Card, CardContent } from '@/components/ui';
 import {
     DEFAULT_WEEKLY_MATH_TEMPLATE_KEY,
-    DEFAULT_WEEKLY_MATH_PROBLEM,
+    getDefaultWeeklyMathProblem,
     deleteWeeklyMath,
     getDefaultWeeklyMathTemplate,
     getWeekDateRange,
@@ -104,7 +104,7 @@ export function AdminWeeklyMathPreview() {
         }
     };
 
-    const previewItem = selectedItem ?? defaultTemplate ?? DEFAULT_WEEKLY_MATH_PROBLEM;
+    const previewItem = selectedItem ?? defaultTemplate ?? getDefaultWeeklyMathProblem();
     const previewTitle = previewItem.title?.trim() || '経路の場合の数';
     const previewPeriodMemo = previewItem.periodMemo?.trim() || '';
     const previewProblem = previewItem.problem?.trim() || '';
