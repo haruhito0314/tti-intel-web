@@ -19,6 +19,38 @@ export function getBadgeProgress(local: number, index: number): number {
 
 export const TYPEWRITER_TEXT = '> AIと一緒に、Webサイトを作る';
 
+/** Section 4 — top-to-bottom stagger inside the browser preview */
+const SCENE4_REVEAL_START = 0.08;
+const SCENE4_REVEAL_SPAN = 0.075;
+const SCENE4_REVEAL_GAP = 0.055;
+
+export function getScene4StepReveal(local: number, step: number, staticMode = false): number {
+    if (staticMode) return 1;
+    const start = SCENE4_REVEAL_START + step * SCENE4_REVEAL_GAP;
+    return chapterReveal(local, start, start + SCENE4_REVEAL_SPAN);
+}
+
+export function getScene4TypewriterProgress(local: number, staticMode = false): number {
+    if (staticMode) return 1;
+    const start = SCENE4_REVEAL_START + 4 * SCENE4_REVEAL_GAP;
+    const end = start + SCENE4_REVEAL_SPAN + 0.045;
+    if (local <= start) return 0;
+    if (local >= end) return 1;
+    return (local - start) / (end - start);
+}
+
+export function getScene4LayerMotion(reveal: number, offsetY = 12) {
+    return {
+        opacity: reveal,
+        transform: reveal >= 0.999 ? 'none' : `translateY(${(1 - reveal) * offsetY}px)`,
+    };
+}
+
+/** Scene 4 reveal steps: 0 browser chrome, 1 header, 2 copy, 3 terminal, 5 lines, 6–8 badges, 9 CTA */
+export const SCENE4_LINES_STEP = 5;
+export const SCENE4_PREVIEW_BADGE_STEP = 6;
+export const SCENE4_CTA_STEP = 9;
+
 export const AI_TOOLS = [
     { name: 'OpenAI Codex', note: 'AIとペアプログラミングで実装', icon: 'openai' as const },
     { name: 'Claude Code', note: '要件から実装まで伴走', icon: 'anthropic' as const },

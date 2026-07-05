@@ -51,7 +51,7 @@ export const siteConfig = {
             { name: 'Weekly Math', href: '/weekly-math' },
             { name: 'News', href: '/news' },
             { name: 'Apps', href: '/app' },
-            { name: 'Development', href: '/development' },
+            { name: '開発について', href: '/development' },
             { name: 'Board', href: '/board' },
             { name: 'Contact', href: '/contact' },
         ],

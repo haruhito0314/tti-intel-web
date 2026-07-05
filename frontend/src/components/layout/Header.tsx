@@ -5,6 +5,7 @@ import { siteConfig } from '@/config/site';
 import { ThemeToggle } from './ThemeToggle';
 
 const DEV_HEADER_THRESHOLD = 48;
+const MOBILE_HEADER_MQ = '(max-width: 768px)';
 
 function isDevHeroOverlayActive(): boolean {
     const sentinel = document.getElementById('dev-hero-sentinel');
@@ -19,8 +20,20 @@ export function Header() {
         location.pathname === '/development' ? isDevHeroOverlayActive() : false,
     );
     const isDevPage = location.pathname === '/development';
+    const [isMobileHeader, setIsMobileHeader] = useState(() =>
+        typeof window !== 'undefined' ? window.matchMedia(MOBILE_HEADER_MQ).matches : false,
+    );
     const devHeaderLight = isDevPage;
     const overlayActive = isDevPage && devHeroOverlay;
+    const devHeaderTransparent = isDevPage && (overlayActive || isMobileHeader);
+
+    useEffect(() => {
+        const mq = window.matchMedia(MOBILE_HEADER_MQ);
+        const sync = () => setIsMobileHeader(mq.matches);
+        sync();
+        mq.addEventListener('change', sync);
+        return () => mq.removeEventListener('change', sync);
+    }, []);
 
     useEffect(() => {
         if (!isDevPage) {
@@ -76,7 +89,7 @@ export function Header() {
     }, [isDevPage, location.pathname]);
 
     const headerBgClass = isDevPage
-        ? overlayActive
+        ? devHeaderTransparent
             ? 'header-dev-overlay-bg'
             : 'header-dev-scrolled-bg'
         : 'glass';
