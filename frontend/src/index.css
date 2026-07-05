@@ -2436,6 +2436,12 @@
 .dev-mcp-panel-row-icon-svg {
   width: 1.15rem;
   height: 1.15rem;
+  flex-shrink: 0;
+  padding: 0.1rem;
+  border-radius: 4px;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
 }
 
 .dev-mcp-panel-row-icon-svg--lucide {
@@ -3318,6 +3324,26 @@
   .dev-hero-scene--2 .dev-stack-scroll,
   .dev-hero-scene--5 .dev-stack-scroll {
     justify-content: flex-start;
+  }
+
+  .dev-hero-scene--5 .dev-scene-viewport .dev-stack-stage {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem;
+    width: min(calc(100vw - 1.25rem), 100%);
+  }
+
+  .dev-hero-scene--5 .dev-stack-layer {
+    min-height: 4.75rem;
+    padding: 0.55rem 0.6rem;
+  }
+
+  .dev-hero-scene--5 .dev-stack-layer-head strong {
+    font-size: 12px;
+  }
+
+  .dev-hero-scene--5 .dev-stack-layer span {
+    font-size: 10px;
+    line-height: 1.35;
   }
 
   .dev-stack-stage--mobile-flow {

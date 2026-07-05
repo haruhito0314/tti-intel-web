@@ -5,7 +5,6 @@ import {
     siCursor,
     siFirebase,
     siGithub,
-    siGoogle,
     siGooglegemini,
     siHtml5,
     siIterm2,
@@ -39,7 +38,6 @@ const ICONS = {
     swift: siSwift,
     openai: siOpenai,
     anthropic: siAnthropic,
-    google: siGoogle,
     modelcontextprotocol: siModelcontextprotocol,
     cursor: siCursor,
     iterm2: siIterm2,
@@ -47,23 +45,23 @@ const ICONS = {
     github: siGithub,
 } as const satisfies Record<string, IconData>;
 
-export type TechBrandSlug = keyof typeof ICONS;
+/** Brand colors tuned for dark dev-page surfaces */
+const ICON_COLOR_OVERRIDES: Partial<Record<keyof typeof ICONS, string>> = {
+    openai: '10A37F',
+    googlegemini: '886BF9',
+};
 
-const LIGHT_ON_DARK = '#F5F5F7';
+const IMAGE_ICONS = {
+    googleantigravity: {
+        title: 'Google Antigravity',
+        src: '/images/development/google-antigravity.svg',
+    },
+} as const;
 
-function hexLuminance(hex: string): number {
-    const normalized = hex.replace('#', '');
-    const r = Number.parseInt(normalized.slice(0, 2), 16);
-    const g = Number.parseInt(normalized.slice(2, 4), 16);
-    const b = Number.parseInt(normalized.slice(4, 6), 16);
-    return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-}
+export type TechBrandSlug = keyof typeof ICONS | keyof typeof IMAGE_ICONS;
 
 function getIconFill(hex: string): string {
     const normalized = hex.startsWith('#') ? hex.slice(1) : hex;
-    if (hexLuminance(normalized) < 0.42) {
-        return LIGHT_ON_DARK;
-    }
     return `#${normalized}`;
 }
 
@@ -73,8 +71,22 @@ type TechBrandIconProps = {
 };
 
 export function TechBrandIcon({ slug, className }: TechBrandIconProps) {
-    const icon = ICONS[slug];
-    const fill = getIconFill(icon.hex);
+    const imageIcon = IMAGE_ICONS[slug as keyof typeof IMAGE_ICONS];
+    if (imageIcon) {
+        return (
+            <img
+                src={imageIcon.src}
+                alt=""
+                className={className}
+                aria-hidden="true"
+                draggable={false}
+                style={{ objectFit: 'contain' }}
+            />
+        );
+    }
+
+    const icon = ICONS[slug as keyof typeof ICONS];
+    const fill = getIconFill(ICON_COLOR_OVERRIDES[slug as keyof typeof ICONS] ?? icon.hex);
 
     return (
         <svg

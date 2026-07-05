@@ -78,8 +78,16 @@ export const STACK_LAYER_MOBILE_SPAN = 0.072 * STACK_GRID_ENTER_DURATION_SCALE;
 
 export type StackGridLayout = 'grid' | 'mobile-scroll';
 
-export function resolveStackGridLayout(mobileScroll: boolean): StackGridLayout {
-    return mobileScroll ? 'mobile-scroll' : 'grid';
+/** On mobile, up to 8 cards fit in a 2×4 grid without vertical panning */
+export const MOBILE_GRID_MAX_CARDS = 8;
+
+export function resolveStackGridLayout(
+    mobileScroll: boolean,
+    cardCount = 0,
+): StackGridLayout {
+    if (!mobileScroll) return 'grid';
+    if (cardCount > 0 && cardCount <= MOBILE_GRID_MAX_CARDS) return 'grid';
+    return 'mobile-scroll';
 }
 
 export function getStackLayerStagger(index: number, layout: StackGridLayout = 'grid'): number {

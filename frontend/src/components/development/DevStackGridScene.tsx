@@ -38,8 +38,8 @@ export function DevStackGridScene({
     copyIndex,
 }: DevStackGridSceneProps) {
     const mobileScroll = useMobileStackScroll();
-    const layout = resolveStackGridLayout(mobileScroll);
     const cardCount = layers.length;
+    const layout = resolveStackGridLayout(mobileScroll, cardCount);
     const local = staticMode
         ? getStackGridTimelineEnd(cardCount, layout)
         : getStackSceneLocalProgress(progress, sceneIndex, layout);

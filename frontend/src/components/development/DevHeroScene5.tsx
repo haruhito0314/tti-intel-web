@@ -15,7 +15,7 @@ const TOOL_ACCENTS = [
     '#818CF8',
     '#EDECEC',
     '#9CF000',
-    '#8E75B2',
+    '#886BF9',
     '#A8B1C4',
 ] as const;
 

@@ -91,7 +91,6 @@ type DevHeroCopyProps = {
 
 export function DevHeroCopy({ progress, staticMode = false, staticBlockIndex }: DevHeroCopyProps) {
     const mobileStackScroll = useMobileStackScroll();
-    const stackLayout = resolveStackGridLayout(mobileStackScroll);
 
     if (staticMode) {
         const blocks =
@@ -127,13 +126,17 @@ export function DevHeroCopy({ progress, staticMode = false, staticBlockIndex }: 
             {COPY_BLOCKS.map((block, index) => {
                 const sceneOpacity = getSceneCopyOpacity(progress, index);
                 const stackCount = STACK_GRID_COPY_COUNTS[index];
+                const blockLayout =
+                    stackCount !== undefined
+                        ? resolveStackGridLayout(mobileStackScroll, stackCount)
+                        : 'grid';
                 const local =
                     stackCount !== undefined
-                        ? getStackSceneLocalProgress(progress, index, stackLayout)
+                        ? getStackSceneLocalProgress(progress, index, blockLayout)
                         : getSceneLocalProgress(progress, index);
                 const normalizedLocal =
                     stackCount !== undefined
-                        ? local / getStackGridTimelineEnd(stackCount, stackLayout)
+                        ? local / getStackGridTimelineEnd(stackCount, blockLayout)
                         : local;
                 const isFinalChapter = index === COPY_BLOCKS.length - 1;
                 const translateY =
@@ -154,8 +157,8 @@ export function DevHeroCopy({ progress, staticMode = false, staticBlockIndex }: 
                                 );
                                 const exit = chapterExit(
                                     local,
-                                    getStackGridExitStart(stackCount, stackLayout),
-                                    getStackGridExitCompleteLocal(stackCount, stackLayout),
+                                    getStackGridExitStart(stackCount, blockLayout),
+                                    getStackGridExitCompleteLocal(stackCount, blockLayout),
                                 );
                                 if (enter < 1) return (1 - enter) * 48;
                                 if (exit < 1) return -(1 - exit) * 40;
@@ -175,8 +178,8 @@ export function DevHeroCopy({ progress, staticMode = false, staticBlockIndex }: 
                     : stackCount !== undefined
                       ? chapterExit(
                             local,
-                            getStackGridExitStart(stackCount, stackLayout),
-                            getStackGridExitCompleteLocal(stackCount, stackLayout),
+                            getStackGridExitStart(stackCount, blockLayout),
+                            getStackGridExitCompleteLocal(stackCount, blockLayout),
                         )
                       : chapterExit(local, CHAPTER_COPY_EXIT_START, CHAPTER_COPY_EXIT_END);
 

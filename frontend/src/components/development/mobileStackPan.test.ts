@@ -5,6 +5,8 @@ import {
     getMobileStackStageOffset,
     getStackGridExitStart,
     MOBILE_STACK_TARGET_BOTTOM_FROM_TOP,
+    MOBILE_GRID_MAX_CARDS,
+    resolveStackGridLayout,
 } from './chapterMotion';
 
 describe('mobile stack pan', () => {
@@ -31,5 +33,11 @@ describe('mobile stack pan', () => {
 
     it('does not pan on desktop grid layout', () => {
         expect(getMobileStackStageOffset(1, 12, false, 'grid', 240)).toBe(0);
+    });
+
+    it('uses a 2-column grid for eight cards on mobile', () => {
+        expect(MOBILE_GRID_MAX_CARDS).toBe(8);
+        expect(resolveStackGridLayout(true, 8)).toBe('grid');
+        expect(resolveStackGridLayout(true, 12)).toBe('mobile-scroll');
     });
 });

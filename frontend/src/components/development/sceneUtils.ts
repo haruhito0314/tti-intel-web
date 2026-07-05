@@ -54,7 +54,7 @@ export const SCENE4_CTA_STEP = 9;
 export const AI_TOOLS = [
     { name: 'OpenAI Codex', note: 'AIとペアプログラミングで実装', icon: 'openai' as const },
     { name: 'Claude Code', note: '要件から実装まで伴走', icon: 'anthropic' as const },
-    { name: 'Google Antigravity', note: '最新のAIコーディング環境', icon: 'google' as const },
+    { name: 'Google Antigravity', note: '最新のAIコーディング環境', icon: 'googleantigravity' as const },
     { name: 'MCP', note: 'AIとツールをつなぐ共通規格', icon: 'modelcontextprotocol' as const },
     { name: 'Cursor', note: 'AI統合エディタでのコーディング', icon: 'cursor' as const },
     { name: 'iTerm', note: 'ターミナルでのビルドと実行', icon: 'iterm2' as const },
