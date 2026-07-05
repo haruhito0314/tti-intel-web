@@ -3,12 +3,9 @@ import { getTrackProgress, quantizeProgress } from './devScrollMath';
 
 function lockStageMetrics(track: HTMLElement) {
     const height = window.innerHeight;
-    const copyZone = Math.round(Math.min(Math.max(height * 0.28, 210), 320));
     const stage = track.querySelector('.dev-hero-stage') as HTMLElement | null;
     track.style.setProperty('--dev-stage-height', `${height}px`);
-    track.style.setProperty('--dev-copy-zone', `${copyZone}px`);
     stage?.style.setProperty('--dev-stage-height', `${height}px`);
-    stage?.style.setProperty('--dev-copy-zone', `${copyZone}px`);
 }
 
 export function useDevScrollProgress(trackRef: RefObject<HTMLElement | null>) {

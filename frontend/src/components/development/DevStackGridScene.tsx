@@ -4,7 +4,11 @@ import { chapterShellStyle, stackCardMotionStyle } from './devEnterStyle';
 import { getStackChapterOpacity } from './devStackChapter';
 import { getChapterLocal } from './devScrollMath';
 import { stackCardExit, stackCardReveal, stackGridColumns } from './devSceneMotion';
-import { useStack2MobileFlowScroll } from './devStack2MobileMotion';
+import {
+    computeStack2MobileTranslateY,
+    stack2MobileCardReveal,
+    useStack2MobileMetrics,
+} from './devStack2MobileMotion';
 import { isStack2MobileGridChapter } from './devStackCircleMotion';
 import { useDevMobileLayout } from './useDevMobileLayout';
 import { TechBrandIcon, type TechBrandSlug } from './TechBrandIcon';
@@ -46,16 +50,14 @@ export function DevStackGridScene({
     const isCh2Mobile = isStack2MobileGridChapter(chapterIndex, mobileLayout);
     const scrollRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
-    const flowTranslateY = useStack2MobileFlowScroll(
-        isCh2Mobile ? local : 0,
-        scrollRef,
-        contentRef,
-    );
+    const metrics = useStack2MobileMetrics(isCh2Mobile, scrollRef, contentRef, local);
+    const flowTranslateY = isCh2Mobile
+        ? computeStack2MobileTranslateY(local, metrics)
+        : 0;
 
     const cards = layers.map((layer, index) => {
-        const skipEnter = isScroll && chapterIndex === 4 && mobileLayout;
-        const enter = skipEnter
-            ? 1
+        const enter = isCh2Mobile && isScroll
+            ? stack2MobileCardReveal(local, index, cardCount)
             : isScroll
               ? stackCardReveal(local, index, chapterIndex, columns)
               : 1;
@@ -96,8 +98,8 @@ export function DevStackGridScene({
                         <div ref={scrollRef} className="dev-stack-scroll dev-stack-scroll--ch2-mobile">
                             <div
                                 ref={contentRef}
-                                className="dev-stack-stage dev-stack-stage--mobile-flow dev-stack-stage--ch2-mobile"
-                                style={{ transform: `translateY(${flowTranslateY.toFixed(2)}px)` }}
+                                className="dev-stack-stage dev-stack-stage--mobile-2col dev-stack-stage--ch2-mobile"
+                                style={{ transform: `translate3d(0, ${flowTranslateY.toFixed(2)}px, 0)` }}
                             >
                                 {cards}
                             </div>

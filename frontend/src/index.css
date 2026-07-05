@@ -1939,45 +1939,6 @@
   padding-block: 0.25rem 0.5rem;
 }
 
-.dev-stack-stage--mobile-flow {
-  display: flex;
-  flex-direction: column;
-  gap: 0.55rem;
-  width: min(100%, 22rem);
-  max-width: 100%;
-  margin-inline: auto;
-  padding-block: 0.15rem 0.75rem;
-  box-sizing: border-box;
-  will-change: transform;
-}
-
-.dev-stack-stage--mobile-flow .dev-stack-layer {
-  height: auto;
-  flex-shrink: 0;
-  min-height: 6.85rem;
-  padding: 0.75rem 0.72rem;
-}
-
-.dev-stack-stage--mobile-flow .dev-stack-layer-head {
-  align-items: center;
-  min-height: auto;
-  margin-bottom: 0.35rem;
-}
-
-.dev-stack-stage--mobile-flow .dev-stack-layer-head strong {
-  flex: 1;
-  min-width: 0;
-  font-size: 13px;
-  line-height: 1.25;
-}
-
-.dev-stack-stage--mobile-flow .dev-stack-layer span {
-  flex: none;
-  min-height: 0;
-  font-size: 11px;
-  line-height: 1.45;
-}
-
 .dev-hero-title {
   font-size: clamp(34px, 6.2vw, 68px);
   line-height: 1.12;
@@ -3209,26 +3170,90 @@
     --dev-stage-gutter: clamp(0.5rem, 3vw, 0.85rem);
   }
 
+  /* Copy zone height — tuned per chapter content length */
   .dev-hero-stage[data-dev-chapter="0"] {
-    --dev-copy-zone: 11.25rem;
+    --dev-copy-zone: 10.25rem;
   }
 
-  .dev-hero-stage[data-dev-chapter="4"] {
+  .dev-hero-stage[data-dev-chapter="1"] {
+    --dev-copy-zone: 8.5rem;
+  }
+
+  .dev-hero-stage[data-dev-chapter="2"] {
+    --dev-copy-zone: 10rem;
+  }
+
+  .dev-hero-stage[data-dev-chapter="3"] {
     --dev-copy-zone: 8.75rem;
   }
 
+  .dev-hero-stage[data-dev-chapter="4"] {
+    --dev-copy-zone: 8rem;
+  }
+
+  .dev-hero-stage[data-dev-chapter="5"] {
+    --dev-copy-zone: 8.25rem;
+  }
+
+  .dev-hero-stage[data-dev-chapter="6"] {
+    --dev-copy-zone: 7.5rem;
+  }
+
   .dev-hero-copy-stage {
-    padding: 0.45rem var(--dev-stage-gutter) 0.3rem;
+    padding: 0.4rem var(--dev-stage-gutter) 0.22rem;
+  }
+
+  /* Anchor copy to bottom of zone — sits just above visuals */
+  .dev-hero-copy-block {
+    justify-content: flex-end;
+    padding-top: 0.12rem;
+    padding-bottom: 0.28rem;
+  }
+
+  .dev-hero-copy-block--intro {
+    justify-content: flex-end;
+    padding-top: 0.35rem;
+    padding-bottom: 0.32rem;
+  }
+
+  .dev-hero-copy-block--intro .dev-hero-title {
+    margin-bottom: 0.4rem;
+  }
+
+  .dev-hero-copy-block--mcp {
+    justify-content: flex-end;
+    padding-top: 0.2rem;
+    padding-bottom: 0.3rem;
+  }
+
+  .dev-hero-copy-block--mcp .dev-hero-title--sm {
+    font-size: clamp(22px, 6.5vw, 32px);
+    line-height: 1.2;
+    margin-bottom: 0.4rem;
+  }
+
+  .dev-hero-copy-block--mcp .dev-hero-subtitle {
+    font-size: clamp(14px, 3.8vw, 16px);
+    line-height: 1.5;
+    max-width: 22em;
   }
 
   .dev-hero-copy-block--compact {
-    justify-content: flex-start;
-    padding-top: 0.08rem;
-    padding-bottom: 0.18rem;
+    justify-content: flex-end;
+    padding-top: 0.12rem;
+    padding-bottom: 0.28rem;
   }
 
   .dev-hero-copy-block--compact .dev-hero-title--sm {
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.28rem;
+  }
+
+  .dev-hero-copy-block--compact .dev-hero-subtitle {
+    line-height: 1.48;
+  }
+
+  .dev-hero-stage[data-dev-chapter="1"] .dev-hero-title--sm {
+    margin-bottom: 0.32rem;
   }
 
   .dev-hero-scene--1 .dev-scene-shell {
@@ -3249,32 +3274,52 @@
     margin-top: 0.65rem;
   }
 
-  .dev-hero-scene--5 .dev-scene-shell {
+  .dev-hero-scene--2 .dev-scene-shell {
     justify-content: flex-start;
-    padding-top: 0.1rem;
+    padding-top: 0.15rem;
+    min-height: 0;
+    height: 100%;
   }
 
-  .dev-hero-scene--5 .dev-scene-viewport {
+  .dev-hero-scene--2 .dev-scene-viewport {
     justify-content: flex-start;
+    align-items: stretch;
+    flex: 1 1 0;
+    min-height: 0;
     padding-top: 0;
+    display: flex;
+    flex-direction: column;
   }
 
   .dev-stack-scroll--ch2-mobile {
-    max-height: calc(6.25rem + 0.15rem);
+    flex: 1 1 0;
+    align-self: stretch;
+    width: 100%;
+    min-height: 0;
+    max-height: none;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
     padding-bottom: 0;
   }
 
   .dev-stack-stage--ch2-mobile {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.55rem;
-    width: min(calc(100vw - 1.25rem), 100%);
-    padding-block: 0;
+    will-change: transform;
   }
 
-  .dev-stack-stage--ch2-mobile .dev-stack-layer {
-    min-height: 6.25rem;
-    height: 6.25rem;
+  .dev-hero-scene--5 .dev-scene-shell,
+  .dev-hero-scene--6 .dev-scene-shell,
+  .dev-hero-scene--7 .dev-scene-shell {
+    justify-content: flex-start;
+    padding-top: 0.1rem;
+  }
+
+  .dev-hero-scene--5 .dev-scene-viewport,
+  .dev-hero-scene--6 .dev-scene-viewport,
+  .dev-hero-scene--7 .dev-scene-viewport {
+    justify-content: flex-start;
+    padding-top: 0;
   }
 
   .dev-hero-title {
@@ -3307,6 +3352,10 @@
     margin-inline: auto;
   }
 
+  .dev-hero-scene--6 .dev-workflow-grid--mobile-stack {
+    margin-top: 0;
+  }
+
   .dev-workflow-grid--mobile-stack .dev-workflow-card--0,
   .dev-workflow-grid--mobile-stack .dev-workflow-card--1,
   .dev-workflow-grid--mobile-stack .dev-workflow-card--2,
@@ -3314,6 +3363,16 @@
     grid-column: auto;
     grid-row: auto;
     width: 100%;
+  }
+
+  .dev-hero-visual-stage:has(.dev-hero-scene--2) {
+    overflow: hidden;
+  }
+
+  .dev-hero-scene--2,
+  .dev-hero-scene--2 .dev-scene-shell,
+  .dev-hero-scene--2 .dev-scene-viewport {
+    overflow: hidden;
   }
 
   .dev-hero-scene--2 .dev-stack-stage--mobile-2col {
@@ -3376,7 +3435,6 @@
     box-sizing: border-box;
   }
 
-  .dev-hero-scene--2 .dev-stack-scroll,
   .dev-hero-scene--5 .dev-stack-scroll {
     justify-content: flex-start;
   }
@@ -3411,14 +3469,6 @@
   .dev-hero-scene--5 .dev-stack-layer-icon {
     width: 1.25rem;
     height: 1.25rem;
-  }
-
-  .dev-stack-stage--mobile-flow {
-    width: min(calc(100vw - 1.5rem), 20.5rem);
-  }
-
-  .dev-stack-stage--mobile-flow .dev-stack-layer {
-    width: 100%;
   }
 
   .dev-stack-layer {
@@ -3506,6 +3556,10 @@
     gap: 0.55rem;
     width: 100%;
     box-sizing: border-box;
+  }
+
+  .dev-hero-scene--7 .dev-hero-cta-row {
+    margin-top: 0.3rem;
   }
 
   .dev-hero-cta {
