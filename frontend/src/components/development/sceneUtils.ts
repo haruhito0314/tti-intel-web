@@ -53,7 +53,7 @@ export const SCENE4_CTA_STEP = 9;
 
 export const AI_TOOLS = [
     { name: 'OpenAI Codex', note: 'AIとペアプログラミングで実装', icon: 'openai' as const },
-    { name: 'Claude Code', note: '要件から実装まで伴走', icon: 'anthropic' as const },
+    { name: 'Claude Code', note: '要件から実装まで伴走', icon: 'claude' as const },
     { name: 'Google Antigravity', note: '最新のAIコーディング環境', icon: 'googleantigravity' as const },
     { name: 'MCP', note: 'AIとツールをつなぐ共通規格', icon: 'modelcontextprotocol' as const },
     { name: 'Cursor', note: 'AI統合エディタでのコーディング', icon: 'cursor' as const },
@@ -64,7 +64,7 @@ export const AI_TOOLS = [
 
 export const AI_TOOL_BADGES = [
     { name: 'OpenAI Codex', icon: 'openai' as const },
-    { name: 'Claude Code', icon: 'anthropic' as const },
+    { name: 'Claude Code', icon: 'claude' as const },
     { name: 'Cursor', icon: 'cursor' as const },
 ] as const;
 
@@ -72,7 +72,7 @@ export const AI_TOOL_BADGES = [
 export const AI_FLOAT_CARDS = [
     {
         name: 'Claude Code',
-        icon: 'anthropic' as const,
+        icon: 'claude' as const,
         prompt: '> 要件を整理して',
         accent: '#CC785C',
     },

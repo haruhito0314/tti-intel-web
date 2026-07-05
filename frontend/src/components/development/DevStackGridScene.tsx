@@ -25,6 +25,7 @@ type DevStackGridSceneProps = {
     opacity: number;
     staticMode?: boolean;
     copyIndex?: number;
+    iconVariant?: 'default' | 'brand';
 };
 
 export function DevStackGridScene({
@@ -36,6 +37,7 @@ export function DevStackGridScene({
     opacity,
     staticMode = false,
     copyIndex,
+    iconVariant = 'default',
 }: DevStackGridSceneProps) {
     const mobileScroll = useMobileStackScroll();
     const cardCount = layers.length;
@@ -72,7 +74,11 @@ export function DevStackGridScene({
             >
                 <div className="dev-stack-layer-accent" />
                 <div className="dev-stack-layer-head">
-                    <TechBrandIcon slug={layer.icon} className="dev-stack-layer-icon" />
+                    <TechBrandIcon
+                        slug={layer.icon}
+                        className="dev-stack-layer-icon"
+                        variant={iconVariant}
+                    />
                     <strong>{layer.name}</strong>
                 </div>
                 <span>{layer.note}</span>

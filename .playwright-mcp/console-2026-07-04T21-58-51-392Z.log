@@ -1462,3 +1462,120 @@ Visit https://react.dev/link/error-boundaries to learn more about error boundari
 %s
  An error occurred in the <TechBrandIcon> component. Consider adding an error boundary to your tree to customize error handling behavior.
 Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[12120847ms] [LOG] [vite] server connection lost. Polling for restart... @ http://localhost:5175/@vite/client:864
+[12121325ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[12351185ms] ReferenceError: ICON_COLOR_OVERRIDES is not defined
+    at TechBrandIcon (http://localhost:5175/src/components/development/TechBrandIcon.tsx?t=1783214682480:86:28)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[12351181ms] [WARNING] %s
+
+%s
+ An error occurred in the <TechBrandIcon> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[12351478ms] ReferenceError: ICON_COLOR_OVERRIDES is not defined
+    at TechBrandIcon (http://localhost:5175/src/components/development/TechBrandIcon.tsx?t=1783214682812:86:28)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[12351478ms] [WARNING] %s
+
+%s
+ An error occurred in the <TechBrandIcon> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[12351561ms] ReferenceError: ICON_COLOR_OVERRIDES is not defined
+    at TechBrandIcon (http://localhost:5175/src/components/development/TechBrandIcon.tsx?t=1783214682812:86:28)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[12351561ms] [WARNING] %s
+
+%s
+ An error occurred in the <TechBrandIcon> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[12408017ms] [ERROR] [vite] ReferenceError: siAnthropic is not defined
+    at http://localhost:5175/src/components/development/TechBrandIcon.tsx?t=1783214739373:37:14 @ http://localhost:5175/@vite/client:808
+[12408017ms] [ERROR] [vite] Failed to reload /src/components/development/TechBrandIcon.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[12408195ms] TypeError: Cannot read properties of undefined (reading 'hex')
+    at TechBrandIcon (http://localhost:5175/src/components/development/TechBrandIcon.tsx?t=1783214739531:126:50)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[12408191ms] [WARNING] %s
+
+%s
+ An error occurred in the <TechBrandIcon> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[12408537ms] TypeError: Cannot read properties of undefined (reading 'hex')
+    at TechBrandIcon (http://localhost:5175/src/components/development/TechBrandIcon.tsx?t=1783214739870:128:50)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[12408538ms] [WARNING] %s
+
+%s
+ An error occurred in the <TechBrandIcon> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[12408619ms] TypeError: Cannot read properties of undefined (reading 'hex')
+    at TechBrandIcon (http://localhost:5175/src/components/development/TechBrandIcon.tsx?t=1783214739970:128:50)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[12408620ms] [WARNING] %s
+
+%s
+ An error occurred in the <TechBrandIcon> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[12408738ms] TypeError: Cannot read properties of undefined (reading 'hex')
+    at TechBrandIcon (http://localhost:5175/src/components/development/TechBrandIcon.tsx?t=1783214739970:128:50)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[12408738ms] [WARNING] %s
+
+%s
+ An error occurred in the <TechBrandIcon> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965

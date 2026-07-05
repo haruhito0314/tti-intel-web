@@ -30,6 +30,7 @@ export function DevHeroScene5({ progress, opacity, staticMode = false, copyIndex
             opacity={opacity}
             staticMode={staticMode}
             copyIndex={copyIndex}
+            iconVariant="brand"
         />
     );
 }
