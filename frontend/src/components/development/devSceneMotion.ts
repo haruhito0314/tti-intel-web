@@ -1,5 +1,5 @@
 import { CHAPTER_ENTER_END, getChapterEnterEnd } from './devScrollConfig';
-import { freezeAfterEnter, reveal } from './devScrollMath';
+import { exit, freezeAfterEnter, reveal } from './devScrollMath';
 
 /** Motion-local — capped during hold */
 export function motionLocal(local: number, chapterIndex?: number): number {
@@ -33,12 +33,51 @@ export function scene1FloatReveal(local: number, index: number): number {
 }
 
 // —— Stack grids (sections 2 & 5) ——
-export function stackCardReveal(local: number, index: number): number {
-    const l = motionLocal(local);
+export const STACK_CARD_SPAN = 0.11;
+export const STACK_CARD_ROW_GAP = 0.09;
+export const STACK_CARD_COL_GAP = 0.045;
+export const STACK_CARD_BASE = 0.05;
+export const STACK_EXIT_HOLD = 0.06;
+export const STACK_SHELL_FADE_PAD = 0.02;
+
+export const STACK_GRID_CHAPTER_INDICES = new Set([1, 4]);
+
+export function stackCardStagger(index: number): number {
     const row = Math.floor(index / 4);
     const col = index % 4;
-    const start = 0.05 + row * 0.09 + col * 0.045;
-    return reveal(l, start, start + 0.11);
+    return row * STACK_CARD_ROW_GAP + col * STACK_CARD_COL_GAP;
+}
+
+export function stackCardEnterStart(index: number): number {
+    return STACK_CARD_BASE + stackCardStagger(index);
+}
+
+export function stackGridEnterComplete(cardCount: number): number {
+    return stackCardEnterStart(cardCount - 1) + STACK_CARD_SPAN;
+}
+
+export function stackGridExitStart(cardCount: number): number {
+    return stackGridEnterComplete(cardCount) + STACK_EXIT_HOLD;
+}
+
+export function stackGridExitComplete(cardCount: number): number {
+    return stackGridExitStart(cardCount) + stackCardStagger(cardCount - 1) + STACK_CARD_SPAN;
+}
+
+export function stackGridShellFadeStart(cardCount: number): number {
+    return stackGridExitComplete(cardCount) + STACK_SHELL_FADE_PAD;
+}
+
+export function stackCardReveal(local: number, index: number, chapterIndex?: number): number {
+    const l = motionLocal(local, chapterIndex);
+    const start = stackCardEnterStart(index);
+    return reveal(l, start, start + STACK_CARD_SPAN);
+}
+
+export function stackCardExit(local: number, index: number, cardCount: number): number {
+    const stagger = stackCardStagger(index);
+    const start = stackGridExitStart(cardCount) + stagger;
+    return exit(local, start, start + STACK_CARD_SPAN);
 }
 
 // —— Section 3 MCP ——

@@ -22,6 +22,13 @@ export function reveal(local: number, start: number, end: number): number {
     return easeOutCubic((local - start) / (end - start));
 }
 
+/** Map chapter-local progress into 1→0 between thresholds */
+export function exit(local: number, start: number, end: number): number {
+    if (local <= start) return 1;
+    if (local >= end) return 0;
+    return 1 - easeOutCubic((local - start) / (end - start));
+}
+
 /** Freeze local after enter completes — prevents hold-phase jitter */
 export function freezeAfterEnter(local: number, enterEnd: number): number {
     return Math.min(local, enterEnd);

@@ -1,4 +1,11 @@
 import { getChapterOpacity } from './devScrollMath';
+import { getStackChapterOpacity } from './devStackChapter';
+import { AI_TOOLS, STACK_LAYERS } from './sceneUtils';
+
+const STACK_GRID_CARD_COUNTS: Record<number, number> = {
+    1: STACK_LAYERS.length,
+    4: AI_TOOLS.length,
+};
 
 const COPY_BLOCKS = [
     {
@@ -87,7 +94,11 @@ export function DevHeroCopy(props: DevHeroCopyProps) {
     return (
         <div className="dev-hero-copy-stage" aria-live="polite">
             {COPY_BLOCKS.map((block, index) => {
-                const opacity = getChapterOpacity(progress, index);
+                const cardCount = STACK_GRID_CARD_COUNTS[index];
+                const opacity =
+                    cardCount !== undefined
+                        ? getStackChapterOpacity(progress, index, cardCount)
+                        : getChapterOpacity(progress, index);
                 const isActive = opacity > 0.5;
                 const Heading = block.headingLevel;
 

@@ -45,6 +45,24 @@ export function enterSlideYWithRotate(
     };
 }
 
+export function stackCardMotionStyle(
+    enter: number,
+    exitProgress: number,
+    distance = 22,
+): Pick<CSSProperties, 'opacity' | 'transform'> {
+    const opacity = Math.min(enter, exitProgress);
+
+    if (exitProgress < 1) {
+        const exitT = 1 - exitProgress;
+        return {
+            opacity,
+            transform: `translateY(${Math.round(-exitT * distance)}px)`,
+        };
+    }
+
+    return enterSlideY(enter, distance);
+}
+
 export function enterTranslateX(reveal: number, distance: number): string {
     if (reveal >= 1) return `translateX(${distance}px)`;
     return `translateX(${Math.round(reveal * distance)}px)`;
