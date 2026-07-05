@@ -1,8 +1,6 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, MapPin } from 'lucide-react';
 import { siteConfig } from '@/config/site';
-import { isMobileSplashDisabled, setMobileSplashDisabled } from '@/lib/splashSettings';
 
 // Social media icons as inline SVGs
 function DiscordIcon({ className }: { className?: string }) {
@@ -46,13 +44,6 @@ const socialIcons = {
 
 export function Footer() {
     const currentYear = new Date().getFullYear();
-    const [isSplashDisabled, setIsSplashDisabled] = useState(() => isMobileSplashDisabled());
-
-    const handleToggleSplash = () => {
-        const nextValue = !isSplashDisabled;
-        setIsSplashDisabled(nextValue);
-        setMobileSplashDisabled(nextValue);
-    };
 
     return (
         <footer className="mt-auto bg-[#F5F5F7] dark:bg-[var(--surface-2)] border-t border-[#D2D2D7] dark:border-[var(--border)]">
@@ -133,7 +124,7 @@ export function Footer() {
                             メニュー
                         </h3>
                         <ul className="space-y-1.5">
-                            {siteConfig.footerLinks.menu.map((link) => (
+                            {siteConfig.navigation.map((link) => (
                                 <li key={link.href}>
                                     <Link
                                         to={link.href}
@@ -179,15 +170,6 @@ export function Footer() {
                     <p className="text-center text-[11px] text-[#86868B] dark:text-[rgba(235,235,245,0.3)]">
                         © {currentYear} {siteConfig.name}. All rights reserved.
                     </p>
-                    <button
-                        type="button"
-                        onClick={handleToggleSplash}
-                        aria-label={`ロード画面を${isSplashDisabled ? 'オン' : 'オフ'}にする`}
-                        aria-pressed={!isSplashDisabled}
-                        className="text-[10px] text-[#A1A1A6] dark:text-[rgba(235,235,245,0.24)] hover:text-[#6E6E73] dark:hover:text-[rgba(235,235,245,0.52)] hover:underline transition-colors duration-300"
-                    >
-                        ロード画面: {isSplashDisabled ? 'オフ' : 'オン'}
-                    </button>
                 </div>
             </div>
         </footer>
