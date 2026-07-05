@@ -1,5 +1,5 @@
 /** Contiguous chapter spans — sum ≈ 1, no gap dead zones */
-const CHAPTER_SPANS = [0.13, 0.22, 0.09, 0.075, 0.2, 0.1, 0.085] as const;
+const CHAPTER_SPANS = [0.13, 0.3, 0.09, 0.075, 0.14, 0.1, 0.165] as const;
 
 function buildRanges(): readonly (readonly [number, number])[] {
     const ranges: [number, number][] = [];

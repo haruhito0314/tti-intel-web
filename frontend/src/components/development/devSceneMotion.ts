@@ -40,7 +40,7 @@ export const STACK_CARD_BASE = 0.05;
 export const STACK_EXIT_HOLD = 0.06;
 export const STACK_SHELL_FADE_PAD = 0.02;
 
-export const STACK_GRID_CHAPTER_INDICES = new Set([1, 4]);
+export const STACK_GRID_CHAPTER_INDICES = new Set([4]);
 
 export function stackCardStagger(index: number): number {
     const row = Math.floor(index / 4);

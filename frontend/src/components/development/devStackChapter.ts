@@ -4,6 +4,7 @@ import {
     STACK_GRID_CHAPTER_INDICES,
     stackGridShellFadeStart,
 } from './devSceneMotion';
+import { isStack2CircleChapter, stack2ShellFadeStart } from './devStackCircleMotion';
 
 /** Opacity for stack-grid chapters — cards exit before shell / copy crossfade */
 export function getStackChapterOpacity(
@@ -11,7 +12,7 @@ export function getStackChapterOpacity(
     chapterIndex: number,
     cardCount: number,
 ): number {
-    if (!STACK_GRID_CHAPTER_INDICES.has(chapterIndex)) {
+    if (!STACK_GRID_CHAPTER_INDICES.has(chapterIndex) && !isStack2CircleChapter(chapterIndex)) {
         return getChapterOpacity(progress, chapterIndex);
     }
 
@@ -27,7 +28,9 @@ export function getStackChapterOpacity(
         return clamp01((progress - start) / fade);
     }
 
-    const shellFadeStart = stackGridShellFadeStart(cardCount);
+    const shellFadeStart = isStack2CircleChapter(chapterIndex)
+        ? stack2ShellFadeStart()
+        : stackGridShellFadeStart(cardCount);
     if (local >= shellFadeStart) {
         return exit(local, shellFadeStart, 1);
     }

@@ -45,7 +45,7 @@ export const STACK_LAYERS = [
     { name: 'React 19', note: 'UIコンポーネント', icon: 'react' as const },
     { name: 'Next.js', note: 'フルスタック React', icon: 'nextdotjs' as const },
     { name: 'Node.js', note: 'サーバーサイド実行', icon: 'nodedotjs' as const },
-    { name: 'Tailwind CSS 4', note: 'ユーティリティファーストのUI', icon: 'tailwindcss' as const },
+    { name: 'Tailwind 4', note: 'ユーティリティファーストのUI', icon: 'tailwindcss' as const },
     { name: 'Vite', note: '高速な開発サーバーとビルド', icon: 'vite' as const },
     { name: 'Firebase', note: '認証とデータベース', icon: 'firebase' as const },
     { name: 'Python', note: 'スクリプトとデータ処理', icon: 'python' as const },

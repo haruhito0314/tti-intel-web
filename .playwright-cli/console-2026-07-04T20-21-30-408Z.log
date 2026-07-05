@@ -251,3 +251,111 @@ Visit https://react.dev/link/error-boundaries to learn more about error boundari
 %s
  An error occurred in the <Header> component. Consider adding an error boundary to your tree to customize error handling behavior.
 Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:6965
+[45000729ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:5173/@vite/client:864
+[45001255ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:20102
+[45001296ms] ReferenceError: Cannot access 'location' before initialization
+    at http://127.0.0.1:5173/src/components/layout/Header.tsx:11:80
+    at mountStateImpl (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:6111:26)
+    at mountState (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:6132:24)
+    at Object.useState (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:18736:20)
+    at exports.useState (http://127.0.0.1:5173/node_modules/.vite/deps/chunk-RY7GF66K.js?v=bf84d02d:959:36)
+    at Header (http://127.0.0.1:5173/src/components/layout/Header.tsx:11:47)
+    at Object.react_stack_bottom_frame (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:18509:20)
+    at renderWithHooks (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:5654:24)
+    at updateFunctionComponent (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:7475:21)
+    at beginWork (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:8525:20)
+[45001295ms] [WARNING] %s
+
+%s
+ An error occurred in the <Header> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:6965
+[45362966ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:5173/@vite/client:864
+[45363335ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:20102
+[45363361ms] ReferenceError: Cannot access 'location' before initialization
+    at http://127.0.0.1:5173/src/components/layout/Header.tsx:11:80
+    at mountStateImpl (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:6111:26)
+    at mountState (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:6132:24)
+    at Object.useState (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:18736:20)
+    at exports.useState (http://127.0.0.1:5173/node_modules/.vite/deps/chunk-RY7GF66K.js?v=bf84d02d:959:36)
+    at Header (http://127.0.0.1:5173/src/components/layout/Header.tsx:11:47)
+    at Object.react_stack_bottom_frame (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:18509:20)
+    at renderWithHooks (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:5654:24)
+    at updateFunctionComponent (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:7475:21)
+    at beginWork (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:8525:20)
+[45363360ms] [WARNING] %s
+
+%s
+ An error occurred in the <Header> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:6965
+[45593340ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:5173/@vite/client:864
+[45593705ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:20102
+[45593849ms] ReferenceError: Cannot access 'location' before initialization
+    at http://127.0.0.1:5173/src/components/layout/Header.tsx:11:80
+    at mountStateImpl (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:6111:26)
+    at mountState (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:6132:24)
+    at Object.useState (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:18736:20)
+    at exports.useState (http://127.0.0.1:5173/node_modules/.vite/deps/chunk-RY7GF66K.js?v=bf84d02d:959:36)
+    at Header (http://127.0.0.1:5173/src/components/layout/Header.tsx:11:47)
+    at Object.react_stack_bottom_frame (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:18509:20)
+    at renderWithHooks (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:5654:24)
+    at updateFunctionComponent (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:7475:21)
+    at beginWork (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:8525:20)
+[45593752ms] [WARNING] %s
+
+%s
+ An error occurred in the <Header> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:6965
+[46372639ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:5173/@vite/client:864
+[46372900ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:20102
+[46372934ms] ReferenceError: Cannot access 'location' before initialization
+    at http://127.0.0.1:5173/src/components/layout/Header.tsx:11:80
+    at mountStateImpl (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:6111:26)
+    at mountState (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:6132:24)
+    at Object.useState (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:18736:20)
+    at exports.useState (http://127.0.0.1:5173/node_modules/.vite/deps/chunk-RY7GF66K.js?v=bf84d02d:959:36)
+    at Header (http://127.0.0.1:5173/src/components/layout/Header.tsx:11:47)
+    at Object.react_stack_bottom_frame (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:18509:20)
+    at renderWithHooks (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:5654:24)
+    at updateFunctionComponent (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:7475:21)
+    at beginWork (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:8525:20)
+[46372934ms] [WARNING] %s
+
+%s
+ An error occurred in the <Header> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:6965
+[46543719ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:5173/@vite/client:864
+[46543927ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:20102
+[46543967ms] ReferenceError: Cannot access 'location' before initialization
+    at http://127.0.0.1:5173/src/components/layout/Header.tsx:11:80
+    at mountStateImpl (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:6111:26)
+    at mountState (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:6132:24)
+    at Object.useState (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:18736:20)
+    at exports.useState (http://127.0.0.1:5173/node_modules/.vite/deps/chunk-RY7GF66K.js?v=bf84d02d:959:36)
+    at Header (http://127.0.0.1:5173/src/components/layout/Header.tsx:11:47)
+    at Object.react_stack_bottom_frame (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:18509:20)
+    at renderWithHooks (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:5654:24)
+    at updateFunctionComponent (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:7475:21)
+    at beginWork (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:8525:20)
+[46543967ms] [WARNING] %s
+
+%s
+ An error occurred in the <Header> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:6965
+[46856689ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:5173/@vite/client:864
+[46856892ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:20102
+[46856909ms] ReferenceError: Cannot access 'location' before initialization
+    at http://127.0.0.1:5173/src/components/layout/Header.tsx:11:80
+    at mountStateImpl (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:6111:26)
+    at mountState (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:6132:24)
+    at Object.useState (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:18736:20)
+    at exports.useState (http://127.0.0.1:5173/node_modules/.vite/deps/chunk-RY7GF66K.js?v=bf84d02d:959:36)
+    at Header (http://127.0.0.1:5173/src/components/layout/Header.tsx:11:47)
+    at Object.react_stack_bottom_frame (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:18509:20)
+    at renderWithHooks (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:5654:24)
+    at updateFunctionComponent (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:7475:21)
+    at beginWork (http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:8525:20)
+[46856909ms] [WARNING] %s
+
+%s
+ An error occurred in the <Header> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=bf84d02d:6965
