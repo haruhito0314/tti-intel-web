@@ -82,8 +82,8 @@ function getIconFill(hex: string): string {
 type TechBrandIconProps = {
     slug: TechBrandSlug;
     className?: string;
-    /** Section 5 tool grid uses full brand colors; elsewhere Codex stays black */
-    variant?: 'default' | 'brand';
+    /** Section 5 tool grid uses full brand colors; light = white on dark (chapter 1) */
+    variant?: 'default' | 'brand' | 'light';
 };
 
 export function TechBrandIcon({ slug, className, variant = 'default' }: TechBrandIconProps) {
@@ -119,11 +119,13 @@ export function TechBrandIcon({ slug, className, variant = 'default' }: TechBran
     }
 
     if (slug === 'claude') {
-        const claudeIcon = variant === 'brand' ? siClaude : siAnthropic;
+        const claudeIcon = variant === 'default' ? siAnthropic : siClaude;
         const fill =
-            variant === 'brand'
-                ? getIconFill(BRAND_ICON_COLORS.claude ?? siClaude.hex)
-                : getIconFill(siAnthropic.hex);
+            variant === 'light'
+                ? '#F5F5F7'
+                : variant === 'brand'
+                  ? getIconFill(BRAND_ICON_COLORS.claude ?? siClaude.hex)
+                  : getIconFill(siAnthropic.hex);
 
         return (
             <svg
@@ -139,7 +141,10 @@ export function TechBrandIcon({ slug, className, variant = 'default' }: TechBran
     }
 
     const palette = variant === 'brand' ? BRAND_ICON_COLORS : DEFAULT_ICON_COLORS;
-    const fill = getIconFill(palette[slug as keyof typeof ICONS] ?? icon.hex);
+    const fill =
+        variant === 'light'
+            ? '#F5F5F7'
+            : getIconFill(palette[slug as keyof typeof ICONS] ?? icon.hex);
 
     return (
         <svg

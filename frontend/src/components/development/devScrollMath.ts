@@ -48,7 +48,11 @@ export function getChapterLocal(progress: number, chapterIndex: number): number 
     return (progress - start) / (end - start);
 }
 
-export function getChapterOpacity(progress: number, chapterIndex: number): number {
+export function getChapterOpacity(
+    progress: number,
+    chapterIndex: number,
+    _mobileLayout = false,
+): number {
     const [start, end] = SCENE_RANGES[chapterIndex];
     const isLast = chapterIndex === SCENE_RANGES.length - 1;
     const fade = CHAPTER_BOUNDARY_FADE;

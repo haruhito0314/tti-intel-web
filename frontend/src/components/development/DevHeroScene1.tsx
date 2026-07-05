@@ -56,7 +56,11 @@ export function DevHeroScene1(props: DevHeroScene1Props) {
                             >
                                 <div className="dev-float-tool-card-accent" />
                                 <div className="dev-float-tool-card-head">
-                                    <TechBrandIcon slug={card.icon} className="dev-float-tool-card-icon" />
+                                    <TechBrandIcon
+                                        slug={card.icon}
+                                        className="dev-float-tool-card-icon"
+                                        variant="light"
+                                    />
                                     <span>{card.name}</span>
                                 </div>
                                 <p className="dev-float-tool-card-prompt">{card.prompt}</p>
@@ -106,7 +110,11 @@ export function DevHeroScene1(props: DevHeroScene1Props) {
                                     className="dev-hero-badge"
                                     style={enterSlideY(badgeProgress, 10)}
                                 >
-                                    <TechBrandIcon slug={badge.icon} className="dev-hero-badge-icon" />
+                                    <TechBrandIcon
+                                        slug={badge.icon}
+                                        className="dev-hero-badge-icon"
+                                        variant="light"
+                                    />
                                     {badge.name}
                                 </span>
                             );

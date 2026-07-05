@@ -27,12 +27,13 @@ export function DevStackCircleStage({
     progress,
 }: DevStackCircleStageProps) {
     const viewportRef = useRef<HTMLDivElement>(null);
+    const stageRef = useRef<HTMLDivElement>(null);
     const [size, setSize] = useState({ width: 640, height: 320 });
     const local = getChapterLocal(progress, chapterIndex);
     const opacity = getStackChapterOpacity(progress, chapterIndex, layers.length);
 
     useLayoutEffect(() => {
-        const node = viewportRef.current;
+        const node = stageRef.current ?? viewportRef.current;
         if (!node) return;
 
         const sync = () => {
@@ -52,7 +53,7 @@ export function DevStackCircleStage({
         <div className={`dev-hero-scene ${sceneClassName}`} aria-hidden={opacity < 0.5}>
             <div className="dev-scene-shell" style={chapterShellStyle(opacity)}>
                 <div ref={viewportRef} className="dev-scene-viewport" aria-hidden="true">
-                    <div className="dev-stack-circle-stage">
+                    <div ref={stageRef} className="dev-stack-circle-stage">
                         {layers.map((layer, index) => {
                             const layout = stack2CardLayout(
                                 local,

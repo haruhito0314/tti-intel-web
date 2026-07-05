@@ -2,7 +2,8 @@ import { DevHeroCopy } from './DevHeroCopy';
 import { chapterShellStyle, stackCardMotionStyle } from './devEnterStyle';
 import { getStackChapterOpacity } from './devStackChapter';
 import { getChapterLocal } from './devScrollMath';
-import { stackCardExit, stackCardReveal } from './devSceneMotion';
+import { stackCardExit, stackCardReveal, stackGridColumns } from './devSceneMotion';
+import { useDevMobileLayout } from './useDevMobileLayout';
 import { TechBrandIcon, type TechBrandSlug } from './TechBrandIcon';
 
 type StackLayer = {
@@ -31,9 +32,14 @@ export function DevStackGridScene({
     iconVariant = 'default',
 }: DevStackGridSceneProps) {
     const isScroll = progress !== undefined && chapterIndex !== undefined;
+    const mobileLayout = useDevMobileLayout();
+    const columns = stackGridColumns(mobileLayout);
     const local = isScroll ? getChapterLocal(progress, chapterIndex) : 1;
     const cardCount = layers.length;
-    const opacity = isScroll ? getStackChapterOpacity(progress, chapterIndex, cardCount) : 1;
+    const opacity = isScroll
+        ? getStackChapterOpacity(progress, chapterIndex, cardCount, mobileLayout)
+        : 1;
+    const shellStyle = isScroll ? chapterShellStyle(opacity) : undefined;
 
     return (
         <div className={`dev-hero-scene ${sceneClassName}`} aria-hidden={isScroll && opacity < 0.5}>
@@ -41,14 +47,20 @@ export function DevStackGridScene({
 
             <div
                 className={isScroll ? 'dev-scene-shell' : undefined}
-                style={isScroll ? chapterShellStyle(opacity) : undefined}
+                style={shellStyle}
             >
                 <div className="dev-scene-viewport" aria-hidden="true">
-                    <div className="dev-stack-stage">
+                    <div
+                        className={`dev-stack-stage${
+                            mobileLayout ? ' dev-stack-stage--mobile-2col' : ''
+                        }`}
+                    >
                         {layers.map((layer, index) => {
-                            const enter = isScroll ? stackCardReveal(local, index, chapterIndex) : 1;
+                            const enter = isScroll
+                                ? stackCardReveal(local, index, chapterIndex, columns)
+                                : 1;
                             const exitProgress = isScroll
-                                ? stackCardExit(local, index, cardCount)
+                                ? stackCardExit(local, index, cardCount, columns)
                                 : 1;
                             return (
                                 <div

@@ -11,6 +11,9 @@ export function motionLocal(local: number, chapterIndex?: number): number {
 export const SCENE1_TYPEWRITER_END = 0.42;
 export const SCENE1_TERMINAL_END = 0.22;
 export const SCENE1_COMPLETE = 0.55;
+export const SCENE1_FLOAT_BASE = 0.22;
+export const SCENE1_FLOAT_STAGGER = 0.045;
+export const SCENE1_FLOAT_SPAN = 0.14;
 
 export function scene1TypewriterProgress(local: number): number {
     const l = freezeAfterEnter(local, SCENE1_TYPEWRITER_END);
@@ -29,7 +32,8 @@ export function scene1BadgeReveal(local: number, index: number): number {
 
 export function scene1FloatReveal(local: number, index: number): number {
     const l = motionLocal(local);
-    return reveal(l, 0.08 + index * 0.04, 0.2 + index * 0.04);
+    const start = SCENE1_FLOAT_BASE + index * SCENE1_FLOAT_STAGGER;
+    return reveal(l, start, start + SCENE1_FLOAT_SPAN);
 }
 
 // —— Stack grids (sections 2 & 5) ——
@@ -41,42 +45,58 @@ export const STACK_EXIT_HOLD = 0.06;
 export const STACK_SHELL_FADE_PAD = 0.02;
 
 export const STACK_GRID_CHAPTER_INDICES = new Set([4]);
+export const STACK_GRID_MOBILE_COLS = 2;
+export const STACK_GRID_DESKTOP_COLS = 4;
 
-export function stackCardStagger(index: number): number {
-    const row = Math.floor(index / 4);
-    const col = index % 4;
+export function stackGridColumns(mobileLayout: boolean): number {
+    return mobileLayout ? STACK_GRID_MOBILE_COLS : STACK_GRID_DESKTOP_COLS;
+}
+
+export function stackCardStagger(index: number, columns = STACK_GRID_DESKTOP_COLS): number {
+    const row = Math.floor(index / columns);
+    const col = index % columns;
     return row * STACK_CARD_ROW_GAP + col * STACK_CARD_COL_GAP;
 }
 
-export function stackCardEnterStart(index: number): number {
-    return STACK_CARD_BASE + stackCardStagger(index);
+export function stackCardEnterStart(index: number, columns = STACK_GRID_DESKTOP_COLS): number {
+    return STACK_CARD_BASE + stackCardStagger(index, columns);
 }
 
-export function stackGridEnterComplete(cardCount: number): number {
-    return stackCardEnterStart(cardCount - 1) + STACK_CARD_SPAN;
+export function stackGridEnterComplete(cardCount: number, columns = STACK_GRID_DESKTOP_COLS): number {
+    return stackCardEnterStart(cardCount - 1, columns) + STACK_CARD_SPAN;
 }
 
-export function stackGridExitStart(cardCount: number): number {
-    return stackGridEnterComplete(cardCount) + STACK_EXIT_HOLD;
+export function stackGridExitStart(cardCount: number, columns = STACK_GRID_DESKTOP_COLS): number {
+    return stackGridEnterComplete(cardCount, columns) + STACK_EXIT_HOLD;
 }
 
-export function stackGridExitComplete(cardCount: number): number {
-    return stackGridExitStart(cardCount) + stackCardStagger(cardCount - 1) + STACK_CARD_SPAN;
+export function stackGridExitComplete(cardCount: number, columns = STACK_GRID_DESKTOP_COLS): number {
+    return stackGridExitStart(cardCount, columns) + stackCardStagger(cardCount - 1, columns) + STACK_CARD_SPAN;
 }
 
-export function stackGridShellFadeStart(cardCount: number): number {
-    return stackGridExitComplete(cardCount) + STACK_SHELL_FADE_PAD;
+export function stackGridShellFadeStart(cardCount: number, columns = STACK_GRID_DESKTOP_COLS): number {
+    return stackGridExitComplete(cardCount, columns) + STACK_SHELL_FADE_PAD;
 }
 
-export function stackCardReveal(local: number, index: number, chapterIndex?: number): number {
+export function stackCardReveal(
+    local: number,
+    index: number,
+    chapterIndex?: number,
+    columns = STACK_GRID_DESKTOP_COLS,
+): number {
     const l = motionLocal(local, chapterIndex);
-    const start = stackCardEnterStart(index);
+    const start = stackCardEnterStart(index, columns);
     return reveal(l, start, start + STACK_CARD_SPAN);
 }
 
-export function stackCardExit(local: number, index: number, cardCount: number): number {
-    const stagger = stackCardStagger(index);
-    const start = stackGridExitStart(cardCount) + stagger;
+export function stackCardExit(
+    local: number,
+    index: number,
+    cardCount: number,
+    columns = STACK_GRID_DESKTOP_COLS,
+): number {
+    const stagger = stackCardStagger(index, columns);
+    const start = stackGridExitStart(cardCount, columns) + stagger;
     return exit(local, start, start + STACK_CARD_SPAN);
 }
 
@@ -116,15 +136,19 @@ export function scene4TypewriterProgress(local: number): number {
 
 // —— Section 6 workflow ——
 const WF_STEP_STARTS = [0.04, 0.14, 0.28, 0.4] as const;
+const WF_MOBILE_STEP_STARTS = [0.04, 0.18, 0.32, 0.46] as const;
 const WF_STEP_SPAN = 0.08;
+const WF_MOBILE_STEP_SPAN = 0.1;
 const WF_ARROW_STARTS = [0.12, 0.24, 0.46] as const;
 /** ~half previous draw speed (2× span) */
 const WF_ARROW_SPANS = [0.22, 0.48, 0.22] as const;
 
-export function workflowStepReveal(local: number, index: number): number {
+export function workflowStepReveal(local: number, index: number, mobileLayout = false): number {
     const l = motionLocal(local, 5);
-    const start = WF_STEP_STARTS[index] ?? WF_STEP_STARTS[0];
-    return reveal(l, start, start + WF_STEP_SPAN);
+    const starts = mobileLayout ? WF_MOBILE_STEP_STARTS : WF_STEP_STARTS;
+    const span = mobileLayout ? WF_MOBILE_STEP_SPAN : WF_STEP_SPAN;
+    const start = starts[index] ?? starts[0];
+    return reveal(l, start, start + span);
 }
 
 export function workflowArrowReveal(local: number, index: number): number {

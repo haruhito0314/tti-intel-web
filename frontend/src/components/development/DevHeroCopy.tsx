@@ -1,6 +1,11 @@
-import { getChapterOpacity } from './devScrollMath';
-import { getStackChapterOpacity } from './devStackChapter';
+import { useLayoutEffect, useState, type RefObject } from 'react';
+import { getChapterLocal, getChapterOpacity } from './devScrollMath';
+import { getStack2CopyOpacity, getStackChapterOpacity } from './devStackChapter';
+import { stack2SharedPanX } from './devStackCircleMotion';
+import { useDevMobileLayout } from './useDevMobileLayout';
 import { AI_TOOLS, STACK_LAYERS } from './sceneUtils';
+
+const STACK_CHAPTER_INDEX = 1;
 
 const STACK_GRID_CARD_COUNTS: Record<number, number> = {
     1: STACK_LAYERS.length,
@@ -67,8 +72,31 @@ const COPY_BLOCKS = [
 ];
 
 type DevHeroCopyProps =
-    | { progress: number; blockIndex?: never }
-    | { progress?: never; blockIndex: number };
+    | { progress: number; blockIndex?: never; visualRef?: RefObject<HTMLElement | null>; compact?: never }
+    | { progress?: never; blockIndex: number; visualRef?: never; compact?: boolean };
+
+function useVisualStageSize(visualRef?: RefObject<HTMLElement | null>) {
+    const [size, setSize] = useState({ width: 920, height: 400 });
+
+    useLayoutEffect(() => {
+        const node = visualRef?.current;
+        if (!node) return;
+
+        const sync = () => {
+            const rect = node.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+                setSize({ width: rect.width, height: rect.height });
+            }
+        };
+
+        sync();
+        const observer = new ResizeObserver(sync);
+        observer.observe(node);
+        return () => observer.disconnect();
+    }, [visualRef]);
+
+    return size;
+}
 
 export function DevHeroCopy(props: DevHeroCopyProps) {
     if (props.blockIndex !== undefined) {
@@ -79,7 +107,9 @@ export function DevHeroCopy(props: DevHeroCopyProps) {
             <div
                 className={`dev-hero-copy-block dev-hero-copy-block--static${
                     props.blockIndex === 0 ? ' dev-hero-copy-block--intro' : ''
-                }${props.blockIndex === 2 ? ' dev-hero-copy-block--mcp' : ''}`}
+                }${props.blockIndex === 2 ? ' dev-hero-copy-block--mcp' : ''}${
+                    props.compact || props.blockIndex >= 4 ? ' dev-hero-copy-block--compact' : ''
+                }`}
             >
                 <Heading className={`dev-hero-title ${block.large ? '' : 'dev-hero-title--sm'}`}>
                     {block.title}
@@ -89,29 +119,39 @@ export function DevHeroCopy(props: DevHeroCopyProps) {
         );
     }
 
-    const { progress } = props;
+    const { progress, visualRef } = props;
+    const mobileLayout = useDevMobileLayout();
+    const visualSize = useVisualStageSize(visualRef);
+    const stackLocal = getChapterLocal(progress, STACK_CHAPTER_INDEX);
+    const stackPanX = mobileLayout
+        ? 0
+        : stack2SharedPanX(stackLocal, visualSize.width, visualSize.height);
 
     return (
         <div className="dev-hero-copy-stage" aria-live="polite">
             {COPY_BLOCKS.map((block, index) => {
                 const cardCount = STACK_GRID_CARD_COUNTS[index];
                 const opacity =
-                    cardCount !== undefined
-                        ? getStackChapterOpacity(progress, index, cardCount)
-                        : getChapterOpacity(progress, index);
+                    index === STACK_CHAPTER_INDEX
+                        ? getStack2CopyOpacity(progress, index, cardCount ?? STACK_LAYERS.length, mobileLayout)
+                        : cardCount !== undefined
+                          ? getStackChapterOpacity(progress, index, cardCount, mobileLayout)
+                          : getChapterOpacity(progress, index, mobileLayout);
                 const isActive = opacity > 0.5;
                 const Heading = block.headingLevel;
+                const panX = index === STACK_CHAPTER_INDEX ? stackPanX : 0;
 
                 return (
                     <div
                         key={index}
                         className={`dev-hero-copy-block${index === 0 ? ' dev-hero-copy-block--intro' : ''}${
                             index === 2 ? ' dev-hero-copy-block--mcp' : ''
-                        }`}
+                        }${index >= 4 ? ' dev-hero-copy-block--compact' : ''}`}
                         style={{
                             opacity,
                             visibility: opacity > 0.04 ? 'visible' : 'hidden',
                             pointerEvents: isActive ? 'auto' : 'none',
+                            transform: panX !== 0 ? `translateX(${Math.round(panX)}px)` : undefined,
                         }}
                         aria-hidden={!isActive}
                     >

@@ -1604,16 +1604,25 @@
   --dev-accent: #66B4FF;
   --dev-text: rgba(235, 235, 245, 0.72);
   --dev-border: rgba(124, 170, 255, 0.2);
+  --dev-hero-backdrop:
+    radial-gradient(circle at 50% 18%, rgba(102, 180, 255, 0.1), transparent 38%),
+    radial-gradient(circle at 50% 82%, rgba(155, 81, 224, 0.08), transparent 34%),
+    linear-gradient(180deg, var(--dev-bg) 0%, #08101c 100%);
   --site-header-height: 44px;
   margin-top: calc(-1 * var(--site-header-height, 44px));
   overflow-x: clip;
-  background: var(--dev-bg);
+  background: var(--dev-hero-backdrop);
+  background-attachment: fixed;
   color: #f5f5f7;
 }
 
 .dev-header {
   --dev-bg: #050A14;
   --dev-accent: #66B4FF;
+  --dev-hero-backdrop:
+    radial-gradient(circle at 50% 18%, rgba(102, 180, 255, 0.1), transparent 38%),
+    radial-gradient(circle at 50% 82%, rgba(155, 81, 224, 0.08), transparent 34%),
+    linear-gradient(180deg, var(--dev-bg) 0%, #08101c 100%);
   position: sticky;
   top: 0;
   z-index: 50;
@@ -1623,7 +1632,8 @@
 }
 
 .dev-header-bar-bg {
-  background: transparent;
+  background: var(--dev-hero-backdrop);
+  background-attachment: fixed;
   border: none;
 }
 
@@ -1693,7 +1703,8 @@
   }
 
   .dev-header-mobile-bg {
-    background: var(--dev-bg);
+    background: var(--dev-hero-backdrop);
+    background-attachment: fixed;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     border: none;
@@ -1741,7 +1752,6 @@
 .dev-hero-track {
   position: relative;
   height: 1720vh;
-  background: var(--dev-bg);
 }
 
 .dev-hero-stage {
@@ -1758,17 +1768,10 @@
   padding-top: var(--site-header-height, 44px);
   isolation: isolate;
   contain: layout style;
-  background:
-    radial-gradient(circle at 50% 18%, rgba(102, 180, 255, 0.1), transparent 38%),
-    radial-gradient(circle at 50% 82%, rgba(155, 81, 224, 0.08), transparent 34%),
-    linear-gradient(180deg, var(--dev-bg) 0%, #08101c 100%);
 }
 
 .dev-hero-background {
-  background:
-    radial-gradient(circle at 50% 18%, rgba(102, 180, 255, 0.1), transparent 38%),
-    radial-gradient(circle at 50% 82%, rgba(155, 81, 224, 0.08), transparent 34%),
-    linear-gradient(180deg, var(--dev-bg) 0%, #08101c 100%);
+  background: transparent;
 }
 
 .dev-hero-copy-stage {
@@ -1794,6 +1797,7 @@
   max-width: 52rem;
   margin-inline: auto;
   overflow: visible;
+  will-change: transform, opacity;
 }
 
 .dev-hero-copy-block--mcp {
@@ -1827,6 +1831,30 @@
   position: relative;
   inset: auto;
   margin-bottom: 1.5rem;
+}
+
+.dev-hero-copy-block--compact {
+  justify-content: flex-end;
+  padding-top: 0;
+  padding-bottom: clamp(0.2rem, 1vh, 0.4rem);
+}
+
+.dev-hero-copy-block--compact .dev-hero-title--sm {
+  margin-bottom: 0.55rem;
+}
+
+.dev-hero-copy-block--compact .dev-hero-subtitle {
+  line-height: 1.52;
+}
+
+.dev-hero-visual-stage:has(.dev-hero-scene--4),
+.dev-hero-visual-stage:has(.dev-hero-scene--5) {
+  overflow: visible;
+}
+
+.dev-hero-scene--4,
+.dev-hero-scene--5 {
+  overflow: visible;
 }
 
 .dev-hero-visual-stage {
@@ -2239,6 +2267,17 @@
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
 }
 
+.dev-hero-visual-stage:has(.dev-hero-scene--2) {
+  overflow: visible;
+}
+
+.dev-hero-scene--2,
+.dev-hero-scene--2 .dev-scene-shell,
+.dev-hero-scene--2 .dev-scene-viewport,
+.dev-hero-scene--2 .dev-stack-circle-stage {
+  overflow: visible;
+}
+
 .dev-stack-circle-stage {
   position: relative;
   width: min(100%, 920px);
@@ -2596,7 +2635,8 @@
   align-items: center;
   gap: 0.45rem;
   padding: 0.55rem 0.85rem;
-  background: transparent;
+  background: var(--dev-hero-backdrop);
+  border-bottom: 1px solid rgba(124, 170, 255, 0.12);
 }
 
 .dev-page-preview-logo-mark {
@@ -2607,7 +2647,7 @@
   height: 1.15rem;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.82);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
 }
 
 .dev-page-preview-logo-mark img {
@@ -2619,9 +2659,10 @@
 .dev-page-preview-logo {
   font-size: 11px;
   font-weight: 600;
-  color: rgba(245, 245, 247, 0.92);
+  color: #f5f5f7;
   letter-spacing: -0.01em;
   white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
 .dev-page-preview-stage {
@@ -2814,6 +2855,24 @@
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--layer-accent, #66B4FF) 28%, transparent);
 }
 
+.dev-hero-scene--4 .dev-scene-shell,
+.dev-hero-scene--4 .dev-scene-viewport,
+.dev-hero-scene--4 .dev-scene-main,
+.dev-hero-scene--5 .dev-scene-shell,
+.dev-hero-scene--5 .dev-scene-viewport {
+  overflow: visible;
+}
+
+.dev-hero-scene--4 .dev-browser-mock--zooming,
+.dev-hero-scene--4 .dev-browser-mock {
+  overflow: visible;
+}
+
+.dev-hero-scene--6 .dev-scene-shell,
+.dev-hero-scene--6 .dev-scene-viewport {
+  overflow: visible;
+}
+
 .dev-hero-scene--6 {
   min-height: 0;
 }
@@ -2844,16 +2903,16 @@
 }
 
 .dev-workflow-connector-rail {
-  opacity: 0.9;
-  stroke-width: 2.5;
+  opacity: 0.95;
+  stroke-width: 4.5;
 }
 
 .dev-workflow-connector-track {
-  filter: drop-shadow(0 0 6px rgba(102, 180, 255, 0.45)) drop-shadow(0 0 10px rgba(155, 81, 224, 0.3));
+  filter: drop-shadow(0 0 8px rgba(102, 180, 255, 0.55)) drop-shadow(0 0 14px rgba(155, 81, 224, 0.38));
 }
 
 .dev-workflow-connector-head {
-  filter: drop-shadow(0 0 6px rgba(155, 81, 224, 0.65));
+  filter: drop-shadow(0 0 8px rgba(155, 81, 224, 0.75));
 }
 
 .dev-workflow-card--0 {
@@ -3174,6 +3233,36 @@
     column-gap: 0.2rem;
   }
 
+  .dev-workflow-grid--mobile-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    width: min(calc(100vw - 1.25rem), 22rem);
+    max-width: 100%;
+    max-height: none;
+    margin-inline: auto;
+  }
+
+  .dev-workflow-grid--mobile-stack .dev-workflow-card--0,
+  .dev-workflow-grid--mobile-stack .dev-workflow-card--1,
+  .dev-workflow-grid--mobile-stack .dev-workflow-card--2,
+  .dev-workflow-grid--mobile-stack .dev-workflow-card--3 {
+    grid-column: auto;
+    grid-row: auto;
+    width: 100%;
+  }
+
+  .dev-hero-scene--2 .dev-stack-stage--mobile-2col {
+    width: min(calc(100vw - 1.25rem), 100%);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+  }
+
+  .dev-hero-scene--2 .dev-stack-stage--mobile-2col .dev-stack-layer {
+    min-height: 6.25rem;
+    height: 6.25rem;
+  }
+
   .dev-workflow-card {
     padding: clamp(0.55rem, 2cqh, 0.72rem) clamp(0.55rem, 2cqw, 0.65rem);
     min-width: 0;
@@ -3314,7 +3403,11 @@
   }
 
   .dev-browser-mock {
-    width: min(96vw, 100%);
+    width: min(92vw, 100%);
+  }
+
+  .dev-hero-scene--4 .dev-browser-mock {
+    width: min(92vw, 100%);
   }
 
   .dev-browser-url {

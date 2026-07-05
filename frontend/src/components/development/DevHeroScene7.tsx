@@ -14,7 +14,7 @@ export function DevHeroScene7(props: DevHeroScene7Props) {
     const isScroll = props.progress !== undefined;
     const local = isScroll ? getChapterLocal(props.progress, props.chapterIndex) : 1;
     const opacity = isScroll ? getChapterOpacity(props.progress, props.chapterIndex) : 1;
-    const frozen = !isScroll || isSectionEnterComplete(local);
+    const frozen = !isScroll || isSectionEnterComplete(local, 6);
     const ctaReveal = frozen ? 1 : scene7CtaReveal(local);
 
     return (
