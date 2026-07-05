@@ -1,67 +1,57 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import { getSceneLocalProgress } from './useScrollProgress';
 import { DevHeroCopy } from './DevHeroCopy';
 import { DevPagePreview } from './DevPagePreview';
-import { getVisualChapterMotion } from './chapterMotion';
-import {
-    getScene4LayerMotion,
-    getScene4StepReveal,
-    SCENE4_CTA_STEP,
-} from './sceneUtils';
+import { chapterShellStyle, enterSlideY, isSectionEnterComplete } from './devEnterStyle';
+import { getChapterLocal, getChapterOpacity } from './devScrollMath';
+import { scene4StepReveal } from './devSceneMotion';
 
-type DevHeroScene4Props = {
-    progress: number;
-    opacity: number;
-    staticMode?: boolean;
-    copyIndex?: number;
-};
+type DevHeroScene4Props =
+    | { copyIndex: number; chapterIndex?: never; progress?: never }
+    | { chapterIndex: number; progress: number; copyIndex?: never };
 
-export function DevHeroScene4({ progress, opacity, staticMode = false, copyIndex }: DevHeroScene4Props) {
-    const local = staticMode ? 1 : getSceneLocalProgress(progress, 3);
-    const visualMotion = getVisualChapterMotion(local, staticMode);
-    const chromeReveal = getScene4StepReveal(local, 0, staticMode);
-    const ctaReveal = getScene4StepReveal(local, SCENE4_CTA_STEP, staticMode);
-    const browserOpacity = opacity * visualMotion.combined;
-    const ctaOpacity = opacity * ctaReveal;
+const CTA_STEP = 9;
+
+export function DevHeroScene4(props: DevHeroScene4Props) {
+    const isScroll = props.progress !== undefined;
+    const local = isScroll ? getChapterLocal(props.progress, props.chapterIndex) : 1;
+    const opacity = isScroll ? getChapterOpacity(props.progress, props.chapterIndex) : 1;
+    const frozen = !isScroll || isSectionEnterComplete(local, 3);
+    const chromeReveal = frozen ? 1 : scene4StepReveal(local, 0);
+    const ctaReveal = frozen ? 1 : scene4StepReveal(local, CTA_STEP);
 
     return (
-        <div
-            className="dev-hero-scene dev-hero-scene--4"
-            style={{
-                visibility: opacity > 0.04 ? 'visible' : 'hidden',
-                pointerEvents: opacity > 0.5 ? 'auto' : 'none',
-            }}
-            aria-hidden={opacity < 0.5}
-        >
-            {staticMode && copyIndex !== undefined && (
-                <DevHeroCopy progress={1} staticMode staticBlockIndex={copyIndex} />
+        <div className="dev-hero-scene dev-hero-scene--4" aria-hidden={isScroll && opacity < 0.5}>
+            {!isScroll && props.copyIndex !== undefined && (
+                <DevHeroCopy blockIndex={props.copyIndex} />
             )}
 
+            <div
+                className={isScroll ? 'dev-scene-shell' : undefined}
+                style={isScroll ? chapterShellStyle(opacity) : undefined}
+            >
             <div className="dev-scene-viewport">
                 <div className="dev-scene-main">
-                    <div
-                        className="dev-browser-mock"
-                        style={{ opacity: browserOpacity }}
-                        aria-hidden="true"
-                    >
-                        <div className="dev-browser-bar" style={getScene4LayerMotion(chromeReveal, 10)}>
+                    <div className="dev-browser-mock" aria-hidden="true">
+                        <div
+                            className="dev-browser-bar"
+                            style={enterSlideY(chromeReveal, 10)}
+                        >
                             <span />
                             <span />
                             <span />
                             <div className="dev-browser-url">tti-intel.com/development</div>
                         </div>
                         <div className="dev-browser-content dev-browser-content--preview">
-                            <DevPagePreview local={local} staticMode={staticMode} />
+                            <DevPagePreview local={local} animated={isScroll} frozen={frozen} />
                         </div>
                     </div>
 
                     <div
                         className="dev-hero-cta-row dev-hero-cta-row--scene4"
                         style={{
-                            opacity: ctaOpacity,
-                            transform: ctaReveal >= 0.999 ? 'none' : `translateY(${(1 - ctaReveal) * 16}px)`,
-                            pointerEvents: ctaOpacity > 0.5 ? 'auto' : 'none',
+                            ...enterSlideY(ctaReveal, 16),
+                            pointerEvents: opacity * ctaReveal > 0.5 ? 'auto' : 'none',
                         }}
                     >
                         <Link to="/app" className="dev-hero-cta dev-hero-cta--primary">
@@ -73,6 +63,7 @@ export function DevHeroScene4({ progress, opacity, staticMode = false, copyIndex
                         </Link>
                     </div>
                 </div>
+            </div>
             </div>
         </div>
     );

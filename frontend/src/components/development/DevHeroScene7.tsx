@@ -1,43 +1,38 @@
+import { siteConfig } from '@/config/site';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import { siteConfig } from '@/config/site';
-import { getSceneLocalProgress } from './useScrollProgress';
 import { DevHeroCopy } from './DevHeroCopy';
-import { chapterReveal, getFinalChapterVisualMotion } from './chapterMotion';
+import { chapterShellStyle, enterSlideY, isSectionEnterComplete } from './devEnterStyle';
+import { getChapterLocal, getChapterOpacity } from './devScrollMath';
+import { scene7CtaReveal } from './devSceneMotion';
 
-type DevHeroScene7Props = {
-    progress: number;
-    opacity: number;
-    staticMode?: boolean;
-    copyIndex?: number;
-};
+type DevHeroScene7Props =
+    | { copyIndex: number; chapterIndex?: never; progress?: never }
+    | { chapterIndex: number; progress: number; copyIndex?: never };
 
-export function DevHeroScene7({ progress, opacity, staticMode = false, copyIndex }: DevHeroScene7Props) {
-    const local = staticMode ? 1 : getSceneLocalProgress(progress, 6);
-    const visualMotion = getFinalChapterVisualMotion(local, staticMode);
-    const ctaReveal = staticMode ? 1 : chapterReveal(local, 0.22, 0.42);
+export function DevHeroScene7(props: DevHeroScene7Props) {
+    const isScroll = props.progress !== undefined;
+    const local = isScroll ? getChapterLocal(props.progress, props.chapterIndex) : 1;
+    const opacity = isScroll ? getChapterOpacity(props.progress, props.chapterIndex) : 1;
+    const frozen = !isScroll || isSectionEnterComplete(local);
+    const ctaReveal = frozen ? 1 : scene7CtaReveal(local);
 
     return (
-        <div
-            className="dev-hero-scene dev-hero-scene--7"
-            style={{
-                opacity: opacity * visualMotion.combined,
-                visibility: opacity > 0.04 ? 'visible' : 'hidden',
-                pointerEvents: opacity > 0.5 ? 'auto' : 'none',
-            }}
-            aria-hidden={opacity < 0.5}
-        >
-            {staticMode && copyIndex !== undefined && (
-                <DevHeroCopy progress={1} staticMode staticBlockIndex={copyIndex} />
+        <div className="dev-hero-scene dev-hero-scene--7" aria-hidden={isScroll && opacity < 0.5}>
+            {!isScroll && props.copyIndex !== undefined && (
+                <DevHeroCopy blockIndex={props.copyIndex} />
             )}
 
+            <div
+                className={isScroll ? 'dev-scene-shell' : undefined}
+                style={isScroll ? chapterShellStyle(opacity) : undefined}
+            >
             <div className="dev-scene-viewport">
                 <div
                     className="dev-hero-cta-row"
                     style={{
-                        opacity: ctaReveal,
-                        transform: `translateY(${(1 - ctaReveal) * 16}px)`,
-                        pointerEvents: ctaReveal > 0.5 ? 'auto' : 'none',
+                        ...enterSlideY(ctaReveal, 16),
+                        pointerEvents: opacity * ctaReveal > 0.5 ? 'auto' : 'none',
                     }}
                 >
                     <a
@@ -53,6 +48,7 @@ export function DevHeroScene7({ progress, opacity, staticMode = false, copyIndex
                         お問い合わせ
                     </Link>
                 </div>
+            </div>
             </div>
         </div>
     );

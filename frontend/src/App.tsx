@@ -4,11 +4,7 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import { useTheme } from '@/contexts/useTheme';
 import { ToastProvider } from '@/components/ui';
 import { Layout } from '@/components/layout';
-import {
-  hasSeenInitialSplashThisSession,
-  isMobileSplashDisabled,
-  markInitialSplashSeenThisSession,
-} from '@/lib/splashSettings';
+import { markInitialSplashSeenThisSession, shouldShowInitialSplash } from '@/lib/splashSettings';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -51,16 +47,28 @@ function PageLoader() {
   );
 }
 
-function InitialSplash({ phase }: { phase: 'enter' | 'logo-out' | 'overlay-out' }) {
+function easeOutCubic(t: number): number {
+  const clamped = Math.max(0, Math.min(1, t));
+  return 1 - Math.pow(1 - clamped, 3);
+}
+
+function InitialSplash({
+  isFadingOut,
+  progress,
+}: {
+  isFadingOut: boolean;
+  progress: number;
+}) {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === 'dark';
+  const roundedProgress = Math.min(100, Math.round(progress));
 
   return (
     <div
-      className={`initial-splash ${isDark ? 'is-dark' : ''} ${phase === 'overlay-out' ? 'is-overlay-out' : ''}`}
-      aria-hidden={phase === 'overlay-out'}
+      className={`initial-splash ${isDark ? 'is-dark' : ''} ${isFadingOut ? 'is-overlay-out' : ''}`}
+      aria-hidden={isFadingOut}
     >
-      <section className={`initial-splash-scene ${phase !== 'enter' ? 'is-scene-out' : ''}`}>
+      <section className="initial-splash-scene">
         <div className="initial-splash-campus" aria-hidden="true">
           <i />
           <i />
@@ -88,78 +96,79 @@ function InitialSplash({ phase }: { phase: 'enter' | 'logo-out' | 'overlay-out' 
           />
         </div>
 
-        <div className="initial-splash-progress" aria-label="Loading">
+        <div
+          className="initial-splash-progress"
+          role="progressbar"
+          aria-valuenow={roundedProgress}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label="読み込み中"
+        >
           <div className="initial-splash-progress-bar">
-            <span />
+            <span style={{ width: `${progress}%` }} />
           </div>
-          <p className="initial-splash-progress-label">Loading...</p>
+          <p className="initial-splash-progress-label">Loading... {roundedProgress}%</p>
         </div>
       </section>
     </div>
   );
 }
 
-function App() {
-  const SPLASH_MIN_MS = 2200;
-  const OVERLAY_FADE_MS = 420;
+const SPLASH_MIN_MS = 2200;
+const OVERLAY_FADE_MS = 420;
 
-  const [showSplash, setShowSplash] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return !isMobileSplashDisabled() && !hasSeenInitialSplashThisSession();
-  });
-  const [splashPhase, setSplashPhase] = useState<'enter' | 'logo-out' | 'overlay-out'>('enter');
+function App() {
+  const [showSplash, setShowSplash] = useState(() => shouldShowInitialSplash());
+  const [isSplashFadingOut, setIsSplashFadingOut] = useState(false);
+  const [splashProgress, setSplashProgress] = useState(0);
 
   useEffect(() => {
     if (!showSplash) return;
     markInitialSplashSeenThisSession();
-    let firstFrameId = 0;
-    let secondFrameId = 0;
+    let rafId = 0;
     let hideTimer = 0;
-    let readyTimer = 0;
+    let hasFinished = false;
+    const startTime = performance.now();
     let isLoadComplete = document.readyState === 'complete';
-    let hasMinTimeElapsed = false;
 
     const finishSplash = () => {
-      firstFrameId = window.requestAnimationFrame(() => {
-        secondFrameId = window.requestAnimationFrame(() => {
-          setSplashPhase('overlay-out');
-          hideTimer = window.setTimeout(() => {
-            setShowSplash(false);
-          }, OVERLAY_FADE_MS);
-        });
-      });
+      if (hasFinished) return;
+      hasFinished = true;
+      setSplashProgress(100);
+      setIsSplashFadingOut(true);
+      hideTimer = window.setTimeout(() => {
+        setShowSplash(false);
+      }, OVERLAY_FADE_MS);
     };
 
-    const tryFinishSplash = () => {
-      if (isLoadComplete && hasMinTimeElapsed) {
+    const tick = (now: number) => {
+      const elapsed = now - startTime;
+      setSplashProgress(easeOutCubic(Math.min(1, elapsed / SPLASH_MIN_MS)) * 100);
+
+      if (elapsed >= SPLASH_MIN_MS && isLoadComplete) {
         finishSplash();
+        return;
       }
+
+      rafId = window.requestAnimationFrame(tick);
     };
 
     const markLoadComplete = () => {
       isLoadComplete = true;
-      tryFinishSplash();
     };
 
-    readyTimer = window.setTimeout(() => {
-      hasMinTimeElapsed = true;
-      tryFinishSplash();
-    }, SPLASH_MIN_MS);
+    rafId = window.requestAnimationFrame(tick);
 
-    if (isLoadComplete) {
-      tryFinishSplash();
-    } else {
+    if (!isLoadComplete) {
       window.addEventListener('load', markLoadComplete, { once: true });
     }
 
     return () => {
       window.removeEventListener('load', markLoadComplete);
-      window.cancelAnimationFrame(firstFrameId);
-      window.cancelAnimationFrame(secondFrameId);
-      window.clearTimeout(readyTimer);
+      window.cancelAnimationFrame(rafId);
       window.clearTimeout(hideTimer);
     };
-  }, [showSplash, SPLASH_MIN_MS, OVERLAY_FADE_MS]);
+  }, [showSplash]);
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -185,7 +194,7 @@ function App() {
   return (
     <ThemeProvider>
       <ToastProvider>
-        {showSplash && <InitialSplash phase={splashPhase} />}
+        {showSplash && <InitialSplash isFadingOut={isSplashFadingOut} progress={splashProgress} />}
         <BrowserRouter>
           <ScrollToTop />
           <Routes>

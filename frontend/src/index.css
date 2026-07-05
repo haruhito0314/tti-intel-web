@@ -1147,7 +1147,6 @@
   inset: 0;
   z-index: 10000;
   --splash-navy: #082768;
-  --splash-blue: #2f63a8;
   --splash-line: rgba(47, 99, 168, 0.2);
   color: var(--splash-navy);
   background: #f8fbff;
@@ -1158,7 +1157,6 @@
 
 .initial-splash.is-dark {
   --splash-navy: #ffffff;
-  --splash-blue: #9ee7ff;
   --splash-line: rgba(158, 231, 255, 0.22);
   color: #ffffff;
   background: #041432;
@@ -1176,36 +1174,11 @@
   place-items: center;
   overflow: hidden;
   background: #f8fbff;
-  transition: opacity 420ms ease, filter 360ms ease, background 260ms ease;
+  transition: background 260ms ease;
 }
 
 .initial-splash.is-dark .initial-splash-scene {
   background: #061a3e;
-}
-
-.initial-splash-scene.is-scene-out {
-  filter: saturate(1) brightness(1);
-}
-
-.initial-splash-scene::before {
-  position: absolute;
-  inset: 0;
-  content: "";
-}
-
-.initial-splash-scene::after {
-  position: absolute;
-  inset: 0;
-  opacity: 0.72;
-  content: "";
-}
-
-.initial-splash.is-dark .initial-splash-scene::before {
-  content: "";
-}
-
-.initial-splash.is-dark .initial-splash-scene::after {
-  opacity: 0.94;
 }
 
 .initial-splash-campus {
@@ -1488,11 +1461,11 @@
 
 .initial-splash-progress-bar span {
   display: block;
-  width: 24%;
+  width: 0%;
   height: 100%;
   border-radius: inherit;
   background: #0b2d70;
-  animation: initial-splash-loading-bar 2.7s ease-in-out infinite;
+  will-change: width;
 }
 
 .initial-splash-progress-label {
@@ -1518,23 +1491,6 @@
 .initial-splash.is-dark .initial-splash-progress-label {
   color: rgba(255, 255, 255, 0.95);
   text-shadow: 0 0 18px rgba(158, 231, 255, 0.24);
-}
-
-@keyframes initial-splash-loading-bar {
-  0% {
-    width: 0;
-    transform: translateX(0);
-  }
-
-  45% {
-    width: 24%;
-    transform: translateX(0);
-  }
-
-  100% {
-    width: 24%;
-    transform: translateX(430%);
-  }
 }
 
 @keyframes initial-splash-brand-in {
@@ -1789,23 +1745,23 @@
 }
 
 .dev-hero-stage {
-  --dev-copy-zone: clamp(10rem, 32dvh, 16rem);
+  --dev-copy-zone: 13rem;
   --dev-nav-reserve: calc(0.75rem + env(safe-area-inset-bottom, 0px));
   --dev-stage-gutter: clamp(0.65rem, 2.5vw, 1.5rem);
   position: sticky;
   top: 0;
-  height: 100vh;
-  height: 100dvh;
+  height: var(--dev-stage-height, 100vh);
   box-sizing: border-box;
   overflow: hidden;
   display: grid;
   grid-template-rows: var(--dev-copy-zone) minmax(0, 1fr);
   padding-top: var(--site-header-height, 44px);
+  isolation: isolate;
+  contain: layout style;
   background:
     radial-gradient(circle at 50% 18%, rgba(102, 180, 255, 0.1), transparent 38%),
     radial-gradient(circle at 50% 82%, rgba(155, 81, 224, 0.08), transparent 34%),
     linear-gradient(180deg, var(--dev-bg) 0%, #08101c 100%);
-  will-change: transform, opacity;
 }
 
 .dev-hero-background {
@@ -1819,22 +1775,17 @@
   position: relative;
   z-index: 5;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
-  padding: 0.65rem var(--dev-stage-gutter) 0.2rem;
+  padding: 0.5rem var(--dev-stage-gutter) 0.35rem;
   text-align: center;
   min-height: 0;
-  overflow: hidden;
-  container-type: size;
-  container-name: dev-copy;
+  overflow: visible;
 }
 
 .dev-hero-copy-block {
   position: absolute;
-  top: 0.65rem;
-  right: var(--dev-stage-gutter);
-  bottom: 0.2rem;
-  left: var(--dev-stage-gutter);
+  inset: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -1842,8 +1793,34 @@
   width: calc(100% - 2 * var(--dev-stage-gutter));
   max-width: 52rem;
   margin-inline: auto;
-  overflow: hidden;
-  will-change: transform, opacity;
+  overflow: visible;
+}
+
+.dev-hero-copy-block--mcp {
+  justify-content: flex-end;
+  padding-top: 0;
+  padding-bottom: clamp(0.25rem, 1.2vh, 0.55rem);
+}
+
+.dev-hero-copy-block--mcp .dev-hero-title--sm {
+  font-size: clamp(24px, 4.6vw, 46px);
+  line-height: 1.18;
+  margin-bottom: 0.65rem;
+}
+
+.dev-hero-copy-block--mcp .dev-hero-subtitle {
+  max-width: 34em;
+  font-size: clamp(15px, 2.35vw, 20px);
+  line-height: 1.52;
+}
+
+.dev-hero-copy-block--intro {
+  justify-content: flex-start;
+  padding-top: clamp(1.5rem, 7svh, 3.25rem);
+}
+
+.dev-hero-copy-block--intro .dev-hero-title {
+  margin-bottom: clamp(0.45rem, 1.8dvh, 0.85rem);
 }
 
 .dev-hero-copy-block--static {
@@ -1858,21 +1835,9 @@
   min-height: 0;
   max-height: 100%;
   overflow: hidden;
-  container-type: size;
-  container-name: dev-visual;
 }
 
-.dev-hero-stage::after {
-  content: "";
-  position: absolute;
-  inset: auto 0 0 0;
-  height: 22vh;
-  background: linear-gradient(180deg, transparent, rgba(11, 18, 32, 0.95));
-  pointer-events: none;
-  z-index: 2;
-}
-
-.dev-hero-scene {
+.dev-scene-shell {
   position: absolute;
   inset: 0;
   display: flex;
@@ -1884,7 +1849,25 @@
   box-sizing: border-box;
   max-width: 100%;
   overflow: hidden;
-  will-change: transform, opacity;
+}
+
+.dev-hero-scene {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.dev-hero-stage::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 22vh;
+  background: linear-gradient(180deg, transparent, rgba(11, 18, 32, 0.95));
+  pointer-events: none;
+  z-index: 2;
 }
 
 .dev-scene-viewport {
@@ -1975,7 +1958,6 @@
   color: #F5F5F7;
   margin-bottom: 1rem;
   text-wrap: balance;
-  will-change: transform, opacity;
 }
 
 .dev-hero-title--sm {
@@ -1989,7 +1971,6 @@
   max-width: 40em;
   margin: 0 auto;
   text-wrap: pretty;
-  will-change: transform, opacity;
 }
 
 .dev-gradient-text {
@@ -2028,6 +2009,7 @@
   left: 50%;
   margin-left: -180px;
   background: rgba(0, 122, 255, 0.35);
+  opacity: 0.53;
 }
 
 .dev-orb--two {
@@ -2037,6 +2019,7 @@
   left: 50%;
   margin-left: 20px;
   background: rgba(155, 81, 224, 0.28);
+  opacity: 0.4;
 }
 
 .dev-float-tool-card {
@@ -2056,7 +2039,6 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.1),
     0 18px 44px rgba(0, 0, 0, 0.32);
   transform-origin: center center;
-  will-change: transform, opacity;
 }
 
 .dev-float-tool-card-accent {
@@ -2119,7 +2101,6 @@
     0 0 0 1px rgba(255, 255, 255, 0.05) inset;
   box-sizing: border-box;
   transform: none;
-  will-change: opacity;
 }
 
 .dev-terminal.dev-glass-card {
@@ -2716,7 +2697,6 @@
   justify-content: center;
   gap: 0.85rem;
   margin-top: 1.75rem;
-  will-change: opacity, transform;
 }
 
 .dev-hero-cta {
@@ -2804,17 +2784,41 @@
 }
 
 .dev-workflow-grid {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(0.85rem, 3.5cqw, 3.25rem) minmax(0, 1fr);
-  grid-template-rows: auto auto auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: auto auto;
   align-items: stretch;
-  column-gap: clamp(0.15rem, 1.2cqw, 0.35rem);
-  row-gap: 0;
+  column-gap: clamp(2.5rem, 6vw, 5rem);
+  row-gap: clamp(2rem, 5vh, 3.25rem);
   width: min(100%, 680px);
   max-width: 100%;
-  max-height: min(26rem, 100cqh);
+  max-height: 26rem;
   margin: 0 auto;
   box-sizing: border-box;
+}
+
+.dev-workflow-connectors {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.dev-workflow-connector-rail {
+  opacity: 0.9;
+  stroke-width: 2.5;
+}
+
+.dev-workflow-connector-track {
+  filter: drop-shadow(0 0 6px rgba(102, 180, 255, 0.45)) drop-shadow(0 0 10px rgba(155, 81, 224, 0.3));
+}
+
+.dev-workflow-connector-head {
+  filter: drop-shadow(0 0 6px rgba(155, 81, 224, 0.65));
 }
 
 .dev-workflow-card--0 {
@@ -2822,14 +2826,8 @@
   grid-row: 1;
 }
 
-.dev-workflow-arrow-h--top {
-  grid-column: 2;
-  grid-row: 1;
-  align-self: center;
-}
-
 .dev-workflow-card--1 {
-  grid-column: 3;
+  grid-column: 2;
   grid-row: 1;
 }
 
@@ -2841,63 +2839,23 @@
   z-index: 1;
 }
 
-.dev-workflow-arrow-curve {
-  grid-column: 1 / 4;
-  grid-row: 2;
-  position: relative;
-  z-index: 0;
-  width: 100%;
-  height: clamp(2rem, 11cqh, 4.5rem);
-  min-height: clamp(2rem, 11cqh, 4.5rem);
-  margin: 0;
-  pointer-events: none;
-}
-
-.dev-workflow-arrow-curve svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-
-.dev-workflow-curve-track {
-  filter: drop-shadow(0 0 10px rgba(102, 180, 255, 0.35));
-}
-
-.dev-workflow-curve-head {
-  filter: drop-shadow(0 0 8px rgba(102, 180, 255, 0.55));
-}
-
-.dev-workflow-curve-head polygon {
-  stroke: rgba(255, 255, 255, 0.35);
-  stroke-width: 0.4;
-  stroke-linejoin: round;
-}
-
 .dev-workflow-card--2 {
   grid-column: 1;
-  grid-row: 3;
-}
-
-.dev-workflow-arrow-h--bottom {
-  grid-column: 2;
-  grid-row: 3;
-  align-self: center;
+  grid-row: 2;
 }
 
 .dev-workflow-card--3 {
-  grid-column: 3;
-  grid-row: 3;
+  grid-column: 2;
+  grid-row: 2;
 }
 
 .dev-workflow-card {
   position: relative;
   min-width: 0;
-  min-height: clamp(3.25rem, 15cqh, 6.5rem);
-  padding: clamp(0.5rem, 2.5cqh, 1rem) clamp(0.55rem, 2cqw, 1rem);
-  border-radius: clamp(14px, 3cqh, 20px);
+  min-height: 3.25rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 16px;
   text-align: left;
-  will-change: transform, opacity;
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -2944,11 +2902,26 @@
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: stretch;
   width: 100%;
-  min-height: 1.5rem;
-  padding: 0.15rem 0;
+  min-height: 1.65rem;
+  padding: 0.1rem 0;
   will-change: opacity;
+}
+
+.dev-workflow-arrow-h svg {
+  display: block;
+  width: 100%;
+  height: 1.65rem;
+  overflow: visible;
+}
+
+.dev-workflow-arrow-stroke {
+  filter: drop-shadow(0 0 8px rgba(102, 180, 255, 0.45));
+}
+
+.dev-workflow-arrow-head {
+  filter: drop-shadow(0 0 7px rgba(155, 81, 224, 0.55));
 }
 
 .dev-workflow-arrow-line {
@@ -3110,31 +3083,8 @@
   color: #66B4FF;
 }
 
-@container dev-copy (max-height: 11rem) {
-  .dev-hero-copy-block .dev-hero-title {
-    font-size: clamp(26px, 5.5vw, 40px);
-    margin-bottom: clamp(0.35rem, 1.5dvh, 0.65rem);
-  }
-
-  .dev-hero-copy-block .dev-hero-title--sm {
-    font-size: clamp(22px, 4.8vw, 34px);
-  }
-
-  .dev-hero-copy-block .dev-hero-subtitle {
-    font-size: clamp(14px, 2.6vw, 18px);
-    line-height: 1.45;
-  }
-}
-
-@media (max-height: 820px) {
-  .dev-hero-stage {
-    --dev-copy-zone: clamp(8rem, 24dvh, 12rem);
-  }
-}
-
 @media (max-height: 700px) {
   .dev-hero-stage {
-    --dev-copy-zone: clamp(7rem, 22dvh, 10rem);
     --dev-nav-reserve: calc(0.65rem + env(safe-area-inset-bottom, 0px));
   }
 
@@ -3144,84 +3094,6 @@
 
   .dev-hero-subtitle {
     line-height: 1.48;
-  }
-}
-
-@container dev-visual (max-height: 680px) {
-  .dev-scene-viewport .dev-stack-stage {
-    gap: 0.4rem;
-  }
-
-  .dev-scene-viewport .dev-stack-layer {
-    min-height: 5.25rem;
-    padding: 0.7rem 0.75rem;
-  }
-}
-
-@container dev-visual (max-height: 520px) {
-  .dev-workflow-grid {
-    max-height: 100cqh;
-  }
-
-  .dev-workflow-card {
-    min-height: clamp(2.75rem, 13cqh, 5rem);
-    padding: clamp(0.45rem, 2cqh, 0.65rem) clamp(0.5rem, 1.8cqw, 0.65rem);
-  }
-
-  .dev-workflow-arrow-curve {
-    height: clamp(1.5rem, 9cqh, 3rem);
-    min-height: clamp(1.5rem, 9cqh, 3rem);
-  }
-
-  .dev-workflow-card-head {
-    gap: 0.35rem;
-    margin-bottom: 0.3rem;
-  }
-
-  .dev-workflow-step-index {
-    width: 1.4rem;
-    height: 1.4rem;
-    font-size: 9px;
-  }
-}
-
-@container dev-visual (max-width: 400px) {
-  .dev-workflow-grid {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: clamp(0.35rem, 2cqh, 0.55rem);
-    width: min(100%, 18.5rem);
-    max-height: none;
-    padding-block: 0.15rem;
-    margin-block: auto;
-  }
-
-  .dev-workflow-arrow-h,
-  .dev-workflow-arrow-curve {
-    display: none;
-  }
-
-  .dev-workflow-card {
-    min-height: clamp(2.75rem, 12cqh, 4.5rem);
-    flex-shrink: 0;
-  }
-}
-
-@container dev-visual (max-width: 400px) and (max-height: 560px) {
-  .dev-workflow-grid {
-    gap: 0.3rem;
-  }
-
-  .dev-workflow-card {
-    padding: 0.55rem 0.6rem;
-    border-radius: 14px;
-  }
-}
-
-@media (max-width: 768px) and (max-height: 740px) {
-  .dev-hero-stage {
-    --dev-copy-zone: clamp(6.5rem, 22dvh, 9.5rem);
   }
 }
 
@@ -3239,18 +3111,12 @@
   }
 
   .dev-hero-stage {
-    --dev-copy-zone: clamp(7.5rem, 26dvh, 11rem);
     --dev-nav-reserve: calc(0.75rem + env(safe-area-inset-bottom, 0px));
     --dev-stage-gutter: clamp(0.5rem, 3vw, 0.85rem);
   }
 
   .dev-hero-copy-stage {
-    padding: 0.5rem var(--dev-stage-gutter) 0.15rem;
-  }
-
-  .dev-hero-copy-block {
-    top: 0.5rem;
-    bottom: 0.15rem;
+    padding: 0.45rem var(--dev-stage-gutter) 0.3rem;
   }
 
   .dev-hero-title {
@@ -3477,12 +3343,13 @@
     min-height: 0;
   }
 
-  .dev-hero-static .dev-hero-scene {
-    display: grid;
-    gap: 2rem;
-    min-height: 100svh;
-    padding: 6rem 1.5rem 5rem;
-  }
+.dev-hero-static .dev-hero-scene {
+  display: grid;
+  gap: 2rem;
+  min-height: 100vh;
+  padding: 6rem 1.5rem 5rem;
+  pointer-events: auto;
+}
 
   .dev-hero-static .dev-hero-copy-stage,
   .dev-hero-static .dev-hero-copy-block {

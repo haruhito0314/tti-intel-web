@@ -7,22 +7,23 @@ import { DevHeroScene4 } from './DevHeroScene4';
 import { DevHeroScene5 } from './DevHeroScene5';
 import { DevHeroScene6 } from './DevHeroScene6';
 import { DevHeroScene7 } from './DevHeroScene7';
-import { getSceneVisualOpacity, useScrollProgress } from './useScrollProgress';
+import { getChapterOpacity } from './devScrollMath';
+import { useDevScrollProgress } from './useDevScrollProgress';
 
 export function DevHero() {
     const trackRef = useRef<HTMLElement>(null);
-    const { progress, reducedMotion } = useScrollProgress(trackRef);
+    const { progress, reducedMotion } = useDevScrollProgress(trackRef);
 
     if (reducedMotion) {
         return (
             <section className="dev-hero-static" aria-label="開発紹介">
-                <DevHeroScene1 progress={1} opacity={1} staticMode copyIndex={0} />
-                <DevHeroScene2 progress={1} opacity={1} staticMode copyIndex={1} />
-                <DevHeroScene3 progress={1} opacity={1} staticMode copyIndex={2} />
-                <DevHeroScene4 progress={1} opacity={1} staticMode copyIndex={3} />
-                <DevHeroScene5 progress={1} opacity={1} staticMode copyIndex={4} />
-                <DevHeroScene6 progress={1} opacity={1} staticMode copyIndex={5} />
-                <DevHeroScene7 progress={1} opacity={1} staticMode copyIndex={6} />
+                <DevHeroScene1 copyIndex={0} />
+                <DevHeroScene2 copyIndex={1} />
+                <DevHeroScene3 copyIndex={2} />
+                <DevHeroScene4 copyIndex={3} />
+                <DevHeroScene5 copyIndex={4} />
+                <DevHeroScene6 copyIndex={5} />
+                <DevHeroScene7 copyIndex={6} />
             </section>
         );
     }
@@ -33,13 +34,13 @@ export function DevHero() {
                 <DevHeroCopy progress={progress} />
 
                 <div className="dev-hero-visual-stage">
-                    <DevHeroScene1 progress={progress} opacity={getSceneVisualOpacity(progress, 0)} />
-                    <DevHeroScene2 progress={progress} opacity={getSceneVisualOpacity(progress, 1)} />
-                    <DevHeroScene3 progress={progress} opacity={getSceneVisualOpacity(progress, 2)} />
-                    <DevHeroScene4 progress={progress} opacity={getSceneVisualOpacity(progress, 3)} />
-                    <DevHeroScene5 progress={progress} opacity={getSceneVisualOpacity(progress, 4)} />
-                    <DevHeroScene6 progress={progress} opacity={getSceneVisualOpacity(progress, 5)} />
-                    <DevHeroScene7 progress={progress} opacity={getSceneVisualOpacity(progress, 6)} />
+                    <DevHeroScene1 chapterIndex={0} progress={progress} />
+                    <DevHeroScene2 chapterIndex={1} progress={progress} />
+                    <DevHeroScene3 chapterIndex={2} progress={progress} />
+                    <DevHeroScene4 chapterIndex={3} progress={progress} />
+                    <DevHeroScene5 chapterIndex={4} progress={progress} />
+                    <DevHeroScene6 chapterIndex={5} progress={progress} />
+                    <DevHeroScene7 chapterIndex={6} progress={progress} />
                 </div>
 
                 <div
@@ -52,3 +53,5 @@ export function DevHero() {
         </section>
     );
 }
+
+export { getChapterOpacity };

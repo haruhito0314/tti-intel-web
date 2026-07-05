@@ -1579,3 +1579,8 @@ Visit https://react.dev/link/error-boundaries to learn more about error boundari
 %s
  An error occurred in the <TechBrandIcon> component. Consider adding an error boundary to your tree to customize error handling behavior.
 Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[12581847ms] [LOG] [vite] server connection lost. Polling for restart... @ http://localhost:5175/@vite/client:864
+[12582130ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[34951996ms] [LOG] [vite] server connection lost. Polling for restart... @ http://localhost:5175/@vite/client:864
+[34952341ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[35335719ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102

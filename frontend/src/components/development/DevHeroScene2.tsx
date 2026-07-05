@@ -1,13 +1,6 @@
 import { STACK_LAYERS } from './sceneUtils';
 import { DevStackGridScene } from './DevStackGridScene';
 
-type DevHeroScene2Props = {
-    progress: number;
-    opacity: number;
-    staticMode?: boolean;
-    copyIndex?: number;
-};
-
 const LAYER_ACCENTS = [
     '#E44D26',
     '#1572B6',
@@ -23,17 +16,19 @@ const LAYER_ACCENTS = [
     '#F05138',
 ] as const;
 
-export function DevHeroScene2({ progress, opacity, staticMode = false, copyIndex }: DevHeroScene2Props) {
+type DevHeroScene2Props =
+    | { copyIndex: number; chapterIndex?: never; progress?: never }
+    | { chapterIndex: number; progress: number; copyIndex?: never };
+
+export function DevHeroScene2(props: DevHeroScene2Props) {
     return (
         <DevStackGridScene
-            sceneIndex={1}
             sceneClassName="dev-hero-scene--2"
             layers={STACK_LAYERS}
             accents={LAYER_ACCENTS}
-            progress={progress}
-            opacity={opacity}
-            staticMode={staticMode}
-            copyIndex={copyIndex}
+            copyIndex={props.copyIndex}
+            chapterIndex={props.chapterIndex}
+            progress={props.progress}
         />
     );
 }

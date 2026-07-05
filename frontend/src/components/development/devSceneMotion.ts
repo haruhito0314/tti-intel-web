@@ -1,0 +1,101 @@
+import { CHAPTER_ENTER_END, getChapterEnterEnd } from './devScrollConfig';
+import { freezeAfterEnter, reveal } from './devScrollMath';
+
+/** Motion-local — capped during hold */
+export function motionLocal(local: number, chapterIndex?: number): number {
+    const enterEnd = chapterIndex !== undefined ? getChapterEnterEnd(chapterIndex) : CHAPTER_ENTER_END;
+    return freezeAfterEnter(local, enterEnd);
+}
+
+// —— Section 1 ——
+export const SCENE1_TYPEWRITER_END = 0.42;
+export const SCENE1_TERMINAL_END = 0.22;
+export const SCENE1_COMPLETE = 0.55;
+
+export function scene1TypewriterProgress(local: number): number {
+    const l = freezeAfterEnter(local, SCENE1_TYPEWRITER_END);
+    return reveal(l, 0.18, SCENE1_TYPEWRITER_END);
+}
+
+export function scene1TerminalReveal(local: number): number {
+    const l = freezeAfterEnter(local, SCENE1_TERMINAL_END);
+    return reveal(l, 0.05, SCENE1_TERMINAL_END);
+}
+
+export function scene1BadgeReveal(local: number, index: number): number {
+    const l = motionLocal(local);
+    return reveal(l, 0.4 + index * 0.045, 0.45 + index * 0.045);
+}
+
+export function scene1FloatReveal(local: number, index: number): number {
+    const l = motionLocal(local);
+    return reveal(l, 0.08 + index * 0.04, 0.2 + index * 0.04);
+}
+
+// —— Stack grids (sections 2 & 5) ——
+export function stackCardReveal(local: number, index: number): number {
+    const l = motionLocal(local);
+    const row = Math.floor(index / 4);
+    const col = index % 4;
+    const start = 0.05 + row * 0.09 + col * 0.045;
+    return reveal(l, start, start + 0.11);
+}
+
+// —— Section 3 MCP ——
+export function mcpPanelReveal(local: number): number {
+    return reveal(motionLocal(local, 2), 0.05, 0.2);
+}
+
+export function mcpRowReveal(local: number, index: number): number {
+    const l = motionLocal(local, 2);
+    return reveal(l, 0.06 + index * 0.09, 0.16 + index * 0.09);
+}
+
+export function mcpToggleReveal(local: number, index: number): number {
+    const l = motionLocal(local, 2);
+    return reveal(l, 0.1 + index * 0.09, 0.18 + index * 0.09);
+}
+
+// —— Section 4 preview ——
+const S4_GAP = 0.046;
+const S4_SPAN = 0.062;
+const S4_BASE = 0.05;
+
+export function scene4StepReveal(local: number, step: number): number {
+    const start = S4_BASE + step * S4_GAP;
+    return reveal(motionLocal(local, 3), start, start + S4_SPAN);
+}
+
+export function scene4TypewriterProgress(local: number): number {
+    const l = motionLocal(local, 3);
+    const start = S4_BASE + 4 * S4_GAP;
+    const end = start + S4_SPAN + 0.04;
+    if (l <= start) return 0;
+    if (l >= end) return 1;
+    return (l - start) / (end - start);
+}
+
+// —— Section 6 workflow ——
+const WF_STEP_STARTS = [0.04, 0.14, 0.28, 0.4] as const;
+const WF_STEP_SPAN = 0.08;
+const WF_ARROW_STARTS = [0.12, 0.24, 0.46] as const;
+/** ~half previous draw speed (2× span) */
+const WF_ARROW_SPANS = [0.22, 0.48, 0.22] as const;
+
+export function workflowStepReveal(local: number, index: number): number {
+    const l = motionLocal(local, 5);
+    const start = WF_STEP_STARTS[index] ?? WF_STEP_STARTS[0];
+    return reveal(l, start, start + WF_STEP_SPAN);
+}
+
+export function workflowArrowReveal(local: number, index: number): number {
+    const l = motionLocal(local, 5);
+    const start = WF_ARROW_STARTS[index] ?? WF_ARROW_STARTS[0];
+    const span = WF_ARROW_SPANS[index] ?? WF_ARROW_SPANS[0];
+    return reveal(l, start, start + span);
+}
+
+// —— Section 7 CTA ——
+export function scene7CtaReveal(local: number): number {
+    return reveal(motionLocal(local), 0.12, 0.38);
+}

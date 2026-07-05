@@ -1,13 +1,6 @@
 import { AI_TOOLS } from './sceneUtils';
 import { DevStackGridScene } from './DevStackGridScene';
 
-type DevHeroScene5Props = {
-    progress: number;
-    opacity: number;
-    staticMode?: boolean;
-    copyIndex?: number;
-};
-
 const TOOL_ACCENTS = [
     '#10A37F',
     '#CC785C',
@@ -19,17 +12,19 @@ const TOOL_ACCENTS = [
     '#A8B1C4',
 ] as const;
 
-export function DevHeroScene5({ progress, opacity, staticMode = false, copyIndex }: DevHeroScene5Props) {
+type DevHeroScene5Props =
+    | { copyIndex: number; chapterIndex?: never; progress?: never }
+    | { chapterIndex: number; progress: number; copyIndex?: never };
+
+export function DevHeroScene5(props: DevHeroScene5Props) {
     return (
         <DevStackGridScene
-            sceneIndex={4}
             sceneClassName="dev-hero-scene--5"
             layers={AI_TOOLS}
             accents={TOOL_ACCENTS}
-            progress={progress}
-            opacity={opacity}
-            staticMode={staticMode}
-            copyIndex={copyIndex}
+            copyIndex={props.copyIndex}
+            chapterIndex={props.chapterIndex}
+            progress={props.progress}
             iconVariant="brand"
         />
     );

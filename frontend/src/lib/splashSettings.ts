@@ -9,6 +9,12 @@ function canUseSessionStorage(): boolean {
     return typeof window !== 'undefined' && typeof window.sessionStorage !== 'undefined';
 }
 
+function isSplashPreviewMode(): boolean {
+    if (import.meta.env.DEV) return true;
+    if (typeof window === 'undefined') return false;
+    return new URLSearchParams(window.location.search).has('splash');
+}
+
 export function isMobileSplashDisabled(): boolean {
     if (!canUseLocalStorage()) return false;
     try {
@@ -31,20 +37,28 @@ export function setMobileSplashDisabled(disabled: boolean): void {
     }
 }
 
-export function hasSeenInitialSplashThisSession(): boolean {
-    if (!canUseSessionStorage()) return false;
-    try {
-        return window.sessionStorage.getItem(INITIAL_SPLASH_SEEN_SESSION_STORAGE_KEY) === 'true';
-    } catch {
-        return false;
-    }
+export function shouldShowInitialSplash(): boolean {
+    if (typeof window === 'undefined') return false;
+    if (isMobileSplashDisabled()) return false;
+    if (isSplashPreviewMode()) return true;
+    return !hasSeenInitialSplashThisSession();
 }
 
 export function markInitialSplashSeenThisSession(): void {
+    if (isSplashPreviewMode()) return;
     if (!canUseSessionStorage()) return;
     try {
         window.sessionStorage.setItem(INITIAL_SPLASH_SEEN_SESSION_STORAGE_KEY, 'true');
     } catch {
         // Ignore storage write failures (private mode, quota, etc.)
+    }
+}
+
+function hasSeenInitialSplashThisSession(): boolean {
+    if (!canUseSessionStorage()) return false;
+    try {
+        return window.sessionStorage.getItem(INITIAL_SPLASH_SEEN_SESSION_STORAGE_KEY) === 'true';
+    } catch {
+        return false;
     }
 }

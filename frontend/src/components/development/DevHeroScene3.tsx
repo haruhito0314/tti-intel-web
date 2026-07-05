@@ -1,21 +1,14 @@
 import { Database, FolderOpen, Globe } from 'lucide-react';
-import { getSceneLocalProgress } from './useScrollProgress';
 import { MCP_SERVERS } from './sceneUtils';
 import { DevHeroCopy } from './DevHeroCopy';
-import {
-    CHAPTER_VISUAL_REVEAL_END,
-    CHAPTER_VISUAL_REVEAL_START,
-    chapterReveal,
-    getVisualChapterMotion,
-} from './chapterMotion';
+import { chapterShellStyle, enterSlideY, enterTranslateX, isSectionEnterComplete } from './devEnterStyle';
+import { getChapterLocal, getChapterOpacity } from './devScrollMath';
+import { mcpPanelReveal, mcpRowReveal, mcpToggleReveal } from './devSceneMotion';
 import { TechBrandIcon, type TechBrandSlug } from './TechBrandIcon';
 
-type DevHeroScene3Props = {
-    progress: number;
-    opacity: number;
-    staticMode?: boolean;
-    copyIndex?: number;
-};
+type DevHeroScene3Props =
+    | { copyIndex: number; chapterIndex?: never; progress?: never }
+    | { chapterIndex: number; progress: number; copyIndex?: never };
 
 const SERVER_LUCIDE_ICONS = {
     browser: Globe,
@@ -23,116 +16,87 @@ const SERVER_LUCIDE_ICONS = {
     filesystem: FolderOpen,
 } as const;
 
-function getServerRowProgress(local: number, index: number, staticMode: boolean): number {
-    if (staticMode) return 1;
-    const stagger = index * 0.11;
-    const revealStart = 0.06 + stagger;
-    const revealEnd = revealStart + 0.14;
-    return chapterReveal(local, revealStart, revealEnd);
-}
-
-function getServerToggleProgress(local: number, index: number, staticMode: boolean): number {
-    if (staticMode) return 1;
-    const stagger = index * 0.11;
-    const revealStart = 0.12 + stagger;
-    const revealEnd = revealStart + 0.12;
-    return chapterReveal(local, revealStart, revealEnd);
-}
-
 function ServerIcon({ serverId, brand }: { serverId: string; brand?: TechBrandSlug }) {
     if (brand) {
         return <TechBrandIcon slug={brand} className="dev-mcp-panel-row-icon-svg" />;
     }
-
     const Icon = SERVER_LUCIDE_ICONS[serverId as keyof typeof SERVER_LUCIDE_ICONS];
     return Icon ? <Icon className="dev-mcp-panel-row-icon-svg dev-mcp-panel-row-icon-svg--lucide" /> : null;
 }
 
-export function DevHeroScene3({ progress, opacity, staticMode = false, copyIndex }: DevHeroScene3Props) {
-    const local = staticMode ? 1 : getSceneLocalProgress(progress, 2);
-    const visualMotion = getVisualChapterMotion(local, staticMode);
-    const panelReveal = staticMode ? 1 : chapterReveal(local, CHAPTER_VISUAL_REVEAL_START, CHAPTER_VISUAL_REVEAL_END);
+export function DevHeroScene3(props: DevHeroScene3Props) {
+    const isScroll = props.progress !== undefined;
+    const local = isScroll ? getChapterLocal(props.progress, props.chapterIndex) : 1;
+    const opacity = isScroll ? getChapterOpacity(props.progress, props.chapterIndex) : 1;
+    const frozen = !isScroll || isSectionEnterComplete(local, 2);
+    const panelReveal = frozen ? 1 : mcpPanelReveal(local);
 
     return (
-        <div
-            className="dev-hero-scene dev-hero-scene--3"
-            style={{
-                opacity: opacity * visualMotion.combined,
-                visibility: opacity > 0.04 ? 'visible' : 'hidden',
-                pointerEvents: opacity > 0.5 ? 'auto' : 'none',
-            }}
-            aria-hidden={opacity < 0.5}
-        >
-            {staticMode && copyIndex !== undefined && (
-                <DevHeroCopy progress={1} staticMode staticBlockIndex={copyIndex} />
+        <div className="dev-hero-scene dev-hero-scene--3" aria-hidden={isScroll && opacity < 0.5}>
+            {!isScroll && props.copyIndex !== undefined && (
+                <DevHeroCopy blockIndex={props.copyIndex} />
             )}
 
+            <div
+                className={isScroll ? 'dev-scene-shell' : undefined}
+                style={isScroll ? chapterShellStyle(opacity) : undefined}
+            >
             <div className="dev-scene-viewport">
                 <div
                     className="dev-mcp-panel dev-glass-card"
+                    style={enterSlideY(panelReveal, 24)}
                     aria-hidden="true"
-                    style={{
-                        opacity: panelReveal,
-                        transform: `translateY(${(1 - panelReveal) * 24}px)`,
-                    }}
                 >
-                <div className="dev-mcp-panel-chrome">
-                    <div className="dev-mcp-panel-title-wrap">
-                        <TechBrandIcon slug="modelcontextprotocol" className="dev-mcp-panel-title-icon" />
-                        <span className="dev-mcp-panel-title">MCP&nbsp;Servers</span>
+                    <div className="dev-mcp-panel-chrome">
+                        <div className="dev-mcp-panel-title-wrap">
+                            <TechBrandIcon slug="modelcontextprotocol" className="dev-mcp-panel-title-icon" />
+                            <span className="dev-mcp-panel-title">MCP&nbsp;Servers</span>
+                        </div>
                     </div>
-                </div>
 
-                <ul className="dev-mcp-panel-list">
-                    {MCP_SERVERS.map((server, index) => {
-                        const rowProgress = getServerRowProgress(local, index, staticMode);
-                        const toggleProgress = getServerToggleProgress(local, index, staticMode);
-                        const isOn = toggleProgress > 0.55;
+                    <ul className="dev-mcp-panel-list">
+                        {MCP_SERVERS.map((server, index) => {
+                            const rowProgress = frozen ? 1 : mcpRowReveal(local, index);
+                            const toggleProgress = frozen ? 1 : mcpToggleReveal(local, index);
+                            const isOn = frozen || toggleProgress > 0.55;
 
-                        return (
-                            <li
-                                key={server.id}
-                                className={`dev-mcp-panel-row${isOn ? ' is-connected' : ''}`}
-                                style={{
-                                    opacity: rowProgress,
-                                    transform: `translateY(${(1 - rowProgress) * 20}px)`,
-                                }}
-                            >
-                                <div className="dev-mcp-panel-row-icon">
-                                    <ServerIcon
-                                        serverId={server.id}
-                                        brand={'brand' in server ? server.brand : undefined}
-                                    />
-                                </div>
-                                <div className="dev-mcp-panel-row-body">
-                                    <strong>{server.label}</strong>
-                                    <span>{server.note}</span>
-                                </div>
-                                <div className="dev-mcp-panel-row-actions">
-                                    <span
-                                        className="dev-mcp-panel-status"
-                                        style={{ opacity: toggleProgress > 0.85 ? 1 : 0 }}
-                                    >
-                                        接続済み
-                                    </span>
-                                    <div
-                                        className={`dev-mcp-panel-toggle${isOn ? ' is-on' : ''}`}
-                                        style={{
-                                            ['--toggle-progress' as string]: toggleProgress,
-                                        }}
-                                    >
-                                        <span
-                                            className="dev-mcp-panel-toggle-knob"
-                                            style={{
-                                                transform: `translateX(${toggleProgress * 18}px)`,
-                                            }}
+                            return (
+                                <li
+                                    key={server.id}
+                                    className={`dev-mcp-panel-row${isOn ? ' is-connected' : ''}`}
+                                    style={enterSlideY(rowProgress, 20)}
+                                >
+                                    <div className="dev-mcp-panel-row-icon">
+                                        <ServerIcon
+                                            serverId={server.id}
+                                            brand={'brand' in server ? server.brand : undefined}
                                         />
                                     </div>
-                                </div>
-                            </li>
-                        );
-                    })}
-                </ul>
+                                    <div className="dev-mcp-panel-row-body">
+                                        <strong>{server.label}</strong>
+                                        <span>{server.note}</span>
+                                    </div>
+                                    <div className="dev-mcp-panel-row-actions">
+                                        <span
+                                            className="dev-mcp-panel-status"
+                                            style={{ opacity: frozen || toggleProgress > 0.85 ? 1 : 0 }}
+                                        >
+                                            接続済み
+                                        </span>
+                                        <div className={`dev-mcp-panel-toggle${isOn ? ' is-on' : ''}`}>
+                                            <span
+                                                className="dev-mcp-panel-toggle-knob"
+                                                style={{
+                                                    transform: enterTranslateX(toggleProgress, 18),
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </div>
             </div>
             </div>
         </div>
