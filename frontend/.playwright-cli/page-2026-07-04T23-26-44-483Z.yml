@@ -1,0 +1,95 @@
+- generic [ref=f3e3]:
+  - banner [ref=f3e4]:
+    - navigation [ref=f3e6]:
+      - generic [ref=f3e7]:
+        - link "TTI Intelligence ホーム" [ref=f3e8] [cursor=pointer]:
+          - /url: /
+          - generic [ref=f3e10]: TTI Intelligence
+        - generic [ref=f3e11]:
+          - link "Home" [ref=f3e12] [cursor=pointer]:
+            - /url: /
+          - link "About Us" [ref=f3e13] [cursor=pointer]:
+            - /url: /about
+          - link "News" [ref=f3e14] [cursor=pointer]:
+            - /url: /news
+          - link "Apps" [ref=f3e15] [cursor=pointer]:
+            - /url: /app
+          - link "Board" [ref=f3e16] [cursor=pointer]:
+            - /url: /board
+          - link "Contact" [ref=f3e17] [cursor=pointer]:
+            - /url: /contact
+        - 'button "テーマを切り替え (現在: システム設定)" [ref=f3e19]':
+          - img [ref=f3e20]
+  - main [ref=f3e22]:
+    - paragraph [ref=f3e26]: 読み込み中...
+  - contentinfo [ref=f3e27]:
+    - generic [ref=f3e28]:
+      - generic [ref=f3e29]:
+        - generic [ref=f3e30]:
+          - link "TTI Intelligence" [ref=f3e31] [cursor=pointer]:
+            - /url: /
+            - generic [ref=f3e33]: TTI Intelligence
+          - paragraph [ref=f3e34]: TTI Intelligenceは、最新のAI技術を共に学び、実践的な開発を通じてアイデアを形にする学生コミュニティです。
+          - generic [ref=f3e35]:
+            - heading "連絡先情報" [level=3] [ref=f3e36]
+            - generic [ref=f3e37]:
+              - generic [ref=f3e38]:
+                - img [ref=f3e39]
+                - paragraph [ref=f3e42]:
+                  - generic [ref=f3e43]: 住所
+                  - text: 〒468-8511 名古屋市天白区久方二丁目12番地1 豊田工業大学
+              - generic [ref=f3e44]:
+                - img [ref=f3e45]
+                - paragraph [ref=f3e48]:
+                  - generic [ref=f3e49]: Email
+                  - link "tti.intel@gmail.com" [ref=f3e50] [cursor=pointer]:
+                    - /url: mailto:tti.intel@gmail.com
+          - generic [ref=f3e51]:
+            - link "Discord" [ref=f3e52] [cursor=pointer]:
+              - /url: https://discord.gg/DFWs8GrHxF
+              - img [ref=f3e53]
+            - link "Instagram" [ref=f3e55] [cursor=pointer]:
+              - /url: https://instagram.com/haruhito_314
+              - img [ref=f3e56]
+            - link "GitHub" [ref=f3e58] [cursor=pointer]:
+              - /url: https://github.com/haruhito0314
+              - img [ref=f3e59]
+            - link "YouTube" [ref=f3e61] [cursor=pointer]:
+              - /url: https://www.youtube.com/@ttiintelligence
+              - img [ref=f3e62]
+        - generic [ref=f3e64]:
+          - heading "メニュー" [level=3] [ref=f3e65]
+          - list [ref=f3e66]:
+            - listitem [ref=f3e67]:
+              - link "Home" [ref=f3e68] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=f3e69]:
+              - link "About Us" [ref=f3e70] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=f3e71]:
+              - link "Weekly Math" [ref=f3e72] [cursor=pointer]:
+                - /url: /weekly-math
+            - listitem [ref=f3e73]:
+              - link "News" [ref=f3e74] [cursor=pointer]:
+                - /url: /news
+            - listitem [ref=f3e75]:
+              - link "Apps" [ref=f3e76] [cursor=pointer]:
+                - /url: /app
+            - listitem [ref=f3e77]:
+              - link "Development" [ref=f3e78] [cursor=pointer]:
+                - /url: /development
+            - listitem [ref=f3e79]:
+              - link "Board" [ref=f3e80] [cursor=pointer]:
+                - /url: /board
+            - listitem [ref=f3e81]:
+              - link "Contact" [ref=f3e82] [cursor=pointer]:
+                - /url: /contact
+        - generic [ref=f3e83]:
+          - heading "その他" [level=3] [ref=f3e84]
+          - list [ref=f3e85]:
+            - listitem [ref=f3e86]:
+              - link "管理者ページ" [ref=f3e87] [cursor=pointer]:
+                - /url: /admin
+      - generic [ref=f3e88]:
+        - paragraph [ref=f3e89]: © 2026 TTI Intelligence. All rights reserved.
+        - button "ロード画面をオフにする" [pressed] [ref=f3e90]: "ロード画面: オン"

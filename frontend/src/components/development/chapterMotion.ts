@@ -27,12 +27,14 @@ export function chapterExit(local: number, exitStart: number, exitEnd: number): 
 /** Shared chapter timing — all scenes use the same window */
 export const CHAPTER_VISUAL_REVEAL_START = 0.08;
 export const CHAPTER_VISUAL_REVEAL_END = 0.36;
-export const CHAPTER_VISUAL_EXIT_START = 0.93;
+/** Local progress where chapter stays fully visible before exit scrubbing */
+export const CHAPTER_FULL_HOLD_EXIT_START = 0.93;
+export const CHAPTER_VISUAL_EXIT_START = CHAPTER_FULL_HOLD_EXIT_START;
 export const CHAPTER_VISUAL_EXIT_END = 0.999;
 
 export const CHAPTER_COPY_ENTER_START = 0.08;
 export const CHAPTER_COPY_ENTER_END = 0.36;
-export const CHAPTER_COPY_EXIT_START = 0.93;
+export const CHAPTER_COPY_EXIT_START = CHAPTER_FULL_HOLD_EXIT_START;
 export const CHAPTER_COPY_EXIT_END = 0.999;
 
 export function getVisualChapterMotion(local: number, staticMode = false) {
@@ -63,41 +65,72 @@ export function getFinalChapterVisualMotion(local: number, staticMode = false) {
 }
 
 /** Staggered enter for 4-column stack / tool grids (chapters 2 & 5) */
-export const STACK_LAYER_ENTER_BASE = 0.03;
-export const STACK_LAYER_CARD_SPAN = 0.17;
-export const STACK_LAYER_STAGGER_ROW = 0.14;
-export const STACK_LAYER_STAGGER_COL = 0.08;
+const STACK_GRID_ENTER_DURATION_SCALE = 1.75;
 
-export function getStackLayerStagger(index: number): number {
+export const STACK_LAYER_ENTER_BASE = 0.03;
+export const STACK_LAYER_CARD_SPAN = 0.17 * STACK_GRID_ENTER_DURATION_SCALE;
+export const STACK_LAYER_STAGGER_ROW = 0.14 * STACK_GRID_ENTER_DURATION_SCALE;
+export const STACK_LAYER_STAGGER_COL = 0.08 * STACK_GRID_ENTER_DURATION_SCALE;
+
+/** Mobile: one card at a time, top → bottom while scrolling */
+export const STACK_LAYER_MOBILE_STAGGER = 0.048 * STACK_GRID_ENTER_DURATION_SCALE;
+export const STACK_LAYER_MOBILE_SPAN = 0.072 * STACK_GRID_ENTER_DURATION_SCALE;
+export const MOBILE_STACK_CARD_STRIDE_PX = 76;
+
+export type StackGridLayout = 'grid' | 'mobile-scroll';
+
+export function resolveStackGridLayout(mobileScroll: boolean): StackGridLayout {
+    return mobileScroll ? 'mobile-scroll' : 'grid';
+}
+
+export function getStackLayerStagger(index: number, layout: StackGridLayout = 'grid'): number {
+    if (layout === 'mobile-scroll') {
+        return index * STACK_LAYER_MOBILE_STAGGER;
+    }
     const row = Math.floor(index / 4);
     const col = index % 4;
     return row * STACK_LAYER_STAGGER_ROW + col * STACK_LAYER_STAGGER_COL;
 }
 
-export function getStackLayerEnterProgress(local: number, index: number, staticMode: boolean): number {
+export function getStackLayerCardSpan(layout: StackGridLayout = 'grid'): number {
+    return layout === 'mobile-scroll' ? STACK_LAYER_MOBILE_SPAN : STACK_LAYER_CARD_SPAN;
+}
+
+export function getStackLayerEnterProgress(
+    local: number,
+    index: number,
+    staticMode: boolean,
+    layout: StackGridLayout = 'grid',
+): number {
     if (staticMode) return 1;
-    const stagger = getStackLayerStagger(index);
+    const stagger = getStackLayerStagger(index, layout);
+    const span = getStackLayerCardSpan(layout);
     const revealStart = STACK_LAYER_ENTER_BASE + stagger;
-    const revealEnd = revealStart + STACK_LAYER_CARD_SPAN;
+    const revealEnd = revealStart + span;
     return chapterReveal(local, revealStart, revealEnd);
 }
 
 /** Hold after every card is visible, then exit with the same span + stagger as enter */
-export const STACK_GRID_EXIT_HOLD = 0.1;
+export const STACK_GRID_EXIT_HOLD = 0.28;
 
 export type StackGridExitStyle = 'scatter' | 'sequential';
 
 /** Extended local timeline — enter, hold, and exit all fit before the chapter ends */
-export function getStackGridTimelineEnd(cardCount: number): number {
-    const lastStagger = getStackLayerStagger(cardCount - 1);
+export function getStackGridTimelineEnd(cardCount: number, layout: StackGridLayout = 'grid'): number {
+    const lastStagger = getStackLayerStagger(cardCount - 1, layout);
+    const span = getStackLayerCardSpan(layout);
     return (
         STACK_LAYER_ENTER_BASE +
         lastStagger +
-        STACK_LAYER_CARD_SPAN +
+        span +
         STACK_GRID_EXIT_HOLD +
         lastStagger +
-        STACK_LAYER_CARD_SPAN
+        span
     );
+}
+
+export function getStackGridTimelineEndFor(cardCount: number, layout: StackGridLayout): number {
+    return getStackGridTimelineEnd(cardCount, layout);
 }
 
 export const STACK_GRID_SCENE_COUNTS: Record<number, number> = {
@@ -110,8 +143,9 @@ export const WORKFLOW_STEP_COUNT = 4;
 
 const WORKFLOW_STEP_STARTS = [0.06, 0.24, 0.48, 0.66] as const;
 const WORKFLOW_STEP_SPAN = 0.11;
-const WORKFLOW_ARROW_STARTS = [0.16, 0.36, 0.58] as const;
-const WORKFLOW_ARROW_SPANS = [0.09, 0.16, 0.09] as const;
+const WORKFLOW_ARROW_STARTS = [0.16, 0.34, 0.58] as const;
+const WORKFLOW_ARROW_SPANS = [0.09, 0.42, 0.09] as const;
+const WORKFLOW_FULL_HOLD_EXIT_START = 0.975;
 
 export function getWorkflowStepEnter(local: number, index: number, staticMode: boolean): number {
     if (staticMode) return 1;
@@ -128,7 +162,7 @@ export function getWorkflowArrowReveal(local: number, index: number, staticMode:
 
 export function getWorkflowSceneExit(local: number, staticMode: boolean): number {
     if (staticMode) return 1;
-    return chapterExit(local, 0.94, 0.995);
+    return chapterExit(local, WORKFLOW_FULL_HOLD_EXIT_START, 0.995);
 }
 
 /** Scene wrapper — hold through step 4, then fade near chapter end */
@@ -137,16 +171,13 @@ export function getWorkflowSceneMotion(local: number, staticMode = false) {
         return { reveal: 1, exit: 1, combined: 1 };
     }
     const reveal = chapterReveal(local, CHAPTER_VISUAL_REVEAL_START, CHAPTER_VISUAL_REVEAL_END);
-    const exit = chapterExit(local, 0.96, 0.999);
+    const exit = chapterExit(local, 0.985, 0.999);
     return { reveal, exit, combined: reveal * exit };
 }
 
-function getWorkflowStepEnterTransform(index: number, enter: number): string {
-    const offset = (1 - enter) * 44;
-    if (index === 0) return `translateX(${-offset}px) scale(${0.9 + enter * 0.1})`;
-    if (index === 1) return `translateX(${offset}px) scale(${0.9 + enter * 0.1})`;
-    if (index === 2) return `translateY(${offset}px) scale(${0.9 + enter * 0.1})`;
-    return `translateX(${offset}px) scale(${0.9 + enter * 0.1})`;
+function getWorkflowStepEnterTransform(_index: number, enter: number): string {
+    const offset = (1 - enter) * 20;
+    return enter >= 0.999 ? 'none' : `translateY(${offset}px)`;
 }
 
 export function getWorkflowStepMotion(local: number, index: number, staticMode: boolean) {
@@ -198,10 +229,11 @@ export function getStackGridLocalProgress(
     progress: number,
     sceneIndex: number,
     range: readonly [number, number],
+    layout: StackGridLayout = 'grid',
 ): number {
     const [start, end] = range;
     const cardCount = STACK_GRID_SCENE_COUNTS[sceneIndex] ?? 0;
-    const timeline = getStackGridTimelineEnd(cardCount);
+    const timeline = getStackGridTimelineEnd(cardCount, layout);
 
     if (progress <= start) return 0;
     if (progress >= end) return timeline;
@@ -210,18 +242,18 @@ export function getStackGridLocalProgress(
 }
 
 /** Local progress when the last card finishes entering */
-export function getStackGridEnterCompleteLocal(cardCount: number): number {
-    const lastStagger = getStackLayerStagger(cardCount - 1);
-    return STACK_LAYER_ENTER_BASE + lastStagger + STACK_LAYER_CARD_SPAN;
+export function getStackGridEnterCompleteLocal(cardCount: number, layout: StackGridLayout = 'grid'): number {
+    const lastStagger = getStackLayerStagger(cardCount - 1, layout);
+    return STACK_LAYER_ENTER_BASE + lastStagger + getStackLayerCardSpan(layout);
 }
 
 /** First card begins exiting after every card is visible + hold */
-export function getStackGridExitStart(cardCount: number): number {
-    return getStackGridEnterCompleteLocal(cardCount) + STACK_GRID_EXIT_HOLD;
+export function getStackGridExitStart(cardCount: number, layout: StackGridLayout = 'grid'): number {
+    return getStackGridEnterCompleteLocal(cardCount, layout) + STACK_GRID_EXIT_HOLD;
 }
 
-export function getStackGridExitCompleteLocal(cardCount: number): number {
-    return getStackGridTimelineEnd(cardCount);
+export function getStackGridExitCompleteLocal(cardCount: number, layout: StackGridLayout = 'grid'): number {
+    return getStackGridTimelineEnd(cardCount, layout);
 }
 
 /** Per-card exit progress scrubbed to scroll (0 = gone, 1 = visible) */
@@ -230,24 +262,23 @@ export function getStackLayerExitProgress(
     index: number,
     cardCount: number,
     staticMode: boolean,
+    layout: StackGridLayout = 'grid',
 ): number {
     if (staticMode) return 1;
-    const stagger = getStackLayerStagger(index);
-    const exitStart = getStackGridExitStart(cardCount) + stagger;
-    const exitEnd = exitStart + STACK_LAYER_CARD_SPAN;
+    const stagger = getStackLayerStagger(index, layout);
+    const span = getStackLayerCardSpan(layout);
+    const exitStart = getStackGridExitStart(cardCount, layout) + stagger;
+    const exitEnd = exitStart + span;
     return chapterExit(local, exitStart, exitEnd);
 }
 
 function getScatterOffset(index: number, exit: number) {
     const row = Math.floor(index / 4);
-    const col = index % 4;
-    const angle = ((index * 53 + row * 29 + col * 17) % 360) * (Math.PI / 180);
-    const distance = (1 - exit) * 88;
-    const rotate = (1 - exit) * (index % 2 === 0 ? -14 : 11);
+    const distance = (1 - exit) * 48;
     return {
-        x: Math.cos(angle) * distance,
-        y: Math.sin(angle) * distance,
-        rotate,
+        x: 0,
+        y: distance + row * 4,
+        rotate: 0,
     };
 }
 
@@ -258,37 +289,92 @@ export function getStackGridLayerMotion(
     cardCount: number,
     staticMode: boolean,
     exitStyle: StackGridExitStyle,
+    layout: StackGridLayout = 'grid',
 ) {
     if (staticMode) {
         return { opacity: 1, transform: 'translateX(0) translateY(0) rotate(0deg) scale(1)' };
     }
 
-    const enter = getStackLayerEnterProgress(local, index, staticMode);
-    const exit = getStackLayerExitProgress(local, index, cardCount, staticMode);
-    const enterX = (1 - enter) * -56;
-    const baseScale = 0.92 + enter * 0.08;
-
-    if (exitStyle === 'scatter') {
-        const { x, y, rotate } = getScatterOffset(index, exit);
-        const scale = baseScale * (0.82 + exit * 0.18);
+    if (layout === 'mobile-scroll') {
+        const enter = getStackLayerEnterProgress(local, index, staticMode, layout);
+        const exit = getStackLayerExitProgress(local, index, cardCount, staticMode, layout);
+        const enterY = (1 - enter) * 40;
         return {
             opacity: enter * exit,
-            transform: `translateX(${enterX + x}px) translateY(${y}px) rotate(${rotate}deg) scale(${scale})`,
+            transform: enter >= 0.999 && exit >= 0.999 ? 'none' : `translateY(${enterY}px)`,
         };
     }
 
-    const fadeX = (1 - exit) * -22;
-    const fadeY = (1 - exit) * -18;
-    const scale = baseScale * (0.84 + exit * 0.16);
+    const enter = getStackLayerEnterProgress(local, index, staticMode, layout);
+    const exit = getStackLayerExitProgress(local, index, cardCount, staticMode, layout);
+    const enterOffset = (1 - enter) * 24;
+
+    if (exitStyle === 'scatter') {
+        const { y } = getScatterOffset(index, exit);
+        if (enter >= 0.999 && exit >= 0.999) {
+            return { opacity: 1, transform: 'none' };
+        }
+        return {
+            opacity: enter * exit,
+            transform: `translateY(${enterOffset + y}px)`,
+        };
+    }
+
+    const fadeY = (1 - exit) * -10;
+    if (enter >= 0.999 && exit >= 0.999) {
+        return { opacity: 1, transform: 'none' };
+    }
     return {
         opacity: enter * exit,
-        transform: `translateX(${enterX + fadeX}px) translateY(${fadeY}px) rotate(0deg) scale(${scale})`,
+        transform: `translateY(${enterOffset + fadeY}px)`,
     };
 }
 
-export function stackGridSceneVisible(local: number, cardCount: number, staticMode: boolean): boolean {
+/** Bottom edge of last card targets this fraction of viewport height from the top (≈ lower third) */
+export const MOBILE_STACK_TARGET_BOTTOM_FROM_TOP = 2 / 3;
+
+export function getMobileStackPanProgress(
+    local: number,
+    cardCount: number,
+    staticMode: boolean,
+    layout: StackGridLayout = 'grid',
+): number {
+    if (staticMode || layout !== 'mobile-scroll') return staticMode ? 1 : 0;
+
+    const panStart = STACK_LAYER_ENTER_BASE;
+    const panEnd = getStackGridExitStart(cardCount, layout);
+    if (local <= panStart) return 0;
+    if (local >= panEnd) return 1;
+    return easeInOutCubic((local - panStart) / (panEnd - panStart));
+}
+
+export function getMobileStackMaxPanOffset(stageHeight: number, viewportHeight: number): number {
+    if (stageHeight <= 0 || viewportHeight <= 0) return 0;
+    if (stageHeight <= viewportHeight) return 0;
+    const targetBottom = viewportHeight * MOBILE_STACK_TARGET_BOTTOM_FROM_TOP;
+    return Math.max(0, stageHeight - targetBottom);
+}
+
+export function getMobileStackStageOffset(
+    local: number,
+    cardCount: number,
+    staticMode: boolean,
+    layout: StackGridLayout,
+    maxOffsetPx: number,
+): number {
+    if (layout !== 'mobile-scroll') return 0;
+    if (staticMode) return maxOffsetPx;
+    return getMobileStackPanProgress(local, cardCount, staticMode, layout) * maxOffsetPx;
+}
+
+export function stackGridSceneVisible(
+    local: number,
+    cardCount: number,
+    staticMode: boolean,
+    layout: StackGridLayout = 'grid',
+): boolean {
     if (staticMode) return true;
-    return local < getStackGridExitCompleteLocal(cardCount);
+    return local < getStackGridExitCompleteLocal(cardCount, layout);
 }
 
 export const CHAPTER_META = [

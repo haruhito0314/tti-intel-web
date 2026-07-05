@@ -896,3 +896,288 @@ Visit https://react.dev/link/error-boundaries to learn more about error boundari
 [ 4765147ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/src/index.css?t=1783207096518:0
 [ 4765147ms] [ERROR] [vite] Failed to reload /src/index.css. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
 [ 4809902ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[ 5016708ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[ 5123682ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/src/index.css?t=1783207455060:0
+[ 5123682ms] [ERROR] [vite] Failed to reload /src/index.css. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 5513740ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[ 5638176ms] ReferenceError: TechBrandIcon is not defined
+    at http://localhost:5175/src/components/development/DevHeroScene1.tsx?t=1783207969384:62:44
+    at Array.map (<anonymous>)
+    at DevHeroScene1 (http://localhost:5175/src/components/development/DevHeroScene1.tsx?t=1783207969384:42:26)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+[ 5638170ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroScene1> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 5641310ms] ReferenceError: TechBrandIcon is not defined
+    at http://localhost:5175/src/components/development/DevHeroScene1.tsx?t=1783207972641:62:44
+    at Array.map (<anonymous>)
+    at DevHeroScene1 (http://localhost:5175/src/components/development/DevHeroScene1.tsx?t=1783207972641:42:26)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+[ 5641309ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroScene1> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 5643423ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/src/components/development/DevHeroScene2.tsx?t=1783207974811:0
+[ 5643424ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene2.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 5643933ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/src/components/development/DevHeroScene3.tsx?t=1783207975321:0
+[ 5643933ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene3.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 5648989ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/src/components/development/DevHeroScene5.tsx?t=1783207980378:0
+[ 5648989ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene5.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 5649501ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/src/components/development/DevHeroScene6.tsx?t=1783207980887:0
+[ 5649501ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene6.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 5918283ms] ReferenceError: useMobileStackScroll is not defined
+    at DevHeroCopy (http://localhost:5175/src/components/development/DevHeroCopy.tsx?t=1783208249607:106:29)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 5918281ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroCopy> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 5918650ms] ReferenceError: useMobileStackScroll is not defined
+    at DevHeroCopy (http://localhost:5175/src/components/development/DevHeroCopy.tsx?t=1783208249998:106:29)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 5918650ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroCopy> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 5918962ms] ReferenceError: useMobileStackScroll is not defined
+    at DevHeroCopy (http://localhost:5175/src/components/development/DevHeroCopy.tsx?t=1783208250303:106:29)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 5918962ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroCopy> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 5919148ms] ReferenceError: useMobileStackScroll is not defined
+    at DevHeroCopy (http://localhost:5175/src/components/development/DevHeroCopy.tsx?t=1783208250488:106:29)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 5919148ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroCopy> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 5919548ms] ReferenceError: chapterExit is not defined
+    at http://localhost:5175/src/components/development/DevHeroCopy.tsx?t=1783208250889:159:68
+    at Array.map (<anonymous>)
+    at DevHeroCopy (http://localhost:5175/src/components/development/DevHeroCopy.tsx?t=1783208250889:134:121)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+[ 5919548ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroCopy> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 6117170ms] ReferenceError: DevFitScale is not defined
+    at DevHeroScene1 (http://localhost:5175/src/components/development/DevHeroScene1.tsx?t=1783208448460:51:32)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 6117167ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroScene1> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 6119322ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/src/components/development/DevHeroScene1.tsx?t=1783208450706:0
+[ 6119323ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene1.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 6254066ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/src/components/development/DevHeroScene3.tsx?t=1783208585447:0
+[ 6254066ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene3.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 6254423ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/src/components/development/DevHeroScene3.tsx?t=1783208585812:0
+[ 6254423ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene3.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 6255942ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/src/components/development/DevHeroScene4.tsx?t=1783208587309:0
+[ 6255948ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene4.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 6256335ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/src/components/development/DevHeroScene6.tsx?t=1783208587723:0
+[ 6256335ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene6.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 6257157ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/src/components/development/DevHeroScene7.tsx?t=1783208588543:0
+[ 6257157ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene7.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 6497909ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[ 6684314ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/src/index.css?t=1783209015696:0
+[ 6684315ms] [ERROR] [vite] Failed to reload /src/index.css. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 6755518ms] ReferenceError: activeMeta is not defined
+    at DevHero (http://localhost:5175/src/components/development/DevHero.tsx?t=1783209086807:62:93)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 6755516ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHero> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 6755869ms] ReferenceError: CHAPTER_META is not defined
+    at DevHero (http://localhost:5175/src/components/development/DevHero.tsx?t=1783209087213:123:105)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 6755869ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHero> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 6837374ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/src/components/development/DevHeroScene1.tsx?t=1783209168760:0
+[ 6837374ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene1.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 6840306ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/src/components/development/DevHeroScene6.tsx?t=1783209171694:0
+[ 6840306ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene6.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 6844582ms] ReferenceError: WORKFLOW_CURVE_PATH is not defined
+    at WorkflowArrowCurve (http://localhost:5175/src/components/development/DevHeroScene6.tsx?t=1783209175887:227:12)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 6844576ms] [WARNING] %s
+
+%s
+ An error occurred in the <WorkflowArrowCurve> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 6846349ms] ReferenceError: WorkflowArrowCurve is not defined
+    at DevHeroScene6 (http://localhost:5175/src/components/development/DevHeroScene6.tsx?t=1783209177673:221:34)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 6846350ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroScene6> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 6846435ms] ReferenceError: WorkflowArrowCurve is not defined
+    at DevHeroScene6 (http://localhost:5175/src/components/development/DevHeroScene6.tsx?t=1783209177773:221:34)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+    at renderRootSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12408:13)
+    at performWorkOnRoot (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11827:37)
+[ 6846435ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHeroScene6> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 6974869ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/src/components/development/DevHeroScene1.tsx?t=1783209306234:0
+[ 6974870ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene1.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 7228867ms] [LOG] [vite] server connection lost. Polling for restart... @ http://localhost:5175/@vite/client:864
+[ 7229371ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[ 7242008ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[ 7294486ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[ 7295620ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[ 7509014ms] ReferenceError: clamp is not defined
+    at getSceneLayerOpacity (http://localhost:5175/src/components/development/useScrollProgress.ts?t=1783209840350:48:3)
+    at getSceneVisualOpacity (http://localhost:5175/src/components/development/useScrollProgress.ts?t=1783209840350:51:10)
+    at DevHero (http://localhost:5175/src/components/development/DevHero.tsx?t=1783209840350:97:66)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+[ 7509009ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHero> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 7522425ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[ 7530861ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[ 7674161ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[ 7803023ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/src/components/development/DevStackGridScene.tsx?t=1783210134386:0
+[ 7803023ms] [ERROR] [vite] Failed to reload /src/components/development/DevStackGridScene.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 7803391ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/src/components/development/DevStackGridScene.tsx?t=1783210134751:0
+[ 7803391ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene5.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 7803391ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene2.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 7803881ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/src/components/development/DevStackGridScene.tsx?t=1783210135247:0
+[ 7803881ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene5.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 7803881ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene2.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 8045162ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[ 8113125ms] [ERROR] The final argument passed to %s changed size between renders. The order and size of this array must remain constant.
+
+Previous: %s
+Incoming: %s useLayoutEffect [false, grid, 12] [false, grid, 12, 0] @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5627
+[ 8113130ms] [ERROR] The final argument passed to %s changed size between renders. The order and size of this array must remain constant.
+
+Previous: %s
+Incoming: %s useLayoutEffect [false, grid, 8] [false, grid, 8, 0] @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5627
+[ 8153261ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[ 8157814ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[ 8264888ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102

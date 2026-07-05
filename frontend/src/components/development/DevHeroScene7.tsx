@@ -31,26 +31,28 @@ export function DevHeroScene7({ progress, opacity, staticMode = false, copyIndex
                 <DevHeroCopy progress={1} staticMode staticBlockIndex={copyIndex} />
             )}
 
-            <div
-                className="dev-hero-cta-row is-visible"
-                style={{
-                    opacity: ctaReveal,
-                    transform: `translateY(${(1 - ctaReveal) * 16}px)`,
-                    pointerEvents: ctaReveal > 0.5 ? 'auto' : 'none',
-                }}
-            >
-                <a
-                    href={siteConfig.social.discord.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="dev-hero-cta dev-hero-cta--primary"
+            <div className="dev-scene-viewport">
+                <div
+                    className="dev-hero-cta-row is-visible"
+                    style={{
+                        opacity: ctaReveal,
+                        transform: `translateY(${(1 - ctaReveal) * 16}px)`,
+                        pointerEvents: ctaReveal > 0.5 ? 'auto' : 'none',
+                    }}
                 >
-                    Discordに参加する
-                    <ArrowRight className="w-5 h-5" />
-                </a>
-                <Link to="/contact" className="dev-hero-cta dev-hero-cta--ghost">
-                    お問い合わせ
-                </Link>
+                    <a
+                        href={siteConfig.social.discord.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="dev-hero-cta dev-hero-cta--primary"
+                    >
+                        Discordに参加する
+                        <ArrowRight className="w-5 h-5" />
+                    </a>
+                    <Link to="/contact" className="dev-hero-cta dev-hero-cta--ghost">
+                        お問い合わせ
+                    </Link>
+                </div>
             </div>
         </div>
     );

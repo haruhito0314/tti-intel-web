@@ -8,20 +8,21 @@ import {
     chapterReveal,
     getStackGridLocalProgress,
     STACK_GRID_SCENE_COUNTS,
+    type StackGridLayout,
 } from './chapterMotion';
 
 /** Gap between chapters */
-export const CHAPTER_GAP = 0.007;
+export const CHAPTER_GAP = 0.005;
 
-/** Seven chapters — chapter 6 workflow, chapter 7 long finale */
+/** Seven chapters — ch2/ch5 widened for slower card reveals */
 export const SCENE_VISUAL_RANGES = [
-    [0, 0.112],
-    [0.117, 0.295],
-    [0.3, 0.368],
-    [0.373, 0.411],
-    [0.416, 0.516],
-    [0.521, 0.696],
-    [0.701, 0.995],
+    [0, 0.142],
+    [0.147, 0.418],
+    [0.423, 0.498],
+    [0.503, 0.563],
+    [0.568, 0.839],
+    [0.844, 0.914],
+    [0.919, 0.995],
 ] as const;
 
 export const SCENE_COPY_RANGES = SCENE_VISUAL_RANGES;
@@ -30,8 +31,14 @@ export const SCENE_SCROLL_TARGETS = SCENE_COPY_RANGES.map(([start]) => start);
 
 const FADE = 0.06;
 
-/** Chapters with per-card exit or self-managed fade — no scene fade until content is done */
-const NO_END_FADE_SCENE_INDICES = new Set([...Object.keys(STACK_GRID_SCENE_COUNTS).map(Number), 5]);
+/** Scene fade at range edges is disabled — chapter motion handles exit */
+const NO_END_FADE_SCENE_INDICES = new Set([
+    0,
+    2,
+    3,
+    ...Object.keys(STACK_GRID_SCENE_COUNTS).map(Number),
+    5,
+]);
 
 function clamp(value: number, min = 0, max = 1) {
     return Math.max(min, Math.min(max, value));
@@ -44,18 +51,18 @@ function getSceneLayerOpacity(progress: number, sceneIndex: number): number {
         return 0;
     }
 
+    const span = end - start;
+    const fadeSpan = Math.min(FADE, span * 0.1);
     let opacity = 1;
-    const fadeInEnd = start + FADE;
-    const fadeOutStart = end - FADE;
+    const fadeInEnd = start + fadeSpan;
+    const fadeOutStart = end - fadeSpan;
 
-    if (sceneIndex > 0 && progress < fadeInEnd) {
-        opacity = (progress - start) / FADE;
+    if (sceneIndex > 0 && fadeSpan > 0 && progress < fadeInEnd) {
+        opacity = (progress - start) / fadeSpan;
     }
 
-    if (progress > fadeOutStart) {
-        if (!NO_END_FADE_SCENE_INDICES.has(sceneIndex)) {
-            opacity = Math.min(opacity, (end - progress) / FADE);
-        }
+    if (fadeSpan > 0 && progress > fadeOutStart && !NO_END_FADE_SCENE_INDICES.has(sceneIndex)) {
+        opacity = Math.min(opacity, (end - progress) / fadeSpan);
     }
 
     return clamp(opacity);
@@ -78,11 +85,11 @@ export function getSceneCopyTransform(progress: number, sceneIndex: number): num
     const exit = chapterExit(local, CHAPTER_COPY_EXIT_START, CHAPTER_COPY_EXIT_END);
 
     if (enter < 1) {
-        return (1 - enter) * 48;
+        return (1 - enter) * 32;
     }
 
     if (exit < 1) {
-        return -(1 - exit) * 40;
+        return -(1 - exit) * 28;
     }
 
     return 0;
@@ -96,8 +103,12 @@ export function getSceneLocalProgress(progress: number, sceneIndex: number): num
     return clamp((progress - start) / (end - start));
 }
 
-export function getStackSceneLocalProgress(progress: number, sceneIndex: number): number {
-    return getStackGridLocalProgress(progress, sceneIndex, SCENE_VISUAL_RANGES[sceneIndex]);
+export function getStackSceneLocalProgress(
+    progress: number,
+    sceneIndex: number,
+    layout: StackGridLayout = 'grid',
+): number {
+    return getStackGridLocalProgress(progress, sceneIndex, SCENE_VISUAL_RANGES[sceneIndex], layout);
 }
 
 export function getActiveSceneIndex(progress: number): number {

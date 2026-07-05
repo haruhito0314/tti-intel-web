@@ -156,16 +156,18 @@ export function DevHeroScene6({ progress, opacity, staticMode = false, copyIndex
                 <DevHeroCopy progress={1} staticMode staticBlockIndex={copyIndex} />
             )}
 
-            <div className="dev-workflow-grid" aria-hidden="true">
-                <WorkflowCard step={WORKFLOW_STEPS[0]} index={0} motion={stepMotions[0]} />
-                <WorkflowArrowHorizontal motion={arrowTop} className="dev-workflow-arrow-h--top" />
-                <WorkflowCard step={WORKFLOW_STEPS[1]} index={1} motion={stepMotions[1]} />
+            <div className="dev-scene-viewport" aria-hidden="true">
+                <div className="dev-workflow-grid">
+                    <WorkflowCard step={WORKFLOW_STEPS[0]} index={0} motion={stepMotions[0]} />
+                    <WorkflowArrowHorizontal motion={arrowTop} className="dev-workflow-arrow-h--top" />
+                    <WorkflowCard step={WORKFLOW_STEPS[1]} index={1} motion={stepMotions[1]} />
 
-                <WorkflowArrowCurve motion={curve} />
+                    <WorkflowArrowCurve motion={curve} />
 
-                <WorkflowCard step={WORKFLOW_STEPS[2]} index={2} motion={stepMotions[2]} />
-                <WorkflowArrowHorizontal motion={arrowBottom} className="dev-workflow-arrow-h--bottom" />
-                <WorkflowCard step={WORKFLOW_STEPS[3]} index={3} motion={stepMotions[3]} />
+                    <WorkflowCard step={WORKFLOW_STEPS[2]} index={2} motion={stepMotions[2]} />
+                    <WorkflowArrowHorizontal motion={arrowBottom} className="dev-workflow-arrow-h--bottom" />
+                    <WorkflowCard step={WORKFLOW_STEPS[3]} index={3} motion={stepMotions[3]} />
+                </div>
             </div>
         </div>
     );

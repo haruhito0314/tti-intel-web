@@ -25,17 +25,17 @@ const SERVER_LUCIDE_ICONS = {
 
 function getServerRowProgress(local: number, index: number, staticMode: boolean): number {
     if (staticMode) return 1;
-    const stagger = index * 0.14;
+    const stagger = index * 0.11;
     const revealStart = 0.06 + stagger;
-    const revealEnd = revealStart + 0.18;
+    const revealEnd = revealStart + 0.14;
     return chapterReveal(local, revealStart, revealEnd);
 }
 
 function getServerToggleProgress(local: number, index: number, staticMode: boolean): number {
     if (staticMode) return 1;
-    const stagger = index * 0.14;
-    const revealStart = 0.14 + stagger;
-    const revealEnd = revealStart + 0.16;
+    const stagger = index * 0.11;
+    const revealStart = 0.12 + stagger;
+    const revealEnd = revealStart + 0.12;
     return chapterReveal(local, revealStart, revealEnd);
 }
 
@@ -67,14 +67,15 @@ export function DevHeroScene3({ progress, opacity, staticMode = false, copyIndex
                 <DevHeroCopy progress={1} staticMode staticBlockIndex={copyIndex} />
             )}
 
-            <div
-                className="dev-mcp-panel dev-glass-card"
-                aria-hidden="true"
-                style={{
-                    opacity: panelReveal,
-                    transform: `translateY(${(1 - panelReveal) * 32}px) scale(${0.94 + panelReveal * 0.06})`,
-                }}
-            >
+            <div className="dev-scene-viewport">
+                <div
+                    className="dev-mcp-panel dev-glass-card"
+                    aria-hidden="true"
+                    style={{
+                        opacity: panelReveal,
+                        transform: `translateY(${(1 - panelReveal) * 24}px)`,
+                    }}
+                >
                 <div className="dev-mcp-panel-chrome">
                     <div className="dev-mcp-panel-title-wrap">
                         <TechBrandIcon slug="modelcontextprotocol" className="dev-mcp-panel-title-icon" />
@@ -94,7 +95,7 @@ export function DevHeroScene3({ progress, opacity, staticMode = false, copyIndex
                                 className={`dev-mcp-panel-row${isOn ? ' is-connected' : ''}`}
                                 style={{
                                     opacity: rowProgress,
-                                    transform: `translateX(${(1 - rowProgress) * -40}px)`,
+                                    transform: `translateY(${(1 - rowProgress) * 20}px)`,
                                 }}
                             >
                                 <div className="dev-mcp-panel-row-icon">
@@ -132,6 +133,7 @@ export function DevHeroScene3({ progress, opacity, staticMode = false, copyIndex
                         );
                     })}
                 </ul>
+            </div>
             </div>
         </div>
     );

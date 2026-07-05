@@ -1,0 +1,145 @@
+- generic [ref=f2e3]:
+  - banner [ref=f2e4]:
+    - navigation [ref=f2e6]:
+      - generic [ref=f2e7]:
+        - link "TTI Intelligence ホーム" [ref=f2e8] [cursor=pointer]:
+          - /url: /
+        - generic [ref=f2e10]:
+          - 'button "テーマを切り替え (現在: システム設定)" [ref=f2e11]':
+            - img [ref=f2e12]
+          - button "メニューを開く" [ref=f2e14]:
+            - img [ref=f2e15]
+  - main [ref=f2e16]:
+    - region "開発紹介" [ref=f2e86]:
+      - generic [ref=f2e87]:
+        - generic:
+          - generic: "04"
+          - generic: /
+          - generic: "07"
+        - generic [ref=f2e88]:
+          - generic:
+            - heading [level=2]: このページも、私たちの作品です。
+            - paragraph: いまスクロールしてきたこの体験も、部員がAIとともに設計・実装したもの。次は、あなたのアイデアを形にしませんか。
+        - generic [ref=f2e92]:
+          - generic:
+            - generic:
+              - generic:
+                - generic: tti-intel.com/development
+              - generic:
+                - generic:
+                  - generic:
+                    - generic: TTI Intelligence
+                  - generic:
+                    - generic: 01 / 05
+                    - heading [level=3]: つくる力は、AIで加速する。
+                    - paragraph: TTI Intelligenceの開発は、最新のAIコーディングツールとの対話から始まります。
+                    - generic:
+                      - generic:
+                        - generic: Development.tsx
+                      - generic:
+                        - paragraph: "> AIと一緒に、Webサイトを作る"
+                    - generic:
+                      - generic:
+                        - img
+                        - text: OpenAI Codex
+                      - generic:
+                        - img
+                        - text: Claude Code
+                      - generic:
+                        - img
+                        - text: Cursor
+            - generic [ref=f2e140]:
+              - link [ref=f2e141] [cursor=pointer]:
+                - /url: /app
+                - text: アプリを見る
+                - img [ref=f2e142]
+              - link [ref=f2e144] [cursor=pointer]:
+                - /url: /contact
+                - text: 参加について聞く
+        - generic [ref=f2e123]: Scroll
+        - navigation "ヒーローのチャプター" [ref=f2e124]:
+          - 'button "Chapter 01: AI Development" [ref=f2e125] [cursor=pointer]':
+            - generic [ref=f2e126]: "01"
+          - 'button "Chapter 02: Tech Stack" [ref=f2e127] [cursor=pointer]':
+            - generic [ref=f2e128]: "02"
+          - 'button "Chapter 03: MCP Integration" [ref=f2e129] [cursor=pointer]':
+            - generic [ref=f2e130]: "03"
+          - 'button "Chapter 04: Ship & Share" [ref=f2e131] [cursor=pointer]':
+            - generic [ref=f2e132]: "04"
+          - 'button "Chapter 05: AI Tools" [ref=f2e133] [cursor=pointer]':
+            - generic [ref=f2e134]: "05"
+          - 'button "Chapter 06: Our Process" [active] [ref=f2e135] [cursor=pointer]':
+            - generic [ref=f2e136]: "06"
+          - 'button "Chapter 07: Join Us" [ref=f2e137] [cursor=pointer]':
+            - generic [ref=f2e138]: "07"
+  - contentinfo [ref=f2e21]:
+    - generic [ref=f2e22]:
+      - generic [ref=f2e23]:
+        - generic [ref=f2e24]:
+          - link "TTI Intelligence" [ref=f2e25] [cursor=pointer]:
+            - /url: /
+            - generic [ref=f2e27]: TTI Intelligence
+          - paragraph [ref=f2e28]: TTI Intelligenceは、最新のAI技術を共に学び、実践的な開発を通じてアイデアを形にする学生コミュニティです。
+          - generic [ref=f2e29]:
+            - heading "連絡先情報" [level=3] [ref=f2e30]
+            - generic [ref=f2e31]:
+              - generic [ref=f2e32]:
+                - img [ref=f2e33]
+                - paragraph [ref=f2e36]:
+                  - generic [ref=f2e37]: 住所
+                  - text: 〒468-8511 名古屋市天白区久方二丁目12番地1 豊田工業大学
+              - generic [ref=f2e38]:
+                - img [ref=f2e39]
+                - paragraph [ref=f2e42]:
+                  - generic [ref=f2e43]: Email
+                  - link "tti.intel@gmail.com" [ref=f2e44] [cursor=pointer]:
+                    - /url: mailto:tti.intel@gmail.com
+          - generic [ref=f2e45]:
+            - link "Discord" [ref=f2e46] [cursor=pointer]:
+              - /url: https://discord.gg/DFWs8GrHxF
+              - img [ref=f2e47]
+            - link "Instagram" [ref=f2e49] [cursor=pointer]:
+              - /url: https://instagram.com/haruhito_314
+              - img [ref=f2e50]
+            - link "GitHub" [ref=f2e52] [cursor=pointer]:
+              - /url: https://github.com/haruhito0314
+              - img [ref=f2e53]
+            - link "YouTube" [ref=f2e55] [cursor=pointer]:
+              - /url: https://www.youtube.com/@ttiintelligence
+              - img [ref=f2e56]
+        - generic [ref=f2e58]:
+          - heading "メニュー" [level=3] [ref=f2e59]
+          - list [ref=f2e60]:
+            - listitem [ref=f2e61]:
+              - link "Home" [ref=f2e62] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=f2e63]:
+              - link "About Us" [ref=f2e64] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=f2e65]:
+              - link "Weekly Math" [ref=f2e66] [cursor=pointer]:
+                - /url: /weekly-math
+            - listitem [ref=f2e67]:
+              - link "News" [ref=f2e68] [cursor=pointer]:
+                - /url: /news
+            - listitem [ref=f2e69]:
+              - link "Apps" [ref=f2e70] [cursor=pointer]:
+                - /url: /app
+            - listitem [ref=f2e71]:
+              - link "Development" [ref=f2e72] [cursor=pointer]:
+                - /url: /development
+            - listitem [ref=f2e73]:
+              - link "Board" [ref=f2e74] [cursor=pointer]:
+                - /url: /board
+            - listitem [ref=f2e75]:
+              - link "Contact" [ref=f2e76] [cursor=pointer]:
+                - /url: /contact
+        - generic [ref=f2e77]:
+          - heading "その他" [level=3] [ref=f2e78]
+          - list [ref=f2e79]:
+            - listitem [ref=f2e80]:
+              - link "管理者ページ" [ref=f2e81] [cursor=pointer]:
+                - /url: /admin
+      - generic [ref=f2e82]:
+        - paragraph [ref=f2e83]: © 2026 TTI Intelligence. All rights reserved.
+        - button "ロード画面をオフにする" [pressed] [ref=f2e84]: "ロード画面: オン"
