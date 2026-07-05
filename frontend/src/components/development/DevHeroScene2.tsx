@@ -34,7 +34,6 @@ export function DevHeroScene2({ progress, opacity, staticMode = false, copyIndex
             opacity={opacity}
             staticMode={staticMode}
             copyIndex={copyIndex}
-            exitStyle="sequential"
         />
     );
 }

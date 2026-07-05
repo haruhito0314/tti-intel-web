@@ -1181,3 +1181,69 @@ Incoming: %s useLayoutEffect [false, grid, 8] [false, grid, 8, 0] @ http://local
 [ 8153261ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
 [ 8157814ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
 [ 8264888ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[ 8569772ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[ 8570132ms] ReferenceError: SCENE_COPY_RANGES is not defined
+    at getSceneLayerOpacity (http://localhost:5175/src/components/development/useScrollProgress.ts?t=1783210900983:33:24)
+    at getSceneVisualOpacity (http://localhost:5175/src/components/development/useScrollProgress.ts?t=1783210900983:51:10)
+    at DevHero (http://localhost:5175/src/components/development/DevHero.tsx?t=1783210900983:67:66)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+[ 8570132ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHero> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 8570903ms] [ERROR] [vite] SyntaxError: The requested module '/src/components/development/sceneUtils.ts?t=1783210902277' does not provide an export named 'getScene1VisualMotion' @ http://localhost:5175/@vite/client:808
+[ 8570903ms] [ERROR] [vite] Failed to reload /src/components/development/DevHeroScene1.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:808
+[ 8579167ms] ReferenceError: exitStyle is not defined
+    at http://localhost:5175/src/components/development/DevStackGridScene.tsx?t=1783210910515:43:7
+    at Array.map (<anonymous>)
+    at DevStackGridScene (http://localhost:5175/src/components/development/DevStackGridScene.tsx?t=1783210910515:37:24)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:12424:43)
+[ 8579166ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevStackGridScene> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 8737260ms] [ERROR] React has detected a change in the order of Hooks called by %s. This will lead to bugs and errors if not fixed. For more information, read the Rules of Hooks: https://react.dev/link/rules-of-hooks
+
+   Previous render            Next render
+   ------------------------------------------------------
+%s   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ DevHero 1. useRef                     useRef
+2. useState                   useState
+3. useState                   useState
+4. useRef                     useRef
+5. useEffect                  useRef
+ @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5593
+[ 8737274ms] Error: Rendered more hooks than during the previous render.
+    at updateWorkInProgressHook (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5792:19)
+    at Object.useRef (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18988:18)
+    at exports.useRef (http://localhost:5175/node_modules/.vite/deps/chunk-RY7GF66K.js?v=ae9082af:956:36)
+    at useScrollProgress (http://localhost:5175/src/components/development/useScrollProgress.ts?t=1783211068510:87:27)
+    at DevHero (http://localhost:5175/src/components/development/DevHero.tsx?t=1783211068510:16:39)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+[ 8737266ms] [WARNING] %s
+
+%s
+ An error occurred in the <DevHero> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965
+[ 8740719ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[ 8750639ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[ 8750762ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[ 8751124ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102

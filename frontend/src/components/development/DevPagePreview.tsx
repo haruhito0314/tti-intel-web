@@ -9,7 +9,7 @@ export function DevPagePreview() {
             </div>
 
             <div className="dev-page-preview-hero">
-                <div className="dev-page-preview-chapter">01 / 05</div>
+                <div className="dev-page-preview-chapter">01 / 07</div>
 
                 <h3 className="dev-page-preview-title">
                     つくる力は、AIで<span className="dev-gradient-text">加速する</span>。

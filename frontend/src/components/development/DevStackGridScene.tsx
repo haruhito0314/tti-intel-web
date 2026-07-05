@@ -5,7 +5,6 @@ import {
     getStackGridTimelineEnd,
     resolveStackGridLayout,
     stackGridSceneVisible,
-    type StackGridExitStyle,
 } from './chapterMotion';
 import { useMobileStackScroll } from './useMobileStackScroll';
 import { useMobileStackStagePan } from './useMobileStackStagePan';
@@ -26,7 +25,6 @@ type DevStackGridSceneProps = {
     opacity: number;
     staticMode?: boolean;
     copyIndex?: number;
-    exitStyle: StackGridExitStyle;
 };
 
 export function DevStackGridScene({
@@ -38,7 +36,6 @@ export function DevStackGridScene({
     opacity,
     staticMode = false,
     copyIndex,
-    exitStyle,
 }: DevStackGridSceneProps) {
     const mobileScroll = useMobileStackScroll();
     const layout = resolveStackGridLayout(mobileScroll);
@@ -61,7 +58,6 @@ export function DevStackGridScene({
             index,
             cardCount,
             staticMode,
-            exitStyle,
             layout,
         );
         return (

@@ -59,7 +59,7 @@ export function DevHeroScene4({ progress, opacity, staticMode = false, copyIndex
                     </div>
 
                     <div
-                        className="dev-hero-cta-row is-visible"
+                        className="dev-hero-cta-row"
                         style={{
                             opacity: ctaOpacity,
                             transform: `translateY(${(1 - ctaOpacity) * 16}px)`,

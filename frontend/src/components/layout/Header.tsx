@@ -15,14 +15,20 @@ function isDevHeroOverlayActive(): boolean {
 export function Header() {
     const location = useLocation();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [devHeroOverlay, setDevHeroOverlay] = useState(() => location.pathname === '/development');
+    const [devHeroOverlay, setDevHeroOverlay] = useState(() =>
+        location.pathname === '/development' ? isDevHeroOverlayActive() : false,
+    );
     const isDevPage = location.pathname === '/development';
+    const devHeaderLight = isDevPage;
+    const overlayActive = isDevPage && devHeroOverlay;
 
     useEffect(() => {
         if (!isDevPage) {
             setDevHeroOverlay(false);
             return;
         }
+
+        setDevHeroOverlay(isDevHeroOverlayActive());
 
         let sentinel: HTMLElement | null = null;
         let intersectionObserver: IntersectionObserver | null = null;
@@ -69,11 +75,15 @@ export function Header() {
         };
     }, [isDevPage, location.pathname]);
 
-    const overlayActive = isDevPage && devHeroOverlay;
+    const headerBgClass = isDevPage
+        ? overlayActive
+            ? 'header-dev-overlay-bg'
+            : 'header-dev-scrolled-bg'
+        : 'glass';
 
     return (
-        <header className={`sticky top-0 z-40 w-full ${overlayActive ? 'header-dev-overlay' : ''}`}>
-            <div className={`absolute inset-0 ${overlayActive ? 'header-dev-overlay-bg' : 'glass'}`} />
+        <header className={`sticky top-0 z-40 w-full ${devHeaderLight ? 'header-dev-overlay' : ''}`}>
+            <div className={`absolute inset-0 ${headerBgClass}`} />
 
             <nav className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="relative flex items-center justify-between h-11">
@@ -91,7 +101,7 @@ export function Header() {
                         </span>
                         <span
                             className={`hidden sm:inline lg:hidden xl:inline whitespace-nowrap text-sm font-semibold tracking-[-0.01em] ${
-                                overlayActive
+                                devHeaderLight
                                     ? 'text-[#F5F5F7]'
                                     : 'text-[#1D1D1F] dark:text-[#F5F5F7]'
                             }`}
@@ -109,10 +119,10 @@ export function Header() {
                   px-3 py-1 apple-nav whitespace-nowrap
                   transition-all duration-300
                   ${isActive
-                                        ? overlayActive
+                                        ? devHeaderLight
                                             ? 'text-[#F5F5F7] font-medium'
                                             : 'text-[#1D1D1F] dark:text-[#F5F5F7] font-medium'
-                                        : overlayActive
+                                        : devHeaderLight
                                             ? 'text-[rgba(235,235,245,0.82)] hover:text-[#F5F5F7]'
                                             : 'text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] hover:text-[#1D1D1F] dark:hover:text-[#F5F5F7]'
                                     }
@@ -124,7 +134,7 @@ export function Header() {
                     </div>
 
                     <div className="flex items-center gap-2 md:absolute md:right-0 md:top-1/2 md:-translate-y-1/2">
-                        <ThemeToggle overlay={overlayActive} />
+                        <ThemeToggle overlay={devHeaderLight} />
 
                         <button
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -132,7 +142,7 @@ export function Header() {
                 md:hidden p-2 rounded-full
                 transition-colors duration-200
                 ${
-                    overlayActive
+                    devHeaderLight
                         ? 'text-[rgba(235,235,245,0.88)] hover:bg-white/10'
                         : 'text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] hover:bg-[#F5F5F7] dark:hover:bg-[var(--surface-2)]'
                 }
@@ -151,7 +161,7 @@ export function Header() {
                 {isMobileMenuOpen && (
                     <div
                         className={`md:hidden py-4 animate-fade-in ${
-                            overlayActive ? 'header-dev-mobile-menu' : ''
+                            devHeaderLight ? 'header-dev-mobile-menu' : ''
                         }`}
                     >
                         <div className="flex flex-col gap-1">
@@ -164,10 +174,10 @@ export function Header() {
                     px-4 py-3 rounded-xl text-[15px]
                     transition-all duration-200
                     ${isActive
-                                            ? overlayActive
+                                            ? devHeaderLight
                                                 ? 'bg-white/10 text-[#F5F5F7] font-medium'
                                                 : 'bg-[#F5F5F7] dark:bg-[var(--surface-2)] text-[#1D1D1F] dark:text-[#F5F5F7] font-medium'
-                                            : overlayActive
+                                            : devHeaderLight
                                                 ? 'text-[rgba(235,235,245,0.72)] hover:bg-white/10'
                                                 : 'text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] hover:bg-[#F5F5F7] dark:hover:bg-[var(--surface-2)]'
                                         }

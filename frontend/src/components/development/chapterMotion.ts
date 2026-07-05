@@ -75,7 +75,6 @@ export const STACK_LAYER_STAGGER_COL = 0.08 * STACK_GRID_ENTER_DURATION_SCALE;
 /** Mobile: one card at a time, top → bottom while scrolling */
 export const STACK_LAYER_MOBILE_STAGGER = 0.048 * STACK_GRID_ENTER_DURATION_SCALE;
 export const STACK_LAYER_MOBILE_SPAN = 0.072 * STACK_GRID_ENTER_DURATION_SCALE;
-export const MOBILE_STACK_CARD_STRIDE_PX = 76;
 
 export type StackGridLayout = 'grid' | 'mobile-scroll';
 
@@ -113,8 +112,6 @@ export function getStackLayerEnterProgress(
 /** Hold after every card is visible, then exit with the same span + stagger as enter */
 export const STACK_GRID_EXIT_HOLD = 0.28;
 
-export type StackGridExitStyle = 'scatter' | 'sequential';
-
 /** Extended local timeline — enter, hold, and exit all fit before the chapter ends */
 export function getStackGridTimelineEnd(cardCount: number, layout: StackGridLayout = 'grid'): number {
     const lastStagger = getStackLayerStagger(cardCount - 1, layout);
@@ -129,18 +126,12 @@ export function getStackGridTimelineEnd(cardCount: number, layout: StackGridLayo
     );
 }
 
-export function getStackGridTimelineEndFor(cardCount: number, layout: StackGridLayout): number {
-    return getStackGridTimelineEnd(cardCount, layout);
-}
-
 export const STACK_GRID_SCENE_COUNTS: Record<number, number> = {
     1: 12,
     4: 8,
 };
 
 /** Chapter 6 — 2×2 workflow grid with curved connector to step 3 */
-export const WORKFLOW_STEP_COUNT = 4;
-
 const WORKFLOW_STEP_STARTS = [0.06, 0.24, 0.48, 0.66] as const;
 const WORKFLOW_STEP_SPAN = 0.11;
 const WORKFLOW_ARROW_STARTS = [0.16, 0.34, 0.58] as const;
@@ -272,23 +263,12 @@ export function getStackLayerExitProgress(
     return chapterExit(local, exitStart, exitEnd);
 }
 
-function getScatterOffset(index: number, exit: number) {
-    const row = Math.floor(index / 4);
-    const distance = (1 - exit) * 48;
-    return {
-        x: 0,
-        y: distance + row * 4,
-        rotate: 0,
-    };
-}
-
 /** Scroll-scrubbed card motion for chapters 2 & 5 */
 export function getStackGridLayerMotion(
     local: number,
     index: number,
     cardCount: number,
     staticMode: boolean,
-    exitStyle: StackGridExitStyle,
     layout: StackGridLayout = 'grid',
 ) {
     if (staticMode) {
@@ -308,19 +288,8 @@ export function getStackGridLayerMotion(
     const enter = getStackLayerEnterProgress(local, index, staticMode, layout);
     const exit = getStackLayerExitProgress(local, index, cardCount, staticMode, layout);
     const enterOffset = (1 - enter) * 24;
-
-    if (exitStyle === 'scatter') {
-        const { y } = getScatterOffset(index, exit);
-        if (enter >= 0.999 && exit >= 0.999) {
-            return { opacity: 1, transform: 'none' };
-        }
-        return {
-            opacity: enter * exit,
-            transform: `translateY(${enterOffset + y}px)`,
-        };
-    }
-
     const fadeY = (1 - exit) * -10;
+
     if (enter >= 0.999 && exit >= 0.999) {
         return { opacity: 1, transform: 'none' };
     }
@@ -376,13 +345,3 @@ export function stackGridSceneVisible(
     if (staticMode) return true;
     return local < getStackGridExitCompleteLocal(cardCount, layout);
 }
-
-export const CHAPTER_META = [
-    { index: '01', label: 'AI Development', tag: 'Prompt' },
-    { index: '02', label: 'Tech Stack', tag: 'Build' },
-    { index: '03', label: 'MCP Integration', tag: 'Connect' },
-    { index: '04', label: 'Ship & Share', tag: 'Deliver' },
-    { index: '05', label: 'AI Tools', tag: 'Assist' },
-    { index: '06', label: 'Our Process', tag: 'Process' },
-    { index: '07', label: 'Join Us', tag: 'Join' },
-] as const;

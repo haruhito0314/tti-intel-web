@@ -1,6 +1,4 @@
-import { chapterReveal, getScene1VisualMotion } from './chapterMotion';
-
-export { getScene1VisualMotion };
+import { chapterReveal } from './chapterMotion';
 
 /** Map scroll progress within a chapter to typewriter character reveal (with hold phase) */
 export function getTypewriterProgress(local: number): number {

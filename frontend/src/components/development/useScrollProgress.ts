@@ -10,24 +10,17 @@ import {
     STACK_GRID_SCENE_COUNTS,
     type StackGridLayout,
 } from './chapterMotion';
+import { SCENE_VISUAL_RANGES } from './sceneScrollRanges';
+import {
+    clampProgressToSingleChapterStep,
+    getChapterIndexFromProgress,
+    getTrackProgress,
+    getTrackScrollTop,
+    MOBILE_SCROLL_GUARD_MQ,
+    SCROLL_GESTURE_END_MS,
+} from './scrollChapterGuard';
 
-/** Gap between chapters */
-export const CHAPTER_GAP = 0.005;
-
-/** Seven chapters — ch2/ch5 widened for slower card reveals */
-export const SCENE_VISUAL_RANGES = [
-    [0, 0.142],
-    [0.147, 0.418],
-    [0.423, 0.498],
-    [0.503, 0.563],
-    [0.568, 0.839],
-    [0.844, 0.914],
-    [0.919, 0.995],
-] as const;
-
-export const SCENE_COPY_RANGES = SCENE_VISUAL_RANGES;
-
-export const SCENE_SCROLL_TARGETS = SCENE_COPY_RANGES.map(([start]) => start);
+export { SCENE_VISUAL_RANGES };
 
 const FADE = 0.06;
 
@@ -45,7 +38,7 @@ function clamp(value: number, min = 0, max = 1) {
 }
 
 function getSceneLayerOpacity(progress: number, sceneIndex: number): number {
-    const [start, end] = SCENE_COPY_RANGES[sceneIndex];
+    const [start, end] = SCENE_VISUAL_RANGES[sceneIndex];
 
     if (progress < start || progress > end) {
         return 0;
@@ -111,22 +104,14 @@ export function getStackSceneLocalProgress(
     return getStackGridLocalProgress(progress, sceneIndex, SCENE_VISUAL_RANGES[sceneIndex], layout);
 }
 
-export function getActiveSceneIndex(progress: number): number {
-    for (let index = SCENE_COPY_RANGES.length - 1; index >= 0; index -= 1) {
-        if (progress >= SCENE_COPY_RANGES[index][0]) return index;
-    }
-    return 0;
-}
-
-/** @deprecated use getSceneVisualOpacity */
-export function getSceneOpacity(progress: number, sceneIndex: number): number {
-    return getSceneVisualOpacity(progress, sceneIndex);
-}
-
 export function useScrollProgress(trackRef: RefObject<HTMLElement | null>) {
     const [progress, setProgress] = useState(0);
     const [reducedMotion, setReducedMotion] = useState(false);
     const rafRef = useRef(0);
+    const mobileGuardRef = useRef(false);
+    const anchorChapterRef = useRef(0);
+    const lastProgressRef = useRef(0);
+    const isAdjustingScrollRef = useRef(false);
 
     useEffect(() => {
         const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -137,16 +122,41 @@ export function useScrollProgress(trackRef: RefObject<HTMLElement | null>) {
     }, []);
 
     useEffect(() => {
+        const mobileMq = window.matchMedia(MOBILE_SCROLL_GUARD_MQ);
+        const syncMobile = () => {
+            mobileGuardRef.current = mobileMq.matches;
+        };
+        syncMobile();
+        mobileMq.addEventListener('change', syncMobile);
+        return () => mobileMq.removeEventListener('change', syncMobile);
+    }, []);
+
+    useEffect(() => {
         const track = trackRef.current;
         if (!track || reducedMotion) return;
 
+        const finishGesture = () => {
+            anchorChapterRef.current = getChapterIndexFromProgress(lastProgressRef.current);
+        };
+
         const update = () => {
-            const rect = track.getBoundingClientRect();
-            const scrollable = track.offsetHeight - window.innerHeight;
-            const scrolled = -rect.top;
-            const next = scrollable > 0 ? clamp(scrolled / scrollable) : 0;
+            if (isAdjustingScrollRef.current) return;
+
+            const raw = getTrackProgress(track);
+            const next = mobileGuardRef.current
+                ? clampProgressToSingleChapterStep(raw, anchorChapterRef.current)
+                : raw;
+
+            if (mobileGuardRef.current && Math.abs(next - raw) > 0.0005) {
+                isAdjustingScrollRef.current = true;
+                window.scrollTo({ top: getTrackScrollTop(track, next), behavior: 'auto' });
+                requestAnimationFrame(() => {
+                    isAdjustingScrollRef.current = false;
+                });
+            }
+
+            lastProgressRef.current = next;
             setProgress(next);
-            track.style.setProperty('--hero-progress', String(next));
         };
 
         const onScroll = () => {
@@ -154,13 +164,31 @@ export function useScrollProgress(trackRef: RefObject<HTMLElement | null>) {
             rafRef.current = requestAnimationFrame(update);
         };
 
+        let gestureEndTimer = 0;
+        const onScrollWithGestureEnd = () => {
+            onScroll();
+            window.clearTimeout(gestureEndTimer);
+            gestureEndTimer = window.setTimeout(finishGesture, SCROLL_GESTURE_END_MS);
+        };
+
+        const onTouchStart = () => {
+            if (!mobileGuardRef.current) return;
+            anchorChapterRef.current = getChapterIndexFromProgress(lastProgressRef.current);
+        };
+
         update();
-        window.addEventListener('scroll', onScroll, { passive: true });
-        window.addEventListener('resize', onScroll, { passive: true });
+        anchorChapterRef.current = getChapterIndexFromProgress(lastProgressRef.current);
+        track.addEventListener('touchstart', onTouchStart, { passive: true });
+        window.addEventListener('scroll', onScrollWithGestureEnd, { passive: true });
+        window.addEventListener('scrollend', finishGesture, { passive: true });
+        window.addEventListener('resize', onScrollWithGestureEnd, { passive: true });
 
         return () => {
-            window.removeEventListener('scroll', onScroll);
-            window.removeEventListener('resize', onScroll);
+            track.removeEventListener('touchstart', onTouchStart);
+            window.removeEventListener('scroll', onScrollWithGestureEnd);
+            window.removeEventListener('scrollend', finishGesture);
+            window.removeEventListener('resize', onScrollWithGestureEnd);
+            window.clearTimeout(gestureEndTimer);
             cancelAnimationFrame(rafRef.current);
         };
     }, [trackRef, reducedMotion]);

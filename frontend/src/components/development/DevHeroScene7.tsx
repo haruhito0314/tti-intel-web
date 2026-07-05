@@ -33,7 +33,7 @@ export function DevHeroScene7({ progress, opacity, staticMode = false, copyIndex
 
             <div className="dev-scene-viewport">
                 <div
-                    className="dev-hero-cta-row is-visible"
+                    className="dev-hero-cta-row"
                     style={{
                         opacity: ctaReveal,
                         transform: `translateY(${(1 - ctaReveal) * 16}px)`,

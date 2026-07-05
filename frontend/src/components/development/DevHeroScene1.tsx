@@ -1,7 +1,7 @@
 import { getSceneLocalProgress } from './useScrollProgress';
-import { AI_FLOAT_CARDS, AI_TOOL_BADGES, getBadgeProgress, getScene1VisualMotion, getTypewriterProgress, TYPEWRITER_TEXT } from './sceneUtils';
+import { AI_FLOAT_CARDS, AI_TOOL_BADGES, getBadgeProgress, getTypewriterProgress, TYPEWRITER_TEXT } from './sceneUtils';
 import { DevHeroCopy } from './DevHeroCopy';
-import { chapterReveal, CHAPTER_VISUAL_REVEAL_END, CHAPTER_VISUAL_REVEAL_START } from './chapterMotion';
+import { chapterReveal, CHAPTER_VISUAL_REVEAL_END, CHAPTER_VISUAL_REVEAL_START, getScene1VisualMotion } from './chapterMotion';
 import { getFloatCardBob, getFloatCardPlacementStyle, getFloatCardTransform } from './floatCardMotion';
 import { useDesktopFloatCards } from './useDesktopFloatCards';
 import { TechBrandIcon } from './TechBrandIcon';
