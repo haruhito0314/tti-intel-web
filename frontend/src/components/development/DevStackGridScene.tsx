@@ -1,8 +1,11 @@
+import { useRef } from 'react';
 import { DevHeroCopy } from './DevHeroCopy';
 import { chapterShellStyle, stackCardMotionStyle } from './devEnterStyle';
 import { getStackChapterOpacity } from './devStackChapter';
 import { getChapterLocal } from './devScrollMath';
 import { stackCardExit, stackCardReveal, stackGridColumns } from './devSceneMotion';
+import { useStack2MobileFlowScroll } from './devStack2MobileMotion';
+import { isStack2MobileGridChapter } from './devStackCircleMotion';
 import { useDevMobileLayout } from './useDevMobileLayout';
 import { TechBrandIcon, type TechBrandSlug } from './TechBrandIcon';
 
@@ -40,6 +43,45 @@ export function DevStackGridScene({
         ? getStackChapterOpacity(progress, chapterIndex, cardCount, mobileLayout)
         : 1;
     const shellStyle = isScroll ? chapterShellStyle(opacity) : undefined;
+    const isCh2Mobile = isStack2MobileGridChapter(chapterIndex, mobileLayout);
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const contentRef = useRef<HTMLDivElement>(null);
+    const flowTranslateY = useStack2MobileFlowScroll(
+        isCh2Mobile ? local : 0,
+        scrollRef,
+        contentRef,
+    );
+
+    const cards = layers.map((layer, index) => {
+        const skipEnter = isScroll && chapterIndex === 4 && mobileLayout;
+        const enter = skipEnter
+            ? 1
+            : isScroll
+              ? stackCardReveal(local, index, chapterIndex, columns)
+              : 1;
+        const exitProgress = isScroll ? stackCardExit(local, index, cardCount, columns) : 1;
+        return (
+            <div
+                key={layer.name}
+                className="dev-stack-layer dev-glass-card"
+                style={{
+                    ...stackCardMotionStyle(enter, exitProgress, 22),
+                    ['--layer-accent' as string]: accents[index],
+                }}
+            >
+                <div className="dev-stack-layer-accent" />
+                <div className="dev-stack-layer-head">
+                    <TechBrandIcon
+                        slug={layer.icon}
+                        className="dev-stack-layer-icon"
+                        variant={iconVariant}
+                    />
+                    <strong>{layer.name}</strong>
+                </div>
+                <span>{layer.note}</span>
+            </div>
+        );
+    });
 
     return (
         <div className={`dev-hero-scene ${sceneClassName}`} aria-hidden={isScroll && opacity < 0.5}>
@@ -50,41 +92,25 @@ export function DevStackGridScene({
                 style={shellStyle}
             >
                 <div className="dev-scene-viewport" aria-hidden="true">
-                    <div
-                        className={`dev-stack-stage${
-                            mobileLayout ? ' dev-stack-stage--mobile-2col' : ''
-                        }`}
-                    >
-                        {layers.map((layer, index) => {
-                            const enter = isScroll
-                                ? stackCardReveal(local, index, chapterIndex, columns)
-                                : 1;
-                            const exitProgress = isScroll
-                                ? stackCardExit(local, index, cardCount, columns)
-                                : 1;
-                            return (
-                                <div
-                                    key={layer.name}
-                                    className="dev-stack-layer dev-glass-card"
-                                    style={{
-                                        ...stackCardMotionStyle(enter, exitProgress, 22),
-                                        ['--layer-accent' as string]: accents[index],
-                                    }}
-                                >
-                                    <div className="dev-stack-layer-accent" />
-                                    <div className="dev-stack-layer-head">
-                                        <TechBrandIcon
-                                            slug={layer.icon}
-                                            className="dev-stack-layer-icon"
-                                            variant={iconVariant}
-                                        />
-                                        <strong>{layer.name}</strong>
-                                    </div>
-                                    <span>{layer.note}</span>
-                                </div>
-                            );
-                        })}
-                    </div>
+                    {isCh2Mobile ? (
+                        <div ref={scrollRef} className="dev-stack-scroll dev-stack-scroll--ch2-mobile">
+                            <div
+                                ref={contentRef}
+                                className="dev-stack-stage dev-stack-stage--mobile-flow dev-stack-stage--ch2-mobile"
+                                style={{ transform: `translateY(${flowTranslateY.toFixed(2)}px)` }}
+                            >
+                                {cards}
+                            </div>
+                        </div>
+                    ) : (
+                        <div
+                            className={`dev-stack-stage${
+                                mobileLayout ? ' dev-stack-stage--mobile-2col' : ''
+                            }`}
+                        >
+                            {cards}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
