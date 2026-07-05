@@ -1257,3 +1257,21 @@ Visit https://react.dev/link/error-boundaries to learn more about error boundari
 [ 9290783ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
 [ 9397523ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
 [ 9598391ms] [ERROR] `NaN` is an invalid value for the `%s` css style property. opacity @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:2222
+[ 9676615ms] [LOG] [vite] server connection lost. Polling for restart... @ http://localhost:5175/@vite/client:864
+[ 9677036ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:20102
+[ 9924103ms] ReferenceError: setDevHeroOverlay is not defined
+    at update (http://localhost:5175/src/components/layout/Header.tsx?t=1783212255387:38:7)
+    at attach (http://localhost:5175/src/components/layout/Header.tsx?t=1783212255387:43:7)
+    at http://localhost:5175/src/components/layout/Header.tsx?t=1783212255387:58:10
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:18567:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:997:72)
+    at commitHookEffectListMount (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:9411:163)
+    at commitHookPassiveMountEffects (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:9465:60)
+    at commitPassiveMountOnFiber (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11040:29)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11010:13)
+    at commitPassiveMountOnFiber (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:11201:13)
+[ 9924080ms] [WARNING] %s
+
+%s
+ An error occurred in the <Header> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=ae9082af:6965

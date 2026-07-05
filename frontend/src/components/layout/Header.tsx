@@ -5,61 +5,57 @@ import { siteConfig } from '@/config/site';
 import { ThemeToggle } from './ThemeToggle';
 
 const DEV_HEADER_THRESHOLD = 48;
-const MOBILE_HEADER_MQ = '(max-width: 768px)';
 
-function isDevHeroOverlayActive(): boolean {
+/** True while the dev hero track still occupies the viewport (more reliable than sentinel alone). */
+function isDevHeroInView(): boolean {
+    const track = document.querySelector<HTMLElement>('.dev-hero-track');
+    if (track) {
+        return track.getBoundingClientRect().bottom > DEV_HEADER_THRESHOLD;
+    }
+
     const sentinel = document.getElementById('dev-hero-sentinel');
     if (!sentinel) return true;
+
     return sentinel.getBoundingClientRect().top > DEV_HEADER_THRESHOLD;
 }
 
 export function Header() {
     const location = useLocation();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [devHeroOverlay, setDevHeroOverlay] = useState(() =>
-        location.pathname === '/development' ? isDevHeroOverlayActive() : false,
+    const [devHeroInView, setDevHeroInView] = useState(() =>
+        location.pathname === '/development' ? isDevHeroInView() : false,
     );
     const isDevPage = location.pathname === '/development';
-    const [isMobileHeader, setIsMobileHeader] = useState(() =>
-        typeof window !== 'undefined' ? window.matchMedia(MOBILE_HEADER_MQ).matches : false,
-    );
-    const devHeaderLight = isDevPage;
-    const overlayActive = isDevPage && devHeroOverlay;
-    const devHeaderTransparent = isDevPage && (overlayActive || isMobileHeader);
-
-    useEffect(() => {
-        const mq = window.matchMedia(MOBILE_HEADER_MQ);
-        const sync = () => setIsMobileHeader(mq.matches);
-        sync();
-        mq.addEventListener('change', sync);
-        return () => mq.removeEventListener('change', sync);
-    }, []);
+    const devHeaderLight = isDevPage && devHeroInView;
+    const devHeaderTransparent = isDevPage && devHeroInView;
 
     useEffect(() => {
         if (!isDevPage) {
-            setDevHeroOverlay(false);
+            setDevHeroInView(false);
             return;
         }
 
-        setDevHeroOverlay(isDevHeroOverlayActive());
+        setDevHeroInView(isDevHeroInView());
 
-        let sentinel: HTMLElement | null = null;
+        let observed: HTMLElement | null = null;
         let intersectionObserver: IntersectionObserver | null = null;
         let mutationObserver: MutationObserver | null = null;
 
         const update = () => {
-            setDevHeroOverlay(isDevHeroOverlayActive());
+            setDevHeroInView(isDevHeroInView());
         };
 
         const attach = () => {
-            sentinel = document.getElementById('dev-hero-sentinel');
-            if (!sentinel) return false;
+            const track = document.querySelector<HTMLElement>('.dev-hero-track');
+            const sentinel = document.getElementById('dev-hero-sentinel');
+            observed = track ?? sentinel;
+            if (!observed) return false;
 
             update();
             intersectionObserver = new IntersectionObserver(update, {
                 threshold: [0, 0.25, 0.5, 0.75, 1],
             });
-            intersectionObserver.observe(sentinel);
+            intersectionObserver.observe(observed);
             window.addEventListener('scroll', update, { passive: true });
             window.addEventListener('resize', update, { passive: true });
             return true;
@@ -91,7 +87,7 @@ export function Header() {
     const headerBgClass = isDevPage
         ? devHeaderTransparent
             ? 'header-dev-overlay-bg'
-            : 'header-dev-scrolled-bg'
+            : 'glass'
         : 'glass';
 
     return (
