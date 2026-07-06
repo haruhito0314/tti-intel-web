@@ -686,27 +686,6 @@
   background: linear-gradient(180deg, #f0fbf8 0%, #dff3ee 100%);
 }
 
-.activity-card--game::before {
-  content: "";
-  position: absolute;
-  top: 18px;
-  right: 22px;
-  z-index: 3;
-  width: 28px;
-  height: 28px;
-  pointer-events: none;
-  opacity: 0.55;
-  background:
-    radial-gradient(circle at 50% 50%, transparent 38%, #ff8f5a 39% 44%, transparent 45%),
-    linear-gradient(135deg, transparent 42%, #ff8f5a 43% 47%, transparent 48%),
-    linear-gradient(45deg, transparent 42%, #ff8f5a 43% 47%, transparent 48%);
-  transform: rotate(12deg);
-}
-
-.dark .activity-card--game::before {
-  opacity: 0.28;
-}
-
 .dark .activity-card--video {
   background: linear-gradient(180deg, #2a2420 0%, #1e1a17 100%);
 }
