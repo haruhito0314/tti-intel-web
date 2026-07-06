@@ -5,7 +5,7 @@ import { useTheme } from '@/contexts/useTheme';
 import { ToastProvider } from '@/components/ui';
 import { Layout } from '@/components/layout';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { markInitialSplashSeenThisSession, shouldShowInitialSplash } from '@/lib/splashSettings';
+import { markInitialSplashSeen, shouldShowInitialSplash } from '@/lib/splashSettings';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -126,7 +126,7 @@ function App() {
 
   useEffect(() => {
     if (!showSplash) return;
-    markInitialSplashSeenThisSession();
+    markInitialSplashSeen();
     let rafId = 0;
     let hideTimer = 0;
     let hasFinished = false;

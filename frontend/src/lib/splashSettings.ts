@@ -1,12 +1,8 @@
 const MOBILE_SPLASH_DISABLED_STORAGE_KEY = 'tti-mobile-splash-disabled';
-const INITIAL_SPLASH_SEEN_SESSION_STORAGE_KEY = 'tti-initial-splash-seen';
+const INITIAL_SPLASH_SEEN_STORAGE_KEY = 'tti-initial-splash-seen';
 
 function canUseLocalStorage(): boolean {
     return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
-}
-
-function canUseSessionStorage(): boolean {
-    return typeof window !== 'undefined' && typeof window.sessionStorage !== 'undefined';
 }
 
 export function isMobileSplashDisabled(): boolean {
@@ -34,22 +30,22 @@ export function setMobileSplashDisabled(disabled: boolean): void {
 export function shouldShowInitialSplash(): boolean {
     if (typeof window === 'undefined') return false;
     if (isMobileSplashDisabled()) return false;
-    return !hasSeenInitialSplashThisSession();
+    return !hasSeenInitialSplash();
 }
 
-export function markInitialSplashSeenThisSession(): void {
-    if (!canUseSessionStorage()) return;
+export function markInitialSplashSeen(): void {
+    if (!canUseLocalStorage()) return;
     try {
-        window.sessionStorage.setItem(INITIAL_SPLASH_SEEN_SESSION_STORAGE_KEY, 'true');
+        window.localStorage.setItem(INITIAL_SPLASH_SEEN_STORAGE_KEY, 'true');
     } catch {
         // Ignore storage write failures (private mode, quota, etc.)
     }
 }
 
-function hasSeenInitialSplashThisSession(): boolean {
-    if (!canUseSessionStorage()) return false;
+function hasSeenInitialSplash(): boolean {
+    if (!canUseLocalStorage()) return false;
     try {
-        return window.sessionStorage.getItem(INITIAL_SPLASH_SEEN_SESSION_STORAGE_KEY) === 'true';
+        return window.localStorage.getItem(INITIAL_SPLASH_SEEN_STORAGE_KEY) === 'true';
     } catch {
         return false;
     }
