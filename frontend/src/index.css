@@ -4007,9 +4007,18 @@
 
 @media (max-width: 639px) {
   .game-hero-cards {
-    grid-template-columns: 1fr;
-    max-width: 280px;
-    margin: 0 auto;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: 100%;
+    width: 100%;
+    gap: 0.5rem;
+    margin: 0;
+  }
+
+  .game-hero-card-label {
+    left: 0.35rem;
+    bottom: 0.35rem;
+    padding: 0.15rem 0.35rem;
+    font-size: 0.58rem;
   }
 }
 
@@ -4753,13 +4762,37 @@
 
 @media (max-width: 767px) {
   .game-join-photos {
-    min-height: 180px;
-    max-width: 320px;
-    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 0.65rem;
+    min-height: 0;
+    max-width: none;
+    width: 100%;
+    margin: 0;
+    padding: 0.25rem 0 1.25rem;
   }
 
   .game-join-photo {
-    width: 92px;
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    width: clamp(72px, 24vw, 96px);
+    flex-shrink: 0;
+  }
+
+  .game-join-photo--0 {
+    transform: rotate(-5deg);
+  }
+
+  .game-join-photo--1 {
+    transform: rotate(3deg);
+    margin-top: 0.75rem;
+  }
+
+  .game-join-photo--2 {
+    transform: rotate(6deg);
   }
 }
 
