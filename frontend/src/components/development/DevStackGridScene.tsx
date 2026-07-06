@@ -1,8 +1,9 @@
-import { useRef } from 'react';
+import { useRef, type RefObject } from 'react';
 import { DevHeroCopy } from './DevHeroCopy';
 import { chapterShellStyle, stackCardMotionStyle } from './devEnterStyle';
 import { getStackChapterOpacity } from './devStackChapter';
-import { getChapterLocal } from './devScrollMath';
+import { getChapterLocal, reveal } from './devScrollMath';
+import { CHAPTER4_ZOOM_BRIDGE_END } from './devZoomTiming';
 import { stackCardExit, stackCardReveal, stackGridColumns } from './devSceneMotion';
 import {
     computeStack2MobileTranslateY,
@@ -28,6 +29,7 @@ type DevStackGridSceneProps = {
     chapterIndex?: number;
     progress?: number;
     iconVariant?: 'default' | 'brand';
+    stageRef?: RefObject<HTMLDivElement | null>;
 };
 
 export function DevStackGridScene({
@@ -38,6 +40,7 @@ export function DevStackGridScene({
     chapterIndex,
     progress,
     iconVariant = 'default',
+    stageRef,
 }: DevStackGridSceneProps) {
     const isScroll = progress !== undefined && chapterIndex !== undefined;
     const mobileLayout = useDevMobileLayout();
@@ -55,14 +58,22 @@ export function DevStackGridScene({
     const flowTranslateY = isCh2Mobile
         ? computeStack2MobileTranslateY(local, metrics)
         : 0;
+    const isZoomTargetGrid = chapterIndex === 4 && !mobileLayout;
+    const zoomTargetReveal = isZoomTargetGrid && progress !== undefined
+        ? reveal(progress, CHAPTER4_ZOOM_BRIDGE_END + 0.006, CHAPTER4_ZOOM_BRIDGE_END + 0.033)
+        : 1;
 
     const cards = layers.map((layer, index) => {
-        const enter = isCh2Mobile && isScroll
+        const enter = isZoomTargetGrid
+            ? 1
+            : isCh2Mobile && isScroll
             ? stack2MobileCardReveal(local, index, cardCount)
             : isScroll
               ? stackCardReveal(local, index, chapterIndex, columns)
               : 1;
-        const exitProgress = isCh2Mobile && isScroll
+        const exitProgress = isZoomTargetGrid
+            ? 1
+            : isCh2Mobile && isScroll
             ? stack2MobileCardExit(local, index)
             : isScroll
               ? stackCardExit(local, index, cardCount, columns)
@@ -70,9 +81,13 @@ export function DevStackGridScene({
         return (
             <div
                 key={layer.name}
-                className="dev-stack-layer dev-glass-card"
+                className={`dev-stack-layer${
+                    iconVariant === 'brand' ? ' dev-ai-tool-layer' : ''
+                } dev-glass-card`}
                 style={{
-                    ...stackCardMotionStyle(enter, exitProgress, 22),
+                    ...(isZoomTargetGrid
+                        ? { opacity: zoomTargetReveal, transform: 'translateY(0px)' }
+                        : stackCardMotionStyle(enter, exitProgress, 22)),
                     ['--layer-accent' as string]: accents[index],
                 }}
             >
@@ -111,6 +126,7 @@ export function DevStackGridScene({
                         </div>
                     ) : (
                         <div
+                            ref={stageRef}
                             className={`dev-stack-stage${
                                 mobileLayout ? ' dev-stack-stage--mobile-2col' : ''
                             }`}

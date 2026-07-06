@@ -8,7 +8,7 @@ import { useDevMobileLayout } from './useDevMobileLayout';
 
 type DevHeroScene6Props =
     | { copyIndex: number; chapterIndex?: never; progress?: never }
-    | { chapterIndex: number; progress: number; copyIndex?: never };
+    | { chapterIndex: number; progress: number; copyIndex?: never; deferUntilProgress?: number };
 
 type WorkflowCardProps = {
     step: (typeof WORKFLOW_STEPS)[number];
@@ -298,7 +298,8 @@ export function DevHeroScene6(props: DevHeroScene6Props) {
     const mobileLayout = useDevMobileLayout();
     const isScroll = props.progress !== undefined;
     const local = isScroll ? getChapterLocal(props.progress, props.chapterIndex) : 1;
-    const opacity = isScroll ? getChapterOpacity(props.progress, props.chapterIndex) : 1;
+    const deferred = isScroll && props.deferUntilProgress !== undefined && props.progress < props.deferUntilProgress;
+    const opacity = isScroll && !deferred ? getChapterOpacity(props.progress, props.chapterIndex) : isScroll ? 0 : 1;
     const frozen = !isScroll || isSectionEnterComplete(local, 5);
     const arrowProgress: [number, number, number] =
         mobileLayout || frozen

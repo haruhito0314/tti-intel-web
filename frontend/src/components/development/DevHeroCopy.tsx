@@ -1,9 +1,14 @@
 import { useLayoutEffect, useState, type RefObject } from 'react';
-import { getChapterLocal, getChapterOpacity } from './devScrollMath';
+import { exit, getChapterLocal, getChapterOpacity } from './devScrollMath';
 import { getStack2CopyOpacity, getStackChapterOpacity } from './devStackChapter';
 import { stack2SharedPanX } from './devStackCircleMotion';
 import { useDevMobileLayout } from './useDevMobileLayout';
 import { AI_TOOLS, STACK_LAYERS } from './sceneUtils';
+import { CHAPTER_BOUNDARY_FADE, SCENE_RANGES } from './devScrollConfig';
+import {
+    CHAPTER4_ZOOM_BRIDGE_END,
+    CHAPTER4_ZOOM_SECTION_END,
+} from './devZoomTiming';
 
 const STACK_CHAPTER_INDEX = 1;
 
@@ -136,12 +141,25 @@ function DevHeroCopyScroll({
         <div className="dev-hero-copy-stage" aria-live="polite">
             {COPY_BLOCKS.map((block, index) => {
                 const cardCount = STACK_GRID_CARD_COUNTS[index];
-                const opacity =
+                const standardOpacity =
                     index === STACK_CHAPTER_INDEX
                         ? getStack2CopyOpacity(progress, index, cardCount ?? STACK_LAYERS.length, mobileLayout)
                         : cardCount !== undefined
                           ? getStackChapterOpacity(progress, index, cardCount, mobileLayout)
                           : getChapterOpacity(progress, index);
+                const aiToolsCopyHold =
+                    !mobileLayout &&
+                    index === 4 &&
+                    progress >= SCENE_RANGES[4][0] + CHAPTER_BOUNDARY_FADE &&
+                    progress < CHAPTER4_ZOOM_SECTION_END;
+                const opacity =
+                    aiToolsCopyHold
+                        ? progress < CHAPTER4_ZOOM_BRIDGE_END
+                            ? 1
+                            : exit(progress, CHAPTER4_ZOOM_BRIDGE_END, CHAPTER4_ZOOM_SECTION_END)
+                        : index === 5 && progress < CHAPTER4_ZOOM_SECTION_END
+                        ? 0
+                        : standardOpacity;
                 const isActive = opacity > 0.5;
                 const Heading = block.headingLevel;
                 const panX = index === STACK_CHAPTER_INDEX ? stackPanX : 0;

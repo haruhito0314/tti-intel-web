@@ -1,5 +1,6 @@
 import { AI_TOOLS } from './sceneUtils';
 import { DevStackGridScene } from './DevStackGridScene';
+import type { RefObject } from 'react';
 
 const TOOL_ACCENTS = [
     '#10A37F',
@@ -13,8 +14,8 @@ const TOOL_ACCENTS = [
 ] as const;
 
 type DevHeroScene5Props =
-    | { copyIndex: number; chapterIndex?: never; progress?: never }
-    | { chapterIndex: number; progress: number; copyIndex?: never };
+    | { copyIndex: number; chapterIndex?: never; progress?: never; stageRef?: never }
+    | { chapterIndex: number; progress: number; copyIndex?: never; stageRef?: RefObject<HTMLDivElement | null> };
 
 export function DevHeroScene5(props: DevHeroScene5Props) {
     return (
@@ -26,6 +27,7 @@ export function DevHeroScene5(props: DevHeroScene5Props) {
             chapterIndex={props.chapterIndex}
             progress={props.progress}
             iconVariant="brand"
+            stageRef={props.stageRef}
         />
     );
 }

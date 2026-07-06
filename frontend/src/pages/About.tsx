@@ -42,10 +42,16 @@ const activityShowcases = [
     },
     {
         title: 'ゲーム交流',
-        description: 'VALORANTやApex Legendsを中心に、メンバー同士で気軽に遊んでいます。',
+        description: 'VALORANT、APEX、Minecraftなどを中心に、メンバー同士で気軽に遊ぶオンライン交流活動です。',
         image: '/images/about/game-card.png',
         imageAlt: 'ゲームコントローラーとヘッドセット',
-        actions: [{ label: '準備中' }],
+        actions: [
+            {
+                label: '詳しく見る',
+                href: '/game-community',
+                external: false,
+            },
+        ],
         cardClass: 'activity-card--game',
         textPosition: 'text-top',
     },
