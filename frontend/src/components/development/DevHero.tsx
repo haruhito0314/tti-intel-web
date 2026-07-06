@@ -10,6 +10,7 @@ import { DevHeroScene7 } from './DevHeroScene7';
 import { clamp01, getChapterIndex } from './devScrollMath';
 import { SCENE_RANGES } from './devScrollConfig';
 import { useDevScrollProgress } from './useDevScrollProgress';
+import { useDevMobileLayout } from './useDevMobileLayout';
 import { AI_TOOLS } from './sceneUtils';
 import { TechBrandIcon } from './TechBrandIcon';
 import {
@@ -168,6 +169,7 @@ export function DevHero() {
     const zoomSourceRef = useRef<HTMLDivElement>(null);
     const zoomTargetRef = useRef<HTMLDivElement>(null);
     const { progress, reducedMotion } = useDevScrollProgress(trackRef);
+    const mobileLayout = useDevMobileLayout();
 
     if (reducedMotion) {
         return (
@@ -199,7 +201,7 @@ export function DevHero() {
                     <DevHeroScene6
                         chapterIndex={5}
                         progress={progress}
-                        deferUntilProgress={CHAPTER4_ZOOM_SECTION_END}
+                        deferUntilProgress={mobileLayout ? undefined : CHAPTER4_ZOOM_SECTION_END}
                     />
                     <DevHeroScene7 chapterIndex={6} progress={progress} />
                     <DevChapterZoomBridge

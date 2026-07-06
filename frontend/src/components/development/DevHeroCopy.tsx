@@ -157,7 +157,7 @@ function DevHeroCopyScroll({
                         ? progress < CHAPTER4_ZOOM_BRIDGE_END
                             ? 1
                             : exit(progress, CHAPTER4_ZOOM_BRIDGE_END, CHAPTER4_ZOOM_SECTION_END)
-                        : index === 5 && progress < CHAPTER4_ZOOM_SECTION_END
+                        : !mobileLayout && index === 5 && progress < CHAPTER4_ZOOM_SECTION_END
                         ? 0
                         : standardOpacity;
                 const isActive = opacity > 0.5;
