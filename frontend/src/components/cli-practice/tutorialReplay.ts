@@ -134,15 +134,39 @@ export function assertReplayState(stepIndex: number, state: ProjectState): boole
     }
     if (cdRootIndex >= 0 && cdRootIndex < stepIndex && !cwdEndsWith(state, 'my-website')) return false;
 
-    const npmInstallIndex = TUTORIAL_STEPS.findIndex((s) => s.id === 'npm-install');
+    const gitRemoteIndex = TUTORIAL_STEPS.findIndex((s) => s.id === 'git-remote');
+    const gitPushIndex = TUTORIAL_STEPS.findIndex((s) => s.id === 'git-push');
+    if (gitRemoteIndex >= 0 && gitRemoteIndex < stepIndex && !state.git.remoteUrl) {
+        return false;
+    }
+    if (gitPushIndex >= 0 && gitPushIndex < stepIndex && !state.git.pushed) {
+        return false;
+    }
+
+    const brewInstallIndex = TUTORIAL_STEPS.findIndex((s) => s.id === 'brew-install');
     const nodeInstallIndex = TUTORIAL_STEPS.findIndex((s) => s.id === 'node-install');
+    const npmInstallIndex = TUTORIAL_STEPS.findIndex((s) => s.id === 'npm-install');
+    if (brewInstallIndex >= 0 && brewInstallIndex < stepIndex && !state.brewInstalled) {
+        return false;
+    }
+    if (brewInstallIndex >= 0 && brewInstallIndex < stepIndex && !state.systemRoot) {
+        return false;
+    }
     if (nodeInstallIndex >= 0 && nodeInstallIndex < stepIndex && !state.nodeInstalled) {
+        return false;
+    }
+    if (nodeInstallIndex >= 0 && nodeInstallIndex < stepIndex && !state.systemRoot) {
         return false;
     }
     if (npmInstallIndex >= 0 && npmInstallIndex < stepIndex) {
         if (!state.dependenciesInstalled || !absPathExists(state, `${PROJECT_ROOT}/node_modules`)) {
             return false;
         }
+    }
+
+    const npmDevIndex = TUTORIAL_STEPS.findIndex((s) => s.id === 'npm-dev');
+    if (npmDevIndex >= 0 && npmDevIndex < stepIndex && !state.devServerRan) {
+        return false;
     }
 
     return true;

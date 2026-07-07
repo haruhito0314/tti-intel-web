@@ -8,6 +8,8 @@ import {
 import {
     addDistFolder,
     addNodeModulesFolder,
+    addBrewInstallation,
+    addNodeInstallation,
     addGitFolder,
     buildTree,
     changeDirectory,
@@ -91,6 +93,17 @@ function saveEditorFile(state: ProjectState, fileArg: string, content: string): 
 
 export { saveEditorFile };
 
+export const HOMEBREW_INSTALL_COMMAND =
+    '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"';
+
+export function isHomebrewInstallCommand(command?: string): boolean {
+    if (!command) return false;
+    const normalized = command.trim();
+    return normalized.includes('Homebrew/install')
+        || normalized.includes('brew.sh')
+        || (normalized.includes('curl') && normalized.includes('install.sh') && normalized.includes('bash'));
+}
+
 function randomHash(): string {
     return Math.random().toString(16).slice(2, 9);
 }
@@ -119,6 +132,8 @@ function getUntrackedFiles(state: ProjectState): string[] {
     return [...new Set(all)];
 }
 
+export const DEMO_GITHUB_REMOTE = 'https://github.com/demo/my-website.git';
+
 function handleGit(state: ProjectState, args: string[], joinedArgs: string): CommandResult | null {
     const sub = args[0];
 
@@ -136,6 +151,7 @@ function handleGit(state: ProjectState, args: string[], joinedArgs: string): Com
                 branches: ['main'],
                 staged: [],
                 commits: [],
+                remoteUrl: null,
                 pushed: false,
             },
         };
@@ -279,9 +295,16 @@ function handleGit(state: ProjectState, args: string[], joinedArgs: string): Com
     }
 
     if (sub === 'push') {
+        if (!state.git.remoteUrl) {
+            return {
+                state,
+                lines: [line('error', "fatal: No configured push destination.\nEither specify the URL from the command-line or configure a remote repository using\n\n    git remote add <name> <url>\n")],
+            };
+        }
         if (!state.git.commits.length) {
             return { state, lines: [line('error', 'error: no commits to push')] };
         }
+        const branch = state.git.branch;
         return {
             state: { ...state, git: { ...state.git, pushed: true } },
             lines: lines('output', [
@@ -289,8 +312,9 @@ function handleGit(state: ProjectState, args: string[], joinedArgs: string): Com
                 'Counting objects: 100% (12/12), done.',
                 'Writing objects: 100% (6/6), 1.24 KiB | 1.24 MiB/s, done.',
                 'Total 6 (delta 2), reused 0 (delta 0), pack-reused 0',
-                'To github.com:demo/my-website.git',
-                `   ${state.git.commits.at(-1)?.hash}..${randomHash()}  ${state.git.branch} -> ${state.git.branch}`,
+                `To ${state.git.remoteUrl}`,
+                ` * [new branch]      ${branch} -> ${branch}`,
+                `branch '${branch}' set up to track 'origin/${branch}'.`,
             ]),
         };
     }
@@ -307,13 +331,33 @@ function handleGit(state: ProjectState, args: string[], joinedArgs: string): Com
     }
 
     if (sub === 'remote') {
-        return {
-            state,
-            lines: lines('output', [
-                'origin  https://github.com/demo/my-website.git (fetch)',
-                'origin  https://github.com/demo/my-website.git (push)',
-            ]),
-        };
+        if (args[1] === 'add') {
+            const name = args[2];
+            const url = args[3];
+            if (!name || !url) {
+                return { state, lines: [line('error', 'usage: git remote add <name> <url>')] };
+            }
+            if (state.git.remoteUrl) {
+                return { state, lines: [line('error', `error: remote ${name} already exists.`)] };
+            }
+            return {
+                state: { ...state, git: { ...state.git, remoteUrl: url } },
+                lines: [],
+            };
+        }
+        if (args[1] === '-v' || args.length === 1) {
+            if (!state.git.remoteUrl) {
+                return { state, lines: [] };
+            }
+            return {
+                state,
+                lines: lines('output', [
+                    `origin\t${state.git.remoteUrl} (fetch)`,
+                    `origin\t${state.git.remoteUrl} (push)`,
+                ]),
+            };
+        }
+        return { state, lines: [line('error', `git: '${args.slice(1).join(' ')}' is not a git command.`)] };
     }
 
     if (sub === 'clone') {
@@ -399,7 +443,7 @@ function handleNpm(state: ProjectState, args: string[]): CommandResult | null {
             return npmRunMissingBinary(state, sub === 'start' ? 'start' : 'dev', 'vite');
         }
         return {
-            state,
+            state: { ...state, devServerRan: true },
             lines: lines('output', [
                 '> my-website@1.0.0 dev',
                 '> vite',
@@ -408,6 +452,9 @@ function handleNpm(state: ProjectState, args: string[]): CommandResult | null {
                 '',
                 '  ➜  Local:   http://localhost:5173/',
                 '  ➜  Network: use --host to expose',
+                '  ➜  press h + enter to show help',
+                '',
+                '（ブラウザで http://localhost:5173/ を開いて確認できます。止めるときは Ctrl+C）',
             ]),
         };
     }
@@ -537,6 +584,29 @@ export function executeCommand(
     const args = tokens.slice(1).map((t) => t.replace(/^['"]|['"]$/g, ''));
     const joinedArgs = args.join(' ');
 
+    if (isHomebrewInstallCommand(input)) {
+        if (state.brewInstalled) {
+            return { state, lines: [line('output', 'Homebrew is already installed.')] };
+        }
+        return {
+            state: addBrewInstallation(state),
+            lines: lines('success', [
+                '==> Checking for `sudo` access (which may request your password)...',
+                '==> This script will install:',
+                '/opt/homebrew/bin/brew',
+                '/opt/homebrew/share/doc/homebrew',
+                '/opt/homebrew/share/man/man1/brew.1',
+                '==> Downloading and installing Homebrew...',
+                '==> Installation successful!',
+                '',
+                '==> Next steps:',
+                '- Run these commands in your terminal to add Homebrew to your PATH:',
+                '    echo \'eval "$(/opt/homebrew/bin/brew shellenv)"\' >> ~/.zprofile',
+                '    eval "$(/opt/homebrew/bin/brew shellenv)"',
+            ]),
+        };
+    }
+
     switch (command) {
         case 'help':
             return { state, lines: lines('info', formatHelpByCategory()) };
@@ -621,15 +691,19 @@ export function executeCommand(
 
         case 'which': {
             if (!args[0]) return { state, lines: [line('error', 'which: missing argument')] };
+            if (args[0] === 'brew' && !state.brewInstalled) {
+                return { state, lines: [line('error', 'brew not found')] };
+            }
             const nodeTools = new Set(['node', 'npm', 'npx']);
             if (nodeTools.has(args[0]) && !state.nodeInstalled) {
                 return { state, lines: [line('error', `${args[0]} not found`)] };
             }
             const paths: Record<string, string> = {
-                node: '/usr/local/bin/node',
-                npm: '/usr/local/bin/npm',
+                brew: '/opt/homebrew/bin/brew',
+                node: state.nodeInstalled ? '/opt/homebrew/bin/node' : '/usr/local/bin/node',
+                npm: state.nodeInstalled ? '/opt/homebrew/bin/npm' : '/usr/local/bin/npm',
                 git: '/usr/bin/git',
-                npx: '/usr/local/bin/npx',
+                npx: state.nodeInstalled ? '/opt/homebrew/bin/npx' : '/usr/local/bin/npx',
             };
             const found = paths[args[0]];
             return {
@@ -865,6 +939,9 @@ export function executeCommand(
         }
 
         case 'brew': {
+            if (!state.brewInstalled) {
+                return commandNotFound(state, 'brew');
+            }
             if (args[0] === 'install' && args[1] === 'node') {
                 if (state.nodeInstalled) {
                     return {
@@ -873,7 +950,7 @@ export function executeCommand(
                     };
                 }
                 return {
-                    state: { ...state, nodeInstalled: true },
+                    state: addNodeInstallation(state),
                     lines: lines('success', [
                         '==> Fetching downloads for: node',
                         '==> Downloading https://ghcr.io/v2/homebrew/core/node/manifests/20.11.0',

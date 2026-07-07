@@ -57,9 +57,24 @@ export const STEP_STUCK_TIPS: Record<string, string[]> = {
         'git add のあとに実行してください。メッセージは -m "..." で付けます。',
         'git commit を実行すると自動で進みます。',
     ],
+    'git-remote': [
+        'GitHub のリポジトリ URL を origin に登録します。',
+        'git remote add origin ... を実行すると自動で進みます。',
+        'git remote -v で登録を確認できます。',
+    ],
+    'git-push': [
+        '先に git remote add が必要です。',
+        'git push -u origin main を実行すると自動で進みます。',
+        'デモなので実際の GitHub アカウントは不要です。',
+    ],
+    'brew-install': [
+        'brew コマンドの前に Homebrew 本体のインストールが必要です。',
+        '表示されている公式コマンドをそのまま実行してください。',
+        '完了するとファイルツリーに opt/homebrew が現れます。',
+    ],
     'node-install': [
-        'node -v の前に Node.js を入れる必要があります。',
-        'brew install node を実行すると自動で進みます。',
+        'Homebrew を入れたあとに brew install node を実行します。',
+        'brew がないときは command not found と出ます。',
     ],
     'node-version': [
         '入っていないときは node -v で command not found と出ます。',
@@ -69,9 +84,14 @@ export const STEP_STUCK_TIPS: Record<string, string[]> = {
     'npm-install': [
         'インストール前は ls node_modules で No such file or directory と出ます。',
         'npm install 後は package-lock.json と node_modules ができます。',
-        'npm run build は install のあとに実行します。',
+    ],
+    'npm-dev': [
+        'npm install のあとに npm run dev を実行します。',
+        'localhost:5173 で開発中のサイトを確認するイメージです。',
+        'Ctrl+C で止めてから build に進みます（デモでは止めなくても次に進めます）。',
     ],
     'npm-build': [
+        'npm run dev で確認したあと、本番用に npm run build します。',
         'npm install のあとに実行してください。',
         'npm run build を実行すると自動で進みます。',
     ],

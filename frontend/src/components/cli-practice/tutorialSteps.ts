@@ -1,4 +1,5 @@
 import { pathExists, readFile, type ProjectState } from './virtualFs';
+import { HOMEBREW_INSTALL_COMMAND, isHomebrewInstallCommand, DEMO_GITHUB_REMOTE } from './commands';
 
 export type TutorialStepKind = 'intro' | 'command' | 'editor';
 
@@ -59,7 +60,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
         id: 'welcome',
         chapter: 'はじめに',
         title: 'チュートリアルへようこそ',
-        description: 'このチュートリアルでは、ターミナルの基本操作から、ファイルの作成・編集、Git、npm install、デプロイまでを順番に体験します。下の「はじめる」を押してください。',
+        description: 'このチュートリアルでは、ターミナルの基本操作から、ファイルの作成・編集、Git、GitHub への push（シミュレーション）、開発サーバー、デプロイまでを順番に体験します。下の「はじめる」を押してください。',
         why: '実際の開発では、まず「今どこにいるか」を確認してから作業を始めます。',
         kind: 'intro',
         check: () => true,
@@ -226,16 +227,51 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
         check: (ctx) => cmdStartsWith(ctx, 'git commit') && ctx.stateAfter.git.commits.length > 0,
     },
     {
+        id: 'git-remote',
+        chapter: '確認と公開',
+        title: 'GitHub の送り先を登録する（git remote add）',
+        description: 'GitHub 上のリポジトリを origin として登録します。実際の作業では GitHub でリポジトリを作ったあと、この URL を使います。ここではデモ用 URL でシミュレーションします。',
+        why: 'git push するには「どこに送るか」を remote で指定する必要があります。',
+        kind: 'command',
+        suggestedCommand: `git remote add origin ${DEMO_GITHUB_REMOTE}`,
+        check: (ctx) =>
+            cmdStartsWith(ctx, 'git remote add origin')
+            && ctx.stateAfter.git.remoteUrl !== null,
+    },
+    {
+        id: 'git-push',
+        chapter: '確認と公開',
+        title: 'GitHub に送る（git push）',
+        description: 'git push -u origin main でコミットを GitHub に送ります（デモでは実際の GitHub は触りません）。git remote -v で送り先を確認することもできます。',
+        why: 'チームと共有したり、Vercel などと連携したりするためにクラウドへコードを置きます。',
+        kind: 'command',
+        suggestedCommand: 'git push -u origin main',
+        check: (ctx) =>
+            (cmdStartsWith(ctx, 'git push -u origin main') || cmdStartsWith(ctx, 'git push'))
+            && ctx.stateAfter.git.pushed,
+    },
+    {
+        id: 'brew-install',
+        chapter: '確認と公開',
+        title: 'Homebrew をインストールする',
+        description: 'Mac でパッケージを入れるには、まず Homebrew 本体が必要です。公式のインストールコマンドを実行しましょう。完了すると /opt/homebrew ができます。',
+        why: 'Homebrew は Mac 向けのパッケージマネージャーです。node など多くのツールは brew 経由で入れます。',
+        kind: 'command',
+        suggestedCommand: HOMEBREW_INSTALL_COMMAND,
+        check: (ctx) => isHomebrewInstallCommand(ctx.command) && ctx.stateAfter.brewInstalled,
+    },
+    {
         id: 'node-install',
         chapter: '確認と公開',
         title: 'Node.js をインストールする（brew install node）',
-        description: 'npm を使うには Node.js が必要です。Mac では brew install node でインストールするのが一般的です。（Windows や Linux では nodejs.org から入れることもあります）',
+        description: 'npm を使うには Node.js が必要です。brew install node でインストールしましょう。',
         why: 'Node.js は JavaScript を PC 上で動かすための土台です。npm も一緒に入ります。',
         kind: 'command',
         suggestedCommand: 'brew install node',
         check: (ctx) =>
             cmdStartsWith(ctx, 'brew install node')
-            && ctx.stateAfter.nodeInstalled,
+            && ctx.stateAfter.nodeInstalled
+            && ctx.stateAfter.brewInstalled,
     },
     {
         id: 'node-version',
@@ -261,6 +297,18 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
             (cmdStartsWith(ctx, 'npm install') || cmdStartsWith(ctx, 'npm i'))
             && ctx.stateAfter.dependenciesInstalled
             && pathExists(ctx.stateAfter, 'node_modules'),
+    },
+    {
+        id: 'npm-dev',
+        chapter: '確認と公開',
+        title: '開発サーバーを起動する（npm run dev）',
+        description: 'npm run dev でローカル開発サーバーを起動します。http://localhost:5173/ でサイトを確認できます。実際は Ctrl+C で止めてから build に進みます。',
+        why: '本番用にビルドする前に、手元の PC で動きを確認するのが一般的です。',
+        kind: 'command',
+        suggestedCommand: 'npm run dev',
+        check: (ctx) =>
+            cmdStartsWith(ctx, 'npm run dev')
+            && ctx.stateAfter.devServerRan,
     },
     {
         id: 'npm-build',

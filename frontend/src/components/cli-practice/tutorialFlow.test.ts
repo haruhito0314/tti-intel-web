@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { executeCommand, saveEditorFile } from './commands';
+import { executeCommand, HOMEBREW_INSTALL_COMMAND, saveEditorFile } from './commands';
 import { createInitialState, pathExists } from './virtualFs';
 import { TUTORIAL_STEPS } from './tutorialSteps';
 
@@ -71,6 +71,7 @@ describe('tutorial step checks', () => {
     it('npm install passes tutorial step and creates node_modules', () => {
         const step = TUTORIAL_STEPS.find((s) => s.id === 'npm-install')!;
         let state = createInitialState();
+        state = executeCommand(state, HOMEBREW_INSTALL_COMMAND).state;
         state = executeCommand(state, 'brew install node').state;
         expect(pathExists(state, 'node_modules')).toBe(false);
 

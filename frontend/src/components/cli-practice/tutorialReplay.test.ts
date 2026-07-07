@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { getStepIndex } from './tutorialSteps';
 import { assertReplayState, replayTutorialToStep } from './tutorialReplay';
+import { DEMO_GITHUB_REMOTE, HOMEBREW_INSTALL_COMMAND } from './commands';
 import { readFile } from './virtualFs';
 
 describe('tutorial replay', () => {
@@ -36,11 +37,33 @@ describe('tutorial replay', () => {
         expect(assertReplayState(stepIndex, state)).toBe(true);
     });
 
-    it('replays brew install node before npm install step', () => {
+    it('replays git remote and push before brew install step', () => {
+        const stepIndex = getStepIndex('brew-install');
+        const { state, commandsRun } = replayTutorialToStep(stepIndex);
+
+        expect(commandsRun).toContain(`git remote add origin ${DEMO_GITHUB_REMOTE}`);
+        expect(commandsRun).toContain('git push -u origin main');
+        expect(state.git.remoteUrl).toBe(DEMO_GITHUB_REMOTE);
+        expect(state.git.pushed).toBe(true);
+        expect(assertReplayState(stepIndex, state)).toBe(true);
+    });
+
+    it('replays npm run dev before npm build step', () => {
+        const stepIndex = getStepIndex('npm-build');
+        const { state, commandsRun } = replayTutorialToStep(stepIndex);
+
+        expect(commandsRun).toContain('npm run dev');
+        expect(state.devServerRan).toBe(true);
+        expect(assertReplayState(stepIndex, state)).toBe(true);
+    });
+
+    it('replays homebrew and node install before npm install step', () => {
         const stepIndex = getStepIndex('npm-install');
         const { state, commandsRun } = replayTutorialToStep(stepIndex);
 
+        expect(commandsRun).toContain(HOMEBREW_INSTALL_COMMAND);
         expect(commandsRun).toContain('brew install node');
+        expect(state.brewInstalled).toBe(true);
         expect(state.nodeInstalled).toBe(true);
         expect(assertReplayState(stepIndex, state)).toBe(true);
     });

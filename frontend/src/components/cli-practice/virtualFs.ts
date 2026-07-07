@@ -12,18 +12,22 @@ export interface GitState {
     branches: string[];
     staged: string[];
     commits: { hash: string; message: string }[];
+    remoteUrl: string | null;
     pushed: boolean;
 }
 
 export interface ProjectState {
     cwd: string;
     root: FsNode;
+    systemRoot: FsNode | null;
     git: GitState;
     dependenciesInstalled: boolean;
+    brewInstalled: boolean;
     nodeInstalled: boolean;
     built: boolean;
     deployed: boolean;
     deployUrl: string | null;
+    devServerRan: boolean;
     env: Record<string, string>;
 }
 
@@ -132,19 +136,23 @@ export function createInitialState(): ProjectState {
     return {
         cwd: '/Users/demo/my-website',
         root: structuredClone(INITIAL_TREE),
+        systemRoot: null,
         git: {
             initialized: false,
             branch: 'main',
             branches: ['main'],
             staged: [],
             commits: [],
+            remoteUrl: null,
             pushed: false,
         },
         dependenciesInstalled: false,
+        brewInstalled: false,
         nodeInstalled: false,
         built: false,
         deployed: false,
         deployUrl: null,
+        devServerRan: false,
         env: {
             USER: 'demo',
             HOME: '/Users/demo',
@@ -207,7 +215,14 @@ export function getNodeAtRelativePath(state: ProjectState, input: string): FsNod
 }
 
 export function getNodeAtAbsolutePath(state: ProjectState, absPath: string): FsNode | null {
-    const rel = absPath.replace(/^\/Users\/demo\/?/, '');
+    const normalized = normalizePath(absPath);
+    if (normalized.startsWith('/opt')) {
+        if (!state.systemRoot) return null;
+        const rel = normalized.replace(/^\/opt\/?/, '');
+        if (!rel) return state.systemRoot;
+        return getNodeAtPath(state.systemRoot, rel);
+    }
+    const rel = normalized.replace(/^\/Users\/demo\/?/, '');
     if (!rel) return state.root;
     return getNodeAtPath(state.root, rel);
 }
@@ -447,6 +462,95 @@ export function findFiles(state: ProjectState, pattern: string, base = '.'): str
     return results;
 }
 
+export function addBrewInstallation(state: ProjectState): ProjectState {
+    return {
+        ...state,
+        brewInstalled: true,
+        systemRoot: {
+            type: 'dir',
+            children: {
+                homebrew: {
+                    type: 'dir',
+                    children: {
+                        bin: {
+                            type: 'dir',
+                            children: {
+                                brew: { type: 'file', content: '#!/bin/bash\n# Homebrew' },
+                            },
+                        },
+                        Homebrew: {
+                            type: 'dir',
+                            children: {
+                                'README.md': {
+                                    type: 'file',
+                                    content: '# Homebrew\n\nPackage manager for macOS (or Linux).',
+                                },
+                            },
+                        },
+                        Cellar: { type: 'dir', children: {} },
+                        etc: {
+                            type: 'dir',
+                            children: {
+                                'bash_completion.d': { type: 'dir', children: {} },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    };
+}
+
+export function addNodeInstallation(state: ProjectState): ProjectState {
+    if (!state.brewInstalled || !state.systemRoot) {
+        return { ...state, nodeInstalled: true };
+    }
+    const next = structuredClone(state);
+    const homebrew = getNodeAtPath(next.systemRoot!, 'homebrew');
+    if (!homebrew?.children) return { ...next, nodeInstalled: true };
+
+    homebrew.children.bin = {
+        type: 'dir',
+        children: {
+            brew: homebrew.children.bin?.children?.brew ?? { type: 'file', content: '#!/bin/bash\n# Homebrew' },
+            node: { type: 'file', content: '#!/opt/homebrew/Cellar/node/20.11.0/bin/node' },
+            npm: { type: 'file', content: '#!/usr/bin/env node' },
+            npx: { type: 'file', content: '#!/usr/bin/env node' },
+        },
+    };
+    homebrew.children.Cellar = {
+        type: 'dir',
+        children: {
+            node: {
+                type: 'dir',
+                children: {
+                    '20.11.0': {
+                        type: 'dir',
+                        children: {
+                            bin: {
+                                type: 'dir',
+                                children: {
+                                    node: { type: 'file', content: '#!/usr/bin/env node' },
+                                    npm: { type: 'file', content: '#!/usr/bin/env node' },
+                                    npx: { type: 'file', content: '#!/usr/bin/env node' },
+                                },
+                            },
+                            'INSTALL_RECEIPT.json': {
+                                type: 'file',
+                                content: '{ "homebrew_version": "4.3.0", "used_options": [] }',
+                            },
+                            include: { type: 'dir', children: {} },
+                            lib: { type: 'dir', children: {} },
+                        },
+                    },
+                },
+            },
+        },
+    };
+
+    return { ...next, nodeInstalled: true };
+}
+
 export function addNodeModulesFolder(state: ProjectState): ProjectState {
     const next = structuredClone(state);
     const project = getNodeAtPath(next.root, 'my-website');
@@ -532,8 +636,16 @@ export interface TreeEntry {
 }
 
 export function buildTree(state: ProjectState, basePath = '/Users/demo/my-website'): TreeEntry[] {
-    const rel = basePath.replace(/^\/Users\/demo\/?/, '');
-    const node = rel ? getNodeAtPath(state.root, rel) : state.root;
+    const normalized = normalizePath(basePath);
+    let node: FsNode | null;
+    if (normalized.startsWith('/opt')) {
+        if (!state.systemRoot) return [];
+        const rel = normalized.replace(/^\/opt\/?/, '');
+        node = rel ? getNodeAtPath(state.systemRoot, rel) : state.systemRoot;
+    } else {
+        const rel = normalized.replace(/^\/Users\/demo\/?/, '');
+        node = rel ? getNodeAtPath(state.root, rel) : state.root;
+    }
     if (!node || node.type !== 'dir' || !node.children) return [];
 
     function walk(current: FsNode, currentPath: string): TreeEntry[] {
@@ -554,7 +666,12 @@ export function buildTree(state: ProjectState, basePath = '/Users/demo/my-websit
             });
     }
 
-    return walk(node, basePath);
+    return walk(node, normalized);
+}
+
+export function buildOptTree(state: ProjectState): TreeEntry[] {
+    if (!state.systemRoot) return [];
+    return buildTree(state, '/opt/homebrew');
 }
 
 export function relativeToProject(path: string): string {
@@ -608,7 +725,17 @@ export function readProjectFile(state: ProjectState, projectRelativePath: string
 }
 
 export function readProjectFileByAbsolutePath(state: ProjectState, absolutePath: string): ProjectFileContent | null {
-    const rel = absolutePath.replace(/^\/Users\/demo\/my-website\/?/, '');
+    const normalized = normalizePath(absolutePath);
+    if (normalized.startsWith('/opt')) {
+        const node = getNodeAtAbsolutePath(state, normalized);
+        if (!node || node.type !== 'file') return null;
+        return {
+            sourcePath: normalized,
+            absolutePath: normalized,
+            content: node.content ?? '',
+        };
+    }
+    const rel = normalized.replace(/^\/Users\/demo\/my-website\/?/, '');
     if (!rel) return null;
     return readProjectFile(state, rel);
 }

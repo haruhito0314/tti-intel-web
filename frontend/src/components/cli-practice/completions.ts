@@ -11,6 +11,8 @@ const GIT_SUBCOMMANDS = [
 
 const BREW_COMMANDS = ['install node', '--version'];
 
+const HOMEBREW_INSTALL_SNIPPET = 'curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh';
+
 const NPM_COMMANDS = [
     'install', 'i', 'start', 'test', 'list --depth=0',
     'run dev', 'run build', 'run deploy', 'run lint',
@@ -91,9 +93,31 @@ export function getCompletions(state: ProjectState, input: string): string[] {
         if (parts[1] === 'checkout' && parts[2] === '-b' && parts.length === 3) {
             return ['git checkout -b feature/new'];
         }
+        if (parts[1] === 'remote' && parts.length === 2) {
+            return ['git remote -v', 'git remote add origin https://github.com/demo/my-website.git'];
+        }
+        if (parts[1] === 'remote' && parts[2] === 'add' && parts.length === 3) {
+            return ['git remote add origin https://github.com/demo/my-website.git'];
+        }
+        if (parts[1] === 'push' && parts.length === 2) {
+            return ['git push -u origin main', 'git push'];
+        }
         if (parts[1] === 'clone' && parts.length === 2) {
             return ['git clone https://github.com/demo/my-website.git'];
         }
+    }
+
+    if (parts[0] === 'curl' && parts.length === 1) {
+        return [
+            HOMEBREW_INSTALL_SNIPPET,
+            'curl https://api.example.com/users',
+        ].filter((c) => c.startsWith(trimmed));
+    }
+
+    if (parts[0] === '/bin/bash' || trimmed.startsWith('/bin/bash')) {
+        return [
+            '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"',
+        ].filter((c) => c.startsWith(trimmed));
     }
 
     if (parts[0] === 'brew') {

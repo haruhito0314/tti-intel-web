@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ChevronDown, ChevronRight, File, Folder, FolderOpen } from 'lucide-react';
 import { FilePreview } from './FilePreview';
-import { buildTree, getParentPath, relativeToProject, type ProjectState, type TreeEntry } from './virtualFs';
+import { buildOptTree, buildTree, getParentPath, relativeToProject, type ProjectState, type TreeEntry } from './virtualFs';
 
 const ROOT_PATH = '/Users/demo/my-website';
+const HOMEBREW_PATH = '/opt/homebrew';
 
 interface FileTreePanelProps {
     state: ProjectState;
@@ -111,6 +112,7 @@ function TreeNode({
 
 export function FileTreePanel({ state }: FileTreePanelProps) {
     const tree = useMemo(() => buildTree(state), [state]);
+    const homebrewTree = useMemo(() => buildOptTree(state), [state]);
     const relCwd = relativeToProject(state.cwd);
     const displayCwd = relCwd === '.' ? 'my-website/' : `my-website/${relCwd}`;
 
@@ -126,6 +128,25 @@ export function FileTreePanel({ state }: FileTreePanelProps) {
             return next;
         });
     }, [state.cwd]);
+
+    useEffect(() => {
+        if (state.brewInstalled) {
+            setExpanded((prev) => new Set(prev).add(HOMEBREW_PATH));
+        }
+    }, [state.brewInstalled]);
+
+    useEffect(() => {
+        if (state.nodeInstalled) {
+            setExpanded((prev) => {
+                const next = new Set(prev);
+                next.add(HOMEBREW_PATH);
+                next.add(`${HOMEBREW_PATH}/Cellar`);
+                next.add(`${HOMEBREW_PATH}/Cellar/node`);
+                next.add(`${HOMEBREW_PATH}/Cellar/node/20.11.0`);
+                return next;
+            });
+        }
+    }, [state.nodeInstalled]);
 
     useEffect(() => {
         if (state.dependenciesInstalled) {
@@ -153,6 +174,20 @@ export function FileTreePanel({ state }: FileTreePanelProps) {
             </div>
 
             <div className="min-h-0 max-h-[42%] shrink-0 overflow-y-auto border-b border-black/5 p-2 dark:border-white/10">
+                {homebrewTree.length > 0 && (
+                    <TreeNode
+                        name="opt/homebrew"
+                        type="dir"
+                        path={HOMEBREW_PATH}
+                        depth={0}
+                        cwd={state.cwd}
+                        selectedPath={selectedPath}
+                        children={homebrewTree}
+                        expanded={expanded}
+                        onToggle={toggleExpand}
+                        onSelectFile={setSelectedPath}
+                    />
+                )}
                 <TreeNode
                     name="my-website"
                     type="dir"
@@ -171,8 +206,10 @@ export function FileTreePanel({ state }: FileTreePanelProps) {
 
             <div className="shrink-0 border-t border-black/5 px-4 py-3 dark:border-white/10">
                 <div className="flex flex-wrap gap-2 text-[10px]">
+                    <StatusPill label="brew" active={state.brewInstalled} />
                     <StatusPill label="node" active={state.nodeInstalled} />
                     <StatusPill label="Git" active={state.git.initialized} />
+                    <StatusPill label="push" active={state.git.pushed} />
                     <StatusPill label="npm" active={state.dependenciesInstalled} />
                     <StatusPill label="build" active={state.built} />
                     <StatusPill label="deploy" active={state.deployed} />
