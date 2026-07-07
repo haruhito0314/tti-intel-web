@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 800px;
+      height: 450px;
+      overflow: hidden;
+      background: #1c1c1e;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    .terminal {
+      width: 800px;
+      height: 450px;
+      display: flex;
+      flex-direction: column;
+      background: #1c1c1e;
+      color: #f5f5f7;
+    }
+    .titlebar {
+      height: 52px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 18px;
+      background: #2c2c2e;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+    }
+    .dot { width: 14px; height: 14px; border-radius: 50%; }
+    .dot.red { background: #ff5f57; }
+    .dot.yellow { background: #ffbd2e; }
+    .dot.green { background: #28c840; }
+    .title {
+      margin-left: 10px;
+      color: #8e8e93;
+      font-size: 16px;
+    }
+    .badge {
+      margin-left: auto;
+      background: rgba(255,159,10,0.2);
+      color: #ff9f0a;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-family: system-ui, sans-serif;
+    }
+    .body {
+      flex: 1;
+      padding: 22px 22px 10px;
+      font-size: 22px;
+      line-height: 1.45;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .block { display: flex; flex-direction: column; gap: 6px; }
+    .muted { color: #8e8e93; font-size: 18px; }
+    .success { color: #63e6be; }
+    .prompt { color: #63e6be; }
+    .line { white-space: pre; }
+    .inputbar {
+      height: 64px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      padding: 0 22px;
+      font-size: 24px;
+      flex-shrink: 0;
+      background: #1c1c1e;
+    }
+    .ghost { color: #48484a; }
+    .caret {
+      display: inline-block;
+      width: 3px;
+      height: 24px;
+      background: #63e6be;
+      margin-left: 2px;
+      vertical-align: -4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="terminal">
+    <div class="titlebar">
+      <span class="dot red"></span>
+      <span class="dot yellow"></span>
+      <span class="dot green"></span>
+      <span class="title">demo@tti — zsh</span>
+      <span class="badge">DEMO</span>
+    </div>
+    <div class="body">
+      <div class="block">
+        <div class="line muted">CLI Practice</div>
+        <div class="line"><span class="prompt">demo@tti:~/my-website$ </span>tree</div>
+        <div class="line">├── package.json</div>
+        <div class="line">├── src/</div>
+        <div class="line">└── index.html</div>
+      </div>
+      <div class="block">
+        <div class="line"><span class="prompt">demo@tti:~/my-website$ </span>git init</div>
+        <div class="line success">Initialized empty Git repository.</div>
+        <div class="line"><span class="prompt">demo@tti:~/my-website$ </span>npm run deploy</div>
+        <div class="line success">Production: my-website-demo.vercel.app</div>
+      </div>
+    </div>
+    <div class="inputbar">
+      <span class="prompt">demo@tti:~/my-website$ </span>git<span class="ghost"> commit -m</span><span class="caret"></span>
+    </div>
+  </div>
+</body>
+</html>

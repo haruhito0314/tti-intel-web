@@ -44,6 +44,16 @@ const apps: {
             '/images/color-sort-puzzle.webp',
         ],
     },
+    {
+        title: 'コマンドライン練習',
+        status: 'available',
+        description: 'ターミナル操作を安全なデモ環境で練習。git・npm・デプロイの流れを Tab 補完付きで体験できます。',
+        tags: ['React', 'TypeScript', 'Learning'],
+        path: '/app/cli-practice',
+        images: [
+            '/images/cli-practice.webp',
+        ],
+    },
 ];
 
 function ImageCarousel({ images, title }: { images: string[]; title: string }) {
