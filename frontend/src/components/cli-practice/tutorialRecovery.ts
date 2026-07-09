@@ -20,26 +20,22 @@ export const STEP_STUCK_TIPS: Record<string, string[]> = {
         'pwd で今いる場所を確認してください。末尾が pages なら cd pages のあとに進みます。',
         'ルートにいるときは cd pages を実行します。',
     ],
-    'pwd-pages': [
-        'pwd の表示の末尾が pages かどうかを確認してください。',
-        '違う場所にいるときは cd pages を実行してからもう一度 pwd します。',
-    ],
     'touch-about': [
         'pages フォルダの中にいることを pwd で確認してください。',
         'touch about.html を実行すると自動で進みます。',
     ],
-    'nano-open': [
-        'pages の中にいることを確認してから nano about.html を実行します。',
-        'nano を開くと自動で次のステップに進みます。',
+    'code-open': [
+        'pages の中にいることを確認してから code about.html を実行します。',
+        'code で開くと自動で次のステップに進みます。',
     ],
-    'nano-write': [
+    'code-write': [
         '例の HTML をコピーして貼り付けても構いません。',
-        '^O（Ctrl+O）で保存したあと、^X（Ctrl+X）で終了すると自動で進みます。',
+        '保存してエディタを閉じると自動で進みます。',
         '<h1> と <p> の両方を含めて保存する必要があります。',
     ],
     'cat-about': [
         'pages フォルダの中で cat about.html を実行してください。',
-        'ファイルが空のときは nano about.html で書き直します。',
+        'ファイルが空のときは code about.html で書き直します。',
     ],
     'cd-root': [
         'pages の中にいるときは cd .. でひとつ上に戻ります。',
@@ -49,6 +45,10 @@ export const STEP_STUCK_TIPS: Record<string, string[]> = {
         'my-website（プロジェクトのルート）で実行してください。',
         'git init を実行すると自動で進みます。',
     ],
+    'git-status': [
+        'git init のあとに git status を実行します。',
+        'Untracked files に pages/about.html が見えていれば順調です。',
+    ],
     'git-add': [
         '先に git init が必要です。about.html ができているか tree で確認してください。',
         'git add . を実行すると自動で進みます。',
@@ -57,28 +57,13 @@ export const STEP_STUCK_TIPS: Record<string, string[]> = {
         'git add のあとに実行してください。メッセージは -m "..." で付けます。',
         'git commit を実行すると自動で進みます。',
     ],
-    'git-remote': [
-        'GitHub のリポジトリ URL を origin に登録します。',
-        'git remote add origin ... を実行すると自動で進みます。',
-        'git remote -v で登録を確認できます。',
-    ],
-    'git-push': [
-        '先に git remote add が必要です。',
-        'git push -u origin main を実行すると自動で進みます。',
-        'デモなので実際の GitHub アカウントは不要です。',
-    ],
-    'brew-install': [
-        'brew コマンドの前に Homebrew 本体のインストールが必要です。',
-        '表示されている公式コマンドをそのまま実行してください。',
-        '完了するとファイルツリーに opt/homebrew が現れます。',
-    ],
-    'node-install': [
-        'Homebrew を入れたあとに brew install node を実行します。',
-        'brew がないときは command not found と出ます。',
+    'git-log': [
+        'git commit のあとに git log を実行します。',
+        'Add about page というメッセージが見えれば履歴に残っています。',
     ],
     'node-version': [
-        '入っていないときは node -v で command not found と出ます。',
-        '先のステップで brew install node を済ませてから実行してください。',
+        'この練習環境では Node.js が最初から使えます。',
+        'node -v を実行してバージョンが表示されるか確認します。',
         'which node で場所を確認することもできます。',
     ],
     'npm-install': [

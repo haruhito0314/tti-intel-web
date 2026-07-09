@@ -16,7 +16,7 @@ const CATEGORY_ORDER: CommandCategory[] = ['basic', 'file', 'git', 'npm', 'netwo
 
 export function CommandSearch({ onInsertCommand }: CommandSearchProps) {
     const [query, setQuery] = useState('');
-    const [category, setCategory] = useState<CommandCategory | 'all'>('all');
+    const [category, setCategory] = useState<CommandCategory | 'all'>('basic');
     const [copied, setCopied] = useState<string | null>(null);
 
     const results = useMemo(() => {

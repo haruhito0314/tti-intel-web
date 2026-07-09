@@ -42,8 +42,9 @@ export const STACK_CARD_COL_GAP = 0.045;
 export const STACK_CARD_BASE = 0.05;
 export const STACK_EXIT_HOLD = 0.06;
 export const STACK_SHELL_FADE_PAD = 0.02;
+const STACK2_DESKTOP_EXIT_STAGGER = 0.03;
 
-export const STACK_GRID_CHAPTER_INDICES = new Set([4]);
+export const STACK_GRID_CHAPTER_INDICES = new Set([1, 4]);
 export const STACK_GRID_MOBILE_COLS = 2;
 export const STACK_GRID_DESKTOP_COLS = 4;
 
@@ -99,6 +100,17 @@ export function stackCardExit(
     return exit(local, start, start + STACK_CARD_SPAN);
 }
 
+/** Section 2 desktop — cards exit strictly left to right */
+export function stack2DesktopCardExit(
+    local: number,
+    index: number,
+    cardCount: number,
+    columns = STACK_GRID_DESKTOP_COLS,
+): number {
+    const start = stackGridExitStart(cardCount, columns) + index * STACK2_DESKTOP_EXIT_STAGGER;
+    return exit(local, start, start + STACK_CARD_SPAN);
+}
+
 // —— Section 3 MCP ——
 export function mcpPanelReveal(local: number): number {
     return reveal(motionLocal(local, 2), 0.05, 0.2);
@@ -134,13 +146,12 @@ export function scene4TypewriterProgress(local: number): number {
 }
 
 // —— Section 6 workflow ——
-const WF_STEP_STARTS = [0.04, 0.14, 0.28, 0.4] as const;
+const WF_STEP_STARTS = [0.02, 0.08, 0.14, 0.2] as const;
 const WF_MOBILE_STEP_STARTS = [0.04, 0.18, 0.32, 0.46] as const;
 const WF_STEP_SPAN = 0.08;
 const WF_MOBILE_STEP_SPAN = 0.1;
-const WF_ARROW_STARTS = [0.12, 0.24, 0.46] as const;
-/** ~half previous draw speed (2× span) */
-const WF_ARROW_SPANS = [0.22, 0.48, 0.22] as const;
+const WF_ARROW_STARTS = [0.12, 0.3, 0.48] as const;
+const WF_ARROW_SPANS = [0.14, 0.14, 0.14] as const;
 
 export function workflowStepReveal(local: number, index: number, mobileLayout = false): number {
     const l = motionLocal(local, 5);
@@ -151,10 +162,9 @@ export function workflowStepReveal(local: number, index: number, mobileLayout = 
 }
 
 export function workflowArrowReveal(local: number, index: number): number {
-    const l = motionLocal(local, 5);
     const start = WF_ARROW_STARTS[index] ?? WF_ARROW_STARTS[0];
     const span = WF_ARROW_SPANS[index] ?? WF_ARROW_SPANS[0];
-    return reveal(l, start, start + span);
+    return reveal(local, start, start + span);
 }
 
 // —— Section 7 CTA ——

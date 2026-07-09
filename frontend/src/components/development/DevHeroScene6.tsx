@@ -2,7 +2,7 @@ import { forwardRef, useId, useLayoutEffect, useRef, useState, type RefObject } 
 import { WORKFLOW_STEPS } from './sceneUtils';
 import { DevHeroCopy } from './DevHeroCopy';
 import { chapterShellStyle, enterSlideY, isSectionEnterComplete } from './devEnterStyle';
-import { getChapterLocal, getChapterOpacity } from './devScrollMath';
+import { getChapterOpacity, getDeferredChapterLocal } from './devScrollMath';
 import { workflowArrowReveal, workflowStepReveal } from './devSceneMotion';
 import { useDevMobileLayout } from './useDevMobileLayout';
 
@@ -39,13 +39,9 @@ const WorkflowCard = forwardRef<HTMLDivElement, WorkflowCardProps>(function Work
     );
 });
 
-type ConnectorGeometry = {
-    top: string;
-    curve: string;
-    bottom: string;
-    topTip: { x: number; y: number; angle: number };
-    curveTip: { x: number; y: number; angle: number };
-    bottomTip: { x: number; y: number; angle: number };
+type ConnectorSegmentData = {
+    d: string;
+    tip: { x: number; y: number; angle: number };
 };
 
 type CardRect = {
@@ -83,73 +79,55 @@ function getPathTip(path: SVGPathElement, pathLength: number, progress: number) 
     return { x: point.x, y: point.y, angle };
 }
 
-function buildConnectorGeometry(cards: CardRect[]): ConnectorGeometry {
-    const [c0, c1, c2, c3] = cards;
-    const midY = (c1.bottom + c2.top) / 2;
-    const pad = 10;
+function buildConnectorSegments(cards: CardRect[]): ConnectorSegmentData[] {
+    const pad = 8;
+    const segments: ConnectorSegmentData[] = [];
 
-    const topStartX = c0.right + pad;
-    const topEndX = c1.left - pad;
-    const bottomStartX = c2.right + pad;
-    const bottomEndX = c3.left - pad;
+    for (let index = 0; index < cards.length - 1; index += 1) {
+        const from = cards[index];
+        const to = cards[index + 1];
+        const startX = from.right + pad;
+        const endX = to.left - pad;
+        const y = (from.cy + to.cy) / 2;
+        const d = `M ${startX} ${y} L ${endX} ${y}`;
+        segments.push({
+            d,
+            tip: { x: endX, y, angle: pathAngle(startX, y, endX, y) },
+        });
+    }
 
-    const top = `M ${topStartX} ${c0.cy} L ${topEndX} ${c1.cy}`;
-    const curve = `M ${c1.cx} ${c1.bottom + pad} C ${c1.cx} ${midY}, ${c2.cx} ${midY}, ${c2.cx} ${c2.top - pad}`;
-    const bottom = `M ${bottomStartX} ${c2.cy} L ${bottomEndX} ${c3.cy}`;
-
-    return {
-        top,
-        curve,
-        bottom,
-        topTip: { x: topEndX, y: c1.cy, angle: pathAngle(topStartX, c0.cy, topEndX, c1.cy) },
-        curveTip: {
-            x: c2.cx,
-            y: c2.top - pad,
-            angle: pathAngle(c2.cx, midY, c2.cx, c2.top - pad),
-        },
-        bottomTip: {
-            x: bottomEndX,
-            y: c3.cy,
-            angle: pathAngle(bottomStartX, c2.cy, bottomEndX, c3.cy),
-        },
-    };
+    return segments;
 }
 
-function useWorkflowConnectorGeometry(
+function useWorkflowConnectorSegments(
     gridRef: RefObject<HTMLDivElement | null>,
     cardRefs: RefObject<HTMLDivElement | null>[],
-): ConnectorGeometry | null {
-    const [geometry, setGeometry] = useState<ConnectorGeometry | null>(null);
+    syncKey: number,
+): ConnectorSegmentData[] | null {
+    const [segments, setSegments] = useState<ConnectorSegmentData[] | null>(null);
 
     useLayoutEffect(() => {
         const grid = gridRef.current;
         if (!grid || cardRefs.some((ref) => !ref.current)) return;
 
-        const gridRect = grid.getBoundingClientRect();
-        const cards = cardRefs.map((ref) => getCardRect(ref.current!, gridRect));
-        setGeometry(buildConnectorGeometry(cards));
-    }, [gridRef, cardRefs]);
-
-    useLayoutEffect(() => {
-        const grid = gridRef.current;
-        if (!grid) return;
-
-        const observer = new ResizeObserver(() => {
-            if (cardRefs.some((ref) => !ref.current)) return;
+        const sync = () => {
             const gridRect = grid.getBoundingClientRect();
             const cards = cardRefs.map((ref) => getCardRect(ref.current!, gridRect));
-            setGeometry(buildConnectorGeometry(cards));
-        });
+            setSegments(buildConnectorSegments(cards));
+        };
 
+        sync();
+
+        const observer = new ResizeObserver(sync);
         observer.observe(grid);
         cardRefs.forEach((ref) => {
             if (ref.current) observer.observe(ref.current);
         });
 
         return () => observer.disconnect();
-    }, [gridRef, cardRefs]);
+    }, [gridRef, cardRefs, syncKey]);
 
-    return geometry;
+    return segments;
 }
 
 type ConnectorSegmentProps = {
@@ -157,6 +135,7 @@ type ConnectorSegmentProps = {
     gradientId: string;
     defaultTip: { x: number; y: number; angle: number };
     progress: number;
+    glowId: string;
 };
 
 function ConnectorRail({ d, progress }: { d: string; progress: number }) {
@@ -176,7 +155,7 @@ function ConnectorRail({ d, progress }: { d: string; progress: number }) {
     );
 }
 
-function ConnectorSegment({ d, gradientId, defaultTip, progress, glowId }: ConnectorSegmentProps & { glowId: string }) {
+function ConnectorSegment({ d, gradientId, defaultTip, progress, glowId }: ConnectorSegmentProps) {
     const pathRef = useRef<SVGPathElement>(null);
     const [segmentMetrics, setSegmentMetrics] = useState({
         pathLength: 1,
@@ -189,12 +168,7 @@ function ConnectorSegment({ d, gradientId, defaultTip, progress, glowId }: Conne
         const length = path.getTotalLength() || 1;
         const clamped = Math.min(1, Math.max(0, progress));
         const nextTip = getPathTip(path, length, clamped);
-        setSegmentMetrics((current) => {
-            if (current.pathLength === length && current.tip.x === nextTip.x && current.tip.y === nextTip.y && current.tip.angle === nextTip.angle) {
-                return current;
-            }
-            return { pathLength: length, tip: nextTip };
-        });
+        setSegmentMetrics({ pathLength: length, tip: nextTip });
     }, [d, progress, defaultTip]);
 
     const { pathLength, tip } = segmentMetrics;
@@ -236,15 +210,15 @@ type WorkflowConnectorsProps = {
     gridRef: RefObject<HTMLDivElement | null>;
     cardRefs: RefObject<HTMLDivElement | null>[];
     arrowProgress: [number, number, number];
+    syncKey: number;
 };
 
-function WorkflowConnectors({ gridRef, cardRefs, arrowProgress }: WorkflowConnectorsProps) {
-    const gradientHId = useId();
-    const gradientCurveId = useId();
+function WorkflowConnectors({ gridRef, cardRefs, arrowProgress, syncKey }: WorkflowConnectorsProps) {
+    const gradientId = useId();
     const glowId = useId();
-    const geometry = useWorkflowConnectorGeometry(gridRef, cardRefs);
+    const segments = useWorkflowConnectorSegments(gridRef, cardRefs, syncKey);
 
-    if (!geometry) return null;
+    if (!segments) return null;
 
     return (
         <svg className="dev-workflow-connectors" aria-hidden="true">
@@ -256,40 +230,25 @@ function WorkflowConnectors({ gridRef, cardRefs, arrowProgress }: WorkflowConnec
                         <feMergeNode in="SourceGraphic" />
                     </feMerge>
                 </filter>
-                <linearGradient id={gradientHId} x1="0%" y1="0%" x2="100%" y2="0%">
+                <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
                     <stop offset="0%" stopColor="rgba(102, 180, 255, 0.5)" />
                     <stop offset="55%" stopColor="#66B4FF" />
                     <stop offset="100%" stopColor="#9B51E0" />
                 </linearGradient>
-                <linearGradient id={gradientCurveId} x1="50%" y1="0%" x2="50%" y2="100%">
-                    <stop offset="0%" stopColor="#66B4FF" />
-                    <stop offset="100%" stopColor="#9B51E0" />
-                </linearGradient>
             </defs>
-            <ConnectorRail d={geometry.top} progress={arrowProgress[0]} />
-            <ConnectorRail d={geometry.curve} progress={arrowProgress[1]} />
-            <ConnectorRail d={geometry.bottom} progress={arrowProgress[2]} />
-            <ConnectorSegment
-                d={geometry.top}
-                gradientId={gradientHId}
-                defaultTip={geometry.topTip}
-                progress={arrowProgress[0]}
-                glowId={glowId}
-            />
-            <ConnectorSegment
-                d={geometry.curve}
-                gradientId={gradientCurveId}
-                defaultTip={geometry.curveTip}
-                progress={arrowProgress[1]}
-                glowId={glowId}
-            />
-            <ConnectorSegment
-                d={geometry.bottom}
-                gradientId={gradientHId}
-                defaultTip={geometry.bottomTip}
-                progress={arrowProgress[2]}
-                glowId={glowId}
-            />
+            {segments.map((segment, index) => (
+                <ConnectorRail key={`rail-${index}`} d={segment.d} progress={arrowProgress[index]} />
+            ))}
+            {segments.map((segment, index) => (
+                <ConnectorSegment
+                    key={`segment-${index}`}
+                    d={segment.d}
+                    gradientId={gradientId}
+                    defaultTip={segment.tip}
+                    progress={arrowProgress[index]}
+                    glowId={glowId}
+                />
+            ))}
         </svg>
     );
 }
@@ -297,18 +256,31 @@ function WorkflowConnectors({ gridRef, cardRefs, arrowProgress }: WorkflowConnec
 export function DevHeroScene6(props: DevHeroScene6Props) {
     const mobileLayout = useDevMobileLayout();
     const isScroll = props.progress !== undefined;
-    const local = isScroll ? getChapterLocal(props.progress, props.chapterIndex) : 1;
-    const deferred = isScroll && props.deferUntilProgress !== undefined && props.progress < props.deferUntilProgress;
-    const opacity = isScroll && !deferred ? getChapterOpacity(props.progress, props.chapterIndex) : isScroll ? 0 : 1;
+    const deferred =
+        isScroll &&
+        props.deferUntilProgress !== undefined &&
+        props.progress < props.deferUntilProgress;
+    const local =
+        isScroll && props.chapterIndex !== undefined
+            ? getDeferredChapterLocal(props.progress, props.chapterIndex, props.deferUntilProgress)
+            : 1;
+    const opacity =
+        isScroll && !deferred && props.chapterIndex !== undefined
+            ? getChapterOpacity(props.progress, props.chapterIndex)
+            : isScroll
+              ? 0
+              : 1;
     const frozen = !isScroll || isSectionEnterComplete(local, 5);
-    const arrowProgress: [number, number, number] =
-        mobileLayout || frozen
-            ? [1, 1, 1]
-            : [
-                  workflowArrowReveal(local, 0),
-                  workflowArrowReveal(local, 1),
-                  workflowArrowReveal(local, 2),
-              ];
+    const arrowProgress: [number, number, number] = mobileLayout
+        ? [1, 1, 1]
+        : deferred
+          ? [0, 0, 0]
+          : [
+                workflowArrowReveal(local, 0),
+                workflowArrowReveal(local, 1),
+                workflowArrowReveal(local, 2),
+            ];
+    const syncKey = Math.round(local * 200);
 
     const gridRef = useRef<HTMLDivElement>(null);
     const cardRef0 = useRef<HTMLDivElement>(null);
@@ -324,48 +296,46 @@ export function DevHeroScene6(props: DevHeroScene6Props) {
                 <DevHeroCopy blockIndex={props.copyIndex} />
             )}
 
-            <div
-                className={isScroll ? 'dev-scene-shell' : undefined}
-                style={shellStyle}
-            >
-            <div className="dev-scene-viewport" aria-hidden="true">
-                <div
-                    ref={gridRef}
-                    className={`dev-workflow-grid${mobileLayout ? ' dev-workflow-grid--mobile-stack' : ''}`}
-                >
-                    {!mobileLayout && (
-                        <WorkflowConnectors
-                            gridRef={gridRef}
-                            cardRefs={cardRefs}
-                            arrowProgress={arrowProgress}
+            <div className={isScroll ? 'dev-scene-shell' : undefined} style={shellStyle}>
+                <div className="dev-scene-viewport" aria-hidden="true">
+                    <div
+                        ref={gridRef}
+                        className={`dev-workflow-grid${mobileLayout ? ' dev-workflow-grid--mobile-stack' : ''}`}
+                    >
+                        {!mobileLayout && (
+                            <WorkflowConnectors
+                                gridRef={gridRef}
+                                cardRefs={cardRefs}
+                                arrowProgress={arrowProgress}
+                                syncKey={syncKey}
+                            />
+                        )}
+                        <WorkflowCard
+                            ref={cardRef0}
+                            step={WORKFLOW_STEPS[0]}
+                            index={0}
+                            reveal={frozen ? 1 : workflowStepReveal(local, 0, mobileLayout)}
                         />
-                    )}
-                    <WorkflowCard
-                        ref={cardRef0}
-                        step={WORKFLOW_STEPS[0]}
-                        index={0}
-                        reveal={frozen ? 1 : workflowStepReveal(local, 0, mobileLayout)}
-                    />
-                    <WorkflowCard
-                        ref={cardRef1}
-                        step={WORKFLOW_STEPS[1]}
-                        index={1}
-                        reveal={frozen ? 1 : workflowStepReveal(local, 1, mobileLayout)}
-                    />
-                    <WorkflowCard
-                        ref={cardRef2}
-                        step={WORKFLOW_STEPS[2]}
-                        index={2}
-                        reveal={frozen ? 1 : workflowStepReveal(local, 2, mobileLayout)}
-                    />
-                    <WorkflowCard
-                        ref={cardRef3}
-                        step={WORKFLOW_STEPS[3]}
-                        index={3}
-                        reveal={frozen ? 1 : workflowStepReveal(local, 3, mobileLayout)}
-                    />
+                        <WorkflowCard
+                            ref={cardRef1}
+                            step={WORKFLOW_STEPS[1]}
+                            index={1}
+                            reveal={frozen ? 1 : workflowStepReveal(local, 1, mobileLayout)}
+                        />
+                        <WorkflowCard
+                            ref={cardRef2}
+                            step={WORKFLOW_STEPS[2]}
+                            index={2}
+                            reveal={frozen ? 1 : workflowStepReveal(local, 2, mobileLayout)}
+                        />
+                        <WorkflowCard
+                            ref={cardRef3}
+                            step={WORKFLOW_STEPS[3]}
+                            index={3}
+                            reveal={frozen ? 1 : workflowStepReveal(local, 3, mobileLayout)}
+                        />
+                    </div>
                 </div>
-            </div>
             </div>
         </div>
     );

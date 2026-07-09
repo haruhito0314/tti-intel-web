@@ -1,7 +1,5 @@
 import { STACK_LAYERS } from './sceneUtils';
-import { DevStackCircleStage } from './DevStackCircleStage';
 import { DevStackGridScene } from './DevStackGridScene';
-import { useDevMobileLayout } from './useDevMobileLayout';
 
 const LAYER_ACCENTS = [
     '#E44D26',
@@ -23,23 +21,9 @@ type DevHeroScene2Props =
     | { chapterIndex: number; progress: number; copyIndex?: never };
 
 export function DevHeroScene2(props: DevHeroScene2Props) {
-    const mobileLayout = useDevMobileLayout();
-
     if (props.chapterIndex !== undefined && props.progress !== undefined) {
-        if (mobileLayout) {
-            return (
-                <DevStackGridScene
-                    sceneClassName="dev-hero-scene--2"
-                    layers={STACK_LAYERS}
-                    accents={LAYER_ACCENTS}
-                    chapterIndex={props.chapterIndex}
-                    progress={props.progress}
-                />
-            );
-        }
-
         return (
-            <DevStackCircleStage
+            <DevStackGridScene
                 sceneClassName="dev-hero-scene--2"
                 layers={STACK_LAYERS}
                 accents={LAYER_ACCENTS}

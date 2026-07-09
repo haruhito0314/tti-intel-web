@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { getStepIndex } from './tutorialSteps';
 import { assertReplayState, replayTutorialToStep } from './tutorialReplay';
-import { DEMO_GITHUB_REMOTE, HOMEBREW_INSTALL_COMMAND } from './commands';
 import { readFile } from './virtualFs';
 
 describe('tutorial replay', () => {
-    it('replays mkdir and cd for touch-about step', () => {
-        const stepIndex = getStepIndex('nano-open');
+    it('replays mkdir and cd for code-open step', () => {
+        const stepIndex = getStepIndex('code-open');
         const { state, commandsRun } = replayTutorialToStep(stepIndex);
 
         expect(commandsRun).toContain('mkdir pages');
@@ -27,8 +26,8 @@ describe('tutorial replay', () => {
         expect(assertReplayState(stepIndex, state)).toBe(true);
     });
 
-    it('replays git init before git add step', () => {
-        const stepIndex = getStepIndex('git-add');
+    it('replays git init before git status step', () => {
+        const stepIndex = getStepIndex('git-status');
         const { state, commandsRun } = replayTutorialToStep(stepIndex);
 
         expect(commandsRun).toContain('git init');
@@ -37,14 +36,14 @@ describe('tutorial replay', () => {
         expect(assertReplayState(stepIndex, state)).toBe(true);
     });
 
-    it('replays git remote and push before brew install step', () => {
-        const stepIndex = getStepIndex('brew-install');
+    it('replays git commit before git log step', () => {
+        const stepIndex = getStepIndex('git-log');
         const { state, commandsRun } = replayTutorialToStep(stepIndex);
 
-        expect(commandsRun).toContain(`git remote add origin ${DEMO_GITHUB_REMOTE}`);
-        expect(commandsRun).toContain('git push -u origin main');
-        expect(state.git.remoteUrl).toBe(DEMO_GITHUB_REMOTE);
-        expect(state.git.pushed).toBe(true);
+        expect(commandsRun).toContain('git status');
+        expect(commandsRun).toContain('git add .');
+        expect(commandsRun).toContain('git commit -m "Add about page"');
+        expect(state.git.commits).toHaveLength(1);
         expect(assertReplayState(stepIndex, state)).toBe(true);
     });
 
@@ -57,13 +56,15 @@ describe('tutorial replay', () => {
         expect(assertReplayState(stepIndex, state)).toBe(true);
     });
 
-    it('replays homebrew and node install before npm install step', () => {
+    it('replays node version check before npm install without setup detours', () => {
         const stepIndex = getStepIndex('npm-install');
         const { state, commandsRun } = replayTutorialToStep(stepIndex);
 
-        expect(commandsRun).toContain(HOMEBREW_INSTALL_COMMAND);
-        expect(commandsRun).toContain('brew install node');
-        expect(state.brewInstalled).toBe(true);
+        expect(commandsRun).toContain('node -v');
+        expect(commandsRun.some((command) => command.includes('brew'))).toBe(false);
+        expect(commandsRun.some((command) => command.startsWith('git remote'))).toBe(false);
+        expect(commandsRun.some((command) => command.startsWith('git push'))).toBe(false);
+        expect(state.brewInstalled).toBe(false);
         expect(state.nodeInstalled).toBe(true);
         expect(assertReplayState(stepIndex, state)).toBe(true);
     });

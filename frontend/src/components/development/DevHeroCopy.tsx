@@ -1,7 +1,6 @@
-import { useLayoutEffect, useState, type RefObject } from 'react';
-import { exit, getChapterLocal, getChapterOpacity } from './devScrollMath';
-import { getStack2CopyOpacity, getStackChapterOpacity } from './devStackChapter';
-import { stack2SharedPanX } from './devStackCircleMotion';
+import { type RefObject } from 'react';
+import { exit, getChapterOpacity } from './devScrollMath';
+import { getStackChapterOpacity } from './devStackChapter';
 import { useDevMobileLayout } from './useDevMobileLayout';
 import { AI_TOOLS, STACK_LAYERS } from './sceneUtils';
 import { CHAPTER_BOUNDARY_FADE, SCENE_RANGES } from './devScrollConfig';
@@ -9,8 +8,6 @@ import {
     CHAPTER4_ZOOM_BRIDGE_END,
     CHAPTER4_ZOOM_SECTION_END,
 } from './devZoomTiming';
-
-const STACK_CHAPTER_INDEX = 1;
 
 const STACK_GRID_CARD_COUNTS: Record<number, number> = {
     1: STACK_LAYERS.length,
@@ -80,29 +77,6 @@ type DevHeroCopyProps =
     | { progress: number; blockIndex?: never; visualRef?: RefObject<HTMLElement | null>; compact?: never }
     | { progress?: never; blockIndex: number; visualRef?: never; compact?: boolean };
 
-function useVisualStageSize(visualRef?: RefObject<HTMLElement | null>) {
-    const [size, setSize] = useState({ width: 920, height: 400 });
-
-    useLayoutEffect(() => {
-        const node = visualRef?.current;
-        if (!node) return;
-
-        const sync = () => {
-            const rect = node.getBoundingClientRect();
-            if (rect.width > 0 && rect.height > 0) {
-                setSize({ width: rect.width, height: rect.height });
-            }
-        };
-
-        sync();
-        const observer = new ResizeObserver(sync);
-        observer.observe(node);
-        return () => observer.disconnect();
-    }, [visualRef]);
-
-    return size;
-}
-
 function DevHeroCopyStatic({ blockIndex, compact }: { blockIndex: number; compact?: boolean }) {
     const block = COPY_BLOCKS[blockIndex];
     if (!block) return null;
@@ -125,28 +99,20 @@ function DevHeroCopyStatic({ blockIndex, compact }: { blockIndex: number; compac
 
 function DevHeroCopyScroll({
     progress,
-    visualRef,
 }: {
     progress: number;
     visualRef?: RefObject<HTMLElement | null>;
 }) {
     const mobileLayout = useDevMobileLayout();
-    const visualSize = useVisualStageSize(visualRef);
-    const stackLocal = getChapterLocal(progress, STACK_CHAPTER_INDEX);
-    const stackPanX = mobileLayout
-        ? 0
-        : stack2SharedPanX(stackLocal, visualSize.width, visualSize.height);
 
     return (
         <div className="dev-hero-copy-stage" aria-live="polite">
             {COPY_BLOCKS.map((block, index) => {
                 const cardCount = STACK_GRID_CARD_COUNTS[index];
                 const standardOpacity =
-                    index === STACK_CHAPTER_INDEX
-                        ? getStack2CopyOpacity(progress, index, cardCount ?? STACK_LAYERS.length, mobileLayout)
-                        : cardCount !== undefined
-                          ? getStackChapterOpacity(progress, index, cardCount, mobileLayout)
-                          : getChapterOpacity(progress, index);
+                    cardCount !== undefined
+                        ? getStackChapterOpacity(progress, index, cardCount, mobileLayout)
+                        : getChapterOpacity(progress, index);
                 const aiToolsCopyHold =
                     !mobileLayout &&
                     index === 4 &&
@@ -162,7 +128,6 @@ function DevHeroCopyScroll({
                         : standardOpacity;
                 const isActive = opacity > 0.5;
                 const Heading = block.headingLevel;
-                const panX = index === STACK_CHAPTER_INDEX ? stackPanX : 0;
 
                 return (
                     <div
@@ -174,7 +139,6 @@ function DevHeroCopyScroll({
                             opacity,
                             visibility: opacity > 0.04 ? 'visible' : 'hidden',
                             pointerEvents: isActive ? 'auto' : 'none',
-                            transform: panX !== 0 ? `translateX(${Math.round(panX)}px)` : undefined,
                         }}
                         aria-hidden={!isActive}
                     >

@@ -8,7 +8,7 @@ describe('deploy preview content', () => {
         let state = createInitialState();
         state = executeCommand(state, 'mkdir pages').state;
         state = executeCommand(state, 'cd pages').state;
-        const html = '<h1>About Me</h1>\n<p>はじめまして。コマンドライン の練習サイトです。</p>';
+        const html = '<h1>About Me</h1>\n<p>はじめまして。コマンドラインの練習サイトです。</p>';
         const saved = saveEditorFile(state, 'about.html', html);
         expect('error' in saved).toBe(false);
         if ('error' in saved) return;
@@ -16,7 +16,7 @@ describe('deploy preview content', () => {
         const preview = getAboutPagePreview(saved);
         expect(preview).toEqual({
             title: 'About Me',
-            body: 'はじめまして。コマンドライン の練習サイトです。',
+            body: 'はじめまして。コマンドラインの練習サイトです。',
             sourcePath: 'pages/about.html',
         });
     });

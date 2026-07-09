@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { BookOpen, CheckCircle2, ChevronRight, Circle, HelpCircle, RotateCcw, Terminal } from 'lucide-react';
+import { NEXT_ACTIONS, getCurrentMilestone } from './learningContent';
 import { TUTORIAL_CHAPTERS, TUTORIAL_STEPS, type TutorialStep } from './tutorialSteps';
 import { STEP_STUCK_TIPS } from './tutorialRecovery';
 
@@ -36,6 +37,7 @@ export function TutorialPanel({
     const step = TUTORIAL_STEPS[stepIndex];
     const progress = completed ? 100 : Math.round((stepIndex / TUTORIAL_STEPS.length) * 100);
     const isSidebar = layout === 'sidebar';
+    const milestone = getCurrentMilestone(stepIndex, completed);
 
     const chapterProgress = useMemo(() => {
         return TUTORIAL_CHAPTERS.map((chapter) => {
@@ -71,6 +73,21 @@ export function TutorialPanel({
                     <p className="mt-3 max-w-xs text-[11px] leading-relaxed text-[#86868B]">
                         最初からやり直すと、作成したフォルダやファイルも消えます。
                     </p>
+                    <div className="mt-6 w-full max-w-sm border-t border-black/5 pt-4 dark:border-white/10">
+                        <p className="text-xs font-semibold text-[#86868B]">復習に使えるコマンド</p>
+                        <div className="mt-2 flex flex-wrap justify-center gap-2">
+                            {NEXT_ACTIONS.map((action) => (
+                                <button
+                                    key={action.command}
+                                    type="button"
+                                    onClick={() => onInsertCommand(action.command)}
+                                    className="rounded-full bg-[#F5F5F7] px-3 py-1 font-mono text-[11px] text-[#007AFF] hover:bg-[#007AFF]/10 dark:bg-white/[0.06] dark:text-[#5AC8FA]"
+                                >
+                                    {action.command}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </div>
         );
@@ -117,7 +134,12 @@ export function TutorialPanel({
             </div>
 
             <div className={`min-h-0 flex-1 overflow-y-auto ${isSidebar ? 'p-3' : 'p-4'}`}>
-                <StepContent step={step} feedback={lastFeedback} compact={isSidebar} />
+                <StepContent
+                    step={step}
+                    feedback={lastFeedback}
+                    nextAction={milestone.nextAction}
+                    compact={isSidebar}
+                />
             </div>
 
             <div className={`shrink-0 space-y-2 border-t border-black/5 dark:border-white/10 ${isSidebar ? 'p-3' : 'p-4'}`}>
@@ -187,10 +209,12 @@ export function TutorialPanel({
 function StepContent({
     step,
     feedback,
+    nextAction,
     compact = false,
 }: {
     step: TutorialStep;
     feedback: 'success' | 'error' | 'info' | null;
+    nextAction: string;
     compact?: boolean;
 }) {
     return (
@@ -204,6 +228,12 @@ function StepContent({
             <p className={`mt-2 leading-relaxed text-[#1D1D1F] dark:text-[rgba(235,235,245,0.85)] ${compact ? 'text-xs' : 'text-sm'}`}>
                 {step.description}
             </p>
+            <div className={`rounded-xl border border-[#30D158]/20 bg-[#30D158]/8 dark:border-[#30D158]/25 dark:bg-[#30D158]/10 ${compact ? 'mt-3 p-2.5' : 'mt-4 p-3'}`}>
+                <p className="text-[11px] font-semibold text-[#248A3D] dark:text-[#30D158]">次にやること</p>
+                <p className={`mt-1 leading-relaxed text-[#1D1D1F] dark:text-[rgba(235,235,245,0.82)] ${compact ? 'text-[11px]' : 'text-xs'}`}>
+                    {nextAction}
+                </p>
+            </div>
             <div className={`rounded-xl border border-[#007AFF]/15 bg-[#007AFF]/5 dark:border-[#2997FF]/20 dark:bg-[#2997FF]/8 ${compact ? 'mt-3 p-2.5' : 'mt-4 p-3'}`}>
                 <p className="text-[11px] font-semibold text-[#007AFF] dark:text-[#5AC8FA]">なぜ必要？</p>
                 <p className={`mt-1 leading-relaxed text-[#6E6E73] dark:text-[rgba(235,235,245,0.62)] ${compact ? 'text-[11px]' : 'text-xs'}`}>

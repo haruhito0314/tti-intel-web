@@ -48,6 +48,23 @@ export function getChapterLocal(progress: number, chapterIndex: number): number 
     return (progress - start) / (end - start);
 }
 
+/** Chapter-local progress that starts at 0 when deferred visibility ends */
+export function getDeferredChapterLocal(
+    progress: number,
+    chapterIndex: number,
+    deferUntilProgress?: number,
+): number {
+    if (deferUntilProgress === undefined) {
+        return getChapterLocal(progress, chapterIndex);
+    }
+
+    const [start, end] = SCENE_RANGES[chapterIndex];
+    const visibleStart = Math.max(start, deferUntilProgress);
+    if (progress < visibleStart) return 0;
+    if (progress >= end) return 1;
+    return (progress - visibleStart) / (end - visibleStart);
+}
+
 export function getChapterOpacity(progress: number, chapterIndex: number): number {
     const [start, end] = SCENE_RANGES[chapterIndex];
     const isLast = chapterIndex === SCENE_RANGES.length - 1;

@@ -55,25 +55,25 @@ export function replayTutorialToStep(stepIndex: number): TutorialReplayResult {
         const step = TUTORIAL_STEPS[i];
         if (step.kind === 'intro') continue;
 
-        if (step.id === 'nano-open') {
-            const command = step.suggestedCommand ?? 'nano about.html';
+        if (step.id === 'code-open') {
+            const command = step.suggestedCommand ?? 'code about.html';
             commandsRun.push(command);
             outputLines.push(makeInputLine(state.cwd, command, lineIndex++));
             push('info', '(エディタを開く操作は省略し、ファイルの準備だけ行います)');
             continue;
         }
 
-        if (step.id === 'nano-write') {
-            const content = step.sampleContent ?? '<h1>About Me</h1>\n<p>はじめまして。コマンドライン の練習サイトです。</p>';
-            commandsRun.push('nano about.html');
-            outputLines.push(makeInputLine(state.cwd, 'nano about.html', lineIndex++));
+        if (step.id === 'code-write') {
+            const content = step.sampleContent ?? '<h1>About Me</h1>\n<p>はじめまして。コマンドラインの練習サイトです。</p>';
+            commandsRun.push('code about.html');
+            outputLines.push(makeInputLine(state.cwd, 'code about.html', lineIndex++));
             const saved = saveEditorFile(state, 'about.html', content);
             if ('error' in saved) {
                 push('error', saved.error);
                 break;
             }
             state = saved;
-            push('success', '[ Wrote 3 lines ]');
+            push('success', '[ Saved about.html ]');
             continue;
         }
 
@@ -114,10 +114,10 @@ export function assertReplayState(stepIndex: number, state: ProjectState): boole
     if (!step || step.kind === 'intro') return true;
 
     const pagesSteps = new Set([
-        'cd-pages', 'pwd-pages', 'touch-about', 'nano-open', 'nano-write', 'cat-about',
+        'cd-pages', 'touch-about', 'code-open', 'code-write', 'cat-about',
     ]);
     const touchIndex = TUTORIAL_STEPS.findIndex((s) => s.id === 'touch-about');
-    const nanoWriteIndex = TUTORIAL_STEPS.findIndex((s) => s.id === 'nano-write');
+    const codeWriteIndex = TUTORIAL_STEPS.findIndex((s) => s.id === 'code-write');
     const cdRootIndex = TUTORIAL_STEPS.findIndex((s) => s.id === 'cd-root');
     const mkdirIndex = TUTORIAL_STEPS.findIndex((s) => s.id === 'mkdir-pages');
 
@@ -128,36 +128,18 @@ export function assertReplayState(stepIndex: number, state: ProjectState): boole
         return false;
     }
     if (pagesSteps.has(step.id) && !cwdEndsWith(state, 'pages')) return false;
-    if (nanoWriteIndex >= 0 && nanoWriteIndex < stepIndex) {
+    if (codeWriteIndex >= 0 && codeWriteIndex < stepIndex) {
         const content = readAbsFile(state, `${PROJECT_ROOT}/pages/about.html`);
         if (!content?.includes('<h1>')) return false;
     }
     if (cdRootIndex >= 0 && cdRootIndex < stepIndex && !cwdEndsWith(state, 'my-website')) return false;
 
-    const gitRemoteIndex = TUTORIAL_STEPS.findIndex((s) => s.id === 'git-remote');
-    const gitPushIndex = TUTORIAL_STEPS.findIndex((s) => s.id === 'git-push');
-    if (gitRemoteIndex >= 0 && gitRemoteIndex < stepIndex && !state.git.remoteUrl) {
-        return false;
-    }
-    if (gitPushIndex >= 0 && gitPushIndex < stepIndex && !state.git.pushed) {
+    const gitCommitIndex = TUTORIAL_STEPS.findIndex((s) => s.id === 'git-commit');
+    if (gitCommitIndex >= 0 && gitCommitIndex < stepIndex && !state.git.commits.length) {
         return false;
     }
 
-    const brewInstallIndex = TUTORIAL_STEPS.findIndex((s) => s.id === 'brew-install');
-    const nodeInstallIndex = TUTORIAL_STEPS.findIndex((s) => s.id === 'node-install');
     const npmInstallIndex = TUTORIAL_STEPS.findIndex((s) => s.id === 'npm-install');
-    if (brewInstallIndex >= 0 && brewInstallIndex < stepIndex && !state.brewInstalled) {
-        return false;
-    }
-    if (brewInstallIndex >= 0 && brewInstallIndex < stepIndex && !state.systemRoot) {
-        return false;
-    }
-    if (nodeInstallIndex >= 0 && nodeInstallIndex < stepIndex && !state.nodeInstalled) {
-        return false;
-    }
-    if (nodeInstallIndex >= 0 && nodeInstallIndex < stepIndex && !state.systemRoot) {
-        return false;
-    }
     if (npmInstallIndex >= 0 && npmInstallIndex < stepIndex) {
         if (!state.dependenciesInstalled || !absPathExists(state, `${PROJECT_ROOT}/node_modules`)) {
             return false;

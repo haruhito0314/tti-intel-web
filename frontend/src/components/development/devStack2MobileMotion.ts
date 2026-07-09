@@ -11,6 +11,10 @@ const STACK2_MOBILE_EXIT_START = 0.72;
 const STACK2_MOBILE_EXIT_STAGGER = 0.016;
 const STACK2_MOBILE_EXIT_SPAN = 0.042;
 
+export function isStack2MobileGridChapter(chapterIndex?: number, mobileLayout = false): boolean {
+    return chapterIndex === 1 && mobileLayout;
+}
+
 export function stack2MobileExitCompleteLocal(cardCount: number): number {
     return (
         STACK2_MOBILE_EXIT_START +

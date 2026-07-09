@@ -4,14 +4,14 @@ import { chapterShellStyle, stackCardMotionStyle } from './devEnterStyle';
 import { getStackChapterOpacity } from './devStackChapter';
 import { getChapterLocal, reveal } from './devScrollMath';
 import { CHAPTER4_ZOOM_BRIDGE_END } from './devZoomTiming';
-import { stackCardExit, stackCardReveal, stackGridColumns } from './devSceneMotion';
+import { stackCardExit, stackCardReveal, stack2DesktopCardExit, stackGridColumns } from './devSceneMotion';
 import {
     computeStack2MobileTranslateY,
+    isStack2MobileGridChapter,
     stack2MobileCardExit,
     stack2MobileCardReveal,
     useStack2MobileMetrics,
 } from './devStack2MobileMotion';
-import { isStack2MobileGridChapter } from './devStackCircleMotion';
 import { useDevMobileLayout } from './useDevMobileLayout';
 import { TechBrandIcon, type TechBrandSlug } from './TechBrandIcon';
 
@@ -75,6 +75,8 @@ export function DevStackGridScene({
             ? 1
             : isCh2Mobile && isScroll
             ? stack2MobileCardExit(local, index)
+            : isScroll && chapterIndex === 1 && !mobileLayout
+              ? stack2DesktopCardExit(local, index, cardCount, columns)
             : isScroll
               ? stackCardExit(local, index, cardCount, columns)
               : 1;

@@ -700,10 +700,10 @@ export function executeCommand(
             }
             const paths: Record<string, string> = {
                 brew: '/opt/homebrew/bin/brew',
-                node: state.nodeInstalled ? '/opt/homebrew/bin/node' : '/usr/local/bin/node',
-                npm: state.nodeInstalled ? '/opt/homebrew/bin/npm' : '/usr/local/bin/npm',
+                node: '/usr/local/bin/node',
+                npm: '/usr/local/bin/npm',
                 git: '/usr/bin/git',
-                npx: state.nodeInstalled ? '/opt/homebrew/bin/npx' : '/usr/local/bin/npx',
+                npx: '/usr/local/bin/npx',
             };
             const found = paths[args[0]];
             return {

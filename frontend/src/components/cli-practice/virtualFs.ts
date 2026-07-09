@@ -148,7 +148,7 @@ export function createInitialState(): ProjectState {
         },
         dependenciesInstalled: false,
         brewInstalled: false,
-        nodeInstalled: false,
+        nodeInstalled: true,
         built: false,
         deployed: false,
         deployUrl: null,
@@ -188,7 +188,7 @@ export function normalizePath(path: string): string {
             stack.push(part);
         }
     }
-    return `/${stack.join('/')}` || '/';
+    return stack.length ? `/${stack.join('/')}` : '/';
 }
 
 export function getParentPath(path: string): string {

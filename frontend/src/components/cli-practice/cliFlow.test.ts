@@ -6,10 +6,6 @@ function installBrew(state = createInitialState()) {
     return executeCommand(state, HOMEBREW_INSTALL_COMMAND).state;
 }
 
-function installNode(state = createInitialState()) {
-    return executeCommand(installBrew(state), 'brew install node').state;
-}
-
 describe('nano save and cat', () => {
     it('cat shows content after saving a new file via editor', () => {
         let state = createInitialState();
@@ -73,7 +69,7 @@ describe('nano save and cat', () => {
     });
 
     it('npm run build and deploy work', () => {
-        let state = installNode();
+        let state = createInitialState();
 
         const installResult = executeCommand(state, 'npm install');
         expect(installResult.state.dependenciesInstalled).toBe(true);
@@ -116,7 +112,7 @@ describe('nano save and cat', () => {
     });
 
     it('npm run dev marks dev server as ran', () => {
-        const result = executeCommand(installNode(), 'npm install');
+        const result = executeCommand(createInitialState(), 'npm install');
         const devResult = executeCommand(result.state, 'npm run dev');
         expect(devResult.state.devServerRan).toBe(true);
         expect(devResult.lines.some((l) => l.text.includes('localhost:5173'))).toBe(true);
@@ -125,7 +121,7 @@ describe('nano save and cat', () => {
     it('brew command is unavailable before Homebrew is installed', () => {
         const result = executeCommand(createInitialState(), 'brew install node');
         expect(result.lines.some((l) => l.text.includes('command not found'))).toBe(true);
-        expect(result.state.nodeInstalled).toBe(false);
+        expect(result.state.nodeInstalled).toBe(true);
     });
 
     it('homebrew install adds opt/homebrew to file system', () => {
@@ -140,40 +136,37 @@ describe('nano save and cat', () => {
     });
 
     it('npm run build fails without npm install', () => {
-        const state = installNode();
+        const state = createInitialState();
         const result = executeCommand(state, 'npm run build');
         expect(result.lines.some((l) => l.text.includes('command not found'))).toBe(true);
         expect(result.state.built).toBe(false);
     });
 
-    it('node -v fails before brew install node', () => {
-        const brewOnly = installBrew();
-        const result = executeCommand(brewOnly, 'node -v');
-        expect(result.lines.some((l) => l.text.includes('command not found'))).toBe(true);
-    });
-
-    it('brew install node shows completion output', () => {
-        const result = executeCommand(installBrew(), 'brew install node');
-        expect(result.state.nodeInstalled).toBe(true);
-        expect(result.lines.some((l) => l.text.includes('🍺'))).toBe(true);
-        expect(result.lines.some((l) => l.text.includes('Pouring node'))).toBe(true);
-    });
-
-    it('brew install node adds node binaries under homebrew', () => {
-        const result = executeCommand(installBrew(), 'brew install node');
-        const lsBin = executeCommand(result.state, 'ls /opt/homebrew/bin');
-        expect(lsBin.lines[0]?.text).toContain('node');
-        expect(lsBin.lines[0]?.text).toContain('npm');
-    });
-
-    it('node -v shows version after brew install node', () => {
-        const result = executeCommand(installNode(), 'node -v');
+    it('node -v works in the initial practice environment', () => {
+        const result = executeCommand(createInitialState(), 'node -v');
         expect(result.lines[0]?.text).toBe('v20.11.0');
     });
 
-    it('npm is unavailable before node is installed', () => {
+    it('brew install node explains node is already available', () => {
+        const result = executeCommand(installBrew(), 'brew install node');
+        expect(result.state.nodeInstalled).toBe(true);
+        expect(result.lines.some((l) => l.text.includes('already installed'))).toBe(true);
+    });
+
+    it('brew install node keeps the Homebrew tree stable when node is preinstalled', () => {
+        const result = executeCommand(installBrew(), 'brew install node');
+        const lsBin = executeCommand(result.state, 'ls /opt/homebrew/bin');
+        expect(lsBin.lines[0]?.text).toContain('brew');
+    });
+
+    it('node -v shows version', () => {
+        const result = executeCommand(createInitialState(), 'node -v');
+        expect(result.lines[0]?.text).toBe('v20.11.0');
+    });
+
+    it('npm is available in the initial practice environment', () => {
         const result = executeCommand(createInitialState(), 'npm -v');
-        expect(result.lines.some((l) => l.text.includes('command not found'))).toBe(true);
+        expect(result.lines[0]?.text).toBe('10.2.4');
     });
 
     it('node_modules is missing before npm install', () => {
@@ -189,7 +182,7 @@ describe('nano save and cat', () => {
     });
 
     it('npm install creates node_modules in file tree', () => {
-        let state = installNode();
+        let state = createInitialState();
         const installResult = executeCommand(state, 'npm install');
         state = installResult.state;
 
@@ -201,7 +194,7 @@ describe('nano save and cat', () => {
     });
 
     it('npm run without script name shows error', () => {
-        const result = executeCommand(installNode(), 'npm run');
+        const result = executeCommand(createInitialState(), 'npm run');
         expect(result.lines.some((l) => l.type === 'error' && l.text.includes('missing script'))).toBe(true);
     });
 });

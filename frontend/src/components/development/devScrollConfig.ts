@@ -1,5 +1,5 @@
-/** Contiguous chapter spans — sum ≈ 1, no gap dead zones */
-const CHAPTER_SPANS = [0.13, 0.415, 0.09, 0.07, 0.075, 0.095, 0.12] as const;
+/** Contiguous chapter spans — sum = 1, no gap dead zones */
+const CHAPTER_SPANS = [0.14, 0.335, 0.095, 0.085, 0.095, 0.115, 0.135] as const;
 
 function buildRanges(): readonly (readonly [number, number])[] {
     const ranges: [number, number][] = [];
@@ -13,7 +13,7 @@ function buildRanges(): readonly (readonly [number, number])[] {
 
 export const SCENE_RANGES = buildRanges();
 
-export const DEV_TRACK_HEIGHT_VH = 1720;
+export const DEV_TRACK_HEIGHT_VH = 1640;
 export const DEV_TRACK_HEIGHT_MOBILE_VH = 1480;
 
 /** Short crossfade at chapter edges — sole opacity transition */
