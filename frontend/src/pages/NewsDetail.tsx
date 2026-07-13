@@ -253,6 +253,8 @@ export function NewsDetail() {
                                     src={src}
                                     alt={alt ?? ''}
                                     loading="lazy"
+                                    width={1280}
+                                    height={720}
                                     className="my-6 block h-auto w-full rounded-2xl border border-black/10 shadow-sm dark:border-white/10"
                                 />
                             ),
