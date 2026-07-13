@@ -20,6 +20,9 @@
 - 1280×720の学習ダッシュボードと第4章教材画面をWebP形式でサイト内へ保存する。
 - 2画像は本文幅いっぱいの縦並びとし、角丸、枠線、日本語の代替テキスト、短い説明を付ける。
 - トップページとお知らせ一覧のカードには画像を追加しない。
+- 記事末尾に `全27章・ブラウザですぐ読めます` と表示し、学習サイトURLのリンク文言を `無料でWeb開発を学び始める` とする。
+- 学習サイトURLだけを青背景・白文字・角丸・外部リンクアイコン付きCTAにし、スマートフォンでは本文幅いっぱい、PCでは自動幅とする。
+- CTAはhoverとkeyboard focusを視覚的に示し、既存記事のほかのリンク表示は変更しない。
 
 ---
 
@@ -395,4 +398,176 @@ Expected:
 ```bash
 git add frontend/public/images/web-tutorial-dashboard.webp frontend/public/images/web-tutorial-html-lesson.webp frontend/src/pages/NewsDetail.tsx frontend/src/pages/NewsAnnouncement.test.tsx docs/superpowers/plans/2026-07-13-web-tutorial-announcement.md
 git commit -m "Add tutorial screenshots to announcement"
+```
+
+---
+
+### Task 3: 学習サイトへのリンクを明確なCTAにする
+
+**Files:**
+- Modify: `frontend/src/pages/NewsAnnouncement.test.tsx:43-100`
+- Modify: `frontend/src/pages/NewsDetail.tsx:1-8,70-75,272-306`
+
+**Interfaces:**
+- Consumes: `https://build-tutorial.vercel.app`へのReact Markdown外部リンクとLucideの`ExternalLink`アイコン
+- Produces: 補足文`全27章・ブラウザですぐ読めます`、CTA文言`無料でWeb開発を学び始める`、学習サイトURLだけに適用するレスポンシブCTA表示
+
+- [ ] **Step 1: CTA文言、表示、既存リンク維持を要求する失敗テストを書く**
+
+`frontend/src/pages/NewsAnnouncement.test.tsx`の詳細記事テスト内で、既存の`学習サイトを開く`リンク取得を次へ置き換える。
+
+```tsx
+        expect(screen.getByText('全27章・ブラウザですぐ読めます。')).toBeInTheDocument();
+        const tutorialLink = screen.getByRole('link', { name: '無料でWeb開発を学び始める' });
+        expect(tutorialLink).toHaveAttribute('href', 'https://build-tutorial.vercel.app');
+        expect(tutorialLink).toHaveAttribute('target', '_blank');
+        expect(tutorialLink).toHaveAttribute('rel', 'noopener noreferrer');
+        expect(tutorialLink).toHaveClass(
+            'w-full',
+            'sm:w-auto',
+            'bg-[#0066CC]',
+            'text-white',
+            'focus-visible:ring-2',
+        );
+        expect(tutorialLink.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+```
+
+同じ`describe`へ、既存記事の内部リンクがCTA化されないことを検証するテストを追加する。
+
+```tsx
+    it('既存記事の通常リンクはCTAに変更しない', () => {
+        render(
+            <MemoryRouter initialEntries={['/news/welcome-to-tti-intelligence']}>
+                <Routes>
+                    <Route path="/news/:slug" element={<NewsDetail />} />
+                </Routes>
+            </MemoryRouter>,
+        );
+
+        const contactLink = screen.getByRole('link', { name: 'お問い合わせページ' });
+        expect(contactLink).toHaveAttribute('href', '/contact');
+        expect(contactLink).toHaveClass('text-[#0066CC]');
+        expect(contactLink).not.toHaveClass('bg-[#0066CC]', 'w-full');
+    });
+```
+
+- [ ] **Step 2: focused testを実行し、新CTAが未実装のため失敗することを確認する**
+
+Run:
+
+```bash
+cd frontend
+set -a
+source .env
+source .env.local
+set +a
+npm test -- src/pages/NewsAnnouncement.test.tsx
+```
+
+Expected: 詳細記事テストがFAILし、`全27章・ブラウザですぐ読めます。`または`無料でWeb開発を学び始める`が見つからないと表示される。既存リンクのテストはPASSする。
+
+- [ ] **Step 3: 記事末尾の補足文とリンク文言を更新する**
+
+`frontend/src/pages/NewsDetail.tsx`の学習サイト記事本文末尾を次へ置き換える。
+
+```markdown
+全27章・ブラウザですぐ読めます。
+
+[無料でWeb開発を学び始める](https://build-tutorial.vercel.app)
+```
+
+- [ ] **Step 4: 学習サイトURLだけを専用CTAとして描画する**
+
+Lucide importへ`ExternalLink`を追加する。
+
+```tsx
+import { ArrowLeft, Calendar, User, Tag, Share2, ExternalLink } from 'lucide-react';
+```
+
+`ReactMarkdown`の`a` rendererを次へ置き換える。
+
+```tsx
+                            a: ({ href, children }) => {
+                                const target = href ?? '';
+                                const isExternal =
+                                    /^(https?:|mailto:|tel:)/.test(target) || target.startsWith('//');
+                                const isTutorialCta = target === 'https://build-tutorial.vercel.app';
+
+                                if (isExternal) {
+                                    return (
+                                        <a
+                                            href={target}
+                                            className={isTutorialCta
+                                                ? 'mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#0066CC] px-6 py-3.5 font-semibold text-white no-underline shadow-sm transition-colors hover:bg-[#004C99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071E3] focus-visible:ring-offset-2 dark:bg-[#2997FF] dark:text-[#0A0A0A] dark:hover:bg-[#5DABFF] sm:w-auto'
+                                                : 'text-[#0066CC] dark:text-[#2997FF] hover:underline'}
+                                            target={target.startsWith('http') ? '_blank' : undefined}
+                                            rel={target.startsWith('http') ? 'noopener noreferrer' : undefined}
+                                        >
+                                            {children}
+                                            {isTutorialCta && (
+                                                <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                                            )}
+                                        </a>
+                                    );
+                                }
+
+                                return (
+                                    <Link
+                                        to={target || '#'}
+                                        className="text-[#0066CC] dark:text-[#2997FF] hover:underline"
+                                    >
+                                        {children}
+                                    </Link>
+                                );
+                            },
+```
+
+- [ ] **Step 5: focused testが通ることを確認する**
+
+Run:
+
+```bash
+cd frontend
+set -a
+source .env
+source .env.local
+set +a
+npm test -- src/pages/NewsAnnouncement.test.tsx
+```
+
+Expected: `4 passed`。
+
+- [ ] **Step 6: 変更範囲とフロントエンド全体を検証する**
+
+Run:
+
+```bash
+cd frontend
+set -a
+source .env
+source .env.local
+set +a
+npm test
+npx eslint src/pages/NewsDetail.tsx src/pages/NewsAnnouncement.test.tsx
+npm run build
+```
+
+Expected: 全59件以上のテストがPASSし、変更ファイルのESLintが0 errors / 0 warnings、Viteのプロダクションビルドが成功する。
+
+- [ ] **Step 7: PCとスマートフォンでCTAを目視確認する**
+
+ローカルサイトの`/news/web-development-tutorial-released`を1280×720と390×844で確認する。
+
+Expected:
+
+- 補足文とCTAが記事末尾に表示される。
+- PCではCTAが文言に合う幅、390pxでは本文幅いっぱいになる。
+- 青背景、白文字、外部リンクアイコン、hover、keyboard focusが視認できる。
+- 横スクロールがなく、ブラウザコンソールにエラーがない。
+
+- [ ] **Step 8: CTA実装だけをコミットする**
+
+```bash
+git add frontend/src/pages/NewsDetail.tsx frontend/src/pages/NewsAnnouncement.test.tsx docs/superpowers/plans/2026-07-13-web-tutorial-announcement.md
+git commit -m "Clarify tutorial announcement CTA"
 ```
