@@ -40,7 +40,7 @@ describe('Web開発学習サイト公開のお知らせ', () => {
         expect(within(announcementLink).getByText('#学習教材')).toBeInTheDocument();
     });
 
-    it('記事詳細に学習サイトへの安全な外部リンクを表示する', () => {
+    it('記事詳細に詳しい説明、2枚の画像、安全な外部リンクを順番に表示する', () => {
         render(
             <MemoryRouter initialEntries={[announcementPath]}>
                 <Routes>
@@ -50,15 +50,30 @@ describe('Web開発学習サイト公開のお知らせ', () => {
         );
 
         expect(screen.getByRole('heading', { name: announcementTitle, level: 1 })).toBeInTheDocument();
-        expect(screen.getByText(/HTML・CSS・JavaScriptなどを順番に学べます/)).toBeInTheDocument();
-        expect(screen.getByRole('link', { name: '学習サイトを開く' })).toHaveAttribute(
-            'href',
-            'https://build-tutorial.vercel.app',
-        );
-        expect(screen.getByRole('link', { name: '学習サイトを開く' })).toHaveAttribute('target', '_blank');
-        expect(screen.getByRole('link', { name: '学習サイトを開く' })).toHaveAttribute(
-            'rel',
-            'noopener noreferrer',
-        );
+        expect(screen.getByRole('heading', { name: '未経験からWebアプリの公開まで' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: '27章で段階的に学べます' })).toBeInTheDocument();
+        expect(screen.getByText('AWS CDK・Lambda・DynamoDB・Cognito')).toBeInTheDocument();
+        expect(screen.getByText(/学習状況はブラウザに保存され、途中から再開できます/)).toBeInTheDocument();
+        expect(screen.getByText(/空のフォルダから自分の力でWebアプリを完成させる卒業課題/)).toBeInTheDocument();
+
+        const dashboardImage = screen.getByRole('img', {
+            name: '27章の進捗と次に学ぶ章を確認できる学習ダッシュボード',
+        });
+        const lessonImage = screen.getByRole('img', {
+            name: '第4章HTML教材の本文と目次を表示した学習画面',
+        });
+        expect(dashboardImage).toHaveAttribute('src', '/images/web-tutorial-dashboard.webp');
+        expect(lessonImage).toHaveAttribute('src', '/images/web-tutorial-html-lesson.webp');
+        expect(dashboardImage).toHaveAttribute('loading', 'lazy');
+        expect(lessonImage).toHaveAttribute('loading', 'lazy');
+        expect(dashboardImage).toHaveClass('w-full', 'h-auto');
+        expect(lessonImage).toHaveClass('w-full', 'h-auto');
+        expect(dashboardImage.compareDocumentPosition(lessonImage) & Node.DOCUMENT_POSITION_FOLLOWING)
+            .toBeTruthy();
+
+        const tutorialLink = screen.getByRole('link', { name: '学習サイトを開く' });
+        expect(tutorialLink).toHaveAttribute('href', 'https://build-tutorial.vercel.app');
+        expect(tutorialLink).toHaveAttribute('target', '_blank');
+        expect(tutorialLink).toHaveAttribute('rel', 'noopener noreferrer');
     });
 });
