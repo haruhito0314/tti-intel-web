@@ -1,0 +1,4795 @@
+TTI Intelligence Webサイト 初心者向け完全ガイド
+==================================================
+
+目的
+----
+
+このファイルは、完全な初心者がこのWebサイトの構造と技術スタックを理解し、
+「AIにプロンプトを投げるだけ」から一歩進んで、自分でコードを読み、少しずつ直し、
+機能を追加できるようになるためのガイドです。
+
+for文、if文、変数、関数の基本は理解している前提で書きます。
+その代わり、React、TypeScript、TSX、Vite、Tailwind CSS、Firebase、AWS CDK など、
+このサイトで実際に使われているものは0から説明します。
+
+このサイトを一言でいうと
+------------------------
+
+このリポジトリは、TTI Intelligence の公式Webサイトです。
+
+大きく見ると、次の3つで構成されています。
+
+1. frontend
+   ユーザーがブラウザで見る画面です。
+   React + TypeScript + Vite + Tailwind CSS で作られています。
+
+2. infra
+   AWS上に作るバックエンドの設計図です。
+   AWS CDK という仕組みで、DynamoDB、Lambda、API Gateway、Cognito、S3、SES などを定義しています。
+
+3. lambdas
+   AWS Lambda で動く小さなバックエンド関数です。
+   掲示板、記事、お問い合わせなどのAPI候補が入っています。
+
+ただし、重要な注意があります。
+
+このリポジトリには AWS バックエンドもありますが、現在の主要なフロントエンド画面では
+Firebase / Firestore を直接使っている箇所が多いです。
+
+つまり、現状は次の2系統が共存しています。
+
+- 現在の画面でよく使われている系統:
+  React frontend -> Firebase Auth / Firestore / EmailJS
+
+- infra/lambdas に用意されているAWS系統:
+  React frontend -> API Gateway -> Lambda -> DynamoDB / SES など
+
+初心者が混乱しやすいポイントなので、まずここを押さえてください。
+「backendっぽいコードがあるのに、画面はFirebaseを読んでいる」ことがあります。
+
+
+全体のディレクトリ構造
+----------------------
+
+ルート直下はだいたい次のような意味です。
+
+  /Users/haruhito/Documents/Github/web
+  ├── README.md
+  ├── amplify.yml
+  ├── site-beginner-guide.txt
+  ├── frontend/
+  ├── infra/
+  ├── lambdas/
+  └── docs/
+
+それぞれの役割はこうです。
+
+README.md
+  プロジェクトの短い説明です。
+  現状はかなり短いので、詳しい説明はこのファイルを見ればよいです。
+
+amplify.yml
+  AWS Amplify に「どうビルドして公開するか」を教える設定ファイルです。
+  appRoot が frontend になっているので、公開対象の中心は frontend です。
+
+frontend/
+  サイトの画面本体です。
+  ほとんどの開発ではここを触ります。
+
+infra/
+  AWS CDK のコードです。
+  AWSにDynamoDBやLambdaなどを作るための設計図です。
+
+lambdas/
+  AWS Lambda 用の関数です。
+  API Gateway 経由で呼ばれる小さなサーバー処理です。
+
+docs/
+  仕様や計画メモが入っています。
+
+
+frontend の構造
+---------------
+
+frontend はこのサイトの心臓部です。
+
+主なファイルとディレクトリは次の通りです。
+
+  frontend/
+  ├── package.json
+  ├── vite.config.ts
+  ├── index.html
+  ├── src/
+  │   ├── main.tsx
+  │   ├── App.tsx
+  │   ├── index.css
+  │   ├── pages/
+  │   ├── components/
+  │   ├── hooks/
+  │   ├── lib/
+  │   ├── contexts/
+  │   ├── config/
+  │   └── test/
+  ├── public/
+  ├── firestore.rules
+  ├── tsconfig.json
+  └── eslint.config.js
+
+package.json
+  使っているライブラリと、開発用コマンドが書かれています。
+
+vite.config.ts
+  Vite の設定です。
+  React、Tailwind CSS、テスト環境、パスエイリアスなどを設定しています。
+
+index.html
+  ブラウザが最初に読むHTMLです。
+  ここに <div id="root"></div> があり、Reactはこの中に画面を作ります。
+
+src/main.tsx
+  Reactアプリの起動地点です。
+  index.html の #root を探して、そこに <App /> を描画します。
+
+src/App.tsx
+  サイト全体のルーティング、プロバイダー、初回ローディング画面などを管理します。
+  初心者が最初に読むべき重要ファイルです。
+
+src/index.css
+  Tailwind CSS の読み込み、色、ダークモード、共通デザイン、アニメーションなどがあります。
+
+src/pages/
+  各ページの画面です。
+  /about なら About.tsx、/contact なら Contact.tsx のように対応します。
+
+src/components/
+  複数ページで使い回す部品です。
+  Header、Footer、Button、Card、Dialog などがあります。
+
+src/hooks/
+  Reactのカスタムフックです。
+  例: useAuth、useLikes
+
+src/lib/
+  画面ではない共通ロジックです。
+  Firebase初期化、週次数学データ取得、Markdown整形などがあります。
+
+src/contexts/
+  React Context を使った全体状態の置き場所です。
+  現在はテーマ管理が中心です。
+
+src/config/
+  サイト名、ナビゲーション、SNSリンクなど、サイト全体の設定です。
+
+src/test/
+  テストの共通設定です。
+
+public/
+  画像、ロゴ、robots.txt、sitemap.xml など、ビルド時にそのまま公開される静的ファイルです。
+
+firestore.rules
+  Firebase Firestore のセキュリティルールです。
+  誰がどのデータを読めるか、書けるかを定義します。
+
+
+このサイトがブラウザに表示されるまで
+----------------------------------
+
+Reactアプリの流れは、まずここを理解するとかなり見通しがよくなります。
+
+1. ブラウザが frontend/index.html を読む
+
+index.html には次のような場所があります。
+
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+
+#root はReactが画面を差し込む箱です。
+script は「Reactアプリを起動するコードを読み込んでください」という指定です。
+
+2. src/main.tsx が実行される
+
+main.tsx では document.getElementById('root') で #root を探します。
+見つかったら createRoot(rootElement).render(...) で React を起動します。
+
+重要な流れはこれです。
+
+  index.html
+    -> src/main.tsx
+      -> <App />
+
+3. src/App.tsx がサイト全体を組み立てる
+
+App.tsx は次のような責任を持っています。
+
+- 初回スプラッシュ画面を出す
+- テーマ管理を有効にする
+- トースト通知を使えるようにする
+- エラー境界を置く
+- React Router でURLごとにページを切り替える
+- Layout の中に各ページを表示する
+
+4. Layout が共通の見た目を作る
+
+frontend/src/components/layout/Layout.tsx は、だいたい次の構造です。
+
+  Header または DevHeader
+  main
+    Outlet
+  Footer
+
+Outlet は React Router の特別な部品です。
+「今のURLに対応するページをここに差し込んでください」という意味です。
+
+たとえば /contact にアクセスすると、
+
+  Layout
+    Header
+    main
+      Contact
+    Footer
+
+という構造になります。
+
+
+ルーティング一覧
+----------------
+
+ルーティングとは「URLに対してどのページを表示するか」の対応表です。
+このサイトでは frontend/src/App.tsx に書かれています。
+
+主なルートは次の通りです。
+
+  /                                  Home
+  /about                             About
+  /game-community                    GameCommunity
+  /weekly-math                       WeeklyMath
+  /weekly-math/:weekKey              WeeklyMathDetail
+  /weekly-math/:weekKey/solution     WeeklyMathSolution
+  /news                              News
+  /news/:slug                        NewsDetail
+  /app                               AppShowcase
+  /development                       Development
+  /app/table-tennis                  TableTennisMatchMakerPage
+  /app/color-sort                    ColorSortPuzzlePage
+  /app/cli-practice                  CliPracticePage
+  /board                             Board
+  /board/:id                         BoardDetail
+  /contact                           Contact
+  /admin                             Admin
+  /admin/members                     AdminMembers
+  /admin/weekly-math                 AdminWeeklyMath
+  /admin/weekly-math/preview         AdminWeeklyMathPreview
+  *                                  404
+
+:weekKey や :slug や :id は「URLの一部を変数として受け取る」という意味です。
+
+例:
+
+  /weekly-math/2026-W28
+
+この場合、weekKey は "2026-W28" になります。
+
+例:
+
+  /board/abc123
+
+この場合、id は "abc123" になります。
+
+
+使われている主な技術スタック
+----------------------------
+
+このサイトの package.json から見ると、主な技術は次の通りです。
+
+React
+  画面を部品の組み合わせとして作るライブラリです。
+  このサイトではほぼすべてのUIが React コンポーネントとして書かれています。
+
+TypeScript
+  JavaScript に型を追加した言語です。
+  変数や関数の引数や戻り値に「これは string です」「これは number です」といった情報を書けます。
+
+TSX
+  TypeScript の中に HTMLっぽい見た目の JSX を書けるファイル形式です。
+  .tsx ファイルは「Reactコンポーネントを書くファイル」だと思ってください。
+
+Vite
+  開発サーバーとビルドツールです。
+  npm run dev でローカル開発サーバーを起動し、npm run build で公開用ファイルを作ります。
+
+Tailwind CSS
+  className に小さなCSS命令を並べてデザインするCSSフレームワークです。
+  例: px-4, py-8, text-sm, dark:bg-black
+
+React Router
+  URLごとに表示するページを切り替えるライブラリです。
+  BrowserRouter、Routes、Route、Link、NavLink、Outlet などを使っています。
+
+Firebase
+  Google系のバックエンドサービスです。
+  このサイトでは Firestore と Authentication が使われています。
+
+Firestore
+  Firebase のデータベースです。
+  掲示板、週次数学、管理者メールなどに使われています。
+
+Firebase Auth
+  ログイン機能です。
+  Googleログインと管理者判定に使われています。
+
+EmailJS
+  フロントエンドからメール送信サービスを呼ぶライブラリです。
+  Contact ページで使われています。
+
+React Hook Form
+  フォーム入力を扱いやすくするライブラリです。
+  入力値、送信、エラー表示などを管理します。
+
+Zod
+  入力データのルールを定義するライブラリです。
+  例: タイトルは1文字以上100文字以下、メールアドレス形式であること、など。
+
+react-markdown / remark / rehype / KaTeX
+  Markdown と数式を表示するための仕組みです。
+  週次数学の問題文や解説で使われています。
+
+lucide-react
+  アイコンライブラリです。
+  Menu、X、Send、Shield などのアイコンをReactコンポーネントとして使えます。
+
+simple-icons
+  技術ロゴのアイコンを扱うライブラリです。
+  Development ページの技術スタック表示などで使われています。
+
+Vitest
+  テストランナーです。
+  npm run test でテストを実行します。
+
+Testing Library
+  Reactコンポーネントをユーザー目線でテストするためのライブラリです。
+
+ESLint
+  コードの問題を検出するツールです。
+  npm run lint で実行します。
+
+AWS CDK
+  AWSリソースをTypeScriptで定義するためのツールです。
+  infra/ にあります。
+
+AWS Lambda
+  サーバーを直接管理せず、小さな関数としてバックエンド処理を動かす仕組みです。
+
+DynamoDB
+  AWSのNoSQLデータベースです。
+  infra/lambdas 側で掲示板や記事用に設計されています。
+
+API Gateway
+  HTTP API の入口です。
+  ブラウザなどから来たリクエストを Lambda に渡します。
+
+Cognito
+  AWSのログイン・ユーザー管理サービスです。
+  infra では定義されていますが、現在の主要フロントでは Firebase Auth が目立ちます。
+
+S3
+  ファイルや画像を保存するAWSサービスです。
+
+SES
+  AWSのメール送信サービスです。
+  lambdas/public/sendContact に問い合わせメール送信用のコードがあります。
+
+AWS Amplify
+  フロントエンドのビルド・公開に使う想定のサービスです。
+  amplify.yml に設定があります。
+
+
+package.json の読み方
+--------------------
+
+frontend/package.json の scripts には、よく使うコマンドが書かれています。
+
+  "dev": "vite"
+  "build": "tsc -b && vite build"
+  "lint": "eslint ."
+  "test": "vitest run"
+  "preview": "vite preview"
+
+意味はこうです。
+
+npm run dev
+  ローカル開発サーバーを起動します。
+  コードを変更するとブラウザに反映されます。
+
+npm run build
+  本番公開用のファイルを作ります。
+  tsc -b でTypeScriptの型チェックをしてから、vite build でビルドします。
+
+npm run lint
+  ESLintでコードの問題をチェックします。
+
+npm run test
+  Vitestでテストを実行します。
+
+npm run preview
+  build後のファイルをローカルで確認します。
+
+初心者がまず覚えるべきコマンドは次の4つです。
+
+  cd frontend
+  npm install
+  npm run dev
+  npm run build
+
+テストまでやるなら:
+
+  npm run test
+  npm run lint
+
+
+Vite の設定
+-----------
+
+frontend/vite.config.ts には次のような設定があります。
+
+  plugins: [react(), tailwindcss()]
+
+これは Vite に対して、
+
+- React を使います
+- Tailwind CSS を使います
+
+と伝えています。
+
+また、次の設定があります。
+
+  alias: {
+    '@': path.resolve(__dirname, './src'),
+  }
+
+これにより、src配下のファイルを @ から始まるパスで import できます。
+
+例:
+
+  import { Button } from '@/components/ui';
+
+これは実際には次の意味です。
+
+  import { Button } from './src/components/ui';
+
+@ を使うと、深い階層からでも読みやすくなります。
+
+例:
+
+  ../../../components/ui/Button
+
+のような相対パスを避けられます。
+
+
+TypeScript の設定
+-----------------
+
+frontend/tsconfig.app.json では strict が true になっています。
+
+  "strict": true
+
+これは TypeScript に「型をかなり厳しくチェックしてください」と指示しています。
+
+初心者には最初きつく感じますが、バグを早く見つけてくれるので味方です。
+
+また、次の設定も重要です。
+
+  "jsx": "react-jsx"
+
+これは .tsx ファイルで JSX を使う設定です。
+
+  "paths": {
+    "@/*": ["./src/*"]
+  }
+
+これは @ エイリアスを TypeScript 側にも理解させる設定です。
+
+
+TSX の基本
+----------
+
+このサイトの画面は .tsx ファイルで書かれています。
+
+TSX は、TypeScript の中に HTMLっぽいタグを書ける形式です。
+
+例:
+
+  export function Contact() {
+      return (
+          <div>
+              <h1>お問い合わせ</h1>
+          </div>
+      );
+  }
+
+これはHTMLそのものではありません。
+Reactが理解する「JSX」という書き方です。
+
+HTMLとの違いで初心者がつまずきやすい点は次です。
+
+class ではなく className を使う
+
+  <div className="text-sm">
+
+onclick ではなく onClick を使う
+
+  <button onClick={handleClick}>
+
+style は文字列ではなくオブジェクトで書く
+
+  <div style={{ width: '100%' }}>
+
+JavaScript の値を埋め込むときは {} を使う
+
+  <p>{user.email}</p>
+
+コンポーネント名は大文字で始める
+
+  <Button />
+  <Header />
+  <Contact />
+
+小文字で始まるタグは通常のHTMLタグです。
+
+  <div />
+  <section />
+  <button />
+
+大文字で始まるタグは React コンポーネントです。
+
+
+言語別: 文の書き方
+-----------------
+
+ここからは「それぞれの言語・ファイル形式で、どう文を書くのか」を整理します。
+
+このプロジェクトでは、ひとつの言語だけを書けばよいわけではありません。
+同じWebサイトの中に、次のような書き方が混ざっています。
+
+  HTML
+  CSS / Tailwind CSS
+  JavaScript
+  TypeScript
+  TSX / JSX
+  React
+  Firebase SDK の書き方
+  AWS Lambda の書き方
+  AWS CDK の書き方
+  Firestore Rules
+  JSON
+  YAML
+  Markdown
+
+最初に大事なことは、
+
+  「これは何語の文なのか？」
+
+を見分けることです。
+
+たとえば、同じように見える次の2つは別物です。
+
+  <div class="box"></div>
+
+これはHTMLです。
+
+  <div className="box"></div>
+
+これはReactのTSXです。
+
+違いは class と className です。
+ReactではHTMLそのものではなく、JavaScript/TypeScriptの中でHTMLっぽいものを書いているため、
+class ではなく className を使います。
+
+
+HTML の文の書き方
+-----------------
+
+HTMLは「タグ」で構造を書きます。
+
+基本形:
+
+  <タグ名 属性名="値">
+      中身
+  </タグ名>
+
+例:
+
+  <section>
+      <h1>お問い合わせ</h1>
+      <p>ご質問はこちらからどうぞ。</p>
+  </section>
+
+よく使うタグ:
+
+  div
+    意味を持たない汎用の箱。
+
+  section
+    ページ内のまとまった区切り。
+
+  header
+    ヘッダー部分。
+
+  main
+    ページの主要部分。
+
+  footer
+    フッター部分。
+
+  h1, h2, h3
+    見出し。
+
+  p
+    段落。
+
+  a
+    リンク。
+
+  button
+    ボタン。
+
+  form
+    フォーム。
+
+  input
+    1行入力。
+
+  textarea
+    複数行入力。
+
+  img
+    画像。
+
+HTMLの属性:
+
+  <a href="/contact">Contact</a>
+
+href はリンク先です。
+
+  <img src="/logo.svg" alt="ロゴ" />
+
+src は画像の場所、alt は画像の説明です。
+
+React/TSXでは、HTMLと似ていますが少し違います。
+
+HTML:
+
+  <label for="email">Email</label>
+
+TSX:
+
+  <label htmlFor="email">Email</label>
+
+HTML:
+
+  <button onclick="send()">送信</button>
+
+TSX:
+
+  <button onClick={send}>送信</button>
+
+HTML:
+
+  <div class="card"></div>
+
+TSX:
+
+  <div className="card"></div>
+
+
+CSS の文の書き方
+----------------
+
+CSSは「どの要素に、どんな見た目を当てるか」を書きます。
+
+基本形:
+
+  セレクタ {
+      プロパティ: 値;
+  }
+
+例:
+
+  .card {
+      background: white;
+      border: 1px solid #D2D2D7;
+      border-radius: 16px;
+      padding: 24px;
+  }
+
+.card は「class="card" がついている要素」を意味します。
+
+このサイトでは普通のCSSもありますが、多くは Tailwind CSS の className で書いています。
+
+通常のCSS:
+
+  .title {
+      font-size: 24px;
+      color: #1D1D1F;
+  }
+
+Tailwind:
+
+  <h1 className="text-2xl text-[#1D1D1F]">
+
+どちらも「文字サイズと文字色を指定する」ための書き方です。
+
+
+Tailwind CSS の文の書き方
+------------------------
+
+TailwindではCSSをファイルに書く代わりに、className に小さな命令を並べます。
+
+基本形:
+
+  className="命令 命令 命令"
+
+例:
+
+  <div className="mx-auto max-w-[980px] px-4 py-16">
+
+意味:
+
+  mx-auto
+    左右中央寄せ。
+
+  max-w-[980px]
+    最大幅980px。
+
+  px-4
+    左右のpadding。
+
+  py-16
+    上下のpadding。
+
+Tailwindのよくあるパターン:
+
+余白:
+
+  p-4       全方向padding
+  px-4      左右padding
+  py-8      上下padding
+  mt-6      margin-top
+  mb-4      margin-bottom
+  gap-4     flex/grid内の間隔
+
+配置:
+
+  flex
+  grid
+  items-center
+  justify-between
+  text-center
+  mx-auto
+
+サイズ:
+
+  w-full
+  h-screen
+  min-h-screen
+  max-w-[980px]
+
+文字:
+
+  text-sm
+  text-lg
+  font-medium
+  font-semibold
+  leading-relaxed
+
+色:
+
+  text-[#1D1D1F]
+  bg-white
+  border-[#D2D2D7]
+
+状態:
+
+  hover:bg-[#F5F5F7]
+  focus-visible:ring-2
+  disabled:opacity-50
+
+レスポンシブ:
+
+  sm:px-6
+  md:flex
+  lg:py-20
+
+ダークモード:
+
+  dark:bg-black
+  dark:text-white
+
+読み方のコツ:
+
+  className="A B C D"
+
+とあったら、
+
+  Aを適用し、Bを適用し、Cを適用し、Dを適用する
+
+と読めばよいです。
+
+
+JavaScript の文の書き方
+----------------------
+
+JavaScriptはブラウザで動くプログラミング言語です。
+TypeScriptはJavaScriptに型を足したものなので、まずJavaScriptの文が土台になります。
+
+変数宣言:
+
+  const name = 'TTI Intelligence';
+  let count = 0;
+
+const
+  再代入しない変数。
+  基本は const を使います。
+
+let
+  後で再代入する変数。
+
+このサイトのReactコードでも、ほとんどは const です。
+
+オブジェクト:
+
+  const user = {
+      name: 'Taro',
+      email: 'taro@example.com',
+  };
+
+読む:
+
+  user.name
+  user.email
+
+配列:
+
+  const links = [
+      { name: 'Home', href: '/' },
+      { name: 'Contact', href: '/contact' },
+  ];
+
+map:
+
+  links.map((link) => link.name)
+
+関数:
+
+  function formatTitle(title) {
+      return `${title} | TTI Intelligence`;
+  }
+
+アロー関数:
+
+  const formatTitle = (title) => {
+      return `${title} | TTI Intelligence`;
+  };
+
+短いアロー関数:
+
+  const formatTitle = (title) => `${title} | TTI Intelligence`;
+
+非同期関数:
+
+  const loadThreads = async () => {
+      const response = await fetch('/api/threads');
+      const data = await response.json();
+      return data;
+  };
+
+try / catch:
+
+  try {
+      await loadThreads();
+  } catch (error) {
+      console.error(error);
+  }
+
+分割代入:
+
+  const { title, body } = thread;
+
+これは次と同じ意味です。
+
+  const title = thread.title;
+  const body = thread.body;
+
+スプレッド構文:
+
+  const next = { ...thread, pinned: true };
+
+これは thread の中身をコピーして、pinned だけ true に変える書き方です。
+
+配列のスプレッド:
+
+  const nextThreads = [...threads, newThread];
+
+これは既存の threads の後ろに newThread を追加した新しい配列を作ります。
+
+
+TypeScript の文の書き方
+----------------------
+
+TypeScriptはJavaScriptに型を足した言語です。
+
+変数に型を書く:
+
+  const title: string = 'Hello';
+  const count: number = 3;
+  const published: boolean = true;
+
+ただし、多くの場合TypeScriptは自動で型を推測します。
+
+  const title = 'Hello';
+
+これだけで title は string と推測されます。
+
+関数の引数と戻り値:
+
+  function add(a: number, b: number): number {
+      return a + b;
+  }
+
+アロー関数:
+
+  const add = (a: number, b: number): number => {
+      return a + b;
+  };
+
+オブジェクトの型:
+
+  interface Thread {
+      id: string;
+      title: string;
+      body: string;
+      commentCount: number;
+      pinned: boolean;
+  }
+
+使う:
+
+  const thread: Thread = {
+      id: 'abc',
+      title: '質問です',
+      body: '本文です',
+      commentCount: 0,
+      pinned: false,
+  };
+
+省略可能なプロパティ:
+
+  interface Post {
+      title: string;
+      coverImageUrl?: string;
+  }
+
+coverImageUrl? は、あってもなくてもよいという意味です。
+
+ユニオン型:
+
+  type SubmitStatus = 'idle' | 'sending' | 'success' | 'error';
+
+これは4種類の文字列だけを許します。
+
+配列の型:
+
+  const threads: Thread[] = [];
+
+Promiseの型:
+
+  async function getThread(id: string): Promise<Thread> {
+      ...
+  }
+
+これは「非同期で、最終的に Thread を返す」という意味です。
+
+型だけ import する:
+
+  import type { ReactNode } from 'react';
+
+type import は、実行時には不要な型情報だけを読み込む書き方です。
+
+型アサーション:
+
+  const thread = doc.data() as Thread;
+
+これは「この値を Thread として扱う」とTypeScriptに伝えます。
+ただし、本当に正しい形かどうかを実行時に確認するわけではありません。
+APIやFirestoreから来たデータには、本当はZodなどで検証するのがより安全です。
+
+
+TSX / JSX の文の書き方
+---------------------
+
+TSXはTypeScriptの中にJSXを書ける形式です。
+Reactコンポーネントを書くときに使います。
+
+基本形:
+
+  export function Page() {
+      return (
+          <div>
+              <h1>Title</h1>
+          </div>
+      );
+  }
+
+JavaScript/TypeScriptの値を表示する:
+
+  <p>{thread.title}</p>
+
+条件表示:
+
+  {isLoading ? (
+      <p>読み込み中...</p>
+  ) : (
+      <p>読み込み完了</p>
+  )}
+
+条件がtrueのときだけ表示:
+
+  {errorMessage && (
+      <p className="text-red-600">{errorMessage}</p>
+  )}
+
+配列を表示:
+
+  {threads.map((thread) => (
+      <article key={thread.id}>
+          <h2>{thread.title}</h2>
+      </article>
+  ))}
+
+イベント:
+
+  <button onClick={() => setOpen(true)}>
+      開く
+  </button>
+
+フォーム:
+
+  <form onSubmit={handleSubmit(onSubmit)}>
+      <input {...register('title')} />
+      <button type="submit">送信</button>
+  </form>
+
+インラインstyle:
+
+  <div style={{ width: `${progress}%` }} />
+
+注意:
+
+  style={{ width: `${progress}%` }}
+
+外側の {} は「TSXの中にJavaScriptを書く」ため。
+内側の {} は「JavaScriptのオブジェクト」を作るためです。
+
+つまり二重の意味があります。
+
+
+React の文の書き方
+------------------
+
+Reactでは、ただ関数を書くのではなく「状態」「props」「副作用」を意識して書きます。
+
+コンポーネント:
+
+  export function ThreadCard({ thread }: { thread: Thread }) {
+      return (
+          <article>
+              <h2>{thread.title}</h2>
+              <p>{thread.body}</p>
+          </article>
+      );
+  }
+
+state:
+
+  const [threads, setThreads] = useState<Thread[]>([]);
+
+初期値:
+
+  []
+
+現在値:
+
+  threads
+
+更新関数:
+
+  setThreads
+
+副作用:
+
+  useEffect(() => {
+      void loadThreads();
+  }, []);
+
+カスタムフック:
+
+  export function useAuth() {
+      ...
+      return { user, isAdmin, loading, login, logout };
+  }
+
+使う側:
+
+  const { user, isAdmin, loading } = useAuth();
+
+Reactで一番大事な文の流れ:
+
+  stateを定義する
+  データを取得する
+  stateを更新する
+  stateに応じてJSXを返す
+
+この流れを毎回探してください。
+
+
+Firebase SDK の文の書き方
+------------------------
+
+Firebaseのコードは「SDKの関数を組み合わせて、FirestoreやAuthに命令する」書き方です。
+
+初期化:
+
+  const app = initializeApp(firebaseConfig);
+  export const db = getFirestore(app);
+  export const auth = getAuth(app);
+
+ドキュメントを1件読む:
+
+  const snap = await getDoc(doc(db, 'weeklyMath', weekKey));
+
+  if (!snap.exists()) return null;
+
+  const data = snap.data() as WeeklyMathProblem;
+
+コレクションを読む:
+
+  const q = query(
+      collection(db, 'weeklyMath'),
+      orderBy('weekKey', 'desc'),
+      limit(50)
+  );
+
+  const snap = await getDocs(q);
+  const items = snap.docs.map((doc) => doc.data() as WeeklyMathProblem);
+
+リアルタイム購読:
+
+  useEffect(() => {
+      const q = query(collection(db, 'threads'), orderBy('createdAt', 'desc'));
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+          const items = snapshot.docs.map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+          })) as Thread[];
+
+          setThreads(items);
+      });
+
+      return () => unsubscribe();
+  }, []);
+
+追加:
+
+  await addDoc(collection(db, 'threads'), {
+      title,
+      body,
+      createdAt: Timestamp.now(),
+  });
+
+更新:
+
+  await updateDoc(doc(db, 'threads', threadId), {
+      pinned: true,
+  });
+
+削除:
+
+  await deleteDoc(doc(db, 'threads', threadId));
+
+ログイン:
+
+  await signInWithPopup(auth, googleProvider);
+
+ログアウト:
+
+  await signOut(auth);
+
+
+AWS Lambda の文の書き方
+----------------------
+
+Lambdaは「リクエストを受け取り、レスポンスを返す関数」です。
+
+基本形:
+
+  export const handler: APIGatewayProxyHandler = async (event) => {
+      try {
+          return {
+              statusCode: 200,
+              headers: corsHeaders,
+              body: JSON.stringify({ ok: true }),
+          };
+      } catch (error) {
+          return {
+              statusCode: 500,
+              headers: corsHeaders,
+              body: JSON.stringify({ error: 'Internal server error' }),
+          };
+      }
+  };
+
+event.body を読む:
+
+  const input = JSON.parse(event.body);
+
+クエリパラメータを読む:
+
+  const limit = event.queryStringParameters?.limit || '20';
+
+ヘッダーを読む:
+
+  const deviceId = event.headers['X-Device-Id'] || event.headers['x-device-id'];
+
+DynamoDBに書く:
+
+  await docClient.send(
+      new PutCommand({
+          TableName: process.env.BOARD_TABLE!,
+          Item: item,
+      })
+  );
+
+DynamoDBから読む:
+
+  const result = await docClient.send(
+      new QueryCommand({
+          TableName: process.env.BOARD_TABLE!,
+          IndexName: 'gsi1',
+          KeyConditionExpression: 'gsi1pk = :pk',
+          ExpressionAttributeValues: {
+              ':pk': 'THREADS',
+          },
+      })
+  );
+
+Lambdaで大事なこと:
+
+- 入力を信用しない
+- 必ずバリデーションする
+- 失敗時のHTTPステータスを分ける
+- body は JSON.stringify する
+- 秘密情報は環境変数から読む
+- フロントに秘密鍵を返さない
+
+
+AWS CDK の文の書き方
+-------------------
+
+CDKは「AWSに何を作るか」をTypeScriptで書きます。
+
+基本形:
+
+  const table = new dynamodb.Table(this, 'TableId', {
+      tableName: 'example-table',
+      partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+  });
+
+これは「DynamoDBテーブルを作る」という宣言です。
+
+Lambdaを作る:
+
+  const getThreadsLambda = new lambda.Function(this, 'GetThreadsLambda', {
+      functionName: 'tti-ai-get-threads',
+      runtime: lambda.Runtime.NODEJS_22_X,
+      handler: 'index.handler',
+      code: lambda.Code.fromAsset(path.join(lambdasDir, 'public/getThreads')),
+      environment: commonEnv,
+      timeout: cdk.Duration.seconds(10),
+  });
+
+権限を付ける:
+
+  boardTable.grantReadData(getThreadsLambda);
+
+API Gatewayにルートを追加する:
+
+  const threadsResource = api.root.addResource('threads');
+  threadsResource.addMethod('GET', new apigateway.LambdaIntegration(getThreadsLambda));
+
+CDKで大事な考え方:
+
+  リソースを作る
+  Lambdaを作る
+  Lambdaに環境変数を渡す
+  Lambdaに権限を渡す
+  API Gatewayに接続する
+  必要な値をOutputする
+
+
+Firestore Rules の文の書き方
+---------------------------
+
+Firestore Rulesは、Firestoreの読み書き権限を書く専用言語です。
+
+基本形:
+
+  match /collection/{documentId} {
+      allow read: if 条件;
+      allow write: if 条件;
+  }
+
+例:
+
+  match /weeklyMath/{weekKey} {
+      allow read: if true;
+      allow write: if isAdmin();
+  }
+
+意味:
+
+  weeklyMath は誰でも読める
+  書き込みは管理者だけ
+
+関数:
+
+  function isAdmin() {
+      return request.auth != null && (
+          request.auth.token.email == 'tti.intel@gmail.com' ||
+          exists(/databases/$(database)/documents/admins/$(request.auth.token.email))
+      );
+  }
+
+request.resource.data
+  書き込もうとしている新しいデータ。
+
+resource.data
+  すでに保存されている現在のデータ。
+
+diff:
+
+  request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likeCount'])
+
+意味:
+
+  変更されたキーが likeCount だけか確認する。
+
+Firestore Rulesで大事なこと:
+
+- フロントエンドの表示制御だけを信用しない
+- Rulesで本当に許可する条件を書く
+- create / update / delete を分けて考える
+- データ型と文字数も検証する
+
+
+JSON の文の書き方
+----------------
+
+JSONは設定やAPIレスポンスでよく使うデータ形式です。
+
+基本:
+
+  {
+    "name": "frontend",
+    "version": "0.0.0",
+    "private": true
+  }
+
+ルール:
+
+- キーはダブルクォートで囲む
+- 文字列もダブルクォートで囲む
+- コメントは書けない
+- 最後の要素の後ろにカンマを書かない
+
+OK:
+
+  {
+    "scripts": {
+      "dev": "vite",
+      "build": "tsc -b && vite build"
+    }
+  }
+
+NG:
+
+  {
+    "dev": "vite",
+  }
+
+最後のカンマがNGです。
+
+package.json はJSONです。
+
+
+YAML の文の書き方
+----------------
+
+YAMLは設定ファイルでよく使われます。
+このサイトでは amplify.yml がYAMLです。
+
+基本:
+
+  version: 1
+  applications:
+    - frontend:
+        phases:
+          build:
+            commands:
+              - npm run build
+
+YAMLで大事なのはインデントです。
+インデントで親子関係を表します。
+
+  commands:
+    - npm ci
+    - npm run build
+
+これは commands の中に2つのコマンドがあるという意味です。
+
+注意:
+
+- タブではなくスペースを使う
+- インデントがずれると意味が変わる
+- JSONより人間が読みやすいが、空白ミスに弱い
+
+
+Markdown の文の書き方
+--------------------
+
+Markdownは文章を書くための軽量記法です。
+READMEやドキュメントで使います。
+
+見出し:
+
+  # 大見出し
+  ## 中見出し
+  ### 小見出し
+
+箇条書き:
+
+  - item
+  - item
+
+番号付き:
+
+  1. first
+  2. second
+
+コード:
+
+      const title = 'Hello';
+
+リンク:
+
+  [Google](https://google.com)
+
+このファイルは .txt なので厳密にはMarkdownではありませんが、
+読みやすくするためにMarkdownに近い章立てで書いています。
+
+
+import / export の読み方
+-----------------------
+
+Reactのコードでは、ファイルを分けて部品を読み込みます。
+
+例:
+
+  import { Button } from '@/components/ui';
+
+これは「@/components/ui から Button という名前の部品を読み込む」という意味です。
+
+別の例:
+
+  export function Contact() {
+      ...
+  }
+
+これは「Contact という関数を他のファイルから使えるようにする」という意味です。
+
+さらに別の例:
+
+  export default App;
+
+default export は「このファイルの代表として App を外に出す」という意味です。
+
+読み込む側はこうなります。
+
+  import App from './App';
+
+named export の場合:
+
+  export function Home() {}
+
+読み込む側:
+
+  import { Home } from '@/pages/Home';
+
+default export の場合:
+
+  export default App;
+
+読み込む側:
+
+  import App from './App';
+
+まずはこの違いをゆっくり覚えれば十分です。
+
+
+React コンポーネントとは何か
+---------------------------
+
+Reactでは画面を「コンポーネント」という部品に分けます。
+
+例:
+
+  Header
+  Footer
+  Button
+  Card
+  Contact
+  Board
+  Home
+
+コンポーネントは基本的に「UIを返す関数」です。
+
+  export function Header() {
+      return (
+          <header>
+              ...
+          </header>
+      );
+  }
+
+この関数を別の場所で次のように使えます。
+
+  <Header />
+
+普通の関数呼び出しのように Header() と書かないのがポイントです。
+Reactではタグの形で使います。
+
+
+props とは何か
+--------------
+
+props は、コンポーネントに渡す引数のようなものです。
+
+たとえば Button コンポーネントでは、variant、size、isLoading、children などを受け取ります。
+
+  <Button variant="outline" size="lg">
+      送信する
+  </Button>
+
+このとき Button 側では、だいたい次のように受け取ります。
+
+  function Button({ variant, size, children }) {
+      ...
+  }
+
+children は特別なpropsです。
+タグの中身を表します。
+
+  <Button>
+      送信する
+  </Button>
+
+この "送信する" が children です。
+
+TypeScriptでは props の型を定義できます。
+
+例:
+
+  interface ButtonProps {
+      variant?: 'primary' | 'secondary';
+      isLoading?: boolean;
+  }
+
+? は「省略してもよい」という意味です。
+
+  variant?: ...
+
+これは variant を渡してもいいし、渡さなくてもいいという意味です。
+
+
+type と interface
+-----------------
+
+TypeScriptでは、データの形に名前をつけられます。
+
+例:
+
+  interface Thread {
+      id: string;
+      title: string;
+      body: string;
+      commentCount: number;
+      pinned: boolean;
+  }
+
+これは「Threadというデータは、このような形です」と決めています。
+
+string
+  文字列です。
+
+number
+  数値です。
+
+boolean
+  true / false です。
+
+unknown
+  まだ型がわからない値です。
+
+null
+  値がないことを表します。
+
+配列はこう書きます。
+
+  Thread[]
+
+これは Thread の配列です。
+
+type も似たことができます。
+
+例:
+
+  type SubmitStatus = 'idle' | 'sending' | 'success' | 'error';
+
+これは SubmitStatus には4つの文字列のどれかだけが入る、という意味です。
+
+この書き方はかなり便利です。
+間違って 'sucess' のように打つと TypeScript が検出してくれます。
+
+
+useState
+--------
+
+useState は React で「画面の状態」を持つための機能です。
+
+例:
+
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+意味:
+
+- isMobileMenuOpen が現在の値
+- setIsMobileMenuOpen が値を変更する関数
+- useState(false) の false が初期値
+
+モバイルメニューを開くとき:
+
+  setIsMobileMenuOpen(true);
+
+閉じるとき:
+
+  setIsMobileMenuOpen(false);
+
+値が変わると、Reactは画面を再描画します。
+
+useState はこのサイトの多くのページで使われています。
+
+例:
+
+  Contact.tsx
+    submitStatus
+    errorMessage
+
+  Board.tsx
+    isCreateDialogOpen
+    isSubmitting
+    threads
+    isLoading
+    loadError
+
+  App.tsx
+    showSplash
+    isSplashFadingOut
+    splashProgress
+
+
+useEffect
+---------
+
+useEffect は「画面の描画後に何かする」ための機能です。
+
+よくある用途は次です。
+
+- ページを開いたらデータを取りに行く
+- イベントリスナーを登録する
+- localStorage を読む
+- document.title を変える
+- Firestoreのリアルタイム購読を始める
+- コンポーネントが消えるときに後片付けする
+
+例:
+
+  useEffect(() => {
+      window.scrollTo(0, 0);
+  }, [pathname]);
+
+これは pathname が変わるたびに、ページ上部へスクロールします。
+
+[] の中身は「この値が変わったらもう一度実行する」という依存配列です。
+
+  useEffect(() => {
+      ...
+  }, []);
+
+空配列なら、基本的には最初の1回だけ実行されます。
+
+後片付けが必要な場合は return で関数を返します。
+
+例:
+
+  useEffect(() => {
+      const unsubscribe = onSnapshot(...);
+      return () => unsubscribe();
+  }, []);
+
+Firestore の onSnapshot はリアルタイム購読です。
+ページを離れた後も購読し続けると無駄なので、return で解除します。
+
+
+useMemo
+-------
+
+useMemo は「計算結果を覚えておく」ための機能です。
+
+例:
+
+  const solved = useMemo(() => isSolved(puzzle), [puzzle]);
+
+これは puzzle が変わったときだけ isSolved(puzzle) を計算します。
+
+重い計算や、毎回作り直す必要のない値に使います。
+
+初心者のうちは、まず useState と useEffect を優先して理解してください。
+useMemo はその後で大丈夫です。
+
+
+useRef
+------
+
+useRef は「Reactの再描画をまたいで値やDOM要素を覚えておく」ための機能です。
+
+例:
+
+  const videosScrollerRef = useRef<HTMLDivElement | null>(null);
+
+これは、あとで特定の div 要素を直接参照するために使います。
+
+TSX側ではこう渡します。
+
+  <div ref={videosScrollerRef}>
+
+すると videosScrollerRef.current に実際のHTML要素が入ります。
+
+スクロール位置を読んだり、入力欄にフォーカスしたり、サイズを測ったりするときに使います。
+
+
+React Router
+------------
+
+React Router は、URLに応じて表示するコンポーネントを切り替えるライブラリです。
+
+App.tsx には次のような構造があります。
+
+  <BrowserRouter>
+      <Routes>
+          <Route path="/" element={<Layout />}>
+              <Route index element={<Home />} />
+              <Route path="about" element={<About />} />
+              <Route path="contact" element={<Contact />} />
+          </Route>
+      </Routes>
+  </BrowserRouter>
+
+BrowserRouter
+  ブラウザのURLを見てルーティングするための親コンポーネントです。
+
+Routes
+  Route をまとめる箱です。
+
+Route
+  path と element の対応を定義します。
+
+path
+  URLのパスです。
+
+element
+  表示するReactコンポーネントです。
+
+index
+  親ルートそのもの、つまり "/" のページを表します。
+
+Link
+  ページ遷移用のリンクです。
+  普通の <a> と似ていますが、React Router用です。
+
+  <Link to="/contact">Contact</Link>
+
+NavLink
+  現在のURLと一致しているかを判定できるリンクです。
+  Header のナビゲーションで使われています。
+
+Outlet
+  ネストされたページを表示する場所です。
+  Layout の中にあります。
+
+
+lazy と Suspense
+----------------
+
+App.tsx では一部のページを lazy で読み込んでいます。
+
+例:
+
+  const News = lazy(() => import('@/pages/News').then(m => ({ default: m.News })));
+
+これは、最初から全部のページのコードを読み込まず、
+必要になったときに読み込むための仕組みです。
+
+メリット:
+
+- 初回表示が軽くなる
+- FirebaseやMarkdownなど重い依存を含むページを後回しにできる
+
+lazy で読み込むコンポーネントは Suspense で囲みます。
+
+  <Suspense fallback={<PageLoader />}>
+      <News />
+  </Suspense>
+
+読み込み中は fallback の PageLoader が表示されます。
+
+
+Context
+-------
+
+Context は、深い階層のコンポーネントに値を渡すための仕組みです。
+
+このサイトではテーマ管理に使われています。
+
+  ThemeProvider
+    -> Header
+    -> ThemeToggle
+    -> 各ページ
+
+ThemeProvider は、現在のテーマが light / dark / system のどれかを管理します。
+
+frontend/src/contexts/ThemeContext.tsx では、
+
+- localStorage から保存済みテーマを読む
+- OSのダークモード設定を見る
+- html要素に dark クラスを付ける
+- setTheme でテーマを変更できるようにする
+
+という処理をしています。
+
+ダークモードは最終的に document.documentElement、つまり html 要素に dark クラスを付けることで動きます。
+
+Tailwind側では次のようなクラスが使えます。
+
+  dark:bg-black
+  dark:text-white
+
+
+Tailwind CSS の読み方
+--------------------
+
+Tailwind CSS は className に小さな命令を並べます。
+
+例:
+
+  <div className="max-w-[980px] mx-auto px-4 py-16">
+
+意味:
+
+max-w-[980px]
+  最大幅を980pxにする。
+  [] は任意の値を直接指定するTailwindの書き方です。
+
+mx-auto
+  左右の margin を auto にして中央寄せする。
+
+px-4
+  左右の padding をつける。
+
+py-16
+  上下の padding をつける。
+
+よく出る接頭辞:
+
+sm:
+  小さめの画面以上で適用。
+
+md:
+  中くらいの画面以上で適用。
+
+lg:
+  大きい画面以上で適用。
+
+dark:
+  ダークモード時に適用。
+
+hover:
+  マウスを乗せたときに適用。
+
+focus-visible:
+  キーボード操作などでフォーカスが見えるときに適用。
+
+例:
+
+  className="text-[#1D1D1F] dark:text-[#F5F5F7] hover:text-[#0066CC]"
+
+意味:
+
+- 通常時の文字色は #1D1D1F
+- ダークモードでは #F5F5F7
+- hover時は #0066CC
+
+このサイトでは frontend/src/index.css にデザイントークンや共通クラスもあります。
+
+例:
+
+  @import "tailwindcss";
+  @custom-variant dark (&:where(.dark, .dark *));
+  @theme { ... }
+  @layer base { ... }
+  @layer utilities { ... }
+
+@theme
+  Tailwind CSS v4 のテーマ定義です。
+  色などのデザイントークンを定義します。
+
+@layer base
+  body、html、見出しなどの基本スタイルを定義します。
+
+@layer utilities
+  .apple-hero や .glass など、独自の便利クラスを定義します。
+
+このサイトの見た目は「Tailwindのクラス」+「index.cssの独自クラス」の組み合わせです。
+
+
+UI コンポーネント
+----------------
+
+frontend/src/components/ui には、使い回し用のUI部品があります。
+
+主なもの:
+
+  Button.tsx
+  Card.tsx
+  Input.tsx
+  Textarea.tsx
+  Dialog.tsx
+  Toast.tsx
+  Badge.tsx
+  Skeleton.tsx
+
+たとえば Button.tsx では、variant と size によって見た目を切り替えます。
+
+  type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'outline' | 'danger';
+  type ButtonSize = 'sm' | 'md' | 'lg';
+
+これは「Buttonのvariantにはこの5種類だけ使えます」という意味です。
+
+実際に使うとき:
+
+  <Button variant="outline" size="lg">
+      送信する
+  </Button>
+
+Button側では、variantStyles と sizeStyles から対応するCSSクラスを取り出します。
+
+  ${variantStyles[variant]}
+  ${sizeStyles[size]}
+
+初心者がここから学ぶべきこと:
+
+- 同じようなボタンを毎回書くのではなく、Buttonコンポーネントにまとめる
+- 見た目の種類を variant として整理する
+- TypeScriptで使える選択肢を限定する
+
+
+layout コンポーネント
+--------------------
+
+frontend/src/components/layout には、サイト全体の枠組みがあります。
+
+Header.tsx
+  通常ページのヘッダーです。
+  ナビゲーション、ロゴ、テーマ切り替え、モバイルメニューがあります。
+
+DevHeader.tsx
+  /development ページ用の別ヘッダーです。
+
+Footer.tsx
+  サイト下部のフッターです。
+
+ThemeToggle.tsx
+  ライト/ダーク/システム設定を切り替えるボタンです。
+
+Layout.tsx
+  Header、main、Footer をまとめる親コンポーネントです。
+
+Layout.tsx の重要な考え方:
+
+  URLが /development なら DevHeader
+  それ以外なら Header
+
+このように、ページごとに共通枠を少し変えることもできます。
+
+
+siteConfig
+----------
+
+frontend/src/config/site.ts はサイト全体の設定ファイルです。
+
+ここには次のようなものがあります。
+
+- サイト名
+- 説明文
+- URL
+- ナビゲーション
+- SNSリンク
+- お問い合わせメール
+- フッターリンク
+
+Header は siteConfig.navigation を map してナビリンクを作っています。
+
+つまり、ナビゲーションを増やしたいときは、まず siteConfig を見るのが自然です。
+
+例:
+
+  navigation: [
+      { name: 'Home', href: '/' },
+      { name: 'About Us', href: '/about' },
+      ...
+  ]
+
+ここに追加すれば Header 側に反映されます。
+ただし、表示先のページと Route も追加しないとリンク先が404になります。
+
+
+PageSeo
+-------
+
+frontend/src/components/PageSeo.tsx は、ページごとの title と description を変える部品です。
+
+使い方:
+
+  <PageSeo
+      title="Contact | TTI Intelligence"
+      description="TTI Intelligenceへのお問い合わせページです。"
+  />
+
+PageSeo は画面に何か表示するわけではありません。
+return null です。
+
+では何をしているかというと、useEffect で次を変更しています。
+
+- document.title
+- meta name="description"
+
+つまり検索エンジンやSNSプレビュー、ブラウザタブに関わる情報を更新しています。
+
+
+フォームの仕組み
+----------------
+
+Contact.tsx や Board.tsx では、React Hook Form と Zod が使われています。
+
+流れはだいたい次です。
+
+1. Zodで入力ルールを定義する
+
+  const contactSchema = z.object({
+      name: z.string().min(1).max(100),
+      email: z.string().email(),
+      subject: z.string().min(1).max(200),
+      message: z.string().min(3).max(2000),
+  });
+
+2. TypeScriptの型を Zod から作る
+
+  type ContactForm = z.infer<typeof contactSchema>;
+
+これは便利です。
+同じルールを「バリデーション」と「TypeScriptの型」の両方に使えます。
+
+3. useForm を使う
+
+  const {
+      register,
+      handleSubmit,
+      reset,
+      formState: { errors },
+  } = useForm<ContactForm>({
+      resolver: zodResolver(contactSchema),
+  });
+
+register
+  input とフォーム状態をつなぎます。
+
+handleSubmit
+  送信時にバリデーションして、OKなら onSubmit を呼びます。
+
+reset
+  フォームを初期状態に戻します。
+
+errors
+  入力エラーが入ります。
+
+4. input に register をつなぐ
+
+  <Input
+      label="メールアドレス"
+      type="email"
+      error={errors.email?.message}
+      {...register('email')}
+  />
+
+{...register('email')} は少し難しく見えます。
+
+これは register('email') が返す複数のpropsを、Inputにまとめて渡す書き方です。
+
+... はスプレッド構文です。
+
+5. form の onSubmit に handleSubmit を使う
+
+  <form onSubmit={handleSubmit(onSubmit)}>
+
+こうすると、送信時に次の順番で動きます。
+
+  ユーザーが送信
+    -> Zodで入力チェック
+      -> OKなら onSubmit(data)
+      -> NGなら errors にメッセージが入る
+
+
+Firebase の使い方
+----------------
+
+Firebaseの初期化は frontend/src/lib/firebase.ts にあります。
+
+重要な部分:
+
+  const firebaseConfig = {
+      apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+      authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+      projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+      ...
+  };
+
+  const app = initializeApp(firebaseConfig);
+
+  export const db = getFirestore(app);
+  export const auth = getAuth(app);
+
+ここで db と auth を作り、他のファイルから使えるように export しています。
+
+VITE_ で始まる環境変数
+----------------------
+
+Vite では、フロントエンドから読める環境変数は VITE_ で始める必要があります。
+
+例:
+
+  VITE_FIREBASE_API_KEY
+  VITE_EMAILJS_SERVICE_ID
+
+コードではこう読みます。
+
+  import.meta.env.VITE_FIREBASE_API_KEY
+
+注意:
+
+フロントエンドに埋め込まれる値は、ユーザーのブラウザから見える可能性があります。
+本当に秘密にしたい値はフロントエンドに置いてはいけません。
+秘密鍵はサーバー側、Lambda側、または管理されたSecretに置くべきです。
+
+
+Firestore の基本
+----------------
+
+Firestore は「コレクション」と「ドキュメント」でデータを管理します。
+
+ざっくりいうと:
+
+  collection = フォルダ
+  document   = 1件のデータ
+
+このサイトで使われている主なコレクション:
+
+  admins
+  weeklyMath
+  siteSettings
+  threads
+  threads/{threadId}/comments
+
+掲示板の読み込み例:
+
+  const q = query(collection(db, 'threads'), orderBy('createdAt', 'desc'));
+  const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const threadsData: Thread[] = [];
+      querySnapshot.forEach((doc) => {
+          threadsData.push({ id: doc.id, ...doc.data() } as Thread);
+      });
+      setThreads(threadsData);
+  });
+
+意味:
+
+collection(db, 'threads')
+  threads コレクションを指します。
+
+query(...)
+  取得条件を作ります。
+
+orderBy('createdAt', 'desc')
+  createdAt の降順、つまり新しい順です。
+
+onSnapshot(...)
+  リアルタイム購読です。
+  データが変わると自動で呼ばれます。
+
+setThreads(...)
+  Reactの状態を更新し、画面を再描画します。
+
+unsubscribe
+  購読解除用の関数です。
+
+
+Firestore の書き込み
+--------------------
+
+掲示板でスレッドを作るときは addDoc を使っています。
+
+  await addDoc(collection(db, 'threads'), {
+      title: data.title,
+      body: data.body,
+      displayName: data.displayName || '匿名',
+      createdAt: Timestamp.now(),
+      commentCount: 0,
+      likeCount: 0,
+      pinned: false,
+      locked: false,
+  });
+
+addDoc
+  新しいドキュメントを作ります。
+
+collection(db, 'threads')
+  どのコレクションに作るかを指定します。
+
+Timestamp.now()
+  Firestore用の現在時刻です。
+
+await
+  非同期処理が終わるまで待つ、という意味です。
+
+async / await
+-------------
+
+データベース通信やメール送信はすぐに終わるとは限りません。
+そのため、Promise という「あとで結果が返る処理」になります。
+
+async 関数の中では await を使えます。
+
+  const onSubmit = async (data: ContactForm) => {
+      await emailjs.send(...);
+  };
+
+意味:
+
+  emailjs.send が終わるまで待つ
+  成功したら次へ進む
+  失敗したら catch に入る
+
+try / catch とセットでよく使います。
+
+  try {
+      await addDoc(...);
+  } catch (error) {
+      console.error(error);
+  }
+
+
+Firebase Auth と管理者判定
+--------------------------
+
+frontend/src/hooks/useAuth.ts では、ログイン状態と管理者権限を管理しています。
+
+主な流れ:
+
+1. Firebase Auth のログイン状態を監視する
+
+  onAuthStateChanged(auth, (user) => { ... })
+
+2. user.email がある場合、Firestore の admins/{email} を見る
+
+  doc(db, 'admins', adminEmail)
+
+3. admins にドキュメントがあれば管理者
+
+4. tti.intel@gmail.com は DEFAULT_ADMIN として特別に管理者扱い
+
+5. login は Googleログイン
+
+  signInWithPopup(auth, googleProvider)
+
+6. logout はログアウト
+
+  signOut(auth)
+
+Admin.tsx は useAuth の結果を見て、次の3状態を出し分けています。
+
+- 読み込み中
+- 未ログイン
+- ログイン済みだが管理者ではない
+- 管理者ダッシュボード
+
+
+Firestore Rules
+---------------
+
+frontend/firestore.rules はとても重要です。
+フロントエンド側のチェックだけでは不十分だからです。
+
+たとえば、React画面で「管理者だけ削除ボタンを表示する」としても、
+悪意のある人が直接Firestoreにアクセスしようとするかもしれません。
+
+そこで Firestore Rules でサーバー側のルールを定義します。
+
+このサイトでは、たとえば:
+
+admins
+  管理者は読み書き可能。
+  ユーザーは自分のadmin判定用ドキュメントだけ読める。
+
+weeklyMath
+  読み取りは誰でも可能。
+  書き込みは管理者だけ。
+
+siteSettings
+  読み取りは誰でも可能。
+  書き込みは管理者だけ。
+
+threads
+  読み取りは誰でも可能。
+  作成も誰でも可能だが、title/bodyの長さなどを検証。
+  pinned/locked の変更は管理者だけ。
+  likeCount の増減は誰でも可能。
+
+comments
+  読み取りは誰でも可能。
+  親スレッドが locked でないなら作成可能。
+  削除は管理者だけ。
+
+大事な考え方:
+
+  フロントエンドのバリデーション = ユーザー体験をよくするため
+  Firestore Rules = 本当に守るためのセキュリティ
+
+
+週次数学の構造
+--------------
+
+週次数学の共通ロジックは frontend/src/lib/weeklyMath.ts にあります。
+
+ここでは WeeklyMathProblem という型が定義されています。
+
+  export interface WeeklyMathProblem {
+      weekKey: string;
+      title: string;
+      problem: string;
+      problemPublished?: boolean;
+      periodMemo?: string;
+      hint?: string;
+      answer?: string;
+      explanation?: string;
+      solutionPublished?: boolean;
+      updatedBy?: string;
+      createdAt?: Timestamp;
+      updatedAt?: Timestamp;
+  }
+
+? がついている項目は省略可能です。
+
+主な関数:
+
+getCurrentWeekKey
+  現在の日付から ISO week のキーを作ります。
+  例: 2026-W28
+
+getWeeklyMath
+  指定した weekKey の問題を Firestore から取得します。
+
+getCurrentWeeklyMath
+  今週の問題を取得します。
+  なければ過去の最新問題やテンプレートにフォールバックします。
+
+getHomeWeeklyMath
+  ホームに表示する週次数学を取得します。
+  キャッシュも使います。
+
+upsertWeeklyMath
+  管理画面から問題を作成・更新します。
+
+deleteWeeklyMath
+  問題を削除します。
+
+このファイルは「画面」ではなく「データ取得・保存のロジック」です。
+Reactの表示と分けてあるので、読みやすい設計です。
+
+
+Markdown と数式表示
+-------------------
+
+frontend/src/components/MathMarkdown.tsx は、Markdownと数式を表示するコンポーネントです。
+
+使っているライブラリ:
+
+  react-markdown
+  remark-gfm
+  remark-math
+  rehype-katex
+  katex
+
+流れ:
+
+  Markdown文字列
+    -> normalizeMathDelimiters
+    -> ReactMarkdown
+    -> remarkMath が数式を理解
+    -> rehypeKatex が数式をHTMLに変換
+    -> ブラウザに表示
+
+MathMarkdownBoundary という Error Boundary もあります。
+数式の表示に失敗したときに、ページ全体が落ちるのを防いでいます。
+
+
+Error Boundary
+--------------
+
+Reactでは、描画中のエラーで画面全体が壊れることがあります。
+
+ErrorBoundary は、そのエラーを受け止めて、ユーザーにエラー画面を出すための仕組みです。
+
+このサイトでは App.tsx で次のように使われています。
+
+  <ErrorBoundary>
+      <BrowserRouter>
+          ...
+      </BrowserRouter>
+  </ErrorBoundary>
+
+つまり、ルーティング配下のページでエラーが起きても、アプリ全体が真っ白になるのを避けやすくしています。
+
+
+Contact ページ
+--------------
+
+frontend/src/pages/Contact.tsx は、お問い合わせフォームです。
+
+ここで学べること:
+
+- useState による送信状態管理
+- React Hook Form
+- Zod バリデーション
+- EmailJS 送信
+- 成功画面と通常フォーム画面の出し分け
+
+送信状態は次の型で管理されています。
+
+  type SubmitStatus = 'idle' | 'sending' | 'success' | 'error';
+
+このように文字列リテラル型を使うと、状態の種類を明確にできます。
+
+送信時の流れ:
+
+  ユーザーが入力
+    -> handleSubmit
+      -> Zodでチェック
+        -> EmailJSの環境変数確認
+          -> emailjs.send
+            -> 成功なら success
+            -> 失敗なら error
+
+
+Board ページ
+------------
+
+frontend/src/pages/Board.tsx は掲示板一覧です。
+
+ここで学べること:
+
+- Firestore のリアルタイム購読
+- 投稿作成フォーム
+- zod + react-hook-form
+- 管理者だけの操作
+- 一覧のソート
+- ローディング表示
+- エラー表示
+
+データ取得:
+
+  onSnapshot(query(collection(db, 'threads'), orderBy('createdAt', 'desc')), ...)
+
+作成:
+
+  addDoc(collection(db, 'threads'), ...)
+
+削除:
+
+  deleteDoc(doc(db, 'threads', threadId))
+
+更新:
+
+  updateDoc(doc(db, 'threads', threadId), { pinned: !currentPinned })
+
+BoardDetail.tsx では、個別スレッドとコメントを扱います。
+
+  threads/{threadId}
+  threads/{threadId}/comments/{commentId}
+
+という親子構造です。
+
+
+useLikes
+--------
+
+frontend/src/hooks/useLikes.ts は、いいね済みIDを localStorage に保存するカスタムフックです。
+
+localStorage はブラウザ内に小さなデータを保存する仕組みです。
+
+このフックでは:
+
+- localStorage からいいね済みIDを読む
+- Set でID集合を管理する
+- toggleLike で追加/削除する
+- storage イベントで別タブとの同期もする
+
+Firestore の likeCount は全体の数、
+localStorage の likedIds は「このブラウザで押したかどうか」です。
+
+
+Admin ページ
+------------
+
+frontend/src/pages/Admin.tsx は管理者ダッシュボードです。
+
+useAuth から次を受け取ります。
+
+  user
+  isAdmin
+  loading
+  login
+  logout
+
+状態ごとに画面を分けています。
+
+loading
+  読み込み中表示
+
+!user
+  Googleログイン画面
+
+user はいるが !isAdmin
+  権限なし画面
+
+isAdmin
+  管理者メニュー
+
+管理者メニューには、掲示板、メンバー管理、週次数学管理などへのリンクがあります。
+
+
+CLI Practice
+------------
+
+frontend/src/pages/CliPractice.tsx と frontend/src/components/cli-practice は、
+ブラウザ内でコマンドライン練習をするための機能です。
+
+面白い点:
+
+実際のPCのファイルを操作するのではなく、仮想ファイルシステムを持っています。
+
+中心ファイル:
+
+  virtualFs.ts
+  commands.ts
+  Terminal.tsx
+  TutorialPanel.tsx
+  FileTreePanel.tsx
+  DeployPreview.tsx
+
+commands.ts は、git init、git status、git add、git commit、npm などを
+ブラウザ内で模擬的に実行するロジックを持っています。
+
+これは「状態管理の練習」として読む価値があります。
+現実のファイルを触らず、Reactのstate内にある仮想プロジェクトを変更しているからです。
+
+
+Color Sort Puzzle
+-----------------
+
+frontend/src/pages/ColorSortPuzzle.tsx は、色分けパズルのページです。
+
+ここで学べること:
+
+- useState でゲーム状態を持つ
+- useMemo でクリア判定などを計算する
+- ユーザーのクリックで状態を更新する
+- undo履歴を配列で持つ
+- ゲームロジックとUIを1ファイル内で組み合わせる
+
+ゲーム系ページは、Reactの状態管理を理解する教材としてよいです。
+
+
+Table Tennis Match Maker
+------------------------
+
+frontend/src/pages/TableTennisMatchMaker.tsx は、卓球の組み合わせ表を作るページです。
+
+ここで学べること:
+
+- 入力値を state で持つ
+- useMemo で組み合わせ計算をする
+- 履歴を localStorage に保存する
+- ファイルダウンロード系の処理
+
+「入力 -> 計算 -> 表示」というアプリの基本形が見えます。
+
+
+Development ページ
+------------------
+
+frontend/src/pages/Development.tsx は、開発活動を紹介するページです。
+
+実体は DevHero コンポーネントです。
+
+frontend/src/components/development にはたくさんのファイルがあります。
+
+主な考え方:
+
+- スクロール量を progress として計算する
+- progress に応じて表示するチャプターやアニメーションを変える
+- prefers-reduced-motion を見て、アニメーションを減らしたいユーザーには静的表示を出す
+- useRef でDOMサイズを測る
+- CSS変数とクラスでアニメーションを制御する
+
+ここは初心者には少し難しいです。
+最初に読むなら、全体を理解しようとしすぎないほうがよいです。
+
+おすすめの読み方:
+
+1. Development.tsx を見る
+2. DevHero.tsx を見る
+3. useDevScrollProgress.ts を見る
+4. devScrollMath.ts を見る
+5. Sceneファイルは1つだけ選んで読む
+
+
+AWS infra の構造
+----------------
+
+infra は AWS CDK です。
+
+主なファイル:
+
+  infra/bin/infra.ts
+  infra/lib/tti-ai-stack.ts
+  infra/package.json
+  infra/cdk.json
+
+infra/bin/infra.ts
+  CDKアプリの起動地点です。
+  TtiAiStack を作っています。
+
+infra/lib/tti-ai-stack.ts
+  AWS上に作るリソースを定義しています。
+
+定義されている主なAWSリソース:
+
+DynamoDB Tables
+  tti-ai-posts
+  tti-ai-board
+  tti-ai-admin-devices
+  tti-ai-registration-codes
+
+S3 Bucket
+  画像保存用
+
+Cognito User Pool
+  管理者ログイン用のユーザープール設計
+
+Lambda Functions
+  getPosts
+  getPost
+  getThreads
+  getThread
+  createThread
+  createComment
+  sendContact
+
+API Gateway
+  HTTP API の入口
+
+CDK Outputs
+  API URL、User Pool ID、Cognito Domain、Images Bucket Name などを出力
+
+
+Lambda の構造
+-------------
+
+lambdas/public には API 用の関数があります。
+
+例:
+
+  lambdas/public/getThreads/index.ts
+  lambdas/public/createThread/index.ts
+  lambdas/public/sendContact/index.ts
+
+Lambda関数の基本形はこうです。
+
+  export const handler: APIGatewayProxyHandler = async (event) => {
+      try {
+          ...
+          return {
+              statusCode: 200,
+              headers: corsHeaders,
+              body: JSON.stringify(data),
+          };
+      } catch (error) {
+          return {
+              statusCode: 500,
+              headers: corsHeaders,
+              body: JSON.stringify({ error: 'Internal server error' }),
+          };
+      }
+  };
+
+event
+  API Gateway から渡されるリクエスト情報です。
+  body、queryStringParameters、headers などが入ります。
+
+statusCode
+  HTTPステータスコードです。
+
+headers
+  CORS や Content-Type などを指定します。
+
+body
+  レスポンス本文です。
+  API Gateway では文字列にする必要があるため JSON.stringify します。
+
+DynamoDB操作では AWS SDK を使っています。
+
+  DynamoDBClient
+  DynamoDBDocumentClient
+  QueryCommand
+  PutCommand
+  GetCommand
+  UpdateCommand
+
+初心者がここで学ぶべきこと:
+
+- フロントエンドとは別に、サーバー側の関数がある
+- サーバー側では秘密情報を扱いやすい
+- 入力検証はサーバー側でも必要
+- 返却形式はHTTPレスポンスになる
+
+
+AWS CDK と現在の Firebase の関係
+--------------------------------
+
+ここは特に大事です。
+
+現在のフロントエンドの Board.tsx は Firestore を直接使っています。
+
+  collection(db, 'threads')
+  addDoc(...)
+  onSnapshot(...)
+
+一方、lambdas/public/createThread は DynamoDB に書き込む設計です。
+
+  TableName: process.env.BOARD_TABLE
+  PutCommand
+
+つまり、同じ「掲示板」という概念に対して、
+
+- Firebase Firestore 版
+- AWS DynamoDB + Lambda 版
+
+のようなコードが共存しています。
+
+初心者が読むときは、
+
+  「今この画面が実際に呼んでいるのはどちらか？」
+
+を必ず確認してください。
+
+確認方法:
+
+1. ページファイルを見る
+2. import を見る
+3. db from '@/lib/firebase' があれば Firebase
+4. fetch(...) で API URL を呼んでいれば Lambda/API Gateway 系
+5. 現在の Board は Firebase
+
+
+APIをどうやってつなげるか
+------------------------
+
+ここは、前の版では足りなかった重要な章です。
+
+Webアプリで「APIをつなぐ」とは、簡単にいうと次の流れを作ることです。
+
+  Reactの画面
+    -> fetch でHTTPリクエストを送る
+      -> API Gateway が受け取る
+        -> Lambda が処理する
+          -> DynamoDB / SES などを使う
+        <- Lambda がJSONを返す
+      <- API Gateway がブラウザに返す
+    <- ReactがJSONを受け取って state に入れる
+    -> 画面に表示する
+
+このサイトでは現在、Firestoreを直接読む画面が多いです。
+しかしAWS Lambda/API Gateway版に寄せるなら、フロントから REST API を呼ぶ形に変えます。
+
+
+Firestore直結とREST API接続の違い
+--------------------------------
+
+Firestore直結:
+
+  React
+    -> Firebase SDK
+      -> Firestore
+
+コード例:
+
+  const q = query(collection(db, 'threads'), orderBy('createdAt', 'desc'));
+  const unsubscribe = onSnapshot(q, (snapshot) => {
+      ...
+  });
+
+メリット:
+
+- リアルタイム更新が簡単
+- 実装が少ない
+- Firebase Rulesで権限制御できる
+
+デメリット:
+
+- フロントエンドがデータベース構造を直接知る
+- 複雑な処理や秘密情報を扱いにくい
+- AWS側のLambda/DynamoDB設計とは別系統になる
+
+REST API接続:
+
+  React
+    -> fetch
+      -> API Gateway
+        -> Lambda
+          -> DynamoDB
+
+コード例:
+
+  const response = await fetch(`${API_BASE_URL}/threads`);
+  const data = await response.json();
+
+メリット:
+
+- フロントエンドはAPIだけ知ればよい
+- 秘密情報や複雑な処理をサーバー側に隠せる
+- レート制限、入力検証、メール送信などをサーバーで扱いやすい
+- DynamoDBやSESなどAWSサービスと自然につながる
+
+デメリット:
+
+- リアルタイム更新は自分で工夫が必要
+- APIクライアント、エラー処理、CORSなどを実装する必要がある
+- Lambda/CDK/API Gateway の理解が必要
+
+初心者がまず身につけるべきなのは REST API 接続です。
+これがわかると、FirebaseでもAWSでも、外部APIでも応用できます。
+
+
+API接続の最小コード
+------------------
+
+ブラウザからAPIを呼ぶ最小形は fetch です。
+
+GET:
+
+  const response = await fetch('https://example.com/threads');
+  const data = await response.json();
+
+POST:
+
+  const response = await fetch('https://example.com/threads', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+          title: '質問です',
+          body: '本文です',
+          displayName: '匿名',
+      }),
+  });
+
+  const data = await response.json();
+
+fetchで大事なこと:
+
+- fetch は Promise を返すので await する
+- JSONを送るときは headers に Content-Type を付ける
+- body は JSON.stringify する
+- 受け取るときは response.json() する
+- HTTPエラーでも fetch 自体は例外にならないことがある
+
+特に最後が重要です。
+
+たとえばサーバーが 400 や 500 を返しても、fetch は通信自体には成功した扱いになります。
+そのため response.ok を確認します。
+
+  const response = await fetch(url);
+
+  if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+
+
+環境変数でAPI URLを持つ
+----------------------
+
+APIのURLをコードに直接書くのは避けたほうがよいです。
+
+悪い例:
+
+  const response = await fetch('https://abc123.execute-api.ap-northeast-1.amazonaws.com/prod/threads');
+
+理由:
+
+- 開発環境と本番環境でURLが変わる
+- URL変更のたびにコードを探して直す必要がある
+- 複数箇所に書くと漏れやすい
+
+よい例:
+
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+  const response = await fetch(`${API_BASE_URL}/threads`);
+
+Viteでは、フロントエンドから読める環境変数は VITE_ で始めます。
+
+frontend/.env.local に書く例:
+
+  VITE_API_BASE_URL=https://abc123.execute-api.ap-northeast-1.amazonaws.com/prod
+
+コードで読む:
+
+  import.meta.env.VITE_API_BASE_URL
+
+注意:
+
+- .env.local は通常Gitにコミットしない
+- VITE_ で始まる値はブラウザから見える
+- 本当に秘密の値はVITE_に入れない
+- APIキーや秘密鍵はLambda側の環境変数やSecrets Managerに置く
+
+
+APIクライアントを作る
+--------------------
+
+API接続はページの中に直接書くこともできます。
+しかしページごとに fetch を書くと、エラー処理やURL組み立てが重複します。
+
+そこで frontend/src/lib/api.ts のようなファイルを作って、API呼び出しを共通化します。
+
+例:
+
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+  if (!API_BASE_URL) {
+      console.warn('VITE_API_BASE_URL is not set.');
+  }
+
+  type ApiErrorBody = {
+      error?: string;
+  };
+
+  async function requestJson<T>(
+      path: string,
+      options: RequestInit = {}
+  ): Promise<T> {
+      const response = await fetch(`${API_BASE_URL}${path}`, {
+          ...options,
+          headers: {
+              'Content-Type': 'application/json',
+              ...options.headers,
+          },
+      });
+
+      if (!response.ok) {
+          let message = `API error: ${response.status}`;
+
+          try {
+              const errorBody = (await response.json()) as ApiErrorBody;
+              if (errorBody.error) {
+                  message = errorBody.error;
+              }
+          } catch {
+              // JSONではないエラーレスポンスの場合は標準メッセージを使う
+          }
+
+          throw new Error(message);
+      }
+
+      return response.json() as Promise<T>;
+  }
+
+この requestJson は共通のAPI呼び出し関数です。
+
+T はジェネリクスです。
+「このAPIはどんな型のJSONを返すか」を呼び出し側から指定できます。
+
+例:
+
+  const data = await requestJson<GetThreadsResponse>('/threads');
+
+これにより data は GetThreadsResponse 型として扱われます。
+
+
+APIの型を定義する
+----------------
+
+API接続では「リクエストの形」と「レスポンスの形」をTypeScriptで定義すると安全です。
+
+例:
+
+  export interface ApiThread {
+      id: string;
+      title: string;
+      body: string;
+      displayName: string;
+      pinned: boolean;
+      locked: boolean;
+      createdAt: string;
+      commentCount: number;
+  }
+
+  export interface GetThreadsResponse {
+      threads: ApiThread[];
+      nextCursor: string | null;
+  }
+
+  export interface CreateThreadInput {
+      title: string;
+      body: string;
+      displayName?: string;
+  }
+
+  export interface CreateThreadResponse {
+      thread: ApiThread;
+  }
+
+この型は、Lambdaのレスポンスと一致している必要があります。
+
+初心者がよくやる失敗:
+
+  フロントでは id と呼んでいる
+  Lambdaでは threadId と返している
+
+このようなズレがあると、画面では undefined になります。
+
+対策:
+
+- Lambdaの返すJSONを決める
+- フロントの型をそれに合わせる
+- 可能なら shared/types.ts のような共有型を作る
+- ただしフロントとLambdaで共有する場合、ビルド設定が複雑になるので最初は重複してもよい
+
+
+GET /threads をつなぐ
+--------------------
+
+lambdas/public/getThreads/index.ts は、DynamoDBからスレッド一覧を取得するLambdaです。
+これをフロントから呼ぶなら、api.ts に次を追加します。
+
+  export async function getThreads(): Promise<GetThreadsResponse> {
+      return requestJson<GetThreadsResponse>('/threads');
+  }
+
+Reactページで使う:
+
+  const [threads, setThreads] = useState<ApiThread[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+      let cancelled = false;
+
+      const load = async () => {
+          setIsLoading(true);
+          setLoadError(null);
+
+          try {
+              const data = await getThreads();
+              if (!cancelled) {
+                  setThreads(data.threads);
+              }
+          } catch (error) {
+              if (!cancelled) {
+                  setLoadError(error instanceof Error ? error.message : '読み込みに失敗しました');
+              }
+          } finally {
+              if (!cancelled) {
+                  setIsLoading(false);
+              }
+          }
+      };
+
+      void load();
+
+      return () => {
+          cancelled = true;
+      };
+  }, []);
+
+cancelled を使う理由:
+
+API通信中にページを離れた場合、戻ってきた結果で state を更新しないようにするためです。
+
+Firestoreの onSnapshot では unsubscribe を返して購読解除しました。
+REST APIの fetch は1回だけの通信なので、ここでは cancelled フラグで守っています。
+
+
+POST /threads をつなぐ
+---------------------
+
+lambdas/public/createThread/index.ts は、DynamoDBにスレッドを作るLambdaです。
+
+api.ts:
+
+  export async function createThread(
+      input: CreateThreadInput
+  ): Promise<CreateThreadResponse> {
+      return requestJson<CreateThreadResponse>('/threads', {
+          method: 'POST',
+          body: JSON.stringify(input),
+      });
+  }
+
+Reactページで使う:
+
+  const onSubmit = async (data: CreateThreadForm) => {
+      setIsSubmitting(true);
+
+      try {
+          const result = await createThread({
+              title: data.title,
+              body: data.body,
+              displayName: data.displayName || '匿名',
+          });
+
+          setThreads((current) => [result.thread, ...current]);
+          setIsCreateDialogOpen(false);
+          reset();
+      } catch (error) {
+          alert(error instanceof Error ? error.message : 'スレッドの作成に失敗しました');
+      } finally {
+          setIsSubmitting(false);
+      }
+  };
+
+ポイント:
+
+- 入力チェックはフロントでZod
+- 送信は createThread
+- 成功したら返ってきた thread を一覧に追加
+- サーバー側でも必ず入力チェックする
+
+フロントのZodだけでは不十分です。
+ユーザーはブラウザの画面を通らずにAPIを直接叩くこともできるからです。
+
+
+Lambda側のAPIを追加する手順
+--------------------------
+
+新しいAPIを追加するときは、だいたい次の順番です。
+
+例:
+
+  GET /health
+
+を追加するとします。
+
+1. Lambda用ディレクトリを作る
+
+  lambdas/public/health/index.ts
+
+2. Lambdaを書く
+
+  import { APIGatewayProxyHandler } from 'aws-lambda';
+
+  const corsHeaders = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+      'Content-Type': 'application/json',
+  };
+
+  export const handler: APIGatewayProxyHandler = async () => {
+      return {
+          statusCode: 200,
+          headers: corsHeaders,
+          body: JSON.stringify({
+              ok: true,
+              service: 'tti-ai-api',
+          }),
+      };
+  };
+
+3. CDKでLambdaを定義する
+
+  const healthLambda = new lambda.Function(this, 'HealthLambda', {
+      functionName: 'tti-ai-health',
+      runtime: lambda.Runtime.NODEJS_22_X,
+      handler: 'index.handler',
+      code: lambda.Code.fromAsset(path.join(lambdasDir, 'public/health')),
+      timeout: cdk.Duration.seconds(5),
+  });
+
+4. API Gatewayにルートを追加する
+
+  const healthResource = api.root.addResource('health');
+  healthResource.addMethod('GET', new apigateway.LambdaIntegration(healthLambda));
+
+5. CDKをビルドする
+
+  cd infra
+  npm run build
+
+6. CDK差分を見る
+
+  npm run diff
+
+7. デプロイする
+
+  npm run deploy
+
+8. 出力されたAPI URLを frontend/.env.local に入れる
+
+  VITE_API_BASE_URL=https://xxxxx.execute-api.ap-northeast-1.amazonaws.com/prod
+
+9. フロントから呼ぶ
+
+  const data = await requestJson<{ ok: boolean; service: string }>('/health');
+
+
+既存APIをCDKに接続するときの見る場所
+----------------------------------
+
+Lambdaを追加しただけでは、ブラウザから呼べません。
+API Gatewayに接続する必要があります。
+
+見る場所:
+
+  infra/lib/tti-ai-stack.ts
+
+やること:
+
+1. Lambdaを作る
+
+  const getPostsLambda = new lambda.Function(...)
+
+2. 必要なDynamoDB権限を付ける
+
+  postsTable.grantReadData(getPostsLambda);
+
+3. API GatewayのResourceを作る
+
+  const postsResource = api.root.addResource('posts');
+
+4. HTTPメソッドを接続する
+
+  postsResource.addMethod('GET', new apigateway.LambdaIntegration(getPostsLambda));
+
+この4つがそろって初めて、APIとして外から呼べます。
+
+
+API接続でよくあるHTTPメソッド
+-----------------------------
+
+GET
+  データを取得する。
+
+例:
+
+  GET /threads
+  GET /threads/{id}
+
+POST
+  新しいデータを作る。
+
+例:
+
+  POST /threads
+  POST /threads/{id}/comments
+
+PUT
+  データ全体を置き換える。
+
+PATCH
+  データの一部を更新する。
+
+DELETE
+  データを削除する。
+
+このサイトのCDKでは現在、主に次があります。
+
+  GET  /posts
+  GET  /posts/{slug}
+  GET  /threads
+  POST /threads
+  GET  /threads/{id}
+  POST /threads/{id}/comments
+  POST /contact
+
+
+HTTPステータスコード
+-------------------
+
+APIでは、成功・失敗をステータスコードで表します。
+
+200
+  成功。
+
+201
+  作成成功。
+  POSTで新しいデータを作ったときによく使います。
+
+400
+  リクエストが悪い。
+  入力不足、文字数オーバーなど。
+
+401
+  ログインしていない。
+
+403
+  ログインはしているが権限がない。
+
+404
+  見つからない。
+
+500
+  サーバー内部エラー。
+
+フロントでは response.ok を見ます。
+
+  if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+  }
+
+Lambdaでは statusCode を返します。
+
+  return {
+      statusCode: 400,
+      headers: corsHeaders,
+      body: JSON.stringify({ error: 'Title is required' }),
+  };
+
+
+CORS
+----
+
+CORSは、ブラウザが「別のドメインのAPIを呼んでよいか」を判断する仕組みです。
+
+ローカル開発では、
+
+  http://localhost:5173
+
+から
+
+  https://xxxxx.execute-api.ap-northeast-1.amazonaws.com/prod
+
+を呼びます。
+
+これは別オリジンなので、API側が許可しないとブラウザに止められます。
+
+このサイトのCDKでは RestApi に CORS 設定があります。
+
+  defaultCorsPreflightOptions: {
+      allowOrigins: apigateway.Cors.ALL_ORIGINS,
+      allowMethods: apigateway.Cors.ALL_METHODS,
+      allowHeaders: ['Content-Type', 'Authorization', 'X-Device-Id'],
+  }
+
+Lambda側でも corsHeaders を返しています。
+
+  const corsHeaders = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+      'Content-Type': 'application/json',
+  };
+
+本番では '*' ではなく、実際のドメインに制限したほうが安全です。
+
+例:
+
+  'Access-Control-Allow-Origin': 'https://tti-intel.com'
+
+
+認証付きAPIのつなぎ方
+--------------------
+
+管理者だけが呼べるAPIを作る場合、フロントから認証情報を送ります。
+
+Firebase Authを使う場合の例:
+
+  const token = await auth.currentUser?.getIdToken();
+
+  const response = await fetch(`${API_BASE_URL}/admin/something`, {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(input),
+  });
+
+Lambda側では Authorization ヘッダーを読みます。
+
+  const authorization = event.headers.Authorization || event.headers.authorization;
+
+ただし、Firebase ID token をLambdaで検証するには Firebase Admin SDK などが必要です。
+このプロジェクトの現在のLambdaには、そこまでの認証実装はまだ見当たりません。
+
+AWS Cognitoを使う場合は、API GatewayのAuthorizerやJWT検証を設計します。
+
+初心者向けには、まず次の順番で考えるとよいです。
+
+1. 公開APIを作る
+2. 入力検証とCORSを理解する
+3. 管理者APIが必要になったら認証方式を決める
+4. Firebase Authを使い続けるのか、Cognitoへ寄せるのかを決める
+
+Firebase Auth と Cognito を混ぜると複雑になります。
+設計としては、どちらを認証の中心にするか決めたほうがよいです。
+
+
+Firestore版BoardをAPI版Boardに置き換える手順
+-------------------------------------------
+
+現在の Board.tsx は Firestore を直接使っています。
+
+Firestore版の特徴:
+
+  import { collection, addDoc, onSnapshot, query, orderBy, Timestamp, doc, deleteDoc, updateDoc } from 'firebase/firestore';
+  import { db } from '@/lib/firebase';
+
+これをAPI版に変えるなら、ざっくり次の手順です。
+
+1. APIの型を作る
+
+  interface ApiThread {
+      id: string;
+      title: string;
+      body: string;
+      displayName: string;
+      pinned: boolean;
+      locked: boolean;
+      createdAt: string;
+      commentCount: number;
+  }
+
+2. frontend/src/lib/api.ts を作る
+
+  getThreads
+  createThread
+
+3. Board.tsx から Firestore import を消す
+
+消す例:
+
+  collection
+  addDoc
+  onSnapshot
+  query
+  orderBy
+  Timestamp
+  doc
+  deleteDoc
+  updateDoc
+  db
+
+4. useEffect を onSnapshot から getThreads に変える
+
+Firestore:
+
+  useEffect(() => {
+      const q = query(collection(db, 'threads'), orderBy('createdAt', 'desc'));
+      const unsubscribe = onSnapshot(q, ...);
+      return () => unsubscribe();
+  }, []);
+
+API:
+
+  useEffect(() => {
+      let cancelled = false;
+
+      const load = async () => {
+          try {
+              const data = await getThreads();
+              if (!cancelled) setThreads(data.threads);
+          } catch {
+              if (!cancelled) setLoadError(true);
+          } finally {
+              if (!cancelled) setIsLoading(false);
+          }
+      };
+
+      void load();
+
+      return () => {
+          cancelled = true;
+      };
+  }, []);
+
+5. onSubmit を addDoc から createThread に変える
+
+Firestore:
+
+  await addDoc(collection(db, 'threads'), {
+      title: data.title,
+      body: data.body,
+      displayName: data.displayName || '匿名',
+      createdAt: Timestamp.now(),
+      commentCount: 0,
+      likeCount: 0,
+      pinned: false,
+      locked: false,
+  });
+
+API:
+
+  const result = await createThread({
+      title: data.title,
+      body: data.body,
+      displayName: data.displayName || '匿名',
+  });
+
+  setThreads((current) => [result.thread, ...current]);
+
+6. 削除・固定・ロックAPIを用意する
+
+現在のLambda/CDKには、スレッド削除、固定、ロック用のAPIはまだ定義されていません。
+そのためAPI版に完全移行するなら、次のAPIも追加が必要です。
+
+  DELETE /threads/{id}
+  PATCH  /threads/{id}
+
+PATCHの入力例:
+
+  {
+      "pinned": true
+  }
+
+または:
+
+  {
+      "locked": true
+  }
+
+7. コメントAPIも確認する
+
+既存CDKには:
+
+  POST /threads/{id}/comments
+
+があります。
+
+ただしコメント一覧取得は getThread Lambda のレスポンス設計を確認する必要があります。
+
+8. Firestore Rules からAPI側の認可へ考え方を移す
+
+Firestore版:
+
+  firestore.rules が守る
+
+API版:
+
+  Lambda/API Gateway/Authorizer が守る
+
+つまりAPI版では、管理者判定や削除権限をLambda側に実装する必要があります。
+
+
+APIを追加するときに触るファイル一覧
+----------------------------------
+
+公開APIを1つ追加するなら:
+
+  lambdas/public/<api-name>/index.ts
+  infra/lib/tti-ai-stack.ts
+  frontend/src/lib/api.ts
+  frontend/src/pages/<使うページ>.tsx
+
+必要に応じて:
+
+  lambdas/shared/types.ts
+  lambdas/shared/db.ts
+  frontend/src/lib/<domain>.ts
+  frontend/src/pages/<使うページ>.test.tsx
+
+問い合わせAPIをAWS SES版にするなら:
+
+  lambdas/public/sendContact/index.ts
+  infra/lib/tti-ai-stack.ts
+  frontend/src/pages/Contact.tsx
+  frontend/src/lib/api.ts
+
+現在のContact.tsxは EmailJS を直接使っています。
+AWS SES版に寄せるなら、EmailJSではなく POST /contact を呼ぶように変えます。
+
+api.ts:
+
+  export interface SendContactInput {
+      name: string;
+      email: string;
+      subject: string;
+      message: string;
+  }
+
+  export async function sendContact(input: SendContactInput): Promise<{ success: boolean; message: string }> {
+      return requestJson('/contact', {
+          method: 'POST',
+          body: JSON.stringify(input),
+      });
+  }
+
+Contact.tsx:
+
+  await sendContact(data);
+
+
+APIのデバッグ方法
+----------------
+
+APIが動かないときは、どこで止まっているかを分けます。
+
+1. フロントの環境変数
+
+確認:
+
+  console.log(import.meta.env.VITE_API_BASE_URL);
+
+undefined なら .env.local が読めていません。
+
+注意:
+
+Viteの環境変数を変えたら dev server の再起動が必要です。
+
+2. ブラウザのNetworkタブ
+
+見るもの:
+
+  Request URL
+  Request Method
+  Status Code
+  Request Headers
+  Request Payload
+  Response
+
+3. CORSエラー
+
+Console に CORS と出たら、API側のCORS設定を見ます。
+
+見る場所:
+
+  infra/lib/tti-ai-stack.ts
+  lambdas/public/.../index.ts の corsHeaders
+
+4. Lambdaログ
+
+AWS CloudWatch Logs で Lambda の console.error を見ます。
+
+5. DynamoDBテーブル
+
+データが書き込まれているかをAWSコンソールで確認します。
+
+6. curlで直接叩く
+
+GET:
+
+  curl https://xxxxx.execute-api.ap-northeast-1.amazonaws.com/prod/threads
+
+POST:
+
+  curl -X POST https://xxxxx.execute-api.ap-northeast-1.amazonaws.com/prod/threads \
+    -H "Content-Type: application/json" \
+    -d '{"title":"test","body":"hello","displayName":"匿名"}'
+
+curlで成功するのにブラウザで失敗するなら、CORSやフロント側のURL組み立てが怪しいです。
+
+curlでも失敗するなら、Lambda、API Gateway、DynamoDB権限が怪しいです。
+
+
+API実装チェックリスト
+--------------------
+
+新しいAPIを作るときは、この順番で確認してください。
+
+1. APIの目的を決めたか
+
+例:
+
+  スレッド一覧を取得する
+
+2. HTTPメソッドとパスを決めたか
+
+例:
+
+  GET /threads
+
+3. リクエストの形を決めたか
+
+GETならクエリ:
+
+  ?limit=20&cursor=...
+
+POSTならJSON:
+
+  {
+      "title": "...",
+      "body": "..."
+  }
+
+4. レスポンスの形を決めたか
+
+  {
+      "threads": [],
+      "nextCursor": null
+  }
+
+5. Lambdaを書いたか
+
+  lambdas/public/...
+
+6. 入力検証を書いたか
+
+  title が空ではない
+  文字数制限
+  email形式
+
+7. DynamoDBやSESなどへの権限をCDKで付けたか
+
+  table.grantReadData(lambda)
+  table.grantReadWriteData(lambda)
+
+8. API Gatewayに接続したか
+
+  resource.addMethod(...)
+
+9. CORSを確認したか
+
+10. CDK build/diff/deploy をしたか
+
+11. VITE_API_BASE_URL を設定したか
+
+12. frontend/src/lib/api.ts に関数を追加したか
+
+13. Reactページで useEffect / onSubmit から呼んだか
+
+14. ローディング状態を出したか
+
+15. エラー状態を出したか
+
+16. ブラウザNetworkタブで確認したか
+
+17. 失敗時のユーザー表示を確認したか
+
+18. npm run build を通したか
+
+
+API設計で初心者がやりがちな失敗
+-------------------------------
+
+失敗1: API URLをページに直接書く
+
+対策:
+
+  VITE_API_BASE_URL と api.ts を使う。
+
+失敗2: response.ok を見ない
+
+対策:
+
+  if (!response.ok) throw new Error(...)
+
+失敗3: フロントだけで入力チェックする
+
+対策:
+
+  Lambda側でも必ずチェックする。
+
+失敗4: body にオブジェクトをそのまま入れる
+
+NG:
+
+  body: input
+
+OK:
+
+  body: JSON.stringify(input)
+
+失敗5: Content-Type を付けない
+
+OK:
+
+  headers: {
+      'Content-Type': 'application/json',
+  }
+
+失敗6: Lambdaで JSON.stringify し忘れる
+
+NG:
+
+  body: { ok: true }
+
+OK:
+
+  body: JSON.stringify({ ok: true })
+
+失敗7: CORSを忘れる
+
+対策:
+
+  API GatewayとLambdaレスポンスの両方を見る。
+
+失敗8: DynamoDB権限を付け忘れる
+
+対策:
+
+  table.grantReadData(lambda)
+  table.grantReadWriteData(lambda)
+
+失敗9: フロントの型とLambdaのJSONがズレる
+
+対策:
+
+  レスポンス例を先に書く。
+  その形にTypeScript interfaceを合わせる。
+
+失敗10: 認証が必要なAPIを公開APIとして作る
+
+対策:
+
+  管理者操作は認証・認可の設計を先に決める。
+
+
+デプロイの流れ
+--------------
+
+amplify.yml によると、Amplify は frontend をアプリルートとして扱います。
+
+重要部分:
+
+  appRoot: frontend
+  preBuild:
+    - npm ci
+  build:
+    - npm run build
+  artifacts:
+    baseDirectory: dist
+
+意味:
+
+1. frontend ディレクトリに入る
+2. npm ci で依存関係をインストールする
+3. npm run build でビルドする
+4. dist ディレクトリを公開する
+
+Vite のビルド結果は通常 dist に出ます。
+
+
+ローカルで動かす手順
+--------------------
+
+基本:
+
+  cd /Users/haruhito/Documents/Github/web/frontend
+  npm install
+  npm run dev
+
+ブラウザで表示されるURLは、通常:
+
+  http://localhost:5173/
+
+ビルド:
+
+  npm run build
+
+テスト:
+
+  npm run test
+
+Lint:
+
+  npm run lint
+
+AWS CDK 側:
+
+  cd /Users/haruhito/Documents/Github/web/infra
+  npm install
+  npm run build
+  npm run synth
+
+AWSに実際にデプロイするにはAWS認証情報が必要です。
+
+
+初心者がコードを読む順番
+------------------------
+
+最初から全部を読もうとすると苦しいです。
+次の順番がおすすめです。
+
+Step 1: package.json
+  このプロジェクトが何でできているかを知る。
+
+Step 2: frontend/index.html
+  Reactが入る #root を見る。
+
+Step 3: frontend/src/main.tsx
+  Reactがどこから起動するかを見る。
+
+Step 4: frontend/src/App.tsx
+  URLとページの対応を見る。
+
+Step 5: frontend/src/components/layout/Layout.tsx
+  共通レイアウトを見る。
+
+Step 6: frontend/src/components/layout/Header.tsx
+  ナビゲーションが siteConfig から作られるのを見る。
+
+Step 7: frontend/src/config/site.ts
+  サイト全体の設定を見る。
+
+Step 8: frontend/src/pages/Contact.tsx
+  フォームの基本を見る。
+
+Step 9: frontend/src/pages/Board.tsx
+  Firestore連携を見る。
+
+Step 10: frontend/src/lib/weeklyMath.ts
+  画面ではない共通ロジックを見る。
+
+Step 11: frontend/src/components/ui/Button.tsx
+  使い回し部品の作り方を見る。
+
+Step 12: frontend/src/index.css
+  デザインの土台を見る。
+
+Step 13: frontend/firestore.rules
+  セキュリティルールを見る。
+
+Step 14: infra/lib/tti-ai-stack.ts
+  AWS側の設計を見る。
+
+Step 15: lambdas/public/createThread/index.ts
+  Lambdaの基本形を見る。
+
+
+初心者向け: 変更するときの考え方
+-------------------------------
+
+画面に表示される文章を変えたい
+  pages/ または config/site.ts を探します。
+
+ナビゲーションを変えたい
+  frontend/src/config/site.ts を見ます。
+  必要なら App.tsx に Route を追加します。
+
+新しいページを追加したい
+  1. frontend/src/pages/NewPage.tsx を作る
+  2. App.tsx に Route を追加する
+  3. siteConfig.navigation にリンクを追加する
+
+ボタンの見た目を変えたい
+  frontend/src/components/ui/Button.tsx を見ます。
+
+カードの見た目を変えたい
+  frontend/src/components/ui/Card.tsx を見ます。
+
+全体の色やフォントを変えたい
+  frontend/src/index.css を見ます。
+
+Firebaseのデータ取得を変えたい
+  そのページの useEffect と frontend/src/lib を見ます。
+
+管理者の判定を変えたい
+  frontend/src/hooks/useAuth.ts と firestore.rules を見ます。
+
+フォームの入力ルールを変えたい
+  そのページの z.object(...) を見ます。
+
+AWSのAPIを変えたい
+  lambdas/public/... と infra/lib/tti-ai-stack.ts を見ます。
+
+
+新しいページを追加する例
+------------------------
+
+たとえば /links というページを追加したいとします。
+
+1. frontend/src/pages/Links.tsx を作る
+
+  export function Links() {
+      return (
+          <div className="max-w-[980px] mx-auto px-4 py-16">
+              <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7]">
+                  Links
+              </h1>
+              <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
+                  関連リンクをまとめたページです。
+              </p>
+          </div>
+      );
+  }
+
+2. App.tsx に import を追加する
+
+  import { Links } from '@/pages/Links';
+
+3. App.tsx の Routes に追加する
+
+  <Route path="links" element={<Links />} />
+
+4. siteConfig.navigation に追加する
+
+  { name: 'Links', href: '/links' }
+
+5. npm run dev で確認する
+
+6. npm run build で型とビルドを確認する
+
+ここまでできれば、Reactサイトにページを追加する基本は身につきます。
+
+
+既存ページを読む実践例: Contact
+------------------------------
+
+Contact.tsx を読むときは、上から順に次を探してください。
+
+1. import
+
+何を使っているかがわかります。
+
+  useState
+  useForm
+  z
+  zodResolver
+  lucide-react icons
+  ui components
+  PageSeo
+  siteConfig
+  emailjs
+
+2. schema
+
+  const contactSchema = z.object(...)
+
+入力ルールです。
+
+3. type
+
+  type ContactForm = z.infer<typeof contactSchema>;
+  type SubmitStatus = ...
+
+データの形です。
+
+4. useState
+
+  submitStatus
+  errorMessage
+
+画面状態です。
+
+5. useForm
+
+フォーム管理です。
+
+6. onSubmit
+
+送信処理です。
+
+7. if (submitStatus === 'success')
+
+成功時だけ別画面を返しています。
+
+8. return
+
+通常のフォーム画面です。
+
+この読み方は他のページにも応用できます。
+
+
+既存ページを読む実践例: Board
+----------------------------
+
+Board.tsx を読むときは、次の順番です。
+
+1. createThreadSchema
+  スレッド作成フォームの入力ルール。
+
+2. type CreateThreadForm
+  Zodから作ったフォーム型。
+
+3. interface Thread
+  Firestoreから読むスレッドデータの形。
+
+4. useAuth
+  管理者かどうかを見る。
+
+5. useState
+  ダイアログ、送信中、スレッド一覧、ローディング、エラー。
+
+6. useForm
+  フォームの管理。
+
+7. useEffect
+  Firestoreから threads をリアルタイム購読。
+
+8. onSubmit
+  Firestoreにスレッドを追加。
+
+9. handleDeleteThread
+  管理者による削除。
+
+10. handleTogglePin / handleToggleLock
+  管理者による固定・ロック。
+
+11. sortedThreads
+  固定スレッドを上に出すための並び替え。
+
+12. return
+  実際の画面。
+
+
+型エラーとの付き合い方
+----------------------
+
+TypeScriptは初心者にはうるさく見えます。
+でも、型エラーは「どこを直せばいいか教えてくれる先生」です。
+
+よくある型エラー:
+
+Property 'x' does not exist
+  そのオブジェクトに x というプロパティがない。
+  interface や実際のデータ構造を確認する。
+
+Type 'string | undefined' is not assignable to type 'string'
+  undefined の可能性がある値を string として使おうとしている。
+  値があるかチェックするか、デフォルト値を入れる。
+
+Argument of type ... is not assignable
+  関数に渡した値の型が合っていない。
+  関数定義と渡している値を見比べる。
+
+Object is possibly 'null'
+  null の可能性がある。
+  if (!value) return; のように先に確認する。
+
+大事なのは、型エラーを読まずにAIに丸投げしないことです。
+まずエラー文を1行ずつ読み、
+
+  どのファイル？
+  何行目？
+  期待されている型は何？
+  実際に渡している型は何？
+
+を確認してください。
+
+
+よくあるReactの考え方
+--------------------
+
+1. UIは状態の結果
+
+Reactでは、画面を直接書き換えるより、
+state を変えて、その結果として画面が変わるようにします。
+
+悪い考え方:
+
+  ボタンを押したらHTMLを書き換える
+
+Reactらしい考え方:
+
+  ボタンを押したら state を変える
+  state に応じて JSX が変わる
+
+2. データは上から下へ流れる
+
+親コンポーネントが props で子に値を渡します。
+
+3. 子から親に伝えたいときは関数を渡す
+
+親が関数を props として子に渡し、子がそれを呼びます。
+
+4. 画面に関係ないロジックは lib や hooks に分ける
+
+weeklyMath.ts や useAuth.ts がその例です。
+
+5. 使い回すUIは components に置く
+
+Button、Card、Dialog などがその例です。
+
+
+このサイトでよく見る記法
+------------------------
+
+三項演算子
+
+  condition ? A : B
+
+意味:
+
+  condition が true なら A
+  false なら B
+
+例:
+
+  isMobileMenuOpen ? 'メニューを閉じる' : 'メニューを開く'
+
+&& による条件表示
+
+  {loginError && <p>{loginError}</p>}
+
+意味:
+
+  loginError があるときだけ p を表示する
+
+map による一覧表示
+
+  {siteConfig.navigation.map((link) => (
+      <NavLink key={link.href} to={link.href}>
+          {link.name}
+      </NavLink>
+  ))}
+
+意味:
+
+  navigation の各要素を NavLink に変換する
+
+key
+  Reactが一覧の各要素を識別するための値です。
+  map でコンポーネントを並べるときは基本的に必要です。
+
+テンプレートリテラル
+
+  `Loading... ${roundedProgress}%`
+
+バッククォートで囲む文字列です。
+${} の中に変数を入れられます。
+
+オプショナルチェーン
+
+  errors.email?.message
+
+意味:
+
+  errors.email があれば message を読む
+  なければ undefined
+
+nullish coalescing
+
+  value ?? fallback
+
+意味:
+
+  value が null または undefined なら fallback
+
+論理OR
+
+  data.displayName || '匿名'
+
+意味:
+
+  data.displayName が空っぽ扱いなら '匿名'
+
+as
+
+  doc.data() as Thread
+
+TypeScriptに「これは Thread として扱ってください」と伝える型アサーションです。
+便利ですが、実際にその形かどうかは保証しないので使いすぎ注意です。
+
+
+テスト
+------
+
+このサイトでは Vitest と Testing Library が使われています。
+
+テストファイル例:
+
+  frontend/src/pages/CliPractice.test.tsx
+  frontend/src/components/layout/DevHeader.test.tsx
+  frontend/src/components/development/devScrollConfig.test.ts
+  frontend/src/components/cli-practice/*.test.ts
+
+テストを実行するには:
+
+  cd frontend
+  npm run test
+
+テストの目的:
+
+- 変更しても既存機能が壊れていないか確認する
+- ロジックの期待値を明文化する
+- AIが生成したコードの誤りを検出する
+
+初心者はまず、純粋関数のテストから始めるとよいです。
+
+例:
+
+  getCurrentWeekKey
+  normalizeMathDelimiters
+  CLI practice のコマンド処理
+
+画面テストは少し難しいので、その後で大丈夫です。
+
+
+Lint
+----
+
+ESLint はコードの品質チェックです。
+
+実行:
+
+  cd frontend
+  npm run lint
+
+このプロジェクトの eslint.config.js では、
+
+- JavaScript推奨ルール
+- TypeScript推奨ルール
+- React Hooks ルール
+- React Refresh / Vite向けルール
+
+が設定されています。
+
+特に React Hooks ルールは重要です。
+useEffect の依存配列などのミスを見つけてくれます。
+
+
+初心者がAIを使うときの良い使い方
+--------------------------------
+
+目的は「AIに作らせる」ではなく、「AIと一緒に読めるようになる」ことです。
+
+悪い使い方:
+
+  この機能を作って
+  エラー直して
+  もっといい感じにして
+
+これだけだと、自分の理解が増えにくいです。
+
+良い使い方:
+
+  このエラーの原因を、該当行と型の関係から説明して
+
+  このコンポーネントの props と state を表にして
+
+  この useEffect がいつ実行されるか、具体例で説明して
+
+  変更案を出す前に、まず既存の設計意図を推測して
+
+  変更後に壊れそうなテスト観点を3つ挙げて
+
+  まず最小差分で直して。その後、なぜその差分で直るか説明して
+
+AIに「答え」だけでなく「観察の仕方」を出させると、自分の力になります。
+
+
+プロンプトエンジニア脱出のための学習ロードマップ
+------------------------------------------------
+
+Phase 1: 読む力を作る
+
+目標:
+  App.tsx を見て、どのURLがどのページに対応するか説明できる。
+
+やること:
+  1. frontend/src/App.tsx を開く
+  2. Routes の一覧を手でメモする
+  3. 1つのページ、たとえば Contact.tsx に飛ぶ
+  4. import、state、関数、return を分けて読む
+
+完了条件:
+  「/contact は Contact コンポーネントで、フォーム送信に EmailJS を使う」と説明できる。
+
+Phase 2: 小さく変更する
+
+目標:
+  文章やリンクを安全に変えられる。
+
+やること:
+  1. siteConfig の contactEmail を確認する
+  2. Header の navigation が siteConfig から作られていることを確認する
+  3. About や Contact の文言を1箇所だけ変える
+  4. npm run build を通す
+
+完了条件:
+  変更したファイルと理由を説明できる。
+
+Phase 3: コンポーネントを理解する
+
+目標:
+  Button や Card のような再利用部品を読める。
+
+やること:
+  1. Button.tsx を読む
+  2. variantStyles と sizeStyles の対応を見る
+  3. 実際に Contact.tsx の Button variant を変えてみる
+  4. 見た目がどう変わるか確認する
+
+完了条件:
+  「variant は見た目の種類、size は大きさ」と説明できる。
+
+Phase 4: state を触る
+
+目標:
+  useState による画面状態を変えられる。
+
+やること:
+  1. Contact.tsx の submitStatus を読む
+  2. Board.tsx の isCreateDialogOpen を読む
+  3. ボタンを押したとき state がどう変わるか追う
+
+完了条件:
+  「stateが変わると画面が再描画される」と具体例で説明できる。
+
+Phase 5: データ取得を理解する
+
+目標:
+  Firestoreの読み書きの流れを説明できる。
+
+やること:
+  1. lib/firebase.ts を読む
+  2. Board.tsx の onSnapshot を読む
+  3. addDoc / updateDoc / deleteDoc を探す
+  4. firestore.rules と見比べる
+
+完了条件:
+  「フロントで書き込み処理があっても、Firestore Rulesで許可されなければ失敗する」と説明できる。
+
+Phase 6: 新しいページを作る
+
+目標:
+  静的なページを1つ追加できる。
+
+やること:
+  1. pages/Links.tsx を作る
+  2. App.tsx に Route を追加
+  3. siteConfig.navigation にリンクを追加
+  4. npm run build
+
+完了条件:
+  /links が表示され、ビルドが通る。
+
+Phase 7: テストを書く
+
+目標:
+  小さなロジックのテストを書ける。
+
+やること:
+  1. lib/markdown.ts を読む
+  2. normalizeMathDelimiters の入力と出力を考える
+  3. テストを1つ追加する
+  4. npm run test
+
+完了条件:
+  テストが何を保証しているか説明できる。
+
+Phase 8: バックエンドを読む
+
+目標:
+  Lambda と CDK の役割を説明できる。
+
+やること:
+  1. infra/bin/infra.ts を読む
+  2. infra/lib/tti-ai-stack.ts の DynamoDB 定義を見る
+  3. lambdas/public/createThread/index.ts を読む
+  4. フロントの Board.tsx と比べる
+
+完了条件:
+  「現在のBoard画面はFirestore、Lambda版はDynamoDB用」と説明できる。
+
+
+実践課題
+--------
+
+課題1: ナビゲーションの理解
+
+やること:
+  siteConfig.navigation に一時的に項目を1つ追加する。
+
+考えること:
+  Headerに表示されるか。
+  Routeがない場合にどうなるか。
+
+課題2: PageSeo の追加
+
+やること:
+  PageSeo がないページに title と description を追加する。
+
+考えること:
+  document.title がどう変わるか。
+
+課題3: Button variant の追加
+
+やること:
+  ButtonVariant に 'success' を追加し、variantStyles に緑系のスタイルを追加する。
+
+考えること:
+  TypeScriptの型に追加しないと使えないこと。
+
+課題4: Contact フォームの項目追加
+
+やること:
+  contactSchema に category を追加する。
+  フォームに選択欄を追加する。
+  templateParams に category を含める。
+
+考えること:
+  schema、type、UI、送信データがつながっていること。
+
+課題5: 掲示板の表示項目追加
+
+やること:
+  Thread に category を追加する案を考える。
+
+考えること:
+  Firestoreに保存するデータ
+  Board.tsx のフォーム
+  Board.tsx の一覧表示
+  BoardDetail.tsx
+  firestore.rules
+  既存データの扱い
+
+課題6: 週次数学の公開状態を読む
+
+やること:
+  problemPublished と solutionPublished がどこで使われているか rg で探す。
+
+考えること:
+  管理画面と公開画面で表示条件がどう違うか。
+
+課題7: CLI Practice のコマンド追加
+
+やること:
+  commands.ts に簡単なコマンドを1つ追加する案を考える。
+
+考えること:
+  入力文字列をどう解析しているか。
+  ProjectState をどう変えているか。
+  テストをどう書くか。
+
+
+よくある変更の影響範囲
+----------------------
+
+ナビを変える
+  config/site.ts
+  App.tsx
+  Header.tsx の表示確認
+  Footer.tsx または footerLinks
+
+フォームを変える
+  対象ページの schema
+  type
+  JSX
+  onSubmit
+  送信先
+  バックエンドまたはFirestore Rules
+
+Firestoreデータを変える
+  lib/firebase.ts は通常そのまま
+  対象ページ
+  lib内のデータ関数
+  firestore.rules
+  既存データの移行
+
+見た目を変える
+  対象ページの className
+  components/ui
+  index.css
+  ダークモード確認
+  モバイル確認
+
+AWS APIを変える
+  lambdas/public/...
+  lambdas/shared/types.ts
+  infra/lib/tti-ai-stack.ts
+  API Gateway のルート
+  IAM権限
+  フロント側の fetch 呼び出し
+
+
+デバッグの基本手順
+------------------
+
+1. まずエラーメッセージを読む
+
+  どのファイル？
+  何行目？
+  どの型？
+  どの関数？
+
+2. 再現手順を固定する
+
+  どのURL？
+  どのボタン？
+  どの入力？
+
+3. 変更前後を小さくする
+
+  一度に大きく変えない。
+  1つ変えたら npm run build または npm run test。
+
+4. console.log は使ってよい
+
+  ただし最後には不要な console.log を消す。
+
+5. ネットワークかUIかを分ける
+
+  UIが表示されないのか。
+  Firebaseの読み込みが失敗しているのか。
+  Rulesで拒否されているのか。
+  環境変数が足りないのか。
+
+6. ブラウザの開発者ツールを見る
+
+  Console
+  Network
+  Application -> Local Storage
+
+7. 最後にテストとビルド
+
+  npm run test
+  npm run lint
+  npm run build
+
+
+このサイトで特に重要なファイル一覧
+----------------------------------
+
+起動と全体構造:
+
+  frontend/index.html
+  frontend/src/main.tsx
+  frontend/src/App.tsx
+
+共通レイアウト:
+
+  frontend/src/components/layout/Layout.tsx
+  frontend/src/components/layout/Header.tsx
+  frontend/src/components/layout/Footer.tsx
+  frontend/src/components/layout/ThemeToggle.tsx
+
+共通UI:
+
+  frontend/src/components/ui/Button.tsx
+  frontend/src/components/ui/Card.tsx
+  frontend/src/components/ui/Dialog.tsx
+  frontend/src/components/ui/Input.tsx
+  frontend/src/components/ui/Textarea.tsx
+  frontend/src/components/ui/Toast.tsx
+
+設定:
+
+  frontend/src/config/site.ts
+  frontend/vite.config.ts
+  frontend/tsconfig.app.json
+  frontend/eslint.config.js
+
+デザイン:
+
+  frontend/src/index.css
+
+Firebase:
+
+  frontend/src/lib/firebase.ts
+  frontend/src/hooks/useAuth.ts
+  frontend/firestore.rules
+
+主なページ:
+
+  frontend/src/pages/Home.tsx
+  frontend/src/pages/About.tsx
+  frontend/src/pages/Contact.tsx
+  frontend/src/pages/Board.tsx
+  frontend/src/pages/BoardDetail.tsx
+  frontend/src/pages/Admin.tsx
+  frontend/src/pages/AdminMembers.tsx
+  frontend/src/pages/AdminWeeklyMath.tsx
+  frontend/src/pages/WeeklyMath.tsx
+  frontend/src/pages/WeeklyMathDetail.tsx
+  frontend/src/pages/WeeklyMathSolution.tsx
+  frontend/src/pages/CliPractice.tsx
+  frontend/src/pages/ColorSortPuzzle.tsx
+  frontend/src/pages/TableTennisMatchMaker.tsx
+  frontend/src/pages/Development.tsx
+
+週次数学:
+
+  frontend/src/lib/weeklyMath.ts
+  frontend/src/lib/weeklyMathDisplay.ts
+  frontend/src/components/MathMarkdown.tsx
+  frontend/src/lib/markdown.ts
+
+CLI練習:
+
+  frontend/src/components/cli-practice/commands.ts
+  frontend/src/components/cli-practice/virtualFs.ts
+  frontend/src/components/cli-practice/Terminal.tsx
+  frontend/src/components/cli-practice/TutorialPanel.tsx
+
+AWS:
+
+  infra/bin/infra.ts
+  infra/lib/tti-ai-stack.ts
+  lambdas/shared/types.ts
+  lambdas/shared/db.ts
+  lambdas/public/getThreads/index.ts
+  lambdas/public/createThread/index.ts
+  lambdas/public/sendContact/index.ts
+
+デプロイ:
+
+  amplify.yml
+
+
+最後に
+------
+
+このプロジェクトを学ぶとき、最初からすべて理解しようとしなくて大丈夫です。
+
+最初のゴールは、
+
+  「このURLはこのページ」
+  「このページはこのデータを読む」
+  「このボタンはこのstateを変える」
+  「この保存処理はこのFirestoreコレクションに書く」
+  「この見た目はこのclassNameから来ている」
+
+を追えるようになることです。
+
+プロンプトエンジニアから抜け出す一番の近道は、AIに全部を任せることではなく、
+AIに説明させながら、自分で1行ずつ読んで、1行ずつ変えて、動作確認することです。
+
+おすすめの毎日の練習はこれです。
+
+1. 1ファイルだけ読む
+2. そのファイルの役割を3行でメモする
+3. 1箇所だけ小さく変更する
+4. npm run build または npm run test を実行する
+5. 変更理由を自分の言葉で説明する
+
+これを積み上げると、AIが出したコードを「なんとなく受け入れる人」ではなく、
+「設計を見て、危ないところを見抜き、必要な変更を指示できる人」になれます。
