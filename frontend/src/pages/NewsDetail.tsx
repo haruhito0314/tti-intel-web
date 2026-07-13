@@ -18,6 +18,25 @@ const postsData: Record<string, {
     tags: string[];
     relatedPosts: { slug: string; title: string }[];
 }> = {
+    'web-development-tutorial-released': {
+        title: 'Web開発をゼロから学べるサイトを公開しました',
+        content: `
+## Web開発をこれから始める方へ
+
+プログラミング未経験者が、ブラウザで教材を読みながらWeb開発をゼロから学べるサイトを公開しました。
+
+HTML・CSS・JavaScriptなどを順番に学べます。章ごとの説明と練習問題を通して、自分のペースで進められる学習サイトです。
+
+## 学習サイト
+
+[学習サイトを開く](https://build-tutorial.vercel.app)
+    `,
+        publishedAt: '2026-07-13',
+        author: 'サークル運営',
+        category: 'お知らせ',
+        tags: ['Web開発', '学習教材'],
+        relatedPosts: [],
+    },
     'welcome-to-tti-intelligence': {
         title: 'TTI Intelligenceへようこそ！',
         content: `

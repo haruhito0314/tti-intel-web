@@ -7,6 +7,17 @@ import { Card, CardContent, Badge, Input, Button } from '@/components/ui';
 // Dummy data for MVP
 const posts = [
     {
+        id: '2',
+        slug: 'web-development-tutorial-released',
+        title: 'Web開発をゼロから学べるサイトを公開しました',
+        excerpt: 'プログラミング未経験者が、ブラウザで教材を読みながらHTML・CSS・JavaScriptなどを順番に学べるWebサイトを公開しました。',
+        publishedAt: '2026-07-13',
+        category: 'お知らせ',
+        tags: ['Web開発', '学習教材'],
+        pinned: false,
+        coverImageUrl: null,
+    },
+    {
         id: '1',
         slug: 'welcome-to-tti-intelligence',
         title: 'TTI Intelligenceへようこそ！',
