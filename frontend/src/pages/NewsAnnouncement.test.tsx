@@ -88,8 +88,10 @@ describe('Web開発学習サイト公開のお知らせ', () => {
             'sm:w-auto',
             'bg-[#0066CC]',
             'text-white',
+            'dark:text-white',
             'focus-visible:ring-2',
         );
+        expect(tutorialLink).not.toHaveClass('dark:text-[#0A0A0A]');
         expect(tutorialLink.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
         const contentSequence = [dashboardImage, chaptersHeading, lessonImage, tutorialLink];
         contentSequence.slice(0, -1).forEach((element, index) => {
