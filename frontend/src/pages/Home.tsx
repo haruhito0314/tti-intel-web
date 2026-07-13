@@ -635,7 +635,7 @@ export function Home() {
                                         <CardContent className={latestPosts.length === 1 ? 'p-7 sm:p-8 md:flex md:items-end md:justify-between md:gap-8' : 'p-7'}>
                                             <div className="min-w-0">
                                             <div className="flex items-center gap-2 mb-3">
-                                                <Badge variant={post.pinned ? 'primary' : 'default'}>
+                                                <Badge variant="primary">
                                                     {post.category}
                                                 </Badge>
                                                 {post.pinned && (
