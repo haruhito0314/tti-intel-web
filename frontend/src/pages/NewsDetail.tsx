@@ -286,7 +286,7 @@ export function NewsDetail() {
                                         <a
                                             href={target}
                                             className={isTutorialCta
-                                                ? 'mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#0066CC] px-6 py-3.5 font-semibold text-white no-underline shadow-sm transition-colors hover:bg-[#004C99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071E3] focus-visible:ring-offset-2 dark:bg-[#2997FF] dark:text-white dark:hover:bg-[#5DABFF] sm:w-auto'
+                                                ? 'mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#0066CC] px-6 py-3.5 font-semibold text-white no-underline shadow-sm transition-colors hover:bg-[#004C99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071E3] focus-visible:ring-offset-2 dark:text-white sm:w-auto'
                                                 : 'text-[#0066CC] dark:text-[#2997FF] hover:underline'}
                                             target={target.startsWith('http') ? '_blank' : undefined}
                                             rel={target.startsWith('http') ? 'noopener noreferrer' : undefined}
