@@ -56,6 +56,9 @@ describe('Web開発学習サイト公開のお知らせ', () => {
         expect(screen.getByText('AWS CDK・Lambda・DynamoDB・Cognito')).toBeInTheDocument();
         expect(screen.getByText(/学習状況はブラウザに保存され、途中から再開できます/)).toBeInTheDocument();
         expect(screen.getByText(/空のフォルダから自分の力でWebアプリを完成させる卒業課題/)).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: '対応環境' })).toBeInTheDocument();
+        expect(screen.getByText(/現在、開発環境の手順はmacOS向けに書かれています/)).toBeInTheDocument();
+        expect(screen.getByText(/Windows向けの対応も順次進める予定です/)).toBeInTheDocument();
 
         const dashboardImage = screen.getByRole('img', {
             name: '27章の進捗と次に学ぶ章を確認できる学習ダッシュボード',

@@ -2,6 +2,7 @@
 .playwright-cli/
 .playwright-mcp/
 .worktrees/
+.superpowers/
 .tmp-video-frames/
 output/
 about-*.png
