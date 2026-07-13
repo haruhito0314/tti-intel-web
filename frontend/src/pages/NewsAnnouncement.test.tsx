@@ -26,6 +26,24 @@ describe('Web開発学習サイト公開のお知らせ', () => {
             .toHaveAttribute('href', announcementPath);
     });
 
+    it('トップページのお知らせカテゴリは固定状態に関係なく同じ色で表示する', () => {
+        render(
+            <MemoryRouter>
+                <Home />
+            </MemoryRouter>,
+        );
+
+        const announcementLink = screen.getByRole('link', { name: new RegExp(announcementTitle) });
+        const welcomeLink = screen.getByRole('link', { name: /TTI Intelligenceへようこそ/ });
+
+        [announcementLink, welcomeLink].forEach((postLink) => {
+            expect(within(postLink).getByText('お知らせ')).toHaveClass(
+                'bg-[#0071E3]/10',
+                'text-[#004C99]',
+            );
+        });
+    });
+
     it('お知らせ一覧にタイトル、概要、タグを表示する', () => {
         render(
             <MemoryRouter>
