@@ -18,6 +18,52 @@ const postsData: Record<string, {
     tags: string[];
     relatedPosts: { slug: string; title: string }[];
 }> = {
+    'web-development-tutorial-released': {
+        title: 'Web開発をゼロから学べるサイトを公開しました',
+        content: `
+## 未経験からWebアプリの公開まで
+
+プログラミングを初めて学ぶ方が、Web開発を基礎から順番に身につけられる学習サイトを公開しました。
+
+教材を読むために特別なアプリを準備する必要はありません。ブラウザで説明を読み、章を進めながら必要な開発環境を一つずつ導入します。
+
+![27章の進捗と次に学ぶ章を確認できる学習ダッシュボード](/images/web-tutorial-dashboard.webp)
+
+*学習状況と次に進む章を一目で確認できるダッシュボード。*
+
+## 27章で段階的に学べます
+
+教材は第0章から第26章までの全27章です。
+
+- HTML・CSSでWebページを作る基礎
+- JavaScript・TypeScriptの文法と非同期処理
+- Reactを使った画面、フォーム、ページ遷移
+- API通信とデータの保存
+- AWS CDK・Lambda・DynamoDB・Cognito
+- テスト、セキュリティ、公開、安全な削除
+
+単にコードをコピーするだけでなく、「何をしているのか」「なぜ必要なのか」を確認しながら進められる構成にしています。
+
+![第4章HTML教材の本文と目次を表示した学習画面](/images/web-tutorial-html-lesson.webp)
+
+*章の目標、解説、手順、目次を確認しながら学習できます。*
+
+## 自分のペースで繰り返し学習
+
+各章には説明、確認項目、練習問題、解答があります。学習状況はブラウザに保存され、途中から再開できます。リセット機能を使えば、最初から何度でもやり直せます。
+
+最後には、空のフォルダから自分の力でWebアプリを完成させる卒業課題を用意しています。
+
+Web開発に興味はあるものの、何から始めればよいか分からない方におすすめです。
+
+[学習サイトを開く](https://build-tutorial.vercel.app)
+    `,
+        publishedAt: '2026-07-13',
+        author: 'サークル運営',
+        category: 'お知らせ',
+        tags: ['Web開発', '学習教材'],
+        relatedPosts: [],
+    },
     'welcome-to-tti-intelligence': {
         title: 'TTI Intelligenceへようこそ！',
         content: `
@@ -201,6 +247,16 @@ export function NewsDetail() {
                                 <blockquote className="border-l-4 border-[#0071E3] pl-4 italic text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] my-4">
                                     {children}
                                 </blockquote>
+                            ),
+                            img: ({ src, alt }) => (
+                                <img
+                                    src={src}
+                                    alt={alt ?? ''}
+                                    loading="lazy"
+                                    width={1280}
+                                    height={720}
+                                    className="my-6 block h-auto w-full rounded-2xl border border-black/10 shadow-sm dark:border-white/10"
+                                />
                             ),
                             code: ({ className, children }) => {
                                 const isInline = !className;
