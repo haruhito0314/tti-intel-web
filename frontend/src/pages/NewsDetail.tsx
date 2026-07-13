@@ -5,7 +5,7 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
 import { PageSeo } from '@/components/PageSeo';
-import { ArrowLeft, Calendar, User, Tag, Share2 } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Tag, Share2, ExternalLink } from 'lucide-react';
 import { Badge, Card, CardContent, Button } from '@/components/ui';
 
 // Dummy data for MVP - will be replaced with API call
@@ -56,7 +56,9 @@ const postsData: Record<string, {
 
 Web開発に興味はあるものの、何から始めればよいか分からない方におすすめです。
 
-[学習サイトを開く](https://build-tutorial.vercel.app)
+全27章・ブラウザですぐ読めます。
+
+[無料でWeb開発を学び始める](https://build-tutorial.vercel.app)
     `,
         publishedAt: '2026-07-13',
         author: 'サークル運営',
@@ -277,16 +279,22 @@ export function NewsDetail() {
                                 const target = href ?? '';
                                 const isExternal =
                                     /^(https?:|mailto:|tel:)/.test(target) || target.startsWith('//');
+                                const isTutorialCta = target === 'https://build-tutorial.vercel.app';
 
                                 if (isExternal) {
                                     return (
                                         <a
                                             href={target}
-                                            className="text-[#0066CC] dark:text-[#2997FF] hover:underline"
+                                            className={isTutorialCta
+                                                ? 'mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#0066CC] px-6 py-3.5 font-semibold text-white no-underline shadow-sm transition-colors hover:bg-[#004C99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071E3] focus-visible:ring-offset-2 dark:bg-[#2997FF] dark:text-[#0A0A0A] dark:hover:bg-[#5DABFF] sm:w-auto'
+                                                : 'text-[#0066CC] dark:text-[#2997FF] hover:underline'}
                                             target={target.startsWith('http') ? '_blank' : undefined}
                                             rel={target.startsWith('http') ? 'noopener noreferrer' : undefined}
                                         >
                                             {children}
+                                            {isTutorialCta && (
+                                                <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                                            )}
                                         </a>
                                     );
                                 }

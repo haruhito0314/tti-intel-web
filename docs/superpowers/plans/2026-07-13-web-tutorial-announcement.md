@@ -412,7 +412,7 @@ git commit -m "Add tutorial screenshots to announcement"
 - Consumes: `https://build-tutorial.vercel.app`へのReact Markdown外部リンクとLucideの`ExternalLink`アイコン
 - Produces: 補足文`全27章・ブラウザですぐ読めます`、CTA文言`無料でWeb開発を学び始める`、学習サイトURLだけに適用するレスポンシブCTA表示
 
-- [ ] **Step 1: CTA文言、表示、既存リンク維持を要求する失敗テストを書く**
+- [x] **Step 1: CTA文言、表示、既存リンク維持を要求する失敗テストを書く**
 
 `frontend/src/pages/NewsAnnouncement.test.tsx`の詳細記事テスト内で、既存の`学習サイトを開く`リンク取得を次へ置き換える。
 
@@ -451,7 +451,7 @@ git commit -m "Add tutorial screenshots to announcement"
     });
 ```
 
-- [ ] **Step 2: focused testを実行し、新CTAが未実装のため失敗することを確認する**
+- [x] **Step 2: focused testを実行し、新CTAが未実装のため失敗することを確認する**
 
 Run:
 
@@ -466,7 +466,7 @@ npm test -- src/pages/NewsAnnouncement.test.tsx
 
 Expected: 詳細記事テストがFAILし、`全27章・ブラウザですぐ読めます。`または`無料でWeb開発を学び始める`が見つからないと表示される。既存リンクのテストはPASSする。
 
-- [ ] **Step 3: 記事末尾の補足文とリンク文言を更新する**
+- [x] **Step 3: 記事末尾の補足文とリンク文言を更新する**
 
 `frontend/src/pages/NewsDetail.tsx`の学習サイト記事本文末尾を次へ置き換える。
 
@@ -476,7 +476,7 @@ Expected: 詳細記事テストがFAILし、`全27章・ブラウザですぐ読
 [無料でWeb開発を学び始める](https://build-tutorial.vercel.app)
 ```
 
-- [ ] **Step 4: 学習サイトURLだけを専用CTAとして描画する**
+- [x] **Step 4: 学習サイトURLだけを専用CTAとして描画する**
 
 Lucide importへ`ExternalLink`を追加する。
 
@@ -522,7 +522,7 @@ import { ArrowLeft, Calendar, User, Tag, Share2, ExternalLink } from 'lucide-rea
                             },
 ```
 
-- [ ] **Step 5: focused testが通ることを確認する**
+- [x] **Step 5: focused testが通ることを確認する**
 
 Run:
 
@@ -537,7 +537,7 @@ npm test -- src/pages/NewsAnnouncement.test.tsx
 
 Expected: `4 passed`。
 
-- [ ] **Step 6: 変更範囲とフロントエンド全体を検証する**
+- [x] **Step 6: 変更範囲とフロントエンド全体を検証する**
 
 Run:
 
@@ -565,7 +565,7 @@ Expected:
 - 青背景、白文字、外部リンクアイコン、hover、keyboard focusが視認できる。
 - 横スクロールがなく、ブラウザコンソールにエラーがない。
 
-- [ ] **Step 8: CTA実装だけをコミットする**
+- [x] **Step 8: CTA実装だけをコミットする**
 
 ```bash
 git add frontend/src/pages/NewsDetail.tsx frontend/src/pages/NewsAnnouncement.test.tsx docs/superpowers/plans/2026-07-13-web-tutorial-announcement.md

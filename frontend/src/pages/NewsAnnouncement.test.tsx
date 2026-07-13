@@ -78,14 +78,38 @@ describe('Web開発学習サイト公開のお知らせ', () => {
         expect(screen.getByText('章の目標、解説、手順、目次を確認しながら学習できます。'))
             .toBeInTheDocument();
 
-        const tutorialLink = screen.getByRole('link', { name: '学習サイトを開く' });
+        expect(screen.getByText('全27章・ブラウザですぐ読めます。')).toBeInTheDocument();
+        const tutorialLink = screen.getByRole('link', { name: '無料でWeb開発を学び始める' });
         expect(tutorialLink).toHaveAttribute('href', 'https://build-tutorial.vercel.app');
         expect(tutorialLink).toHaveAttribute('target', '_blank');
         expect(tutorialLink).toHaveAttribute('rel', 'noopener noreferrer');
+        expect(tutorialLink).toHaveClass(
+            'w-full',
+            'sm:w-auto',
+            'bg-[#0066CC]',
+            'text-white',
+            'focus-visible:ring-2',
+        );
+        expect(tutorialLink.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
         const contentSequence = [dashboardImage, chaptersHeading, lessonImage, tutorialLink];
         contentSequence.slice(0, -1).forEach((element, index) => {
             expect(element.compareDocumentPosition(contentSequence[index + 1]) & Node.DOCUMENT_POSITION_FOLLOWING)
                 .toBeTruthy();
         });
+    });
+
+    it('既存記事の通常リンクはCTAに変更しない', () => {
+        render(
+            <MemoryRouter initialEntries={['/news/welcome-to-tti-intelligence']}>
+                <Routes>
+                    <Route path="/news/:slug" element={<NewsDetail />} />
+                </Routes>
+            </MemoryRouter>,
+        );
+
+        const contactLink = screen.getByRole('link', { name: 'お問い合わせページ' });
+        expect(contactLink).toHaveAttribute('href', '/contact');
+        expect(contactLink).toHaveClass('text-[#0066CC]');
+        expect(contactLink).not.toHaveClass('bg-[#0066CC]', 'w-full');
     });
 });
