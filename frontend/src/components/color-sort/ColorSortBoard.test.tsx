@@ -42,6 +42,8 @@ describe('ColorSortBoard', () => {
             'min-w-11',
             '[width:clamp(52px,18vw,68px)]',
             '[height:clamp(136px,28svh,190px)]',
+            'lg:[width:clamp(80px,9vw,96px)]',
+            'lg:[height:clamp(210px,32svh,250px)]',
         );
     });
 
@@ -66,8 +68,8 @@ describe('ColorSortBoard', () => {
         expect(screen.getByRole('button', { name: /ボトル 1/ }).querySelectorAll('[data-layer-slot]')).toHaveLength(10);
     });
 
-    it('gives each color a distinct texture while preserving bottom-to-top layer order', () => {
-        const texturedPuzzle: Puzzle = [
+    it('renders solid color layers in bottom-to-top order without texture overlays', () => {
+        const solidPuzzle: Puzzle = [
             ['sky', 'mint', 'coral', 'sun', 'violet', 'rose'],
             [],
             [],
@@ -75,22 +77,21 @@ describe('ColorSortBoard', () => {
             [],
             [],
         ];
-        render(<ColorSortBoard {...defaultProps} puzzle={texturedPuzzle} />);
+        render(<ColorSortBoard {...defaultProps} puzzle={solidPuzzle} />);
 
         const bottle = screen.getByRole('button', { name: /ボトル 1/ });
         const stack = bottle.querySelector('[data-layer-stack]');
         const layers = Array.from(bottle.querySelectorAll('[data-layer-slot]'));
-        const filledLayers = layers.slice(0, texturedPuzzle[0].length);
+        const filledLayers = layers.slice(0, solidPuzzle[0].length);
 
         expect(stack).toHaveClass('flex-col-reverse');
         expect(layers.map((layer) => layer.getAttribute('data-layer-index'))).toEqual(
             Array.from({ length: 8 }, (_, index) => String(index)),
         );
-        expect(filledLayers.map((layer) => layer.getAttribute('data-color-token'))).toEqual(texturedPuzzle[0]);
-
-        const patterns = filledLayers.map((layer) => layer.getAttribute('data-layer-pattern'));
-        expect(patterns.every(Boolean)).toBe(true);
-        expect(new Set(patterns).size).toBe(texturedPuzzle[0].length);
+        expect(filledLayers.map((layer) => layer.getAttribute('data-color-token'))).toEqual(solidPuzzle[0]);
+        expect(filledLayers.every((layer) => !layer.hasAttribute('data-layer-pattern'))).toBe(true);
+        expect(filledLayers.every((layer) => layer.classList.contains('bg-gradient-to-br'))).toBe(true);
+        expect(filledLayers.every((layer) => layer.childElementCount === 0)).toBe(true);
     });
 
     it('exposes selected, target, completed, and content states without color alone', () => {
