@@ -10,17 +10,20 @@ afterEach(() => vi.restoreAllMocks());
 
 describe('shareResult', () => {
     it('stops when the text-only native sheet is cancelled', async () => {
-        const openX = vi.fn();
+        const openX = vi.fn().mockReturnValue(true);
+        const navigateX = vi.fn();
         const runtime = {
             createImage: vi.fn().mockResolvedValue(null),
             share: vi.fn().mockRejectedValue(new DOMException('cancelled', 'AbortError')),
             canShare: vi.fn().mockReturnValue(false),
             openX,
+            navigateX,
             origin: 'https://tti-intel.com',
         };
 
         await expect(shareResult(result, runtime)).resolves.toBe('cancelled');
         expect(openX).not.toHaveBeenCalled();
+        expect(navigateX).not.toHaveBeenCalled();
     });
 
     it('falls from file share to text-only native share', async () => {
@@ -29,7 +32,8 @@ describe('shareResult', () => {
             createImage: vi.fn().mockResolvedValue(new File(['x'], 'result.png', { type: 'image/png' })),
             share,
             canShare: vi.fn().mockReturnValue(true),
-            openX: vi.fn(),
+            openX: vi.fn().mockReturnValue(true),
+            navigateX: vi.fn(),
             origin: 'https://tti-intel.com',
         };
 
@@ -38,20 +42,49 @@ describe('shareResult', () => {
         expect(share.mock.calls[0][0]).toMatchObject({ files: [expect.any(File)] });
         expect(share.mock.calls[1][0]).not.toHaveProperty('files');
         expect(runtime.openX).not.toHaveBeenCalled();
+        expect(runtime.navigateX).not.toHaveBeenCalled();
     });
 
-    it('opens X only after native sharing is unavailable', async () => {
-        const openX = vi.fn();
+    it('opens X synchronously without creating an image when native sharing is unavailable', async () => {
+        const createImage = vi.fn().mockResolvedValue(null);
+        const openX = vi.fn().mockReturnValue(true);
+        const navigateX = vi.fn();
         const runtime = {
-            createImage: vi.fn().mockResolvedValue(null),
+            createImage,
             share: undefined,
             canShare: undefined,
             openX,
+            navigateX,
             origin: 'https://tti-intel.com',
         };
 
-        await expect(shareResult(result, runtime)).resolves.toBe('x');
+        const pending = shareResult(result, runtime);
+
         expect(openX).toHaveBeenCalledOnce();
+        expect(createImage).not.toHaveBeenCalled();
+        expect(navigateX).not.toHaveBeenCalled();
+        await expect(pending).resolves.toBe('x');
+    });
+
+    it('navigates to X synchronously when the non-native popup is blocked', async () => {
+        const createImage = vi.fn().mockResolvedValue(null);
+        const openX = vi.fn().mockReturnValue(false);
+        const navigateX = vi.fn();
+        const runtime = {
+            createImage,
+            share: undefined,
+            canShare: undefined,
+            openX,
+            navigateX,
+            origin: 'https://tti-intel.com',
+        };
+
+        const pending = shareResult(result, runtime);
+
+        expect(openX).toHaveBeenCalledOnce();
+        expect(navigateX).toHaveBeenCalledOnce();
+        expect(createImage).not.toHaveBeenCalled();
+        await expect(pending).resolves.toBe('x');
     });
 
     it('stops when the file native sheet is cancelled', async () => {
@@ -60,27 +93,32 @@ describe('shareResult', () => {
             createImage: vi.fn().mockResolvedValue(new File(['x'], 'result.png', { type: 'image/png' })),
             share,
             canShare: vi.fn().mockReturnValue(true),
-            openX: vi.fn(),
+            openX: vi.fn().mockReturnValue(true),
+            navigateX: vi.fn(),
             origin: 'https://tti-intel.com',
         };
 
         await expect(shareResult(result, runtime)).resolves.toBe('cancelled');
         expect(share).toHaveBeenCalledOnce();
         expect(runtime.openX).not.toHaveBeenCalled();
+        expect(runtime.navigateX).not.toHaveBeenCalled();
     });
 
-    it('opens X after text-only native sharing fails generically', async () => {
-        const openX = vi.fn();
+    it('navigates to X after text-only native sharing fails generically', async () => {
+        const openX = vi.fn().mockReturnValue(true);
+        const navigateX = vi.fn();
         const runtime = {
             createImage: vi.fn().mockResolvedValue(null),
             share: vi.fn().mockRejectedValue(new Error('text failed')),
             canShare: vi.fn().mockReturnValue(false),
             openX,
+            navigateX,
             origin: 'https://tti-intel.com',
         };
 
         await expect(shareResult(result, runtime)).resolves.toBe('x');
-        expect(openX).toHaveBeenCalledOnce();
+        expect(openX).not.toHaveBeenCalled();
+        expect(navigateX).toHaveBeenCalledOnce();
     });
 });
 

@@ -12,7 +12,8 @@ export interface ShareRuntime {
     createImage: (puzzle: Puzzle, moves: number, config: PuzzleModeConfig) => Promise<File | null>;
     share?: (data: ShareData) => Promise<void>;
     canShare?: (data: ShareData) => boolean;
-    openX: (url: string) => void;
+    openX: (url: string) => boolean;
+    navigateX: (url: string) => void;
     origin: string;
 }
 
@@ -44,7 +45,8 @@ const defaultRuntime = (): ShareRuntime => ({
     createImage: createShareImage,
     share: navigator.share?.bind(navigator),
     canShare: navigator.canShare?.bind(navigator),
-    openX: (url) => window.open(url, '_blank', 'noopener,noreferrer'),
+    openX: (url) => window.open(url, '_blank', 'noopener,noreferrer') !== null,
+    navigateX: (url) => window.location.assign(url),
     origin: window.location.origin,
 });
 
@@ -54,9 +56,19 @@ export async function shareResult(
 ): Promise<ShareOutcome> {
     const text = createShareText(result.moves, result.config);
     const url = `${runtime.origin}${SHARE_PATH}`;
+    const intent = new URL('https://twitter.com/intent/tweet');
+    intent.searchParams.set('text', text);
+    intent.searchParams.set('url', url);
+    const intentUrl = intent.toString();
+
+    if (!runtime.share) {
+        if (!runtime.openX(intentUrl)) runtime.navigateX(intentUrl);
+        return 'x';
+    }
+
     const image = await runtime.createImage(result.puzzle, result.moves, result.config).catch(() => null);
 
-    if (image && runtime.share && runtime.canShare?.({ files: [image] })) {
+    if (image && runtime.canShare?.({ files: [image] })) {
         try {
             await runtime.share({ title: SHARE_TITLE, text, url, files: [image] });
             return 'native';
@@ -65,19 +77,14 @@ export async function shareResult(
         }
     }
 
-    if (runtime.share) {
-        try {
-            await runtime.share({ title: SHARE_TITLE, text, url });
-            return 'native';
-        } catch (error) {
-            if (isAbortError(error)) return 'cancelled';
-        }
+    try {
+        await runtime.share({ title: SHARE_TITLE, text, url });
+        return 'native';
+    } catch (error) {
+        if (isAbortError(error)) return 'cancelled';
     }
 
-    const intent = new URL('https://twitter.com/intent/tweet');
-    intent.searchParams.set('text', text);
-    intent.searchParams.set('url', url);
-    runtime.openX(intent.toString());
+    runtime.navigateX(intentUrl);
     return 'x';
 }
 
