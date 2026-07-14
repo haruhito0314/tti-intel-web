@@ -45,10 +45,28 @@ const defaultRuntime = (): ShareRuntime => ({
     createImage: createShareImage,
     share: navigator.share?.bind(navigator),
     canShare: navigator.canShare?.bind(navigator),
-    openX: (url) => window.open(url, '_blank', 'noopener,noreferrer') !== null,
+    openX: openXPopup,
     navigateX: (url) => window.location.assign(url),
     origin: window.location.origin,
 });
+
+function openXPopup(url: string): boolean {
+    const popup = window.open('about:blank', '_blank');
+    if (!popup) return false;
+
+    try {
+        popup.opener = null;
+        popup.location.replace(url);
+        return true;
+    } catch {
+        try {
+            popup.close();
+        } catch {
+            // The caller will fall back to same-tab navigation.
+        }
+        return false;
+    }
+}
 
 export async function shareResult(
     result: { puzzle: Puzzle; moves: number; config: PuzzleModeConfig },

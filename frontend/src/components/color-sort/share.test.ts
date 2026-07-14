@@ -6,7 +6,10 @@ import type { Puzzle } from './types';
 const puzzle: Puzzle = [['sky']];
 const result = { puzzle, moves: 12, config: PUZZLE_MODE_CONFIGS.star };
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+});
 
 describe('shareResult', () => {
     it('stops when the text-only native sheet is cancelled', async () => {
@@ -85,6 +88,46 @@ describe('shareResult', () => {
         expect(navigateX).toHaveBeenCalledOnce();
         expect(createImage).not.toHaveBeenCalled();
         await expect(pending).resolves.toBe('x');
+    });
+
+    it('opens and detaches a blank default popup before navigating it to the X intent', async () => {
+        const replace = vi.fn();
+        const fakePopup = {
+            opener: window,
+            location: { replace },
+            close: vi.fn(),
+        } as unknown as WindowProxy;
+        const { assign, open } = stubNonNativeDefaultRuntime(fakePopup);
+
+        const pending = shareResult(result);
+
+        expect(open).toHaveBeenCalledWith('about:blank', '_blank');
+        expect(fakePopup.opener).toBeNull();
+        expect(replace).toHaveBeenCalledOnce();
+        expect(replace.mock.calls[0][0]).toMatch(/^https:\/\/twitter\.com\/intent\/tweet\?/);
+        expect(assign).not.toHaveBeenCalled();
+        await expect(pending).resolves.toBe('x');
+    });
+
+    it('closes a failed default popup and navigates the current tab to X', async () => {
+        const close = vi.fn();
+        const replace = vi.fn(() => {
+            throw new Error('popup navigation failed');
+        });
+        const fakePopup = {
+            opener: window,
+            location: { replace },
+            close,
+        } as unknown as WindowProxy;
+        const { assign, open } = stubNonNativeDefaultRuntime(fakePopup);
+
+        await expect(shareResult(result)).resolves.toBe('x');
+
+        expect(open).toHaveBeenCalledWith('about:blank', '_blank');
+        expect(fakePopup.opener).toBeNull();
+        expect(close).toHaveBeenCalledOnce();
+        expect(assign).toHaveBeenCalledOnce();
+        expect(assign.mock.calls[0][0]).toMatch(/^https:\/\/twitter\.com\/intent\/tweet\?/);
     });
 
     it('stops when the file native sheet is cancelled', async () => {
@@ -191,4 +234,34 @@ function createCanvasContext(
     };
 
     return context as unknown as CanvasRenderingContext2D;
+}
+
+function stubNonNativeDefaultRuntime(fakePopup: WindowProxy) {
+    const realWindow = window;
+    const assign = vi.fn();
+    const windowFacade = Object.create(realWindow) as Window & typeof globalThis;
+    Object.defineProperties(windowFacade, {
+        location: {
+            configurable: true,
+            value: { assign, origin: 'https://tti-intel.com' },
+        },
+        open: {
+            configurable: true,
+            value: () => null,
+            writable: true,
+        },
+    });
+    vi.stubGlobal('window', windowFacade);
+
+    const navigatorFacade = Object.create(navigator) as Navigator;
+    Object.defineProperties(navigatorFacade, {
+        canShare: { configurable: true, value: undefined },
+        share: { configurable: true, value: undefined },
+    });
+    vi.stubGlobal('navigator', navigatorFacade);
+
+    return {
+        assign,
+        open: vi.spyOn(window, 'open').mockReturnValue(fakePopup),
+    };
 }
