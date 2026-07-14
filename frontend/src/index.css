@@ -726,22 +726,9 @@
   text-align: left;
 }
 
-.activity-copy--bottom-right .activity-copy {
-  right: 34px;
-  bottom: 34px;
-  left: auto;
-  width: min(48%, 340px);
-  text-align: right;
-}
-
 .activity-copy--top-left::after {
   opacity: 1;
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.76) 0%, rgba(255, 255, 255, 0.28) 42%, transparent 62%);
-}
-
-.activity-copy--bottom-right::after {
-  opacity: 1;
-  background: linear-gradient(315deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.26) 42%, transparent 66%);
 }
 
 .activity-copy h3 {
@@ -772,9 +759,9 @@
 .activity-actions {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 10px;
-  margin-top: 18px;
+  margin-top: 20px;
 }
 
 .activity-button {
@@ -897,11 +884,6 @@
   background: linear-gradient(90deg, rgba(9, 20, 38, 0.62) 0%, rgba(9, 20, 38, 0.22) 42%, transparent 62%);
 }
 
-.dark .activity-copy--bottom-right::after {
-  opacity: 1;
-  background: linear-gradient(315deg, rgba(9, 20, 38, 0.66) 0%, rgba(9, 20, 38, 0.22) 42%, transparent 66%);
-}
-
 .activity-card--video .activity-visual {
   object-position: center;
 }
@@ -950,8 +932,7 @@
     right: 28px;
   }
 
-  .activity-copy--top-left .activity-copy,
-  .activity-copy--bottom-right .activity-copy {
+  .activity-copy--top-left .activity-copy {
     right: 24px;
     left: 24px;
     width: auto;
@@ -962,11 +943,6 @@
     top: 28px;
   }
 
-  .activity-copy--bottom-right .activity-copy {
-    right: 24px;
-    bottom: 28px;
-    left: 24px;
-  }
 }
 
 .home-main-color-flow::before {

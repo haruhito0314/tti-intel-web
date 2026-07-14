@@ -81,7 +81,7 @@ const activityShowcases = [
             },
         ],
         cardClass: 'activity-card--math',
-        copyPosition: 'activity-copy--bottom-right',
+        copyPosition: 'activity-copy--top-left',
     },
 ];
 
