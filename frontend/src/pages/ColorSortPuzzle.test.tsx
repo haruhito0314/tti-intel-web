@@ -69,6 +69,7 @@ beforeEach(() => {
 describe('ColorSortPuzzlePage', () => {
     it('cancels pending generation on unmount and tolerates its late completion', async () => {
         const pending = createDeferred<{ puzzle: Puzzle; usedFallback: boolean }>();
+        const readPuzzle = vi.fn(() => normalPuzzle);
         generation.generate.mockReturnValue(pending.promise);
         const view = renderPage();
 
@@ -79,10 +80,15 @@ describe('ColorSortPuzzlePage', () => {
         expect(generation.cancel).toHaveBeenCalledTimes(1);
 
         await act(async () => {
-            pending.resolve({ puzzle: normalPuzzle, usedFallback: false });
+            pending.resolve({
+                get puzzle() {
+                    return readPuzzle();
+                },
+                usedFallback: false,
+            });
             await pending.promise;
         });
-        expect(view.container).toBeEmptyDOMElement();
+        expect(readPuzzle).not.toHaveBeenCalled();
     });
 
     it('starts generation once across StrictMode effect replay', async () => {

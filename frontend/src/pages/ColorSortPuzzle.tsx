@@ -34,6 +34,7 @@ export function ColorSortPuzzlePage() {
     const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
     const [resultOpen, setResultOpen] = useState(false);
     const generatorRef = useRef(createPuzzleGenerationClient());
+    const mountedRef = useRef(false);
 
     const startPuzzle = useCallback(async (nextMode: PuzzleMode, advanceNormalNumber = false) => {
         setPhase('generating');
@@ -43,6 +44,7 @@ export function ColorSortPuzzlePage() {
 
         try {
             const outcome = await generatorRef.current.generate(nextMode, createPuzzleSeed());
+            if (!mountedRef.current) return;
             setMode(nextMode);
             if (nextMode === 'normal' && advanceNormalNumber) {
                 setPuzzleNumber((value) => value + 1);
@@ -53,6 +55,7 @@ export function ColorSortPuzzlePage() {
             setStatus(outcome.usedFallback ? '安全な予備問題を読み込みました。' : 'ボトルを選んでください。');
             setPhase('playing');
         } catch (error) {
+            if (!mountedRef.current) return;
             if (!(error instanceof DOMException && error.name === 'AbortError')) {
                 setStatus('問題の準備に失敗しました。もう一度お試しください。');
                 setPhase('playing');
@@ -63,11 +66,13 @@ export function ColorSortPuzzlePage() {
     useEffect(() => {
         const generator = generatorRef.current;
         let mounted = true;
+        mountedRef.current = true;
         queueMicrotask(() => {
             if (mounted) void startPuzzle('normal');
         });
         return () => {
             mounted = false;
+            mountedRef.current = false;
             generator.cancel();
         };
     }, [startPuzzle]);
