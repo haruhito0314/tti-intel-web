@@ -13,51 +13,6 @@ interface Props {
     onClick: () => void;
 }
 
-const LAYER_PATTERNS: Record<Bottle[number], { id: string; style: CSSProperties }> = {
-    sky: {
-        id: 'horizontal-lines',
-        style: {
-            backgroundImage:
-                'repeating-linear-gradient(0deg, transparent 0 3px, rgba(255, 255, 255, 0.62) 3px 4px)',
-        },
-    },
-    mint: {
-        id: 'vertical-lines',
-        style: {
-            backgroundImage:
-                'repeating-linear-gradient(90deg, transparent 0 3px, rgba(0, 0, 0, 0.28) 3px 4px)',
-        },
-    },
-    coral: {
-        id: 'forward-diagonal',
-        style: {
-            backgroundImage:
-                'repeating-linear-gradient(45deg, transparent 0 3px, rgba(255, 255, 255, 0.58) 3px 4px)',
-        },
-    },
-    sun: {
-        id: 'backward-diagonal',
-        style: {
-            backgroundImage:
-                'repeating-linear-gradient(-45deg, transparent 0 3px, rgba(0, 0, 0, 0.3) 3px 4px)',
-        },
-    },
-    violet: {
-        id: 'crosshatch',
-        style: {
-            backgroundImage:
-                'repeating-linear-gradient(45deg, transparent 0 4px, rgba(255, 255, 255, 0.52) 4px 5px), repeating-linear-gradient(-45deg, transparent 0 4px, rgba(255, 255, 255, 0.52) 4px 5px)',
-        },
-    },
-    rose: {
-        id: 'dots',
-        style: {
-            backgroundImage: 'radial-gradient(circle, rgba(0, 0, 0, 0.34) 1px, transparent 1.25px)',
-            backgroundSize: '5px 5px',
-        },
-    },
-};
-
 function describeContents(bottle: Bottle): string {
     if (bottle.length === 0) return '空';
 
@@ -99,7 +54,7 @@ export function BottleView({
             disabled={disabled || completed}
             onClick={onClick}
             style={{ '--slot-count': capacity } as CSSProperties}
-            className={`relative min-h-11 min-w-11 [width:clamp(52px,18vw,68px)] [height:clamp(136px,28svh,190px)] overflow-hidden rounded-b-[24px] rounded-t-[16px] border bg-white/55 backdrop-blur-xl transition-[translate,box-shadow,border-color] duration-200 motion-reduce:translate-y-0 motion-reduce:transition-none ${selected ? '-translate-y-2 border-[#0071E3] shadow-[0_16px_36px_rgba(0,113,227,0.22)]' : legalTarget ? 'border-[#176B34] shadow-[0_12px_28px_rgba(23,107,52,0.25)]' : completed ? 'border-[#0057A8] shadow-[0_12px_28px_rgba(0,87,168,0.22)]' : 'border-black/10 dark:border-white/15'}`}
+            className={`relative min-h-11 min-w-11 [width:clamp(52px,18vw,68px)] [height:clamp(136px,28svh,190px)] lg:[width:clamp(80px,9vw,96px)] lg:[height:clamp(210px,32svh,250px)] overflow-hidden rounded-b-[24px] rounded-t-[16px] border bg-white/55 backdrop-blur-xl transition-[translate,box-shadow,border-color] duration-200 motion-reduce:translate-y-0 motion-reduce:transition-none ${selected ? '-translate-y-2 border-[#0071E3] shadow-[0_16px_36px_rgba(0,113,227,0.22)]' : legalTarget ? 'border-[#176B34] shadow-[0_12px_28px_rgba(23,107,52,0.25)]' : completed ? 'border-[#0057A8] shadow-[0_12px_28px_rgba(0,87,168,0.22)]' : 'border-black/10 dark:border-white/15'}`}
         >
             <span
                 aria-hidden="true"
@@ -108,14 +63,12 @@ export function BottleView({
             >
                 {Array.from({ length: capacity }, (_, layerIndex) => {
                     const color = bottle[layerIndex];
-                    const pattern = color ? LAYER_PATTERNS[color] : undefined;
                     return (
                         <span
                             key={layerIndex}
                             data-layer-slot=""
                             data-layer-index={layerIndex}
                             data-color-token={color}
-                            data-layer-pattern={pattern?.id}
                             style={{ height: 'calc(100% / var(--slot-count))' }}
                             className={
                                 color
@@ -123,13 +76,6 @@ export function BottleView({
                                     : 'relative border-t border-white/20 bg-white/20 dark:bg-white/[0.03]'
                             }
                         >
-                            {pattern && (
-                                <span
-                                    aria-hidden="true"
-                                    className="pointer-events-none absolute inset-0"
-                                    style={pattern.style}
-                                />
-                            )}
                         </span>
                     );
                 })}
