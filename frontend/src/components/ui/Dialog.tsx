@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 
 interface DialogProps {
@@ -11,6 +11,8 @@ interface DialogProps {
 
 export function Dialog({ open, onClose, title, description, children }: DialogProps) {
     const dialogRef = useRef<HTMLDialogElement>(null);
+    const titleId = useId();
+    const descriptionId = useId();
 
     useEffect(() => {
         const dialog = dialogRef.current;
@@ -51,6 +53,8 @@ export function Dialog({ open, onClose, title, description, children }: DialogPr
     return (
         <dialog
             ref={dialogRef}
+            aria-labelledby={title ? titleId : undefined}
+            aria-describedby={description ? descriptionId : undefined}
             className="
         fixed inset-0 z-50
         w-full max-w-lg m-auto p-0
@@ -71,12 +75,12 @@ export function Dialog({ open, onClose, title, description, children }: DialogPr
                 <div className="flex items-start justify-between mb-4">
                     <div>
                         {title && (
-                            <h2 className="text-xl font-semibold text-[#1D1D1F] dark:text-[#F5F5F7]">
+                            <h2 id={titleId} className="text-xl font-semibold text-[#1D1D1F] dark:text-[#F5F5F7]">
                                 {title}
                             </h2>
                         )}
                         {description && (
-                            <p className="text-sm text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mt-1">
+                            <p id={descriptionId} className="text-sm text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mt-1">
                                 {description}
                             </p>
                         )}

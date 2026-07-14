@@ -55,6 +55,7 @@ export function ColorSortPuzzlePage() {
         } catch (error) {
             if (!(error instanceof DOMException && error.name === 'AbortError')) {
                 setStatus('問題の準備に失敗しました。もう一度お試しください。');
+                setPhase('playing');
             }
         }
     }, []);

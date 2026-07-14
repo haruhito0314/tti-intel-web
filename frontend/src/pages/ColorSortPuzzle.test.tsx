@@ -1,7 +1,8 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { StrictMode } from 'react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Puzzle } from '@/components/color-sort/types';
+import type { Puzzle, PuzzleMode } from '@/components/color-sort/types';
 
 const generation = vi.hoisted(() => ({ generate: vi.fn(), cancel: vi.fn() }));
 vi.mock('@/components/color-sort/generationClient', () => ({
@@ -19,6 +20,15 @@ const normalPuzzle: Puzzle = [
     ['mint', 'mint', 'mint'],
 ];
 
+const starPuzzle: Puzzle = [
+    [...Array.from({ length: 9 }, () => 'sky' as const), 'violet'],
+    Array.from({ length: 10 }, () => 'mint' as const),
+    Array.from({ length: 10 }, () => 'coral' as const),
+    Array.from({ length: 10 }, () => 'sun' as const),
+    [...Array.from({ length: 9 }, () => 'violet' as const), 'sky'],
+    [],
+];
+
 const oneMovePuzzle: Puzzle = [
     ['sky', 'sky', 'sky', 'sky', 'sky', 'sky'],
     Array.from({ length: 8 }, () => 'mint' as const),
@@ -32,20 +42,58 @@ function renderPage() {
     return render(<MemoryRouter><ColorSortPuzzlePage /></MemoryRouter>);
 }
 
+function renderStrictPage() {
+    return render(
+        <StrictMode>
+            <MemoryRouter><ColorSortPuzzlePage /></MemoryRouter>
+        </StrictMode>,
+    );
+}
+
+function createDeferred<T>() {
+    let resolve!: (value: T) => void;
+    const promise = new Promise<T>((next) => {
+        resolve = next;
+    });
+    return { promise, resolve };
+}
+
 beforeEach(() => {
-    generation.generate.mockReset().mockResolvedValue({ puzzle: normalPuzzle, usedFallback: false });
+    generation.generate.mockReset().mockImplementation((mode: PuzzleMode) => Promise.resolve({
+        puzzle: mode === 'star' ? starPuzzle : normalPuzzle,
+        usedFallback: false,
+    }));
     generation.cancel.mockReset();
 });
 
 describe('ColorSortPuzzlePage', () => {
-    it('generates a normal puzzle asynchronously and cancels generation on unmount', async () => {
+    it('cancels pending generation on unmount and tolerates its late completion', async () => {
+        const pending = createDeferred<{ puzzle: Puzzle; usedFallback: boolean }>();
+        generation.generate.mockReturnValue(pending.promise);
         const view = renderPage();
 
-        await screen.findByRole('button', { name: /ボトル 1/ });
+        await waitFor(() => expect(generation.generate).toHaveBeenCalledTimes(1));
         expect(generation.generate).toHaveBeenCalledWith('normal', expect.any(Number));
 
         view.unmount();
         expect(generation.cancel).toHaveBeenCalledTimes(1);
+
+        await act(async () => {
+            pending.resolve({ puzzle: normalPuzzle, usedFallback: false });
+            await pending.promise;
+        });
+        expect(view.container).toBeEmptyDOMElement();
+    });
+
+    it('starts generation once across StrictMode effect replay', async () => {
+        const view = renderStrictPage();
+
+        await screen.findByRole('button', { name: /ボトル 1/ });
+        expect(generation.generate).toHaveBeenCalledTimes(1);
+        expect(generation.cancel).toHaveBeenCalledTimes(1);
+
+        view.unmount();
+        expect(generation.cancel).toHaveBeenCalledTimes(2);
     });
 
     it('disables replacement controls while a puzzle is generating', () => {
@@ -55,6 +103,22 @@ describe('ColorSortPuzzlePage', () => {
         expect(screen.getByRole('button', { name: 'リセット' })).toBeDisabled();
         expect(screen.getByRole('button', { name: '新しい問題' })).toBeDisabled();
         expect(screen.getByRole('button', { name: '星' })).toBeDisabled();
+    });
+
+    it('enables a new-puzzle retry after initial generation fails', async () => {
+        generation.generate
+            .mockRejectedValueOnce(new Error('generation unavailable'))
+            .mockResolvedValueOnce({ puzzle: normalPuzzle, usedFallback: false });
+        renderPage();
+
+        expect(await screen.findByRole('status')).toHaveTextContent('問題の準備に失敗しました');
+        const retry = screen.getByRole('button', { name: '新しい問題' });
+        expect(retry).toBeEnabled();
+        fireEvent.click(retry);
+
+        await screen.findByRole('button', { name: /ボトル 1/ });
+        expect(generation.generate).toHaveBeenCalledTimes(2);
+        expect(screen.getByRole('status')).toHaveTextContent('ボトルを選んでください');
     });
 
     it('selects, cancels, and consistently switches sources', async () => {
@@ -85,7 +149,7 @@ describe('ColorSortPuzzlePage', () => {
         fireEvent.click(await screen.findByRole('button', { name: /ボトル 1/ }));
         fireEvent.click(screen.getByRole('button', { name: /ボトル 5/ }));
         fireEvent.click(screen.getByRole('button', { name: actionName }));
-        expect(screen.getByRole('dialog')).toHaveTextContent('現在の進捗を破棄しますか');
+        expect(screen.getByRole('dialog', { name: '現在の進捗を破棄しますか' })).toBeInTheDocument();
     });
 
     it('keeps the current board when discard confirmation is cancelled', async () => {
@@ -128,7 +192,9 @@ describe('ColorSortPuzzlePage', () => {
         fireEvent.click(screen.getByRole('button', { name: '星' }));
         await waitFor(() => expect(generation.generate).toHaveBeenLastCalledWith('star', expect.any(Number)));
         expect(await screen.findByText('星モード')).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /ボトル 1、6\/10/ }).querySelectorAll('[data-layer-slot]')).toHaveLength(10);
+        const starBottle = screen.getByRole('button', { name: /ボトル 1、10\/10、上から紫1層、青9層/ });
+        expect(starBottle.querySelectorAll('[data-layer-slot]')).toHaveLength(10);
+        expect(screen.getByTestId('color-sort-board').querySelectorAll('[data-color-token]')).toHaveLength(50);
     });
 
     it('switches from star mode back to a newly numbered normal puzzle', async () => {
@@ -154,7 +220,7 @@ describe('ColorSortPuzzlePage', () => {
         renderPage();
         fireEvent.click(await screen.findByRole('button', { name: /ボトル 1/ }));
         fireEvent.click(screen.getByRole('button', { name: /ボトル 5/ }));
-        expect(screen.getByRole('dialog')).toHaveTextContent('完成しました');
+        expect(screen.getByRole('dialog', { name: '完成しました' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: '次の問題' })).toBeEnabled();
         expect(screen.getByRole('button', { name: 'シェア' })).toBeEnabled();
     });
