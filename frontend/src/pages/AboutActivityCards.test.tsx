@@ -45,4 +45,13 @@ describe('About活動カード', () => {
         expect(screen.getByRole('link', { name: '詳しく見る' })).toHaveAttribute('href', '/game-community');
         expect(screen.getByRole('link', { name: '問題を見る' })).toHaveAttribute('href', '/weekly-math');
     });
+
+    it('活動カードごとに画像の安全領域へコピーを配置する', () => {
+        renderAbout('light');
+
+        expect(screen.getByRole('heading', { name: '解説動画', level: 3 }).closest('article')).toHaveClass('activity-copy--top-left');
+        expect(screen.getByRole('heading', { name: '開発', level: 3 }).closest('article')).toHaveClass('activity-copy--top-left');
+        expect(screen.getByRole('heading', { name: 'ゲーム交流', level: 3 }).closest('article')).toHaveClass('activity-copy--top-left');
+        expect(screen.getByRole('heading', { name: '今週の数学', level: 3 }).closest('article')).toHaveClass('activity-copy--bottom-right');
+    });
 });
