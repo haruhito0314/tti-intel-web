@@ -24,8 +24,8 @@ Improve the color-sort puzzle's smartphone experience without turning the page i
 - Tablets continue to use 3-by-2 to avoid the current 640px breakpoint cliff.
 - Desktops use a single row of six bottles at `lg` and above.
 - Only the board must fit in one phone viewport. Controls remain below the board in normal document flow.
-- Phone bottle width is responsive within a range of approximately 52px to 68px.
-- Phone bottle height is responsive within a range of approximately 136px to 190px, using small-viewport units with a fixed minimum and maximum. This keeps two rows visible on short phones while giving color layers more height on taller phones.
+- Phone bottle width uses `clamp(52px, 18vw, 68px)`.
+- Phone bottle height uses `clamp(136px, 28svh, 190px)`. This keeps two rows visible on short phones while giving color layers more height on taller phones.
 - Normal and star modes use the same outer bottle dimensions. Star mode divides the liquid area into ten thinner layers.
 
 ### Interaction
@@ -36,7 +36,7 @@ Improve the color-sort puzzle's smartphone experience without turning the page i
 - A completed, full, single-color bottle is locked because the solver already treats it as a terminal bottle. It displays a completion marker and cannot become a source.
 - The selected source uses a blue outline, a small upward offset, and a visible selected label/state.
 - Legal destinations use a green outline plus a check marker. Color is never the only legal-target signal.
-- A successful pour uses an approximately 200ms transition. Under `prefers-reduced-motion: reduce`, the state changes without translation or liquid movement animation.
+- A successful pour uses a 200ms transition. Under `prefers-reduced-motion: reduce`, the state changes without translation or liquid movement animation.
 - Invalid-action and source-change messages appear in a compact board-level status area and are announced through a polite live region.
 
 ### Modes
@@ -60,7 +60,7 @@ Replace the accidental `flex-wrap` behavior with an explicit CSS grid:
 - Desktop (`lg`): six columns and one row.
 - Use responsive gaps and padding without changing bottle capacity or game state.
 - Derive each layer's height from the active mode capacity rather than from a global eight-layer assumption.
-- Keep bottle hit areas at least 44-by-44 CSS pixels even when the visible bottle is narrower in a future design.
+- Keep bottle hit areas at least 44-by-44 CSS pixels.
 - Keep the compact status message associated with the board so feedback remains visible when the player is working on the lower row.
 
 The 320px, 375px, 390px, 430px, 640px, and 1024px widths are explicit visual-QA checkpoints. The 320-by-568 checkpoint is also the height acceptance test for the board itself.
@@ -73,6 +73,7 @@ The current page combines rules, generation, rendering, sharing, and page layout
 - `config.ts`: normal and star mode configurations, color display metadata, and generation limits.
 - `game.ts`: pure capacity-aware helpers such as `canPour`, `pourBottle`, `isCompletedBottle`, `isSolved`, and puzzle serialization.
 - `generator.ts`: seeded scrambling, scoring, bounded solving, validation, and deterministic fallback selection.
+- `fallbacks.ts`: committed, solver-verified normal and star boards used only after generation recovery is exhausted.
 - `colorSort.worker.ts`: worker adapter that accepts a mode and seed and returns either a validated puzzle or a structured failure.
 - `BottleView.tsx`: one accessible bottle, its layers, visual states, and descriptive label.
 - `ColorSortBoard.tsx`: responsive grid, board-level status, and bottle interaction wiring.
@@ -118,7 +119,7 @@ Ten-layer star boards increase the search space, so generation moves off the mai
 - The worker receives a request identifier, mode, and seed.
 - The UI ignores stale worker responses after a newer request starts.
 - A generation attempt has a three-second UI timeout.
-- On worker failure or timeout, retry once with a new seed.
+- On timeout, terminate the active worker, create a replacement worker, and retry once with a new seed. A structured worker failure also retries once with a new seed.
 - If the retry fails, load a committed, solver-verified fallback board for that mode and show a non-blocking recovery message.
 - Replacement controls remain disabled while generation is pending to prevent request races.
 - Worker termination occurs when the page unmounts.
@@ -158,7 +159,7 @@ The share renderer receives the active mode configuration and calculates layer h
 - Contiguous top-group pouring with limited destination space.
 - Completed-bottle and solved-state detection for both modes.
 - Puzzle serialization and clone behavior.
-- Deterministic generation invariants: bottle count, capacity, color totals, expected empty capacity, and solver validation for representative fixed seeds.
+- Deterministic generation invariants: bottle count, capacity, color totals, expected empty capacity, and solver validation for at least ten fixed seeds per mode.
 - Retry and verified-fallback behavior.
 
 ### Component tests
