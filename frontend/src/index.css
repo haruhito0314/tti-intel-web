@@ -744,16 +744,6 @@
   background: linear-gradient(315deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.26) 42%, transparent 66%);
 }
 
-.dark .activity-copy--top-left::after {
-  opacity: 1;
-  background: linear-gradient(90deg, rgba(9, 20, 38, 0.62) 0%, rgba(9, 20, 38, 0.22) 42%, transparent 62%);
-}
-
-.dark .activity-copy--bottom-right::after {
-  opacity: 1;
-  background: linear-gradient(315deg, rgba(9, 20, 38, 0.66) 0%, rgba(9, 20, 38, 0.22) 42%, transparent 66%);
-}
-
 .activity-copy h3 {
   margin: 0;
   color: #1d1d1f;
@@ -899,6 +889,17 @@
     radial-gradient(ellipse 120% 48% at 50% 104%, rgba(24, 16, 40, 0.58), transparent 62%),
     radial-gradient(circle at 50% 28%, rgba(167, 139, 250, 0.22), transparent 50%),
     linear-gradient(180deg, rgba(34, 20, 56, 0.08) 0%, rgba(34, 20, 56, 0.04) 48%, rgba(24, 16, 40, 0.3) 76%, rgba(24, 16, 40, 0.58) 100%);
+}
+
+/* These follow the card-specific dark treatments so the copy-safe gradients win. */
+.dark .activity-copy--top-left::after {
+  opacity: 1;
+  background: linear-gradient(90deg, rgba(9, 20, 38, 0.62) 0%, rgba(9, 20, 38, 0.22) 42%, transparent 62%);
+}
+
+.dark .activity-copy--bottom-right::after {
+  opacity: 1;
+  background: linear-gradient(315deg, rgba(9, 20, 38, 0.66) 0%, rgba(9, 20, 38, 0.22) 42%, transparent 66%);
 }
 
 .activity-card--video .activity-visual {
