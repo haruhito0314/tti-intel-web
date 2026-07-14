@@ -33,7 +33,7 @@ describe('ColorSortBoard', () => {
         expect(board.className).not.toMatch(/(?:sm|md):grid-(?:cols|rows)-/);
     });
 
-    it('keeps every bottle within the exact responsive size, hit-area, and motion contracts', () => {
+    it('keeps every bottle within the exact responsive size and hit-area contracts', () => {
         render(<ColorSortBoard {...defaultProps} />);
 
         const bottle = screen.getByRole('button', { name: /ボトル 1/ });
@@ -42,7 +42,17 @@ describe('ColorSortBoard', () => {
             'min-w-11',
             '[width:clamp(52px,18vw,68px)]',
             '[height:clamp(136px,28svh,190px)]',
+        );
+    });
+
+    it('animates the individual translate property and resets it for reduced motion', () => {
+        render(<ColorSortBoard {...defaultProps} selectedIndex={0} />);
+
+        expect(screen.getByRole('button', { name: /ボトル 1/ })).toHaveClass(
+            '-translate-y-2',
+            'transition-[translate,box-shadow,border-color]',
             'duration-200',
+            'motion-reduce:translate-y-0',
             'motion-reduce:transition-none',
         );
     });
@@ -56,6 +66,33 @@ describe('ColorSortBoard', () => {
         expect(screen.getByRole('button', { name: /ボトル 1/ }).querySelectorAll('[data-layer-slot]')).toHaveLength(10);
     });
 
+    it('gives each color a distinct texture while preserving bottom-to-top layer order', () => {
+        const texturedPuzzle: Puzzle = [
+            ['sky', 'mint', 'coral', 'sun', 'violet', 'rose'],
+            [],
+            [],
+            [],
+            [],
+            [],
+        ];
+        render(<ColorSortBoard {...defaultProps} puzzle={texturedPuzzle} />);
+
+        const bottle = screen.getByRole('button', { name: /ボトル 1/ });
+        const stack = bottle.querySelector('[data-layer-stack]');
+        const layers = Array.from(bottle.querySelectorAll('[data-layer-slot]'));
+        const filledLayers = layers.slice(0, texturedPuzzle[0].length);
+
+        expect(stack).toHaveClass('flex-col-reverse');
+        expect(layers.map((layer) => layer.getAttribute('data-layer-index'))).toEqual(
+            Array.from({ length: 8 }, (_, index) => String(index)),
+        );
+        expect(filledLayers.map((layer) => layer.getAttribute('data-color-token'))).toEqual(texturedPuzzle[0]);
+
+        const patterns = filledLayers.map((layer) => layer.getAttribute('data-layer-pattern'));
+        expect(patterns.every(Boolean)).toBe(true);
+        expect(new Set(patterns).size).toBe(texturedPuzzle[0].length);
+    });
+
     it('exposes selected, target, completed, and content states without color alone', () => {
         render(
             <ColorSortBoard
@@ -67,10 +104,19 @@ describe('ColorSortBoard', () => {
         );
 
         const selected = screen.getByRole('button', { name: /ボトル 1.*上から青2層.*選択中/ });
+        const legalTarget = screen.getByRole('button', { name: /ボトル 4.*注げます/ });
+        const completed = screen.getByRole('button', { name: /ボトル 3.*完成/ });
         expect(selected).toHaveAttribute('aria-pressed', 'true');
         expect(selected).toHaveTextContent('選択中');
-        expect(screen.getByRole('button', { name: /ボトル 4.*注げます/ })).toHaveTextContent('✓');
-        expect(screen.getByRole('button', { name: /ボトル 3.*完成/ })).toBeDisabled();
+        expect(selected.querySelector('[data-state-marker="selected"]')).toHaveClass('bg-[#0057A8]', 'text-white');
+        expect(legalTarget.querySelector('[data-state-marker="legal"]')).toHaveTextContent('↓');
+        expect(legalTarget.querySelector('[data-state-marker="legal"]')).toHaveClass('bg-[#176B34]', 'text-white');
+        expect(legalTarget).toHaveClass('border-[#176B34]');
+        expect(legalTarget).not.toHaveTextContent('✓');
+        expect(completed.querySelector('[data-state-marker="completed"]')).toHaveTextContent('✓');
+        expect(completed.querySelector('[data-state-marker="completed"]')).toHaveClass('bg-[#0057A8]', 'text-white');
+        expect(completed).not.toHaveTextContent('↓');
+        expect(completed).toBeDisabled();
 
         const status = screen.getByRole('status');
         expect(status).toHaveAttribute('aria-live', 'polite');
