@@ -75,8 +75,7 @@ export function BottleView({
                                     ? `relative border-t border-white/45 bg-gradient-to-br ${COLOR_META[color].gradient}`
                                     : 'relative border-t border-white/20 bg-white/20 dark:bg-white/[0.03]'
                             }
-                        >
-                        </span>
+                        />
                     );
                 })}
             </span>

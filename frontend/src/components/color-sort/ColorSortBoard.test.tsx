@@ -90,7 +90,8 @@ describe('ColorSortBoard', () => {
         );
         expect(filledLayers.map((layer) => layer.getAttribute('data-color-token'))).toEqual(solidPuzzle[0]);
         expect(filledLayers.every((layer) => !layer.hasAttribute('data-layer-pattern'))).toBe(true);
-        expect(filledLayers.every((layer) => !layer.querySelector('[data-layer-texture]'))).toBe(true);
+        expect(filledLayers.every((layer) => layer.classList.contains('bg-gradient-to-br'))).toBe(true);
+        expect(filledLayers.every((layer) => layer.childElementCount === 0)).toBe(true);
     });
 
     it('exposes selected, target, completed, and content states without color alone', () => {
