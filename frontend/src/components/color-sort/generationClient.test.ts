@@ -16,6 +16,10 @@ class FakeWorker implements WorkerLike {
     respond(result: PuzzleGenerationResult) {
         this.onmessage?.({ data: result } as MessageEvent<PuzzleGenerationResult>);
     }
+
+    fail() {
+        this.onerror?.();
+    }
 }
 
 afterEach(() => vi.useRealTimers());
@@ -61,6 +65,55 @@ describe('PuzzleGenerationClient', () => {
         workers[1].respond({ requestId: 2, mode: 'star', ok: true, puzzle: [['violet']] });
 
         await expect(pending).resolves.toEqual({ puzzle: [['violet']], usedFallback: false });
+        expect(workers[1].terminate).toHaveBeenCalledOnce();
+    });
+
+    it('settles an errored attempt once before accepting the fresh retry result', async () => {
+        vi.useFakeTimers();
+        const workers: FakeWorker[] = [];
+        const client = createPuzzleGenerationClient({
+            timeoutMs: 3000,
+            workerFactory: () => {
+                const worker = new FakeWorker();
+                workers.push(worker);
+                return worker;
+            },
+        });
+
+        const pending = client.generate('normal', 19);
+        const firstRequest = workers[0].posted[0];
+        await vi.advanceTimersByTimeAsync(1000);
+        workers[0].fail();
+        await Promise.resolve();
+
+        expect(workers).toHaveLength(2);
+        expect(workers[0].terminate).toHaveBeenCalledOnce();
+        expect(workers[1]).not.toBe(workers[0]);
+        const retryRequest = workers[1].posted[0];
+        expect(retryRequest.requestId).not.toBe(firstRequest.requestId);
+        expect(retryRequest.seed).not.toBe(firstRequest.seed);
+
+        workers[0].respond({
+            requestId: firstRequest.requestId,
+            mode: firstRequest.mode,
+            ok: true,
+            puzzle: [['coral']],
+        });
+        await vi.advanceTimersByTimeAsync(2000);
+
+        expect(workers).toHaveLength(2);
+        expect(workers[0].terminate).toHaveBeenCalledOnce();
+        expect(workers[1].terminate).not.toHaveBeenCalled();
+        workers[1].respond({
+            requestId: retryRequest.requestId,
+            mode: retryRequest.mode,
+            ok: true,
+            puzzle: [['sky']],
+        });
+
+        await expect(pending).resolves.toEqual({ puzzle: [['sky']], usedFallback: false });
+        expect(workers).toHaveLength(2);
+        expect(workers[0].terminate).toHaveBeenCalledOnce();
         expect(workers[1].terminate).toHaveBeenCalledOnce();
     });
 
