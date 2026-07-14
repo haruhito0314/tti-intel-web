@@ -3,12 +3,16 @@ import { Card, CardContent } from '@/components/ui';
 import { PageSeo } from '@/components/PageSeo';
 import { Check, ChevronDown, Calendar } from 'lucide-react';
 import { useState } from 'react';
+import { useTheme } from '@/contexts/useTheme';
 
 const activityShowcases = [
     {
         title: '解説動画',
         description: '科目の本質に踏み込む解説動画を制作し、学びを共有しています。',
-        image: '/images/about/video-card.png',
+        images: {
+            light: '/images/about/activity-video-light.webp',
+            dark: '/images/about/activity-video-dark.webp',
+        },
         imageAlt: '動画編集用のモニター、マイク、キーボード、トラックパッド',
         actions: [
             {
@@ -18,12 +22,15 @@ const activityShowcases = [
             },
         ],
         cardClass: 'activity-card--video',
-        textPosition: 'text-top',
+        copyPosition: 'activity-copy--top-left',
     },
     {
         title: '開発',
         description: '最新のAIモデルやMCPを活用し、Web・アプリ・ゲーム開発に挑戦しています。',
-        image: '/images/about/dev-card.png',
+        images: {
+            light: '/images/about/activity-development-light.webp',
+            dark: '/images/about/activity-development-dark.webp',
+        },
         imageAlt: 'コードエディタを表示したノートPC',
         actions: [
             {
@@ -38,12 +45,15 @@ const activityShowcases = [
             },
         ],
         cardClass: 'activity-card--dev',
-        textPosition: 'text-bottom',
+        copyPosition: 'activity-copy--top-left',
     },
     {
         title: 'ゲーム交流',
         description: 'VALORANT、APEX、Minecraftなどを中心に、メンバー同士で気軽に遊ぶオンライン交流活動です。',
-        image: '/images/about/game-card.png',
+        images: {
+            light: '/images/about/activity-game-light.webp',
+            dark: '/images/about/activity-game-dark.webp',
+        },
         imageAlt: 'ゲームコントローラーとヘッドセット',
         actions: [
             {
@@ -53,12 +63,15 @@ const activityShowcases = [
             },
         ],
         cardClass: 'activity-card--game',
-        textPosition: 'text-top',
+        copyPosition: 'activity-copy--top-left',
     },
     {
         title: '今週の数学',
         description: '自作問題を通して、数学的な発想力と表現力を磨いています。',
-        image: '/images/about/math-card.png',
+        images: {
+            light: '/images/about/activity-math-light.webp',
+            dark: '/images/about/activity-math-dark.webp',
+        },
         imageAlt: '数学の図形が表示されたタブレットとペン',
         actions: [
             {
@@ -68,7 +81,7 @@ const activityShowcases = [
             },
         ],
         cardClass: 'activity-card--math',
-        textPosition: 'text-bottom',
+        copyPosition: 'activity-copy--bottom-right',
     },
 ];
 
@@ -104,6 +117,7 @@ const nextEvent = {
 
 export function About() {
     const [openFaq, setOpenFaq] = useState<number | null>(null);
+    const { resolvedTheme } = useTheme();
 
     return (
         <div className="animate-fade-in">
@@ -132,7 +146,7 @@ export function About() {
                     {activityShowcases.map((item) => (
                         <article
                             key={item.title}
-                            className={`activity-card ${item.cardClass} ${item.textPosition}`}
+                            className={`activity-card ${item.cardClass} ${item.copyPosition}`}
                         >
                             <div className="activity-copy">
                                 <h3>{item.title}</h3>
@@ -171,7 +185,7 @@ export function About() {
                             </div>
                             <img
                                 className="activity-visual"
-                                src={item.image}
+                                src={item.images[resolvedTheme]}
                                 alt={item.imageAlt}
                                 width={1600}
                                 height={1024}
