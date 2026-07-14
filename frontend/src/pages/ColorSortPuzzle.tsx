@@ -1,637 +1,193 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, RotateCcw, Share2, Sparkles, Star, Undo2 } from 'lucide-react';
+import { ArrowLeft, Star } from 'lucide-react';
 import { PageSeo } from '@/components/PageSeo';
-import { Button } from '@/components/ui';
-
-type ColorToken = 'sky' | 'mint' | 'coral' | 'sun' | 'violet' | 'rose';
-type Bottle = ColorToken[];
-
-const BOTTLE_SIZE = 8;
-const PUZZLE_COLORS: ColorToken[] = ['sky', 'mint', 'coral', 'sun'];
-const HARD_PUZZLE_COLORS: ColorToken[] = ['sky', 'mint', 'coral', 'sun', 'violet'];
-const NORMAL_BOTTLE_COUNT = 6;
-const NORMAL_EMPTY_BOTTLE_COUNT = NORMAL_BOTTLE_COUNT - PUZZLE_COLORS.length;
-const HARD_EMPTY_BOTTLE_COUNT = NORMAL_BOTTLE_COUNT - HARD_PUZZLE_COLORS.length;
-const GENERATION_ATTEMPTS = 120;
-const HARD_GENERATION_ATTEMPTS = 180;
-const MAX_LONGEST_RUN = 5;
-const NORMAL_SOLVER_DEPTH = 80;
-const HARD_SOLVER_DEPTH = 140;
-const NORMAL_SOLVER_STATES = 18000;
-const HARD_SOLVER_STATES = 50000;
-
-const colorStyles: Record<ColorToken, string> = {
-    sky: 'from-[#5AC8FA] to-[#007AFF]',
-    mint: 'from-[#63E6BE] to-[#30D158]',
-    coral: 'from-[#FF9F0A] to-[#FF453A]',
-    sun: 'from-[#FFE066] to-[#FFD60A]',
-    violet: 'from-[#BF5AF2] to-[#7D7AFF]',
-    rose: 'from-[#FF8AC5] to-[#FF375F]',
-};
-
-const canvasColors: Record<ColorToken, string> = {
-    sky: '#0A84FF',
-    mint: '#30D158',
-    coral: '#FF453A',
-    sun: '#FFD60A',
-    violet: '#7D7AFF',
-    rose: '#FF375F',
-};
-
-function clonePuzzle(puzzle: Bottle[]): Bottle[] {
-    return puzzle.map((bottle) => [...bottle]);
-}
-
-function createSeededRandom(seed: number): () => number {
-    let value = seed;
-    return () => {
-        value = (value * 1664525 + 1013904223) % 4294967296;
-        return value / 4294967296;
-    };
-}
-
-function createPuzzleSeed(): number {
-    let cryptoSeed = 0;
-    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
-        const values = new Uint32Array(1);
-        crypto.getRandomValues(values);
-        cryptoSeed = values[0] ?? 0;
-    }
-
-    return (Date.now() ^ Math.floor(Math.random() * 0xffffffff) ^ cryptoSeed) >>> 0;
-}
-
-function getLongestRun(bottle: Bottle): number {
-    let longest = 0;
-    let current = 0;
-    let previous: ColorToken | null = null;
-
-    bottle.forEach((color) => {
-        current = color === previous ? current + 1 : 1;
-        previous = color;
-        longest = Math.max(longest, current);
-    });
-
-    return longest;
-}
-
-function getTopGroup(bottle: Bottle): { color: ColorToken; count: number } | null {
-    const color = bottle.at(-1);
-    if (!color) return null;
-
-    let count = 0;
-    for (let index = bottle.length - 1; index >= 0; index -= 1) {
-        if (bottle[index] !== color) break;
-        count += 1;
-    }
-
-    return { color, count };
-}
-
-function canPour(puzzle: Bottle[], fromIndex: number, toIndex: number): boolean {
-    if (fromIndex === toIndex) return false;
-
-    const from = puzzle[fromIndex];
-    const to = puzzle[toIndex];
-    const topGroup = getTopGroup(from);
-    if (!topGroup || to.length >= BOTTLE_SIZE) return false;
-
-    const targetTop = to.at(-1);
-    return !targetTop || targetTop === topGroup.color;
-}
-
-function pourBottle(puzzle: Bottle[], fromIndex: number, toIndex: number): Bottle[] {
-    const next = clonePuzzle(puzzle);
-    const from = next[fromIndex];
-    const to = next[toIndex];
-    const topGroup = getTopGroup(from);
-
-    if (!topGroup || !canPour(puzzle, fromIndex, toIndex)) return next;
-
-    const pourCount = Math.min(topGroup.count, BOTTLE_SIZE - to.length);
-    for (let count = 0; count < pourCount; count += 1) {
-        const color = from.pop();
-        if (color) to.push(color);
-    }
-
-    return next;
-}
-
-function isUniformBottle(bottle: Bottle): boolean {
-    return bottle.length > 0 && bottle.every((color) => color === bottle[0]);
-}
-
-function serializePuzzle(puzzle: Bottle[]): string {
-    return puzzle
-        .map((bottle) => bottle.join(','))
-        .sort()
-        .join('|');
-}
-
-function getLegalMoves(puzzle: Bottle[]): { from: number; to: number }[] {
-    const moves: { from: number; to: number }[] = [];
-
-    for (let from = 0; from < puzzle.length; from += 1) {
-        const source = puzzle[from];
-        if (source.length === 0) continue;
-        if (source.length === BOTTLE_SIZE && isUniformBottle(source)) continue;
-
-        for (let to = 0; to < puzzle.length; to += 1) {
-            if (!canPour(puzzle, from, to)) continue;
-
-            const target = puzzle[to];
-            if (target.length === 0 && isUniformBottle(source)) continue;
-            moves.push({ from, to });
-        }
-    }
-
-    return moves.sort((a, b) => {
-        const aTargetEmpty = puzzle[a.to].length === 0 ? 1 : 0;
-        const bTargetEmpty = puzzle[b.to].length === 0 ? 1 : 0;
-        return aTargetEmpty - bTargetEmpty;
-    });
-}
-
-function canSolvePuzzle(puzzle: Bottle[], maxDepth: number, maxStates: number): boolean {
-    const seen = new Map<string, number>();
-    const stack: { puzzle: Bottle[]; depth: number }[] = [{ puzzle: clonePuzzle(puzzle), depth: 0 }];
-    let exploredStates = 0;
-
-    while (stack.length > 0 && exploredStates < maxStates) {
-        const current = stack.pop();
-        if (!current) break;
-
-        const key = serializePuzzle(current.puzzle);
-        const seenDepth = seen.get(key);
-        if (seenDepth !== undefined && seenDepth <= current.depth) continue;
-
-        seen.set(key, current.depth);
-        exploredStates += 1;
-
-        if (isSolved(current.puzzle)) return true;
-        if (current.depth >= maxDepth) continue;
-
-        const moves = getLegalMoves(current.puzzle);
-        for (let index = moves.length - 1; index >= 0; index -= 1) {
-            const move = moves[index];
-            stack.push({
-                puzzle: pourBottle(current.puzzle, move.from, move.to),
-                depth: current.depth + 1,
-            });
-        }
-    }
-
-    return false;
-}
-
-function buildSolvedPuzzle(colors: ColorToken[], emptyBottleCount: number): Bottle[] {
-    return [
-        ...colors.map((color) => Array.from({ length: BOTTLE_SIZE }, () => color)),
-        ...Array.from({ length: emptyBottleCount }, () => [] as Bottle),
-    ];
-}
-
-function moveSingleLayer(puzzle: Bottle[], fromIndex: number, toIndex: number): Bottle[] {
-    const next = clonePuzzle(puzzle);
-    const color = next[fromIndex].pop();
-    if (color) next[toIndex].push(color);
-    return next;
-}
-
-function scoreRandomness(puzzle: Bottle[]): number {
-    const filledBottles = puzzle.filter((bottle) => bottle.length > 0);
-    const longestRunPenalty = filledBottles.reduce((score, bottle) => score + Math.max(0, getLongestRun(bottle) - 3), 0);
-    const fullSameColorPenalty = filledBottles.filter((bottle) => (
-        bottle.length === BOTTLE_SIZE && bottle.every((color) => color === bottle[0])
-    )).length * 4;
-    const partialBottleBonus = filledBottles.filter((bottle) => bottle.length > 0 && bottle.length < BOTTLE_SIZE).length;
-    const topColorVariety = new Set(filledBottles.map((bottle) => bottle.at(-1))).size;
-
-    return partialBottleBonus * 3 + topColorVariety - longestRunPenalty * 2 - fullSameColorPenalty;
-}
-
-function buildScrambledPuzzlePreset({
-    colors,
-    emptyBottleCount,
-    seed,
-    attempts,
-    scrambleSteps,
-    solverDepth,
-    solverStates,
-    minPartialBottleCount,
-    maxLongestRun,
-    requireNoSolvedBottle,
-    scorePuzzle,
-}: {
-    colors: ColorToken[];
-    emptyBottleCount: number;
-    seed: number;
-    attempts: number;
-    scrambleSteps: number;
-    solverDepth: number;
-    solverStates: number;
-    minPartialBottleCount: number;
-    maxLongestRun: number;
-    requireNoSolvedBottle: boolean;
-    scorePuzzle: (puzzle: Bottle[]) => number;
-}): Bottle[] {
-    let bestSolvablePuzzle: Bottle[] | null = null;
-    let bestSolvableScore = Number.NEGATIVE_INFINITY;
-
-    for (let attempt = 0; attempt < attempts; attempt += 1) {
-        const random = createSeededRandom(seed + attempt * 9973);
-        let puzzle = buildSolvedPuzzle(colors, emptyBottleCount);
-        let previousMove: { from: number; to: number } | null = null;
-
-        for (let step = 0; step < scrambleSteps; step += 1) {
-            const moves: { from: number; to: number }[] = [];
-
-            for (let from = 0; from < puzzle.length; from += 1) {
-                if (puzzle[from].length === 0) continue;
-
-                for (let to = 0; to < puzzle.length; to += 1) {
-                    if (from === to || puzzle[to].length >= BOTTLE_SIZE) continue;
-                    if (previousMove?.from === to && previousMove.to === from) continue;
-                    moves.push({ from, to });
-                }
-            }
-
-            if (moves.length === 0) break;
-
-            const move = moves[Math.floor(random() * moves.length)];
-            puzzle = moveSingleLayer(puzzle, move.from, move.to);
-            previousMove = move;
-        }
-
-        const score = scorePuzzle(puzzle);
-        const solvedBottleCount = puzzle.filter((bottle) => (
-            bottle.length === BOTTLE_SIZE && bottle.every((color) => color === bottle[0])
-        )).length;
-        const partialBottleCount = puzzle.filter((bottle) => bottle.length > 0 && bottle.length < BOTTLE_SIZE).length;
-        const hasLargeBlock = puzzle.some((bottle) => getLongestRun(bottle) > maxLongestRun);
-        const solvable = canSolvePuzzle(puzzle, solverDepth, solverStates);
-
-        if (solvable && score > bestSolvableScore) {
-            bestSolvablePuzzle = puzzle;
-            bestSolvableScore = score;
-        }
-
-        if (
-            solvable &&
-            partialBottleCount >= minPartialBottleCount &&
-            !hasLargeBlock &&
-            (!requireNoSolvedBottle || solvedBottleCount === 0)
-        ) {
-            return puzzle;
-        }
-    }
-
-    return bestSolvablePuzzle ?? buildSolvedPuzzle(colors, emptyBottleCount);
-}
-
-function buildRandomDistributionPreset(seed: number): Bottle[] {
-    return buildScrambledPuzzlePreset({
-        colors: PUZZLE_COLORS,
-        emptyBottleCount: NORMAL_EMPTY_BOTTLE_COUNT,
-        seed,
-        attempts: GENERATION_ATTEMPTS,
-        scrambleSteps: 180,
-        solverDepth: NORMAL_SOLVER_DEPTH,
-        solverStates: NORMAL_SOLVER_STATES,
-        minPartialBottleCount: 4,
-        maxLongestRun: MAX_LONGEST_RUN,
-        requireNoSolvedBottle: false,
-        scorePuzzle: scoreRandomness,
-    });
-}
-
-function scoreHardness(puzzle: Bottle[]): number {
-    const filledBottles = puzzle.filter((bottle) => bottle.length > 0);
-    const partialBottleCount = filledBottles.filter((bottle) => bottle.length < BOTTLE_SIZE).length;
-    const topColorVariety = new Set(filledBottles.map((bottle) => bottle.at(-1))).size;
-    const solvedBottlePenalty = filledBottles.filter((bottle) => (
-        bottle.length === BOTTLE_SIZE && bottle.every((color) => color === bottle[0])
-    )).length * 8;
-    const longRunPenalty = filledBottles.reduce((score, bottle) => score + Math.max(0, getLongestRun(bottle) - 3), 0) * 3;
-
-    return partialBottleCount * 4 + topColorVariety - solvedBottlePenalty - longRunPenalty;
-}
-
-function buildHardPuzzlePreset(seed: number): Bottle[] {
-    return buildScrambledPuzzlePreset({
-        colors: HARD_PUZZLE_COLORS,
-        emptyBottleCount: HARD_EMPTY_BOTTLE_COUNT,
-        seed,
-        attempts: HARD_GENERATION_ATTEMPTS,
-        scrambleSteps: 260,
-        solverDepth: HARD_SOLVER_DEPTH,
-        solverStates: HARD_SOLVER_STATES,
-        minPartialBottleCount: 5,
-        maxLongestRun: 4,
-        requireNoSolvedBottle: true,
-        scorePuzzle: scoreHardness,
-    });
-}
-
-function isSolved(puzzle: Bottle[]): boolean {
-    return puzzle.every((bottle) => {
-        if (bottle.length === 0) return true;
-        if (bottle.length !== BOTTLE_SIZE) return false;
-        return bottle.every((color) => color === bottle[0]);
-    });
-}
-
-function createShareText(moves: number): string {
-    return `カラーソートパズルを${moves}手で解けました！`;
-}
-
-function getShareUrl(): string {
-    if (typeof window === 'undefined') return '';
-    return `${window.location.origin}/app/color-sort`;
-}
-
-async function createShareImage(puzzle: Bottle[], moves: number): Promise<File | null> {
-    if (typeof document === 'undefined') return null;
-
-    const canvas = document.createElement('canvas');
-    const width = 1200;
-    const height = 675;
-    const scale = window.devicePixelRatio || 1;
-    canvas.width = width * scale;
-    canvas.height = height * scale;
-
-    const context = canvas.getContext('2d');
-    if (!context) return null;
-
-    context.scale(scale, scale);
-    context.fillStyle = '#F5F5F7';
-    context.fillRect(0, 0, width, height);
-
-    context.fillStyle = '#FFFFFF';
-    context.shadowColor = 'rgba(0, 0, 0, 0.12)';
-    context.shadowBlur = 34;
-    context.shadowOffsetY = 18;
-    roundRect(context, 96, 76, width - 192, height - 152, 36);
-    context.fill();
-    context.shadowColor = 'transparent';
-
-    context.fillStyle = '#1D1D1F';
-    context.font = '700 54px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-    context.fillText('Color Sort Puzzle', 152, 164);
-
-    context.fillStyle = '#6E6E73';
-    context.font = '500 30px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-    context.fillText(`${moves} moves cleared`, 152, 210);
-
-    const bottleWidth = 82;
-    const bottleHeight = 310;
-    const gap = 28;
-    const totalWidth = puzzle.length * bottleWidth + (puzzle.length - 1) * gap;
-    const startX = (width - totalWidth) / 2;
-    const startY = 268;
-
-    puzzle.forEach((bottle, index) => {
-        const x = startX + index * (bottleWidth + gap);
-        drawShareBottle(context, bottle, x, startY, bottleWidth, bottleHeight);
-    });
-
-    context.fillStyle = '#86868B';
-    context.font = '500 22px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-    context.fillText(getShareUrl(), 152, 590);
-
-    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
-    return blob ? new File([blob], 'color-sort-result.png', { type: 'image/png' }) : null;
-}
-
-function roundRect(context: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {
-    context.beginPath();
-    context.moveTo(x + radius, y);
-    context.arcTo(x + width, y, x + width, y + height, radius);
-    context.arcTo(x + width, y + height, x, y + height, radius);
-    context.arcTo(x, y + height, x, y, radius);
-    context.arcTo(x, y, x + width, y, radius);
-    context.closePath();
-}
-
-function drawShareBottle(
-    context: CanvasRenderingContext2D,
-    bottle: Bottle,
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-) {
-    context.save();
-    roundRect(context, x, y, width, height, 28);
-    context.fillStyle = 'rgba(255, 255, 255, 0.58)';
-    context.fill();
-    context.strokeStyle = 'rgba(0, 0, 0, 0.14)';
-    context.lineWidth = 2;
-    context.stroke();
-    context.clip();
-
-    const padding = 10;
-    const liquidWidth = width - padding * 2;
-    const liquidHeight = height - 28;
-    const layerHeight = liquidHeight / BOTTLE_SIZE;
-    bottle.forEach((color, layerIndex) => {
-        context.fillStyle = canvasColors[color];
-        context.fillRect(
-            x + padding,
-            y + height - 12 - (layerIndex + 1) * layerHeight,
-            liquidWidth,
-            layerHeight + 1,
-        );
-    });
-
-    const highlight = context.createLinearGradient(x, y, x + width, y);
-    highlight.addColorStop(0, 'rgba(255,255,255,0.56)');
-    highlight.addColorStop(0.45, 'rgba(255,255,255,0.08)');
-    highlight.addColorStop(1, 'rgba(0,0,0,0.04)');
-    context.fillStyle = highlight;
-    context.fillRect(x, y, width, height);
-    context.restore();
-}
-
-function BottleView({
-    bottle,
-    index,
-    isSelected,
-    isPourTarget,
-    onClick,
-}: {
-    bottle: Bottle;
-    index: number;
-    isSelected: boolean;
-    isPourTarget: boolean;
-    onClick: () => void;
-}) {
-    return (
-        <button
-            type="button"
-            onClick={onClick}
-            aria-label={`ボトル ${index + 1}`}
-            className={`group relative h-[300px] w-[68px] sm:h-[360px] sm:w-[86px] rounded-b-[28px] rounded-t-[18px] border transition-all duration-300 ${
-                isSelected
-                    ? 'border-[#0071E3] shadow-[0_22px_50px_rgba(0,113,227,0.22)] -translate-y-3'
-                    : isPourTarget
-                      ? 'border-[#30D158] shadow-[0_22px_50px_rgba(48,209,88,0.2)] -translate-y-1'
-                    : 'border-black/10 dark:border-white/14 shadow-[0_18px_45px_rgba(0,0,0,0.08)] hover:-translate-y-1 hover:shadow-[0_22px_55px_rgba(0,0,0,0.12)]'
-            } bg-white/55 dark:bg-white/[0.06] backdrop-blur-xl overflow-hidden`}
-        >
-            <span className="absolute inset-x-3 top-2 h-3 rounded-full bg-white/70 dark:bg-white/20" />
-            <span className="absolute inset-0 rounded-b-[28px] rounded-t-[18px] bg-gradient-to-r from-white/45 via-transparent to-black/[0.03] pointer-events-none" />
-            <span className="absolute inset-x-[10px] bottom-[10px] flex h-[calc(100%-30px)] flex-col-reverse overflow-hidden rounded-b-[22px] rounded-t-[10px]">
-                {Array.from({ length: BOTTLE_SIZE }, (_, layerIndex) => {
-                    const color = bottle[layerIndex];
-                    return (
-                        <span
-                            key={layerIndex}
-                            className={`h-[12.5%] border-t border-white/45 transition-all duration-300 ${
-                                color ? `bg-gradient-to-br ${colorStyles[color]}` : 'bg-white/20 dark:bg-white/[0.03]'
-                            }`}
-                        />
-                    );
-                })}
-            </span>
-        </button>
-    );
-}
+import { ColorSortBoard } from '@/components/color-sort/ColorSortBoard';
+import { ColorSortControls } from '@/components/color-sort/ColorSortControls';
+import { PUZZLE_MODE_CONFIGS } from '@/components/color-sort/config';
+import { createPuzzleGenerationClient } from '@/components/color-sort/generationClient';
+import { createPuzzleSeed } from '@/components/color-sort/generator';
+import {
+    canPour,
+    clonePuzzle,
+    countCompletedBottles,
+    isCompletedBottle,
+    isSolved,
+    pourBottle,
+} from '@/components/color-sort/game';
+import { shareResult } from '@/components/color-sort/share';
+import type { Puzzle, PuzzleMode, PuzzlePhase } from '@/components/color-sort/types';
+import { Button, Dialog } from '@/components/ui';
+
+type PendingAction = 'reset' | 'new' | 'mode';
 
 export function ColorSortPuzzlePage() {
-    const [presetIndex, setPresetIndex] = useState(0);
-    const [isHardPuzzle, setIsHardPuzzle] = useState(false);
-    const [initialPuzzle, setInitialPuzzle] = useState<Bottle[]>(() => (
-        buildRandomDistributionPreset(createPuzzleSeed())
-    ));
-    const [puzzle, setPuzzle] = useState<Bottle[]>(() => clonePuzzle(initialPuzzle));
+    const [mode, setMode] = useState<PuzzleMode>('normal');
+    const config = PUZZLE_MODE_CONFIGS[mode];
+    const [phase, setPhase] = useState<PuzzlePhase>('generating');
+    const [puzzleNumber, setPuzzleNumber] = useState(1);
+    const [initialPuzzle, setInitialPuzzle] = useState<Puzzle>([]);
+    const [puzzle, setPuzzle] = useState<Puzzle>([]);
+    const [history, setHistory] = useState<Puzzle[]>([]);
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-    const [history, setHistory] = useState<Bottle[][]>([]);
-    const [moveHint, setMoveHint] = useState('');
+    const [status, setStatus] = useState('問題を準備中です。');
+    const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
+    const [resultOpen, setResultOpen] = useState(false);
+    const generatorRef = useRef(createPuzzleGenerationClient());
+    const mountedRef = useRef(false);
 
-    const solved = useMemo(() => isSolved(puzzle), [puzzle]);
-    const filledBottleCount = puzzle.filter((bottle) => bottle.length === BOTTLE_SIZE).length;
-    const pourTargetIndexes = useMemo(() => (
+    const startPuzzle = useCallback(async (nextMode: PuzzleMode, advanceNormalNumber = false) => {
+        setPhase('generating');
+        setSelectedIndex(null);
+        setResultOpen(false);
+        setStatus('問題を準備中です。');
+
+        try {
+            const outcome = await generatorRef.current.generate(nextMode, createPuzzleSeed());
+            if (!mountedRef.current) return;
+            setMode(nextMode);
+            if (nextMode === 'normal' && advanceNormalNumber) {
+                setPuzzleNumber((value) => value + 1);
+            }
+            setInitialPuzzle(clonePuzzle(outcome.puzzle));
+            setPuzzle(clonePuzzle(outcome.puzzle));
+            setHistory([]);
+            setStatus(outcome.usedFallback ? '安全な予備問題を読み込みました。' : 'ボトルを選んでください。');
+            setPhase('playing');
+        } catch (error) {
+            if (!mountedRef.current) return;
+            if (!(error instanceof DOMException && error.name === 'AbortError')) {
+                setStatus('問題の準備に失敗しました。もう一度お試しください。');
+                setPhase('playing');
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        const generator = generatorRef.current;
+        let mounted = true;
+        mountedRef.current = true;
+        queueMicrotask(() => {
+            if (mounted) void startPuzzle('normal');
+        });
+        return () => {
+            mounted = false;
+            mountedRef.current = false;
+            generator.cancel();
+        };
+    }, [startPuzzle]);
+
+    const legalTargets = useMemo(() => (
         selectedIndex === null
             ? []
-            : puzzle.map((_, index) => index).filter((index) => canPour(puzzle, selectedIndex, index))
-    ), [puzzle, selectedIndex]);
-
-    const loadPreset = (nextIndex: number) => {
-        const normalizedIndex = Math.max(0, nextIndex);
-        const nextPuzzleState = buildRandomDistributionPreset(createPuzzleSeed() + normalizedIndex * 8191);
-        setPresetIndex(normalizedIndex);
-        setIsHardPuzzle(false);
-        setInitialPuzzle(clonePuzzle(nextPuzzleState));
-        setPuzzle(clonePuzzle(nextPuzzleState));
-        setSelectedIndex(null);
-        setHistory([]);
-        setMoveHint('');
-    };
-
-    const toggleHardPreset = () => {
-        if (isHardPuzzle) {
-            loadPreset(presetIndex);
-            return;
-        }
-
-        const nextPuzzleState = buildHardPuzzlePreset(createPuzzleSeed());
-        setIsHardPuzzle(true);
-        setInitialPuzzle(clonePuzzle(nextPuzzleState));
-        setPuzzle(clonePuzzle(nextPuzzleState));
-        setSelectedIndex(null);
-        setHistory([]);
-        setMoveHint('星モードです。');
-    };
-
-    const reset = () => {
-        setPuzzle(clonePuzzle(initialPuzzle));
-        setSelectedIndex(null);
-        setHistory([]);
-        setMoveHint('');
-    };
+            : puzzle
+                .map((_, index) => index)
+                .filter((index) => canPour(puzzle, selectedIndex, index, config.capacity))
+    ), [config.capacity, puzzle, selectedIndex]);
 
     const handleBottleClick = (index: number) => {
-        if (solved) return;
+        if (phase !== 'playing') return;
+
+        const bottle = puzzle[index];
+        if (!bottle || isCompletedBottle(bottle, config.capacity)) return;
 
         if (selectedIndex === null) {
-            if (puzzle[index].length > 0) {
+            if (bottle.length > 0) {
                 setSelectedIndex(index);
-                setMoveHint('光っているボトルに注げます。');
+                setStatus('注ぎ先を選んでください。');
             }
             return;
         }
 
         if (selectedIndex === index) {
             setSelectedIndex(null);
-            setMoveHint('');
+            setStatus('選択を解除しました。');
             return;
         }
 
-        if (!canPour(puzzle, selectedIndex, index)) {
-            if (puzzle[index].length >= BOTTLE_SIZE) {
-                setMoveHint('満タンのボトルには注げません。空きのあるボトルを選んでください。');
-                return;
-            }
-
-            if (puzzle[index].length > 0) {
+        if (!canPour(puzzle, selectedIndex, index, config.capacity)) {
+            if (bottle.length > 0) {
                 setSelectedIndex(index);
-                setMoveHint('移動元を切り替えました。光っているボトルに注げます。');
-                return;
+                setStatus('移動元を変更しました。');
+            } else {
+                setStatus('同じ色の上、または空のボトルにだけ注げます。');
             }
-
-            setMoveHint('同じ色の上、または空のボトルにだけ注げます。');
             return;
         }
 
+        const next = pourBottle(puzzle, selectedIndex, index, config.capacity);
         setHistory((entries) => [...entries, clonePuzzle(puzzle)]);
-        setPuzzle((current) => pourBottle(current, selectedIndex, index));
+        setPuzzle(next);
         setSelectedIndex(null);
-        setMoveHint('');
+
+        if (isSolved(next, config.capacity)) {
+            setPhase('solved');
+            setResultOpen(true);
+            setStatus('完成しました。');
+        } else {
+            setStatus('移動しました。');
+        }
     };
 
     const undo = () => {
-        setHistory((entries) => {
-            const previous = entries.at(-1);
-            if (!previous) return entries;
-            setPuzzle(clonePuzzle(previous));
-            setSelectedIndex(null);
-            setMoveHint('');
-            return entries.slice(0, -1);
-        });
+        const previous = history.at(-1);
+        if (!previous) return;
+
+        setPuzzle(clonePuzzle(previous));
+        setHistory((entries) => entries.slice(0, -1));
+        setSelectedIndex(null);
+        setResultOpen(false);
+        setPhase('playing');
+        setStatus('1手戻しました。');
     };
 
-    const nextPuzzle = () => loadPreset(presetIndex + 1);
-    const shareResult = async () => {
-        const text = createShareText(history.length);
-        const url = getShareUrl();
-
-        try {
-            const image = await createShareImage(puzzle, history.length);
-
-            if (
-                image &&
-                navigator.canShare?.({ files: [image] }) &&
-                navigator.share
-            ) {
-                await navigator.share({
-                    title: 'カラーソートパズル',
-                    text,
-                    url,
-                    files: [image],
-                });
-                return;
-            }
-        } catch (error) {
-            console.warn('Image share failed. Falling back to X intent.', error);
+    const executeAction = (action: PendingAction) => {
+        if (action === 'reset') {
+            setPuzzle(clonePuzzle(initialPuzzle));
+            setHistory([]);
+            setSelectedIndex(null);
+            setResultOpen(false);
+            setPhase('playing');
+            setStatus('ボトルを選んでください。');
+            return;
         }
 
-        const intentUrl = new URL('https://twitter.com/intent/tweet');
-        intentUrl.searchParams.set('text', text);
-        intentUrl.searchParams.set('url', url);
-        window.open(intentUrl.toString(), '_blank', 'noopener,noreferrer');
+        if (action === 'new') {
+            void startPuzzle(mode, mode === 'normal');
+            return;
+        }
+
+        const nextMode: PuzzleMode = mode === 'normal' ? 'star' : 'normal';
+        void startPuzzle(nextMode, nextMode === 'normal');
     };
+
+    const requestAction = (action: PendingAction) => {
+        if (history.length > 0 && phase !== 'solved') {
+            setPendingAction(action);
+            return;
+        }
+
+        executeAction(action);
+    };
+
+    const confirmAction = () => {
+        const action = pendingAction;
+        setPendingAction(null);
+        if (action) executeAction(action);
+    };
+
+    const handleShare = () => {
+        void shareResult({ puzzle, moves: history.length, config });
+    };
+
+    const completedBottleCount = countCompletedBottles(puzzle, config.capacity);
+    const heading = phase === 'generating'
+        ? '問題を準備中'
+        : phase === 'solved'
+          ? '完成しました'
+          : selectedIndex === null
+            ? 'ボトルを選択'
+            : '注ぎ先を選択';
 
     return (
         <div className="min-h-screen bg-[#F5F5F7] text-[#1D1D1F] dark:bg-[#000] dark:text-[#F5F5F7]">
@@ -639,11 +195,11 @@ export function ColorSortPuzzlePage() {
                 title="カラーソートパズル | TTI Intelligence"
                 description="透明なボトルの色を揃える、TTI Intelligenceのミニパズルアプリです。"
             />
-            <section className="relative overflow-hidden border-b border-black/5 dark:border-white/10 bg-white dark:bg-[#050505]">
-                <div className="mx-auto max-w-[1120px] px-4 sm:px-6 lg:px-8 py-10 lg:py-14">
+            <section className="relative overflow-hidden border-b border-black/5 bg-white dark:border-white/10 dark:bg-[#050505]">
+                <div className="mx-auto max-w-[1120px] px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
                     <Link
                         to="/app"
-                        className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-[#0066CC] dark:text-[#2997FF] hover:underline"
+                        className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-[#0066CC] hover:underline dark:text-[#2997FF]"
                     >
                         <ArrowLeft className="h-4 w-4" />
                         アプリに戻る
@@ -665,79 +221,95 @@ export function ColorSortPuzzlePage() {
                         <div className="grid grid-cols-3 gap-3 rounded-[28px] border border-black/5 bg-[#F5F5F7] p-3 dark:border-white/10 dark:bg-white/[0.04]">
                             <div className="rounded-[20px] bg-white px-4 py-4 text-center shadow-sm dark:bg-white/[0.06]">
                                 <p className="text-xs text-[#86868B]">Moves</p>
-                                <p className="mt-1 text-2xl font-semibold">{history.length}</p>
+                                <p data-stat="moves" className="mt-1 text-2xl font-semibold">{history.length}</p>
                             </div>
                             <div className="rounded-[20px] bg-white px-4 py-4 text-center shadow-sm dark:bg-white/[0.06]">
                                 <p className="text-xs text-[#86868B]">Puzzle</p>
-                                <p className="mt-1 text-2xl font-semibold">{isHardPuzzle ? '★' : presetIndex + 1}</p>
+                                <p data-stat="puzzle" className="mt-1 text-2xl font-semibold">
+                                    {mode === 'star' ? '★' : puzzleNumber}
+                                </p>
                             </div>
                             <div className="rounded-[20px] bg-white px-4 py-4 text-center shadow-sm dark:bg-white/[0.06]">
-                                <p className="text-xs text-[#86868B]">Full</p>
-                                <p className="mt-1 text-2xl font-semibold">{filledBottleCount}</p>
+                                <p className="text-xs text-[#86868B]">Completed</p>
+                                <p data-stat="completed" className="mt-1 text-2xl font-semibold">{completedBottleCount}</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <section className="mx-auto max-w-[1120px] px-4 sm:px-6 lg:px-8 py-10 lg:py-14">
+            <section className="mx-auto max-w-[1120px] px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
                 <div className="rounded-[32px] border border-black/5 bg-white/82 p-5 shadow-[0_28px_80px_rgba(0,0,0,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.055] sm:p-8">
-                    <div className="mb-8 grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
-                        <div className="h-[58px] overflow-hidden">
-                            <h2 className="flex h-7 items-center gap-2 overflow-hidden text-xl font-semibold tracking-normal">
-                                <span>{solved ? '完成しました' : selectedIndex === null ? 'ボトルを選択' : '注ぎ先を選択'}</span>
-                                {isHardPuzzle && (
-                                    <span className="inline-flex h-7 shrink-0 items-center gap-1 rounded-full bg-[#FFD60A]/20 px-3 text-xs font-semibold text-[#7A5A00] dark:bg-[#FFD60A]/18 dark:text-[#FFD60A]">
-                                        <Star className="h-3.5 w-3.5" />
-                                        星モード
-                                    </span>
-                                )}
-                            </h2>
-                            <p className="mt-1 h-5 truncate text-sm text-[#6E6E73] dark:text-[rgba(235,235,245,0.62)]">
-                                {solved ? '整った色面が、なかなか気持ちいい。' : moveHint || '同じ色の上、または空のボトルにだけ注げます。'}
-                            </p>
-                        </div>
-
-                        <div className="flex w-full flex-col gap-2 lg:w-auto lg:items-end">
-                            <div className="grid w-full grid-cols-2 gap-2 sm:w-auto sm:grid-cols-5">
-                                <Button type="button" variant="secondary" onClick={undo} disabled={history.length === 0}>
-                                    <Undo2 className="h-4 w-4" />
-                                    戻す
-                                </Button>
-                                <Button type="button" variant="secondary" onClick={reset}>
-                                    <RotateCcw className="h-4 w-4" />
-                                    リセット
-                                </Button>
-                                <Button type="button" onClick={nextPuzzle}>
-                                    <Sparkles className="h-4 w-4" />
-                                    新しい問題
-                                </Button>
-                                <Button type="button" variant={isHardPuzzle ? 'primary' : 'secondary'} onClick={toggleHardPreset}>
-                                    <Star className="h-4 w-4" />
-                                    星
-                                </Button>
-                                <Button type="button" variant="secondary" onClick={shareResult} disabled={!solved}>
-                                    <Share2 className="h-4 w-4" />
-                                    シェア
-                                </Button>
-                            </div>
-                        </div>
+                    <div className="mb-6 h-[58px] overflow-hidden">
+                        <h2 className="flex h-7 items-center gap-2 overflow-hidden text-xl font-semibold tracking-normal">
+                            <span>{heading}</span>
+                            {mode === 'star' && (
+                                <span className="inline-flex h-7 shrink-0 items-center gap-1 rounded-full bg-[#FFD60A]/20 px-3 text-xs font-semibold text-[#7A5A00] dark:bg-[#FFD60A]/18 dark:text-[#FFD60A]">
+                                    <Star className="h-3.5 w-3.5" />
+                                    星モード
+                                </span>
+                            )}
+                        </h2>
+                        <p className="mt-1 h-5 truncate text-sm text-[#6E6E73] dark:text-[rgba(235,235,245,0.62)]">
+                            {phase === 'solved' ? '整った色面が、なかなか気持ちいい。' : status}
+                        </p>
                     </div>
 
-                    <div className="flex min-h-[360px] flex-wrap items-end justify-center gap-4 rounded-[24px] bg-[#F5F5F7] px-4 py-8 dark:bg-black/30 sm:min-h-[430px] sm:gap-7 sm:px-8">
-                        {puzzle.map((bottle, index) => (
-                            <BottleView
-                                key={index}
-                                bottle={bottle}
-                                index={index}
-                                isSelected={selectedIndex === index}
-                                isPourTarget={pourTargetIndexes.includes(index)}
-                                onClick={() => handleBottleClick(index)}
-                            />
-                        ))}
+                    <ColorSortBoard
+                        puzzle={puzzle}
+                        config={config}
+                        selectedIndex={selectedIndex}
+                        legalTargets={legalTargets}
+                        status={status}
+                        disabled={phase !== 'playing'}
+                        onBottleClick={handleBottleClick}
+                    />
+                    <div className="mt-4" aria-hidden={resultOpen || undefined}>
+                        <ColorSortControls
+                            phase={phase}
+                            moveCount={history.length}
+                            starMode={mode === 'star'}
+                            onUndo={undo}
+                            onReset={() => requestAction('reset')}
+                            onNewPuzzle={() => requestAction('new')}
+                            onToggleStar={() => requestAction('mode')}
+                            onShare={handleShare}
+                        />
                     </div>
                 </div>
             </section>
+
+            <Dialog
+                open={pendingAction !== null}
+                onClose={() => setPendingAction(null)}
+                title="現在の進捗を破棄しますか"
+                description="この操作を続けると、現在の手順は失われます。"
+            >
+                <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                    <Button type="button" variant="secondary" onClick={() => setPendingAction(null)}>
+                        キャンセル
+                    </Button>
+                    <Button type="button" onClick={confirmAction}>
+                        続ける
+                    </Button>
+                </div>
+            </Dialog>
+
+            <Dialog
+                open={resultOpen}
+                onClose={() => setResultOpen(false)}
+                title="完成しました"
+                description={`${history.length}手で色を揃えました。`}
+            >
+                <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+                    <Button type="button" onClick={() => requestAction('new')}>
+                        次の問題
+                    </Button>
+                    <Button type="button" variant="secondary" onClick={handleShare}>
+                        シェア
+                    </Button>
+                </div>
+            </Dialog>
         </div>
     );
 }
