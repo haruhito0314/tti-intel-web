@@ -43,7 +43,7 @@ describe('ColorSortBoard', () => {
             '[width:clamp(52px,18vw,68px)]',
             '[height:clamp(136px,28svh,190px)]',
             'lg:[width:clamp(80px,9vw,96px)]',
-            'lg:[height:clamp(210px,32svh,250px)]',
+            'lg:[height:clamp(294px,45svh,350px)]',
         );
     });
 

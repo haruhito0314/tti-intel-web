@@ -54,7 +54,7 @@ export function BottleView({
             disabled={disabled || completed}
             onClick={onClick}
             style={{ '--slot-count': capacity } as CSSProperties}
-            className={`relative min-h-11 min-w-11 [width:clamp(52px,18vw,68px)] [height:clamp(136px,28svh,190px)] lg:[width:clamp(80px,9vw,96px)] lg:[height:clamp(210px,32svh,250px)] overflow-hidden rounded-b-[24px] rounded-t-[16px] border bg-white/55 backdrop-blur-xl transition-[translate,box-shadow,border-color] duration-200 motion-reduce:translate-y-0 motion-reduce:transition-none ${selected ? '-translate-y-2 border-[#0071E3] shadow-[0_16px_36px_rgba(0,113,227,0.22)]' : legalTarget ? 'border-[#176B34] shadow-[0_12px_28px_rgba(23,107,52,0.25)]' : completed ? 'border-[#0057A8] shadow-[0_12px_28px_rgba(0,87,168,0.22)]' : 'border-black/10 dark:border-white/15'}`}
+            className={`relative min-h-11 min-w-11 [width:clamp(52px,18vw,68px)] [height:clamp(136px,28svh,190px)] lg:[width:clamp(80px,9vw,96px)] lg:[height:clamp(294px,45svh,350px)] overflow-hidden rounded-b-[24px] rounded-t-[16px] border bg-white/55 backdrop-blur-xl transition-[translate,box-shadow,border-color] duration-200 motion-reduce:translate-y-0 motion-reduce:transition-none ${selected ? '-translate-y-2 border-[#0071E3] shadow-[0_16px_36px_rgba(0,113,227,0.22)]' : legalTarget ? 'border-[#176B34] shadow-[0_12px_28px_rgba(23,107,52,0.25)]' : completed ? 'border-[#0057A8] shadow-[0_12px_28px_rgba(0,87,168,0.22)]' : 'border-black/10 dark:border-white/15'}`}
         >
             <span
                 aria-hidden="true"
