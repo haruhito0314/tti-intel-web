@@ -10,7 +10,7 @@ import {
     toPublicWeeklyMathKey,
     type WeeklyMathProblem,
 } from '@/lib/weeklyMath';
-import { toWeeklyMathPreviewText } from '@/lib/weeklyMathDisplay';
+import { getWeeklyMathAccentClasses, toWeeklyMathPreviewText } from '@/lib/weeklyMathDisplay';
 import { sortWeeklyMathProblemsNewestFirst } from '@/lib/weeklyMathIdentity';
 
 export function WeeklyMath() {
@@ -91,12 +91,7 @@ export function WeeklyMath() {
                         {items.map((item, index) => {
                             const preview = toWeeklyMathPreviewText(item.problem || '');
                             const isSolutionPublished = item.solutionPublished ?? true;
-                            const barClasses = [
-                                'bg-[#0071E3] dark:bg-[#2997FF]',
-                                'bg-[#34C759] dark:bg-[#30D158]',
-                                'bg-[#AF52DE] dark:bg-[#BF5AF2]',
-                                'bg-[#5AC8FA] dark:bg-[#64D2FF]',
-                            ][index % 4];
+                            const barClasses = getWeeklyMathAccentClasses(index);
                             return (
                                 <Link key={item.weekKey} to={`/weekly-math/${encodeURIComponent(toPublicWeeklyMathKey(item.weekKey))}`} className="block group">
                                     <Card variant="elevated" className="relative overflow-hidden transition-transform duration-300 hover:scale-[1.01]">
