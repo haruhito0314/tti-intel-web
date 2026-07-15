@@ -1793,7 +1793,7 @@
 
 .dev-hero-track {
   position: relative;
-  height: 1640vh;
+  height: 1280vh;
 }
 
 .dev-hero-stage {
@@ -3263,7 +3263,7 @@
 
 @media (max-width: 768px) {
   .dev-hero-track {
-    height: 1480vh;
+    height: 1200vh;
     overflow-x: clip;
   }
 
