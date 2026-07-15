@@ -12,6 +12,7 @@ import {
     Timestamp,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { sortWeeklyMathProblemsNewestFirst } from '@/lib/weeklyMathIdentity';
 
 export interface WeeklyMathProblem {
     weekKey: string;
@@ -219,13 +220,10 @@ export async function getHomeWeeklyMath(options?: { forceRefresh?: boolean }): P
 }
 
 export async function getWeeklyMathList(maxItems: number = 50): Promise<WeeklyMathProblem[]> {
-    const q = query(
-        collection(db, 'weeklyMath'),
-        orderBy('weekKey', 'desc'),
-        limit(maxItems)
-    );
-    const snap = await getDocs(q);
-    return snap.docs.map((d) => d.data() as WeeklyMathProblem);
+    const snap = await getDocs(collection(db, 'weeklyMath'));
+    return sortWeeklyMathProblemsNewestFirst(
+        snap.docs.map((d) => d.data() as WeeklyMathProblem)
+    ).slice(0, maxItems);
 }
 
 export async function getDefaultWeeklyMathTemplate(): Promise<WeeklyMathProblem | null> {

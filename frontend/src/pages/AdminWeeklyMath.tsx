@@ -20,6 +20,7 @@ import {
 import { useToast } from '@/components/ui/useToast';
 import { auth, db } from '@/lib/firebase';
 import { formatDateLabel, formatUpdatedAtLabel, formatWeekKeyWithRange } from '@/lib/dateFormat';
+import { isValidWeeklyMathId, sortWeeklyMathProblemsNewestFirst } from '@/lib/weeklyMathIdentity';
 
 export function AdminWeeklyMath() {
     const { user, isAdmin, loading } = useAuth();
@@ -66,9 +67,9 @@ export function AdminWeeklyMath() {
         list: WeeklyMathProblem[],
         defaultTemplate: WeeklyMathProblem | null
     ): { latest: WeeklyMathProblem[]; all: WeeklyMathProblem[] } => {
-        const filtered = list
-            .filter((item) => item.weekKey !== DEFAULT_WEEKLY_MATH_TEMPLATE_KEY && item.weekKey !== 'diagnostic-test')
-            .sort((a, b) => b.weekKey.localeCompare(a.weekKey));
+        const filtered = sortWeeklyMathProblemsNewestFirst(
+            list.filter((item) => item.weekKey !== DEFAULT_WEEKLY_MATH_TEMPLATE_KEY && item.weekKey !== 'diagnostic-test')
+        );
 
         const latest = defaultTemplate
             ? [...filtered.slice(0, 5), defaultTemplate]
@@ -182,13 +183,11 @@ export function AdminWeeklyMath() {
         }
 
         const normalizedWeekKey = targetWeekKey.trim();
-        const isDefaultTemplate = normalizedWeekKey === DEFAULT_WEEKLY_MATH_TEMPLATE_KEY;
-        const isIsoWeekKey = /^\d{4}-W\d{2}$/.test(normalizedWeekKey);
-        if (!isDefaultTemplate && !isIsoWeekKey) {
+        if (!isValidWeeklyMathId(normalizedWeekKey)) {
             addToast({
                 type: 'warning',
-                title: '週キーの形式が不正です',
-                message: `YYYY-WNN 形式で入力してください（例: 2026-W14）。デフォルト問題は ${DEFAULT_WEEKLY_MATH_TEMPLATE_KEY} を指定します。`,
+                title: '問題IDの形式が不正です',
+                message: '半角小文字・数字・ハイフンだけで入力してください（例: geometry-circle-chain）。',
             });
             return;
         }
@@ -249,7 +248,7 @@ export function AdminWeeklyMath() {
     };
 
     const startNewCreate = () => {
-        setTargetWeekKey(thisWeekKey);
+        setTargetWeekKey('');
         setTitle('');
         setPeriodMemo('');
         setProblem('');
@@ -538,7 +537,7 @@ export function AdminWeeklyMath() {
                                 </h1>
                             </div>
                             <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
-                                対象週: {formatWeekKeyWithRange(targetWeekKey)}
+                                問題ID: {targetWeekKey || '未入力'}
                             </p>
                             {weekRange && (
                                 <p className="apple-footnote mt-1 text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
@@ -609,7 +608,7 @@ export function AdminWeeklyMath() {
                             </Link>
                         </div>
                         <Input
-                            placeholder="週キー・タイトル・期間メモで検索（全履歴）"
+                            placeholder="問題ID・タイトル・期間メモで検索（全履歴）"
                             value={latestSearchQuery}
                             onChange={(e) => setLatestSearchQuery(e.target.value)}
                             className="mb-3"
@@ -690,7 +689,7 @@ export function AdminWeeklyMath() {
                             <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5">
                                 <h2 className="apple-headline text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">問題を追加</h2>
                                 <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-4">
-                                    新しい週の問題を作るときは、ここから入力フォームを開いてください。
+                                    新しい問題を作るときは、ここから入力フォームを開いてください。
                                 </p>
                                 <Button onClick={startNewCreate} className="rounded-full">
                                     <Plus className="w-4 h-4" />
@@ -735,8 +734,8 @@ export function AdminWeeklyMath() {
                                     )}
                                 </div>
                                 <Input
-                                    label="週キー（追加/編集対象）"
-                                    placeholder="例: 2026-W14"
+                                    label="問題ID（追加/編集対象）"
+                                    placeholder="例: geometry-circle-chain"
                                     value={targetWeekKey}
                                     onChange={(e) => setTargetWeekKey(e.target.value)}
                                 />
