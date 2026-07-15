@@ -16,7 +16,7 @@ import {
 } from '@/lib/weeklyMath';
 import { useToast } from '@/components/ui/useToast';
 import { formatDateLabel, formatUpdatedAtLabel, formatWeekKeyWithRange } from '@/lib/dateFormat';
-import { ROUTE_COUNTING_ANSWER, ROUTE_COUNTING_EXPLANATION } from '@/lib/weeklyMathFallbacks';
+import { resolveWeeklyMathSolutionContent } from '@/lib/weeklyMathFallbacks';
 import { sortWeeklyMathProblemsNewestFirst } from '@/lib/weeklyMathIdentity';
 
 export function AdminWeeklyMathPreview() {
@@ -109,9 +109,10 @@ export function AdminWeeklyMathPreview() {
     const previewTitle = previewItem.title?.trim() || '経路の場合の数';
     const previewPeriodMemo = previewItem.periodMemo?.trim() || '';
     const previewProblem = previewItem.problem?.trim() || '';
-    const fallbackRoute = previewTitle === '経路の場合の数';
-    const previewAnswer = previewItem.answer?.trim() || (fallbackRoute ? ROUTE_COUNTING_ANSWER : '');
-    const previewExplanation = previewItem.explanation?.trim() || (fallbackRoute ? ROUTE_COUNTING_EXPLANATION : '');
+    const {
+        answerMarkdown: previewAnswer,
+        explanationMarkdown: previewExplanation,
+    } = resolveWeeklyMathSolutionContent(previewItem);
     const previewSolutionPublished = previewItem.solutionPublished ?? true;
     const selectedRange = selectedItem ? getWeekDateRange(selectedItem.weekKey) : null;
     const previewWeekKey = selectedItem?.weekKey ?? DEFAULT_WEEKLY_MATH_TEMPLATE_KEY;

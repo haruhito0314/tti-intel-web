@@ -12,6 +12,7 @@ import {
     Timestamp,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { ROUTE_COUNTING_ANSWER, ROUTE_COUNTING_EXPLANATION } from '@/lib/weeklyMathFallbacks';
 import { sortWeeklyMathProblemsNewestFirst } from '@/lib/weeklyMathIdentity';
 
 export interface WeeklyMathProblem {
@@ -56,16 +57,8 @@ const DEFAULT_WEEKLY_MATH_PROBLEM_BODY: Omit<WeeklyMathProblem, 'weekKey'> = {
 \\(n\\)回の操作後、\\(a_n=1\\) となるようなカードの引き方の総数を求めてください。`,
     hint: `\\(+1\\) と \\(-1\\) は互いに打ち消し合い、\\(×1\\) と \\(÷1\\) は値を変えません。
 「\\(+1\\) と \\(-1\\) の使用回数が同じ」である条件を使って数え上げます。`,
-    answer: `$$
-\\sum_{k=0}^{n}\\frac{(2n)!}{k!k!(2n-2k)!}\\,2^{2n-2k}
-$$`,
-    explanation: `\\(+1\\) を \\(k\\) 回、\\(-1\\) を \\(k\\) 回使うとすると、残り \\(2n-2k\\) 回は
-\\(×1\\) または \\(÷1\\) を自由に選べるので \\(2^{2n-2k}\\) 通りです。
-
-さらに \\(2n\\) 個の位置のうち、\\(+1\\) と \\(-1\\) の配置は
-\\(\\dfrac{(2n)!}{k!k!(2n-2k)!}\\) 通り。
-
-これを \\(k=0\\) から \\(n\\) まで合計して上式を得ます。`,
+    answer: ROUTE_COUNTING_ANSWER,
+    explanation: ROUTE_COUNTING_EXPLANATION,
     solutionPublished: true,
 };
 

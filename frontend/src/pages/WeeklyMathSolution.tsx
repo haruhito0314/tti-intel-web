@@ -10,7 +10,7 @@ import {
     toPublicWeeklyMathKey,
     type WeeklyMathProblem,
 } from '@/lib/weeklyMath';
-import { ROUTE_COUNTING_ANSWER, ROUTE_COUNTING_EXPLANATION } from '@/lib/weeklyMathFallbacks';
+import { resolveWeeklyMathSolutionContent } from '@/lib/weeklyMathFallbacks';
 
 export function WeeklyMathSolution() {
     const { weekKey } = useParams<{ weekKey: string }>();
@@ -20,9 +20,7 @@ export function WeeklyMathSolution() {
     const [loadingItem, setLoadingItem] = useState(true);
     const [fetchError, setFetchError] = useState(false);
 
-    const fallbackRoute = item?.title?.trim() === '経路の場合の数';
-    const answerMarkdown = item?.answer?.trim() || (fallbackRoute ? ROUTE_COUNTING_ANSWER : '');
-    const explanationMarkdown = item?.explanation?.trim() || (fallbackRoute ? ROUTE_COUNTING_EXPLANATION : '');
+    const { answerMarkdown, explanationMarkdown } = resolveWeeklyMathSolutionContent(item);
     const isProblemPublished = item?.problemPublished ?? true;
     const isSolutionPublished = item?.solutionPublished ?? true;
 
