@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 import { WeeklyMathDetail } from './WeeklyMathDetail';
@@ -19,7 +19,7 @@ vi.mock('@/lib/weeklyMath', async () => {
 });
 
 describe('WeeklyMathDetail hint', () => {
-    it('shows a saved hint on the public problem page', async () => {
+    it('reveals and hides a saved hint from a secondary action beside the solution link', async () => {
         render(
             <MemoryRouter initialEntries={['/weekly-math/sample-problem']}>
                 <Routes>
@@ -28,7 +28,23 @@ describe('WeeklyMathDetail hint', () => {
             </MemoryRouter>,
         );
 
-        expect(await screen.findByRole('heading', { name: 'ヒント' })).toBeInTheDocument();
+        const hintButton = await screen.findByRole('button', { name: 'ヒント' });
+        const solutionLink = screen.getByRole('link', { name: /解説を見る/ });
+
+        expect(solutionLink.parentElement).toBe(hintButton.parentElement);
+        expect(solutionLink.nextElementSibling).toBe(hintButton);
+        expect(hintButton).toHaveAttribute('aria-expanded', 'false');
+        expect(screen.queryByText('ここが公開ヒントです。')).not.toBeInTheDocument();
+
+        fireEvent.click(hintButton);
+
+        expect(hintButton).toHaveAttribute('aria-expanded', 'true');
+        expect(screen.getByRole('heading', { name: 'ヒント' })).toBeInTheDocument();
         expect(screen.getByText('ここが公開ヒントです。')).toBeInTheDocument();
+
+        fireEvent.click(hintButton);
+
+        expect(hintButton).toHaveAttribute('aria-expanded', 'false');
+        expect(screen.queryByText('ここが公開ヒントです。')).not.toBeInTheDocument();
     });
 });

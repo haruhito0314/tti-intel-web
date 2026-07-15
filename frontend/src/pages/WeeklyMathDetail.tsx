@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Sigma } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronDown, Sigma } from 'lucide-react';
 import { PageSeo } from '@/components/PageSeo';
 import { Card, CardContent, Button } from '@/components/ui';
 import { MathMarkdown } from '@/components/MathMarkdown';
@@ -18,6 +18,7 @@ export function WeeklyMathDetail() {
     const [item, setItem] = useState<WeeklyMathProblem | null>(null);
     const [loadingItem, setLoadingItem] = useState(true);
     const [fetchError, setFetchError] = useState(false);
+    const [hintOpen, setHintOpen] = useState(false);
     const isProblemPublished = item?.problemPublished ?? true;
     const isSolutionPublished = item?.solutionPublished ?? true;
 
@@ -26,6 +27,7 @@ export function WeeklyMathDetail() {
         setLoadingItem(true);
         setItem(null);
         setFetchError(false);
+        setHintOpen(false);
 
         (async () => {
             try {
@@ -145,21 +147,7 @@ export function WeeklyMathDetail() {
                         </div>
                     </CardContent>
                 </Card>
-                {item.hint?.trim() ? (
-                    <Card className="mt-6 border-[#0071E3]/25 dark:border-[#2997FF]/30">
-                        <CardContent className="p-6 sm:p-8">
-                            <h2 className="apple-section text-[#1D1D1F] dark:text-[#F5F5F7] mb-4">
-                                ヒント
-                            </h2>
-                            <div className="[&_.katex-display]:my-4">
-                                <MathMarkdown paragraphClassName="apple-body text-[#1D1D1F] dark:text-[#F5F5F7] leading-relaxed mb-4 last:mb-0">
-                                    {item.hint}
-                                </MathMarkdown>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ) : null}
-                <div className="mt-6">
+                <div className="mt-6 flex flex-wrap items-center gap-3">
                     {isSolutionPublished ? (
                         <Link to={`/weekly-math/${encodeURIComponent(toPublicWeeklyMathKey(item.weekKey))}/solution`}>
                             <Button>
@@ -172,7 +160,38 @@ export function WeeklyMathDetail() {
                             解答・解説は準備中です。
                         </p>
                     )}
+                    {item.hint?.trim() ? (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            aria-expanded={hintOpen}
+                            aria-controls="weekly-math-hint"
+                            onClick={() => setHintOpen((open) => !open)}
+                        >
+                            ヒント
+                            <ChevronDown
+                                className={`w-4 h-4 transition-transform duration-200 ${hintOpen ? 'rotate-180' : ''}`}
+                            />
+                        </Button>
+                    ) : null}
                 </div>
+                {item.hint?.trim() && hintOpen ? (
+                    <Card
+                        id="weekly-math-hint"
+                        className="mt-6 animate-fade-in border-[#0071E3]/25 dark:border-[#2997FF]/30"
+                    >
+                        <CardContent className="p-6 sm:p-8">
+                            <h2 className="apple-section text-[#1D1D1F] dark:text-[#F5F5F7] mb-4">
+                                ヒント
+                            </h2>
+                            <div className="[&_.katex-display]:my-4">
+                                <MathMarkdown paragraphClassName="apple-body text-[#1D1D1F] dark:text-[#F5F5F7] leading-relaxed mb-4 last:mb-0">
+                                    {item.hint}
+                                </MathMarkdown>
+                            </div>
+                        </CardContent>
+                    </Card>
+                ) : null}
             </section>
         </div>
     );
