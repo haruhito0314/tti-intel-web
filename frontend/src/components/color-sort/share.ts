@@ -9,9 +9,7 @@ const CANVAS_HEIGHT = 675;
 export type ShareOutcome = 'native' | 'x' | 'cancelled';
 
 export interface ShareRuntime {
-    createImage: (puzzle: Puzzle, moves: number, config: PuzzleModeConfig) => Promise<File | null>;
     share?: (data: ShareData) => Promise<void>;
-    canShare?: (data: ShareData) => boolean;
     openX: (url: string) => boolean;
     navigateX: (url: string) => void;
     origin: string;
@@ -42,9 +40,7 @@ export async function createShareImage(
 }
 
 const defaultRuntime = (): ShareRuntime => ({
-    createImage: createShareImage,
     share: navigator.share?.bind(navigator),
-    canShare: navigator.canShare?.bind(navigator),
     openX: openXPopup,
     navigateX: (url) => window.location.assign(url),
     origin: window.location.origin,
@@ -82,17 +78,6 @@ export async function shareResult(
     if (!runtime.share) {
         if (!runtime.openX(intentUrl)) runtime.navigateX(intentUrl);
         return 'x';
-    }
-
-    const image = await runtime.createImage(result.puzzle, result.moves, result.config).catch(() => null);
-
-    if (image && runtime.canShare?.({ files: [image] })) {
-        try {
-            await runtime.share({ title: SHARE_TITLE, text, url, files: [image] });
-            return 'native';
-        } catch (error) {
-            if (isAbortError(error)) return 'cancelled';
-        }
     }
 
     try {
