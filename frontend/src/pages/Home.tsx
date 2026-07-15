@@ -539,7 +539,7 @@ export function Home() {
                 <section className="home-flow-block max-w-[1120px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20 relative z-10">
                     <div className="flex items-center gap-3 mb-8">
                         <div className="flex flex-col sm:flex-row sm:items-end sm:gap-3">
-                            <h2 className="text-[24px] sm:text-[34px] font-semibold tracking-[-0.03em] text-[#1D1D1F] dark:text-[#F5F5F7] leading-[1.06]">
+                            <h2 className="text-[24px] sm:text-[34px] font-semibold tracking-[-0.03em] text-[#0071E3] dark:text-[#5CABFF] leading-[1.06]">
                                 今週の数学
                             </h2>
                         </div>
@@ -562,7 +562,7 @@ export function Home() {
                             <Link to={`/weekly-math/${encodeURIComponent(toPublicWeeklyMathKey(displayedWeeklyMath.weekKey))}`} className="block group">
                                 <CardContent className="p-8">
                                     <>
-                                        <h3 className="text-[26px] sm:text-[34px] font-semibold tracking-[-0.03em] text-[#1D1D1F] dark:text-[#F5F5F7] mb-3 leading-[1.08]">
+                                        <h3 className="text-[22px] sm:text-[28px] font-semibold tracking-[-0.03em] text-[#1D1D1F] dark:text-[#F5F5F7] mb-3 leading-[1.08]">
                                             {displayedWeeklyMathTitle}
                                         </h3>
                                         <div className="mb-5 min-h-[112px]">
