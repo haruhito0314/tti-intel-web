@@ -145,6 +145,20 @@ export function WeeklyMathDetail() {
                         </div>
                     </CardContent>
                 </Card>
+                {item.hint?.trim() ? (
+                    <Card className="mt-6 border-[#0071E3]/25 dark:border-[#2997FF]/30">
+                        <CardContent className="p-6 sm:p-8">
+                            <h2 className="apple-section text-[#1D1D1F] dark:text-[#F5F5F7] mb-4">
+                                ヒント
+                            </h2>
+                            <div className="[&_.katex-display]:my-4">
+                                <MathMarkdown paragraphClassName="apple-body text-[#1D1D1F] dark:text-[#F5F5F7] leading-relaxed mb-4 last:mb-0">
+                                    {item.hint}
+                                </MathMarkdown>
+                            </div>
+                        </CardContent>
+                    </Card>
+                ) : null}
                 <div className="mt-6">
                     {isSolutionPublished ? (
                         <Link to={`/weekly-math/${encodeURIComponent(toPublicWeeklyMathKey(item.weekKey))}/solution`}>
