@@ -17,6 +17,7 @@ import {
 import { useToast } from '@/components/ui/useToast';
 import { formatDateLabel, formatUpdatedAtLabel, formatWeekKeyWithRange } from '@/lib/dateFormat';
 import { ROUTE_COUNTING_ANSWER, ROUTE_COUNTING_EXPLANATION } from '@/lib/weeklyMathFallbacks';
+import { sortWeeklyMathProblemsNewestFirst } from '@/lib/weeklyMathIdentity';
 
 export function AdminWeeklyMathPreview() {
     const { user, isAdmin, loading } = useAuth();
@@ -45,10 +46,10 @@ export function AdminWeeklyMathPreview() {
                     getWeeklyMathList(),
                     getDefaultWeeklyMathTemplate(),
                 ]);
-                const list = listRaw.filter((item) =>
+                const list = sortWeeklyMathProblemsNewestFirst(listRaw.filter((item) =>
                     item.weekKey !== 'diagnostic-test' &&
                     item.weekKey !== DEFAULT_WEEKLY_MATH_TEMPLATE_KEY
-                );
+                ));
                 if (!mounted) return;
                 setItems(list);
                 setDefaultTemplate(template);

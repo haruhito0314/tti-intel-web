@@ -11,6 +11,7 @@ import {
     type WeeklyMathProblem,
 } from '@/lib/weeklyMath';
 import { toWeeklyMathPreviewText } from '@/lib/weeklyMathDisplay';
+import { sortWeeklyMathProblemsNewestFirst } from '@/lib/weeklyMathIdentity';
 
 export function WeeklyMath() {
     const [items, setItems] = useState<WeeklyMathProblem[]>([]);
@@ -24,10 +25,9 @@ export function WeeklyMath() {
                     getWeeklyMathList(200),
                     getDefaultWeeklyMathTemplate(),
                 ]);
-                const filtered = list
+                const filtered = sortWeeklyMathProblemsNewestFirst(list
                     .filter((item) => item.weekKey !== 'diagnostic-test')
-                    .filter((item) => item.problemPublished ?? true)
-                    .sort((a, b) => b.weekKey.localeCompare(a.weekKey));
+                    .filter((item) => item.problemPublished ?? true));
                 const withDefault = (defaultTemplate && (defaultTemplate.problemPublished ?? true))
                     ? [...filtered.filter((item) => item.weekKey !== DEFAULT_WEEKLY_MATH_TEMPLATE_KEY), defaultTemplate]
                     : filtered;
