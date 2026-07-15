@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Replace the always-visible weekly-math hint card with an Apple-like secondary disclosure button beside the primary solution action.
+**Goal:** Replace the always-visible weekly-math hint card with an Apple-like secondary disclosure button immediately before the primary solution action.
 
 **Architecture:** Keep the interaction local to `WeeklyMathDetail` with one boolean state. Render the hint action only for non-empty hints, connect it to the collapsible card with ARIA attributes, and retain the existing markdown renderer and card styling.
 
@@ -11,9 +11,9 @@
 ## Global Constraints
 
 - `解説を見る` remains the filled primary action.
-- `ヒント` is a neutral outlined action directly to its right.
+- `ヒント` is a neutral outlined action directly to the left of `解説を見る`.
 - The hint is collapsed initially and toggles inline below the action row.
-- The action row wraps on narrow screens in solution-then-hint order.
+- The action row wraps on narrow screens in hint-then-solution order.
 - No new dependencies.
 
 ---

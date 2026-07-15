@@ -32,7 +32,7 @@ describe('WeeklyMathDetail hint', () => {
         const solutionLink = screen.getByRole('link', { name: /解説を見る/ });
 
         expect(solutionLink.parentElement).toBe(hintButton.parentElement);
-        expect(solutionLink.nextElementSibling).toBe(hintButton);
+        expect(hintButton.nextElementSibling).toBe(solutionLink);
         expect(hintButton).toHaveAttribute('aria-expanded', 'false');
         expect(screen.queryByText('ここが公開ヒントです。')).not.toBeInTheDocument();
 

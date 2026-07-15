@@ -8,7 +8,7 @@ Make hints available on each public weekly-math problem without showing them bef
 
 - Place the actions immediately below the problem card.
 - Keep `解説を見る` as the filled primary button.
-- Add a bordered, neutral `ヒント` button directly to its right when a non-empty hint exists.
+- Add a bordered, neutral `ヒント` button directly to its left when a non-empty hint exists, so the learning flow runs from a small clue to the complete explanation.
 - The hint starts collapsed.
 - Pressing `ヒント` reveals the hint in a card below the action row; pressing it again collapses the card.
 - Add `aria-expanded` and `aria-controls` to the hint button so its state and target are available to assistive technology.
@@ -18,7 +18,7 @@ Make hints available on each public weekly-math problem without showing them bef
 
 - Use the existing Button and Card components so light mode, dark mode, spacing, and focus states remain consistent with the site.
 - Give the hint card a subtle blue border and a short fade/slide transition rather than a modal or a strong alert treatment.
-- Let the action row wrap on narrow screens while preserving the order `解説を見る`, then `ヒント`.
+- Let the action row wrap on narrow screens while preserving the order `ヒント`, then `解説を見る`.
 - If the solution is unpublished, show the existing preparation message and keep the hint button available beside it when a hint exists.
 
 ## Testing

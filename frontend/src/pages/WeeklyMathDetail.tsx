@@ -148,18 +148,6 @@ export function WeeklyMathDetail() {
                     </CardContent>
                 </Card>
                 <div className="mt-6 flex flex-wrap items-center gap-3">
-                    {isSolutionPublished ? (
-                        <Link to={`/weekly-math/${encodeURIComponent(toPublicWeeklyMathKey(item.weekKey))}/solution`}>
-                            <Button>
-                                解説を見る
-                                <ArrowRight className="w-4 h-4" />
-                            </Button>
-                        </Link>
-                    ) : (
-                        <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
-                            解答・解説は準備中です。
-                        </p>
-                    )}
                     {item.hint?.trim() ? (
                         <Button
                             type="button"
@@ -174,6 +162,18 @@ export function WeeklyMathDetail() {
                             />
                         </Button>
                     ) : null}
+                    {isSolutionPublished ? (
+                        <Link to={`/weekly-math/${encodeURIComponent(toPublicWeeklyMathKey(item.weekKey))}/solution`}>
+                            <Button>
+                                解説を見る
+                                <ArrowRight className="w-4 h-4" />
+                            </Button>
+                        </Link>
+                    ) : (
+                        <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
+                            解答・解説は準備中です。
+                        </p>
+                    )}
                 </div>
                 {item.hint?.trim() && hintOpen ? (
                     <Card
