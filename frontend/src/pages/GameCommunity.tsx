@@ -1,4 +1,4 @@
-import { useRef, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import {
     ArrowRight,
@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import { PageSeo } from '@/components/PageSeo';
 import { siteConfig } from '@/config/site';
-import { useGameCommunityAnimations } from '@/hooks/useGameCommunityAnimations';
 
 const games = [
     {
@@ -150,30 +149,8 @@ function HandNote({ className = '', children }: { className?: string; children: 
 }
 
 export function GameCommunity() {
-    const rootRef = useRef<HTMLDivElement>(null);
-    const heroCardsRef = useRef<HTMLDivElement>(null);
-    const sectionRefs = useRef<HTMLElement[]>([]);
-    const playStyleRefs = useRef<HTMLElement[]>([]);
-    const joinPhotosRef = useRef<HTMLDivElement>(null);
-
-    useGameCommunityAnimations({
-        root: rootRef,
-        heroCards: heroCardsRef,
-        sections: sectionRefs,
-        playStyleCards: playStyleRefs,
-        joinPhotos: joinPhotosRef,
-    });
-
-    const setSectionRef = (index: number) => (el: HTMLElement | null) => {
-        if (el) sectionRefs.current[index] = el;
-    };
-
-    const setPlayStyleRef = (index: number) => (el: HTMLElement | null) => {
-        if (el) playStyleRefs.current[index] = el;
-    };
-
     return (
-        <div ref={rootRef} className="game-community animate-fade-in">
+        <div className="game-community">
             <PageSeo
                 title="Game Community | TTI Intelligence"
                 description="VALORANT、APEX LEGENDS、Minecraftなどを中心に、メンバー同士で気軽に遊ぶゲーム交流活動を紹介します。"
@@ -193,7 +170,7 @@ export function GameCommunity() {
                 <div className="game-container game-hero-layout">
                     <div className="game-hero-copy">
                         <p className="game-eyebrow game-handwritten game-eyebrow--hand">ゲーム交流</p>
-                        <h1 className="game-hero-title">Game Community</h1>
+                        <h1 className="game-hero-title game-handwritten">Game Community</h1>
                         <p className="game-hero-lead">放課後、オンラインで集まるもう一つの活動場所。</p>
                         <p className="game-hero-body">
                             VALORANT、APEX LEGENDS、Minecraftなどを中心に、メンバー同士で気軽に遊ぶゲーム交流活動です。初心者から経験者まで、空いている時間に集まって楽しめます。
@@ -206,7 +183,7 @@ export function GameCommunity() {
                             <StickyNote className="game-hero-sticky" tone="mint">
                                 初心者OK！
                             </StickyNote>
-                            <div ref={heroCardsRef} className="game-hero-cards">
+                            <div className="game-hero-cards">
                             {games.map((game) => (
                                 <article
                                     key={game.id}
@@ -227,12 +204,12 @@ export function GameCommunity() {
             </section>
 
             {/* About */}
-            <section ref={setSectionRef(0)} className="game-band-cream">
+            <section className="game-band-cream">
                 <div className="game-container game-about-layout">
                     <div className="game-about-copy">
                         <div className="game-section-heading">
                             <Gamepad2 className="game-section-icon" aria-hidden="true" />
-                            <h2>ゲーム交流とは</h2>
+                            <h2 className="game-handwritten">ゲーム交流とは</h2>
                         </div>
                         <p className="game-body-text">
                             ゲーム交流は、メンバー同士がオンラインで集まり、FPS、バトルロイヤル、サンドボックスゲームなどを通して交流する活動です。勝ちを目指して真剣にプレイする日もあれば、雑談しながら気軽に遊ぶ日もあります。ゲームが得意な人だけでなく、初心者や久しぶりに遊ぶ人も参加しやすい雰囲気を大切にしています。
@@ -256,10 +233,10 @@ export function GameCommunity() {
             </section>
 
             {/* Featured Games */}
-            <section ref={setSectionRef(1)} className="game-band-light">
+            <section className="game-band-light">
                 <div className="game-container">
                     <div className="game-section-heading game-section-heading--center">
-                        <h2>Featured Games</h2>
+                        <h2 className="game-handwritten">Featured Games</h2>
                         <span className="game-heading-underline game-heading-underline--orange game-heading-underline--hand" aria-hidden="true" />
                         <HandNote className="game-featured-note">いろいろ遊べる！</HandNote>
                     </div>
@@ -275,7 +252,7 @@ export function GameCommunity() {
                                     <img src={game.image} alt={game.imageAlt} loading="lazy" />
                                 </div>
                                 <div className="game-featured-copy">
-                                    <h3>{game.name}</h3>
+                                    <h3 className="game-handwritten">{game.name}</h3>
                                     <p>{game.description}</p>
                                     <span className="game-featured-arrow" aria-hidden="true">
                                         <ArrowRight />
@@ -288,14 +265,14 @@ export function GameCommunity() {
             </section>
 
             {/* Play Style */}
-            <section ref={setSectionRef(2)} className="game-band-cream">
+            <section className="game-band-cream">
                 <div className="game-container">
                     <div className="game-section-heading game-section-heading--center">
-                        <h2>Play Style</h2>
+                        <h2 className="game-handwritten">Play Style</h2>
                         <HandNote className="game-playstyle-note">自分のペースでOK</HandNote>
                     </div>
                     <div className="game-play-grid">
-                        {playStyles.map((style, index) => {
+                        {playStyles.map((style) => {
                             const Icon = style.icon;
                             const handLabel =
                                 style.title === 'Casual Play'
@@ -306,7 +283,6 @@ export function GameCommunity() {
                             return (
                                 <article
                                     key={style.title}
-                                    ref={setPlayStyleRef(index)}
                                     className={`game-play-card game-play-card--${style.tone}`}
                                 >
                                     {handLabel && (
@@ -315,7 +291,7 @@ export function GameCommunity() {
                                     <div className="game-play-icon">
                                         <Icon aria-hidden="true" />
                                     </div>
-                                    <h3>{style.title}</h3>
+                                    <h3 className="game-handwritten">{style.title}</h3>
                                     <p>{style.description}</p>
                                 </article>
                             );
@@ -325,7 +301,7 @@ export function GameCommunity() {
             </section>
 
             {/* Beginners Welcome */}
-            <section ref={setSectionRef(3)} className="game-band-light">
+            <section className="game-band-light">
                 <div className="game-container game-beginner-layout">
                     <div className="game-beginner-copy">
                         <StickyNote className="game-beginner-sticky" tone="yellow">
@@ -333,14 +309,14 @@ export function GameCommunity() {
                         </StickyNote>
                         <div className="game-section-heading">
                             <Heart className="game-section-icon game-section-icon--heart" aria-hidden="true" />
-                            <h2>初心者歓迎</h2>
+                            <h2 className="game-handwritten">初心者歓迎</h2>
                         </div>
                         <p className="game-body-text">
                             勝つことだけを目的にするのではなく、一緒に遊ぶ時間を通してメンバー同士が自然に話せる場所を目指しています。初心者、復帰勢、見る専、作業しながらVCだけ参加したい人も歓迎です。大学の授業後や休日に、気軽に集まれるオンラインの交流場所として活動しています。
                         </p>
                         <div className="game-tag-list">
                             {beginnerTags.map((tag) => (
-                                <span key={tag} className="game-tag">
+                                <span key={tag} className="game-tag game-handwritten">
                                     {tag}
                                 </span>
                             ))}
@@ -361,10 +337,10 @@ export function GameCommunity() {
             </section>
 
             {/* Activity Style */}
-            <section ref={setSectionRef(4)} className="game-band-cream">
+            <section className="game-band-cream">
                 <div className="game-container">
                     <div className="game-section-heading game-section-heading--center">
-                        <h2>Activity Style</h2>
+                        <h2 className="game-handwritten">Activity Style</h2>
                         <StickyNote className="game-activity-sticky" tone="sky">
                             授業後に集合！
                         </StickyNote>
@@ -377,7 +353,7 @@ export function GameCommunity() {
                                     <div className="game-activity-icon">
                                         <Icon aria-hidden="true" />
                                     </div>
-                                    <h3>{item.title}</h3>
+                                    <h3 className="game-handwritten">{item.title}</h3>
                                     <p>{item.description}</p>
                                 </article>
                             );
@@ -387,9 +363,9 @@ export function GameCommunity() {
             </section>
 
             {/* Join */}
-            <section ref={setSectionRef(5)} className="game-band-dark">
+            <section className="game-band-dark">
                 <div className="game-container game-join-layout">
-                    <div ref={joinPhotosRef} className="game-join-photos" aria-hidden="true">
+                    <div className="game-join-photos" aria-hidden="true">
                         {games.map((game, index) => (
                             <div
                                 key={game.id}
@@ -412,11 +388,11 @@ export function GameCommunity() {
                                 href={siteConfig.social.discord.url}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="game-btn game-btn--primary"
+                                className="game-btn game-btn--primary game-handwritten"
                             >
                                 Discordに参加する
                             </a>
-                            <Link to="/contact" className="game-btn game-btn--outline">
+                            <Link to="/contact" className="game-btn game-btn--outline game-handwritten">
                                 お問い合わせ
                             </Link>
                         </div>
