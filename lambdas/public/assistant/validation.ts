@@ -12,9 +12,11 @@ const MAX_HISTORY_MESSAGES = 12;
 const MAX_HISTORY_CONTENT_LENGTH = 800;
 const MAX_HISTORY_TOTAL_LENGTH = 8_000;
 const MAX_MODEL_PAGE_IDS = 3;
+const MAX_MODEL_CONTENT_IDS = 3;
 
 const UUID_V4_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const MODEL_PAGE_ID_PATTERN = /^[a-z0-9-]{1,64}$/;
+const MODEL_CONTENT_ID_PATTERN = /^(news|board|weekly-math):[A-Za-z0-9._~%-]{1,128}$/;
 const ASCII_CONTROL_PATTERN = /[\u0000-\u001f\u007f]/;
 
 export class RequestValidationError extends Error {
@@ -145,14 +147,15 @@ export function validateModelGuideResponse(
 
   const keys = Object.keys(value);
   if (
-    keys.length !== 2
+    keys.length !== 3
     || !Object.hasOwn(value, 'answer')
     || !Object.hasOwn(value, 'pageIds')
+    || !Object.hasOwn(value, 'contentIds')
   ) {
     return unsafeModelOutput();
   }
 
-  const { answer, pageIds } = value;
+  const { answer, pageIds, contentIds } = value;
   if (typeof answer !== 'string') {
     return unsafeModelOutput();
   }
@@ -178,8 +181,25 @@ export function validateModelGuideResponse(
     seenPageIds.add(pageId);
   }
 
+  if (!Array.isArray(contentIds) || contentIds.length > MAX_MODEL_CONTENT_IDS) {
+    return unsafeModelOutput();
+  }
+
+  const seenContentIds = new Set<string>();
+  for (const contentId of contentIds) {
+    if (
+      typeof contentId !== 'string'
+      || !MODEL_CONTENT_ID_PATTERN.test(contentId)
+      || seenContentIds.has(contentId)
+    ) {
+      return unsafeModelOutput();
+    }
+    seenContentIds.add(contentId);
+  }
+
   return {
     answer: trimmedAnswer,
     pageIds: [...pageIds] as string[],
+    contentIds: [...contentIds] as string[],
   };
 }

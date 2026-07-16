@@ -247,13 +247,6 @@ describe('createAssistantApi', () => {
                 { pageId: 'apps', title: 'Apps', href: '/app' },
             ],
         }],
-        ['duplicate pageId', {
-            ...response,
-            links: [
-                { pageId: 'news', title: 'News', href: '/news' },
-                { pageId: 'news', title: 'Latest news', href: '/about' },
-            ],
-        }],
         ['duplicate href', {
             ...response,
             links: [

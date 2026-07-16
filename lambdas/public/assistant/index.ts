@@ -10,14 +10,21 @@ import type {
 
 import {
   createVerifiedLinks,
+  GUIDE_ENTRIES,
   selectRelevantKnowledge,
 } from './knowledge.js';
+import {
+  selectRelevantContent,
+  type ContentRepositories,
+} from './contentSearch.js';
+import { createContentRepositories } from './contentRepos.js';
 import {
   createApiKeyProvider,
   OpenAiTimeoutError,
   OpenAiUpstreamError,
   requestOpenAI,
   SecretUnavailableError,
+  type AssistantOpenAIMode,
 } from './openai.js';
 import {
   QuotaExceededError,
@@ -26,11 +33,13 @@ import {
   reserveQuota,
   type QuotaReservationInput,
 } from './quota.js';
+import { isCasualConversation } from './smallTalk.js';
 import type {
   AssistantRequest,
   AssistantResponse,
   OpenAIResult,
   OpenAIUsage,
+  RankedContentEntry,
   RankedGuideEntry,
 } from './types.js';
 import {
@@ -41,6 +50,10 @@ import {
 } from './validation.js';
 
 const OPENAI_TIMEOUT_MS = 20_000;
+
+const SMALL_TALK_SELECTED: RankedGuideEntry[] = GUIDE_ENTRIES
+  .filter(({ id }) => id === 'home')
+  .map((entry) => ({ entry, score: 3 }));
 
 const ERROR_RESPONSES = {
   400: {
@@ -74,7 +87,7 @@ type DependencyStage = 'internal' | 'secret' | 'quota' | 'openai';
 type RuntimeEnvironment = Readonly<Record<string, string | undefined>>;
 
 export const CONTACT_FALLBACK: AssistantResponse = {
-  answer: '案内できる情報が見つかりませんでした。お問い合わせページをご利用ください。',
+  answer: '申し訳ないですが、その内容にはお答えできません。このサイトの活動やページについてご質問があれば、お手伝いします。',
   links: [{ pageId: 'contact', title: 'Contact', href: '/contact' }],
 };
 
@@ -83,10 +96,13 @@ export interface AssistantHandlerDependencies {
   now(): Date;
   getApiKey(): Promise<string>;
   reserveQuota(input: QuotaReservationInput): Promise<void>;
+  searchContent(message: string): Promise<RankedContentEntry[]>;
   requestOpenAI(input: {
     apiKey: string;
     request: AssistantRequest;
     selected: readonly RankedGuideEntry[];
+    content?: readonly RankedContentEntry[];
+    mode?: AssistantOpenAIMode;
   }): Promise<OpenAIResult>;
   log(record: Record<string, string | number>): void;
 }
@@ -246,8 +262,12 @@ export function createAssistantHandler(
         request.message,
         request.currentPath,
       );
+      const content = await dependencies.searchContent(request.message);
+      const smallTalk = selected.length === 0
+        && content.length === 0
+        && isCasualConversation(request.message);
 
-      if (selected.length === 0) {
+      if (selected.length === 0 && content.length === 0 && !smallTalk) {
         outcome = 'no_relevant_knowledge';
         statusCode = 200;
         return jsonResponse(statusCode, CONTACT_FALLBACK, origin);
@@ -273,11 +293,19 @@ export function createAssistantHandler(
       await dependencies.reserveQuota(reservationInput);
       dependencyStage = 'internal';
 
+      const openAiSelected = smallTalk ? SMALL_TALK_SELECTED : selected;
+      const openAiContent = smallTalk ? [] : content;
+      const openAiMode: AssistantOpenAIMode = smallTalk
+        ? 'small_talk'
+        : 'guide';
+
       dependencyStage = 'openai';
       const result = await dependencies.requestOpenAI({
         apiKey,
         request,
-        selected,
+        selected: openAiSelected,
+        content: openAiContent,
+        mode: openAiMode,
       });
       dependencyStage = 'internal';
 
@@ -287,11 +315,16 @@ export function createAssistantHandler(
       totalTokens = usage.totalTokens;
       const output = validateModelGuideResponse(result.output);
 
-      outcome = 'success';
+      outcome = smallTalk ? 'small_talk_success' : 'success';
       statusCode = 200;
       return jsonResponse(statusCode, {
         answer: output.answer,
-        links: createVerifiedLinks(output.pageIds, selected),
+        links: createVerifiedLinks(
+          output.pageIds,
+          openAiSelected,
+          output.contentIds,
+          openAiContent,
+        ),
       } satisfies AssistantResponse, origin);
     } catch (error) {
       if (error instanceof RequestValidationError) {
@@ -361,12 +394,30 @@ export function createRuntimeDependencies(
 ): AssistantHandlerDependencies {
   const secretId = requireEnvironmentValue(environment, 'OPENAI_SECRET_ID');
   const model = requireEnvironmentValue(environment, 'ASSISTANT_MODEL');
+  const smallTalkModel = requireEnvironmentValue(
+    environment,
+    'ASSISTANT_SMALL_TALK_MODEL',
+  );
+  const postsTable = requireEnvironmentValue(environment, 'POSTS_TABLE');
+  const boardTable = requireEnvironmentValue(environment, 'BOARD_TABLE');
+  const firebaseApiKey = requireEnvironmentValue(environment, 'FIREBASE_API_KEY');
+  const firebaseProjectId = requireEnvironmentValue(
+    environment,
+    'FIREBASE_PROJECT_ID',
+  );
   const allowedOrigins = readAllowedOrigins(environment);
   const quotaConfig = readQuotaConfig(environment);
 
   const secretsClient = new SecretsManagerClient({});
   const getApiKey = createApiKeyProvider(secretsClient, secretId);
   const documentClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+  const contentRepositories: ContentRepositories = createContentRepositories({
+    documentClient,
+    postsTable,
+    boardTable,
+    firebaseApiKey,
+    firebaseProjectId,
+  });
 
   return {
     allowedOrigins,
@@ -377,13 +428,24 @@ export function createRuntimeDependencies(
       quotaConfig,
       input,
     ),
-    requestOpenAI: ({ apiKey, request, selected }) => requestOpenAI({
+    searchContent: (message) => selectRelevantContent(message, contentRepositories),
+    requestOpenAI: ({
       apiKey,
       request,
       selected,
-      model,
-      timeoutMs: OPENAI_TIMEOUT_MS,
-    }),
+      content = [],
+      mode = 'guide',
+    }) => (
+      requestOpenAI({
+        apiKey,
+        request,
+        selected,
+        content,
+        mode,
+        model: mode === 'small_talk' ? smallTalkModel : model,
+        timeoutMs: OPENAI_TIMEOUT_MS,
+      })
+    ),
     log: (record) => {
       console.info(JSON.stringify(record));
     },

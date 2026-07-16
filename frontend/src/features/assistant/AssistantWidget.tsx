@@ -97,58 +97,75 @@ export function AssistantWidget({
             </button>
 
             {active && (
-                <section
-                    ref={dialogRef}
-                    className="assistant-panel"
-                    role="dialog"
-                    aria-labelledby={titleId}
-                    aria-modal={isMobile}
-                    onKeyDown={handlePanelKeyDown}
-                >
-                    <header className="assistant-header">
-                        <h2 id={titleId} className="assistant-title">
-                            AI Assistant
-                        </h2>
-                        <button
-                            type="button"
-                            className="assistant-close"
-                            aria-label="AI Assistantを閉じる"
+                <>
+                    {isMobile && (
+                        <div
+                            className="assistant-scrim"
+                            aria-hidden="true"
                             onClick={close}
-                        >
-                            <X aria-hidden="true" />
-                        </button>
-                    </header>
-
-                    <AssistantConversation
-                        messages={messages}
-                        isSending={isSending}
-                        errorMessage={errorMessage}
-                        inputRef={inputRef}
-                        onSubmit={sendMessage}
-                        onClearError={clearError}
-                    />
-
-                    <details
-                        ref={detailsRef}
-                        className="assistant-menu"
+                        />
+                    )}
+                    <section
+                        ref={dialogRef}
+                        className="assistant-panel"
+                        role="dialog"
+                        aria-labelledby={titleId}
+                        aria-modal={isMobile}
+                        onKeyDown={handlePanelKeyDown}
                     >
-                        <summary
-                            ref={summaryRef}
-                            className="assistant-menu-summary"
-                            aria-label="AI Assistantのメニュー"
+                        <header className="assistant-header">
+                            <div className="assistant-header-title">
+                                <span
+                                    className="assistant-header-icon"
+                                    aria-hidden="true"
+                                >
+                                    <Sparkles />
+                                </span>
+                                <h2 id={titleId} className="assistant-title">
+                                    AI Assistant
+                                </h2>
+                            </div>
+                            <button
+                                type="button"
+                                className="assistant-close"
+                                aria-label="AI Assistantを閉じる"
+                                onClick={close}
+                            >
+                                <X aria-hidden="true" />
+                            </button>
+                        </header>
+
+                        <AssistantConversation
+                            messages={messages}
+                            isSending={isSending}
+                            errorMessage={errorMessage}
+                            inputRef={inputRef}
+                            onSubmit={sendMessage}
+                            onClearError={clearError}
+                        />
+
+                        <details
+                            ref={detailsRef}
+                            className="assistant-menu"
                         >
-                            <Ellipsis aria-hidden="true" />
-                        </summary>
-                        <button
-                            type="button"
-                            className="assistant-menu-button"
-                            onClick={handleHide}
-                        >
-                            <EyeOff aria-hidden="true" />
-                            <span>このタブで右下ボタンを非表示</span>
-                        </button>
-                    </details>
-                </section>
+                            <summary
+                                ref={summaryRef}
+                                className="assistant-menu-summary"
+                                aria-label="AI Assistantのメニュー"
+                            >
+                                <Ellipsis aria-hidden="true" />
+                            </summary>
+                            <button
+                                type="button"
+                                className="assistant-menu-button"
+                                onClick={handleHide}
+                            >
+                                <EyeOff aria-hidden="true" />
+                                <span>このタブで右下ボタンを非表示</span>
+                            </button>
+                        </details>
+                    </section>
+                </>
             )}
         </div>
     );

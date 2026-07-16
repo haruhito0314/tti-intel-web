@@ -17,6 +17,7 @@ import {
   parseResponsesEnvelope,
   requestOpenAI,
   SecretUnavailableError,
+  SMALL_TALK_INSTRUCTIONS,
   SYSTEM_INSTRUCTIONS,
   type SecretReader,
 } from './openai.js';
@@ -93,6 +94,7 @@ function completedEnvelope(
   outputTexts: readonly string[] = [JSON.stringify({
     answer: '今週の数学ページをご覧ください。',
     pageIds: ['weekly-math'],
+  contentIds: [],
   })],
   usage: unknown = {
     input_tokens: 120,
@@ -115,7 +117,7 @@ function completedEnvelope(
     instructions: SYSTEM_INSTRUCTIONS,
     max_output_tokens: 600,
     max_tool_calls: null,
-    model: 'gpt-5.6-luna',
+    model: 'gpt-5-nano',
     output: [{
       id: 'msg_test_123',
       type: 'message',
@@ -287,6 +289,27 @@ describe('buildResponsesPayload', () => {
     expect(SYSTEM_INSTRUCTIONS).not.toContain('AIガイド');
   });
 
+  it('builds a cheap nano payload for small talk without guide entries', () => {
+    const payload = buildResponsesPayload({
+      request: { ...request, message: 'こんにちは' },
+      selected: [],
+      model: 'gpt-5-nano',
+      mode: 'small_talk',
+    });
+
+    expect(payload.model).toBe('gpt-5-nano');
+    expect(payload.instructions).toBe(SMALL_TALK_INSTRUCTIONS);
+    expect(payload.max_output_tokens).toBe(300);
+    expect(payload.text.format.name).toBe('site_ai_small_talk_response');
+    expect(JSON.parse(
+      (payload.input[0]!.content[0] as { text: string }).text,
+    )).toMatchObject({
+      message: 'こんにちは',
+      allowedPageIds: ['home', 'contact'],
+    });
+    expect(JSON.stringify(payload)).not.toContain('guideEntries');
+  });
+
   it('builds the exact bounded Luna Structured Outputs payload', () => {
     const payload = buildResponsesPayload({ request, selected });
     const allowedPageIds = [
@@ -308,11 +331,13 @@ describe('buildResponsesPayload', () => {
       history: request.history,
       message: request.message,
       allowedPageIds,
+      allowedContentIds: [] as string[],
       guideEntries,
+      contentEntries: [] as unknown[],
     };
 
     expect(payload).toEqual({
-      model: 'gpt-5.6-luna',
+      model: 'gpt-5-nano',
       store: false,
       stream: false,
       reasoning: { effort: 'none' },
@@ -340,8 +365,13 @@ describe('buildResponsesPayload', () => {
                 maxItems: 3,
                 items: { type: 'string', enum: allowedPageIds },
               },
+              contentIds: {
+                type: 'array',
+                maxItems: 0,
+                items: { type: 'string' },
+              },
             },
-            required: ['answer', 'pageIds'],
+            required: ['answer', 'pageIds', 'contentIds'],
             additionalProperties: false,
           },
         },
@@ -485,6 +515,7 @@ describe('parseResponsesEnvelope', () => {
       output: {
         answer: '今週の数学ページをご覧ください。',
         pageIds: ['weekly-math'],
+      contentIds: [],
       },
       usage: {
         inputTokens: 120,
@@ -575,8 +606,8 @@ describe('parseResponsesEnvelope', () => {
   it.each([
     ['no output_text', completedEnvelope([])],
     ['multiple output_text items', completedEnvelope([
-      JSON.stringify({ answer: 'one', pageIds: [] }),
-      JSON.stringify({ answer: 'two', pageIds: [] }),
+      JSON.stringify({ answer: 'one', pageIds: [], contentIds: [] }),
+      JSON.stringify({ answer: 'two', pageIds: [], contentIds: [] }),
     ])],
     ['a non-object envelope', null],
     ['a missing output array', { status: 'completed' }],
@@ -590,14 +621,17 @@ describe('parseResponsesEnvelope', () => {
     ['an overlong answer', JSON.stringify({
       answer: 'a'.repeat(501),
       pageIds: [],
+    contentIds: [],
     })],
     ['duplicate page IDs', JSON.stringify({
       answer: 'answer',
       pageIds: ['news', 'news'],
+    contentIds: [],
     })],
     ['an extra output property', JSON.stringify({
       answer: 'answer',
       pageIds: [],
+      contentIds: [],
       extra: true,
     })],
   ])('post-validates and rejects %s', (_name, outputText) => {
@@ -629,6 +663,7 @@ describe('requestOpenAI', () => {
     output: {
       answer: '今週の数学ページをご覧ください。',
       pageIds: ['weekly-math'],
+    contentIds: [],
     },
     usage: {
       inputTokens: 120,
@@ -648,7 +683,7 @@ describe('requestOpenAI', () => {
       apiKey: 'sk-test',
       request,
       selected,
-      model: 'gpt-5.6-luna',
+      model: 'gpt-5-nano',
       fetchImpl: fetchMock as typeof fetch,
     });
 
@@ -665,7 +700,7 @@ describe('requestOpenAI', () => {
         body: JSON.stringify(buildResponsesPayload({
           request,
           selected,
-          model: 'gpt-5.6-luna',
+          model: 'gpt-5-nano',
         })),
         signal: expect.any(AbortSignal),
       },
@@ -692,7 +727,7 @@ describe('requestOpenAI', () => {
         apiKey: 'sk-test',
         request,
         selected,
-        model: 'gpt-5.6-luna',
+        model: 'gpt-5-nano',
         fetchImpl: fetchMock as typeof fetch,
       }));
 
@@ -713,7 +748,7 @@ describe('requestOpenAI', () => {
       apiKey: 'sk-test',
       request,
       selected,
-      model: 'gpt-5.6-luna',
+      model: 'gpt-5-nano',
       fetchImpl: fetchMock as typeof fetch,
     }));
 
@@ -733,7 +768,7 @@ describe('requestOpenAI', () => {
       apiKey: 'sk-test',
       request,
       selected,
-      model: 'gpt-5.6-luna',
+      model: 'gpt-5-nano',
       fetchImpl: fetchMock as typeof fetch,
     })).rejects.toBeInstanceOf(UnsafeModelOutputError);
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -753,7 +788,7 @@ describe('requestOpenAI', () => {
       apiKey: 'sk-test',
       request,
       selected,
-      model: 'gpt-5.6-luna',
+      model: 'gpt-5-nano',
       fetchImpl: fetchMock as typeof fetch,
     }));
 
@@ -770,7 +805,7 @@ describe('requestOpenAI', () => {
       apiKey: 'sk-test',
       request,
       selected,
-      model: 'gpt-5.6-luna',
+      model: 'gpt-5-nano',
       fetchImpl: fetchMock as typeof fetch,
     })).rejects.toBeInstanceOf(UnsafeModelOutputError);
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -792,7 +827,7 @@ describe('requestOpenAI', () => {
       apiKey: 'sk-test',
       request,
       selected,
-      model: 'gpt-5.6-luna',
+      model: 'gpt-5-nano',
       fetchImpl: fetchMock as typeof fetch,
     });
     const timeoutExpectation = expect(pending).rejects.toBeInstanceOf(OpenAiTimeoutError);

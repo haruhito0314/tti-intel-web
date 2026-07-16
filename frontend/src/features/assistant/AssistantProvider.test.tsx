@@ -496,6 +496,38 @@ describe('AssistantProvider', () => {
         });
     });
 
+    it('closes the open panel on pathname change while keeping conversation history', async () => {
+        const client: AssistantClient = {
+            send: vi.fn().mockResolvedValue(firstResponse),
+        };
+        renderProvider({ client, createId: createIdFactory() });
+
+        clickButton('開く');
+        enterQuestion('keep this thread');
+        clickButton('質問を送る');
+        await waitFor(() => expect(readState().messages).toHaveLength(2));
+        expect(readState().isOpen).toBe(true);
+
+        clickButton('Aboutへ移動');
+
+        expect(readState()).toMatchObject({
+            isOpen: false,
+            isHiddenForTab: false,
+            messages: [
+                { role: 'user', content: 'keep this thread' },
+                {
+                    role: 'assistant',
+                    content: firstResponse.answer,
+                    links: firstResponse.links,
+                },
+            ],
+        });
+
+        clickButton('開く');
+        expect(readState().isOpen).toBe(true);
+        expect(readState().messages).toHaveLength(2);
+    });
+
     it('reads the current pathname at each send event', async () => {
         const client: AssistantClient = {
             send: vi.fn().mockResolvedValue(firstResponse),

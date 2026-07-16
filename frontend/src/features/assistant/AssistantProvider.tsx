@@ -45,6 +45,7 @@ export function AssistantProvider({
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const messagesRef = useRef<AssistantUiMessage[]>([]);
     const pathnameRef = useRef(pathname);
+    const skipPathCloseRef = useRef(true);
     const hiddenRef = useRef(false);
     const sendingRef = useRef(false);
     const mountedRef = useRef(true);
@@ -57,6 +58,14 @@ export function AssistantProvider({
             mountedRef.current = false;
         };
     }, []);
+
+    useEffect(() => {
+        if (skipPathCloseRef.current) {
+            skipPathCloseRef.current = false;
+            return;
+        }
+        setIsOpen(false);
+    }, [pathname]);
 
     const open = useCallback(() => {
         if (!hiddenRef.current) {

@@ -3,9 +3,11 @@ import { PAGE_IDS } from './types.js';
 import type {
   AssistantLink,
   Audience,
+  ContentKind,
   GuideEntry,
   GuideFaq,
   PageId,
+  RankedContentEntry,
   RankedGuideEntry,
 } from './types.js';
 
@@ -207,7 +209,8 @@ export function scoreGuideEntry(
   }
   for (const faq of entry.faqs) {
     const question = normalizeSearchText(faq.question);
-    if (question && query.includes(question)) score += 2;
+    // FAQ matches alone must clear the selection threshold of 3.
+    if (question && query.includes(question)) score += 3;
   }
   if (currentPageId === entry.id) score += 1;
   return score;
@@ -235,26 +238,46 @@ export function selectRelevantKnowledge(
 export function createVerifiedLinks(
   modelPageIds: readonly string[],
   selected: readonly RankedGuideEntry[],
+  modelContentIds: readonly string[] = [],
+  selectedContent: readonly RankedContentEntry[] = [],
 ): AssistantLink[] {
   const allowedPageIds = new Set<PageId>([
     ...selected.map(({ entry }) => entry.id),
+    ...selectedContent.map(({ entry }) => entry.parentPageId),
     'contact',
   ]);
-  const seenPageIds = new Set<PageId>();
+  const contentById = new Map(
+    selectedContent.map(({ entry }) => [entry.id, entry] as const),
+  );
+  const seenHrefs = new Set<string>();
   const links: AssistantLink[] = [];
 
+  const pushLink = (link: AssistantLink) => {
+    if (links.length >= 3 || seenHrefs.has(link.href)) return;
+    seenHrefs.add(link.href);
+    links.push(link);
+  };
+
+  for (const contentId of modelContentIds) {
+    const entry = contentById.get(contentId);
+    if (!entry) continue;
+    if (!isSafeDynamicHref(entry.href, entry.kind)) continue;
+    pushLink({
+      pageId: entry.parentPageId,
+      title: entry.title,
+      href: entry.href,
+    });
+  }
+
   for (const pageId of modelPageIds) {
-    if (links.length === 3) break;
     if (
       !isPageId(pageId)
       || !allowedPageIds.has(pageId)
-      || seenPageIds.has(pageId)
     ) {
       continue;
     }
 
-    seenPageIds.add(pageId);
-    links.push({
+    pushLink({
       pageId,
       title: KNOWN_PAGE_ROUTES[pageId].title,
       href: KNOWN_PAGE_ROUTES[pageId].href,
@@ -262,4 +285,21 @@ export function createVerifiedLinks(
   }
 
   return links;
+}
+
+function isSafeDynamicHref(href: string, kind: ContentKind): boolean {
+  if (!href.startsWith('/') || href.startsWith('//') || href.includes('?') || href.includes('#')) {
+    return false;
+  }
+
+  if (kind === 'news') {
+    return /^\/news\/[^/]+$/.test(href);
+  }
+  if (kind === 'board') {
+    return /^\/board\/[^/]+$/.test(href);
+  }
+  if (kind === 'weekly-math') {
+    return /^\/weekly-math\/[^/]+$/.test(href);
+  }
+  return false;
 }

@@ -168,7 +168,7 @@ afterEach(() => {
 });
 
 describe('Layout assistant integration', () => {
-    it('keeps the open conversation and session across public route changes, then sends the new path', async () => {
+    it('keeps conversation and session across public route changes while closing the panel', async () => {
         const { client, createId, send } = createHarness();
         renderRoutes({ client, createId });
 
@@ -180,6 +180,8 @@ describe('Layout assistant integration', () => {
         );
         await screen.findByRole('heading', { name: '今週の数学' });
 
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        openAssistant();
         expect(
             screen.getByRole('dialog', { name: 'AI Assistant' }),
         ).toBeInTheDocument();
@@ -273,7 +275,7 @@ describe('Layout assistant integration', () => {
         expect(
             screen.getByRole('article', { name: 'AI Assistantの回答' }),
         ).toHaveTextContent(
-            '何かお困りですか？このサイトをご案内します。',
+            'こんにちは。私はこのサイトを案内するAIアシスタントです。ページの探し方や公開コンテンツについて、気軽に聞いてください。',
         );
         expect(screen.queryByLabelText('質問の候補')).not.toBeInTheDocument();
 

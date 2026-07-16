@@ -92,6 +92,36 @@ afterEach(() => {
 });
 
 describe('AssistantConversation', () => {
+    it('shows an assistant avatar beside AI replies for conversation presence', () => {
+        const { container } = renderConversation({
+            messages: [
+                {
+                    id: 'user-1',
+                    role: 'user',
+                    content: '活動内容を知りたい',
+                },
+                {
+                    id: 'assistant-1',
+                    role: 'assistant',
+                    content: 'About Usをご覧ください。',
+                    links: [],
+                },
+            ],
+        });
+
+        expect(container.querySelectorAll('.assistant-avatar')).toHaveLength(2);
+        expect(
+            screen.getByRole('article', { name: 'あなたの質問' })
+                .closest('.assistant-message-row-user')
+                ?.querySelector('.assistant-avatar'),
+        ).toBeNull();
+        expect(
+            screen.getAllByRole('article', { name: 'AI Assistantの回答' })[1]
+                .closest('.assistant-message-row-assistant')
+                ?.querySelector('.assistant-avatar'),
+        ).not.toBeNull();
+    });
+
     it('shows the assistant greeting without suggestions or sending on mount', () => {
         const onSubmit = vi.fn(async () => true);
 
@@ -100,7 +130,7 @@ describe('AssistantConversation', () => {
         expect(
             screen.getByRole('article', { name: 'AI Assistantの回答' }),
         ).toHaveTextContent(
-            '何かお困りですか？このサイトをご案内します。',
+            'こんにちは。私はこのサイトを案内するAIアシスタントです。ページの探し方や公開コンテンツについて、気軽に聞いてください。',
         );
         expect(
             screen.queryByRole('button', { name: '活動内容を知りたい' }),
@@ -112,7 +142,22 @@ describe('AssistantConversation', () => {
             screen.queryByRole('button', { name: '目的のページを探す' }),
         ).not.toBeInTheDocument();
         expect(screen.queryByLabelText('質問の候補')).not.toBeInTheDocument();
+        expect(screen.getByRole('button', { name: '送信' })).toBeDisabled();
         expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it('enables the paper-plane send button only when the draft has text', () => {
+        renderConversation();
+        const sendButton = screen.getByRole('button', { name: '送信' });
+
+        expect(sendButton).toBeDisabled();
+        expect(sendButton.querySelector('svg')).not.toBeNull();
+
+        enterQuestion('   ');
+        expect(sendButton).toBeDisabled();
+
+        enterQuestion('参加方法を知りたい');
+        expect(sendButton).toBeEnabled();
     });
 
     it('keeps the UI-only greeting before conversation messages', () => {
@@ -129,7 +174,7 @@ describe('AssistantConversation', () => {
         expect(articles).toHaveLength(2);
         expect(articles[0]).toHaveAccessibleName('AI Assistantの回答');
         expect(articles[0]).toHaveTextContent(
-            '何かお困りですか？このサイトをご案内します。',
+            'こんにちは。私はこのサイトを案内するAIアシスタントです。ページの探し方や公開コンテンツについて、気軽に聞いてください。',
         );
         expect(articles[1]).toHaveAccessibleName('あなたの質問');
         expect(articles[1]).toHaveTextContent('今週の数学を見たい');

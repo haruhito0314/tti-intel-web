@@ -277,7 +277,7 @@ describe('AssistantWidget', () => {
         expect(
             screen.getByRole('article', { name: 'AI Assistantの回答' }),
         ).toHaveTextContent(
-            '何かお困りですか？このサイトをご案内します。',
+            'こんにちは。私はこのサイトを案内するAIアシスタントです。ページの探し方や公開コンテンツについて、気軽に聞いてください。',
         );
         expect(screen.queryByLabelText('質問の候補')).not.toBeInTheDocument();
         expect(trigger).toHaveAttribute('hidden');
@@ -404,6 +404,22 @@ describe('AssistantWidget', () => {
         expect(trigger.closest('.assistant-root')).not.toHaveClass(
             'assistant-root-open',
         );
+    });
+
+    it('closes the mobile sheet when the scrim is clicked', () => {
+        renderWidget({ mobile: true });
+        const trigger = openWidget();
+        const dialog = screen.getByRole('dialog', { name: 'AI Assistant' });
+        const scrim = dialog.parentElement?.querySelector('.assistant-scrim');
+        expect(scrim).toBeTruthy();
+
+        fireEvent.click(scrim!);
+
+        expect(
+            screen.queryByRole('dialog', { name: 'AI Assistant' }),
+        ).not.toBeInTheDocument();
+        expect(trigger).not.toHaveAttribute('hidden');
+        expect(trigger).toHaveFocus();
     });
 
     it('traps mobile focus while respecting native disclosure and visibility', () => {
@@ -870,19 +886,31 @@ describe('AssistantWidget', () => {
             /\.assistant-messages\s*\{[^}]*overflow-y:\s*auto;/s,
         );
         expect(assistantCssSource).toMatch(
-            /@media\s*\(max-width:\s*767px\)[\s\S]*\.assistant-panel\s*\{[^}]*top:\s*0;[^}]*right:\s*0;[^}]*bottom:\s*auto;[^}]*left:\s*0;[^}]*width:\s*100%;[^}]*height:\s*100dvh;[^}]*min-height:\s*calc\(100dvh - 120px\);[^}]*max-height:\s*594px;/s,
+            /@media\s*\(max-width:\s*767px\)[\s\S]*\.assistant-panel\s*\{[^}]*top:\s*max\(8px,\s*env\(safe-area-inset-top,\s*0px\)\);[^}]*right:\s*0;[^}]*bottom:\s*0;[^}]*left:\s*0;[^}]*width:\s*100%;[^}]*height:\s*auto;/s,
+        );
+        expect(assistantCssSource).toMatch(
+            /@media\s*\(max-width:\s*767px\)[\s\S]*\.assistant-scrim\s*\{[^}]*pointer-events:\s*auto;/s,
         );
         expect(assistantCssSource).toMatch(
             /@media\s*\(max-width:\s*767px\)[\s\S]*\.assistant-messages\s*\{[^}]*min-height:\s*0;/s,
         );
         expect(assistantCssSource).toMatch(
-            /\.assistant-input-row\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;/s,
+            /\.assistant-send\s*\{[^}]*min-width:\s*48px;[^}]*min-height:\s*48px;[^}]*border-radius:\s*999px;/s,
+        );
+        expect(assistantCssSource).toMatch(
+            /\.assistant-send:disabled\s*\{[^}]*color:\s*var\(--muted\);/s,
         );
         expect(assistantCssSource).toMatch(
             /\.assistant-form textarea\s*\{[^}]*height:\s*48px;[^}]*min-height:\s*48px;[^}]*border-radius:\s*999px;/s,
         );
         expect(assistantCssSource).toMatch(
-            /\.assistant-form button\s*\{[^}]*min-height:\s*48px;[^}]*border-radius:\s*999px;/s,
+            /\.assistant-input-row\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;/s,
+        );
+        expect(assistantCssSource).toMatch(
+            /\.assistant-message-links a\s*\{[^}]*min-height:\s*44px;[^}]*border-radius:\s*12px;/s,
+        );
+        expect(assistantCssSource).toMatch(
+            /\.assistant-header-icon\s*\{[^}]*border-radius:\s*999px;/s,
         );
         expect(assistantCssSource).not.toMatch(/\.assistant-suggestions/);
     });

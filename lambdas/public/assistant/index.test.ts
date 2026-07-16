@@ -41,6 +41,7 @@ const successfulOpenAIResult: OpenAIResult = {
   output: {
     answer: '今週の数学から確認できます。',
     pageIds: ['weekly-math'],
+  contentIds: [],
   },
   usage: {
     inputTokens: 120,
@@ -132,6 +133,7 @@ function createDependencies(
     now: vi.fn(() => quotaNow),
     getApiKey: vi.fn(async () => 'sk-test'),
     reserveQuota: vi.fn(async () => undefined),
+    searchContent: vi.fn(async () => []),
     requestOpenAI: vi.fn(async () => successfulOpenAIResult),
     log: vi.fn(),
     ...overrides,
@@ -142,6 +144,14 @@ function expectNoOperationalCalls(
   dependencies: AssistantHandlerDependencies,
 ): void {
   expect(dependencies.now).not.toHaveBeenCalled();
+  expect(dependencies.getApiKey).not.toHaveBeenCalled();
+  expect(dependencies.reserveQuota).not.toHaveBeenCalled();
+  expect(dependencies.requestOpenAI).not.toHaveBeenCalled();
+}
+
+function expectNoPaidModelCalls(
+  dependencies: AssistantHandlerDependencies,
+): void {
   expect(dependencies.getApiKey).not.toHaveBeenCalled();
   expect(dependencies.reserveQuota).not.toHaveBeenCalled();
   expect(dependencies.requestOpenAI).not.toHaveBeenCalled();
@@ -256,7 +266,39 @@ describe('createAssistantHandler CORS and early exits', () => {
 
     expect(response.statusCode).toBe(200);
     expect(parsedBody(response)).toEqual(CONTACT_FALLBACK);
-    expectNoOperationalCalls(dependencies);
+    expect(dependencies.searchContent).toHaveBeenCalledTimes(1);
+    expectNoPaidModelCalls(dependencies);
+  });
+
+  it('routes short greetings through OpenAI small-talk instead of Contact fallback', async () => {
+    const dependencies = createDependencies({
+      requestOpenAI: vi.fn(async () => ({
+        output: {
+          answer: 'こんにちは！活動内容や参加方法など、気軽に聞いてください。',
+          pageIds: ['home', 'contact'],
+        contentIds: [],
+        },
+        usage: { inputTokens: 40, outputTokens: 30, totalTokens: 70 },
+      })),
+    });
+    const response = await invoke(dependencies, validPostEvent({
+      body: JSON.stringify({
+        ...validRequest,
+        message: 'こんにちは！',
+      }),
+    }));
+
+    expect(response.statusCode).toBe(200);
+    expect(parsedBody(response)).toEqual({
+      answer: 'こんにちは！活動内容や参加方法など、気軽に聞いてください。',
+      links: [
+        { pageId: 'home', title: 'Home', href: '/' },
+        { pageId: 'contact', title: 'Contact', href: '/contact' },
+      ],
+    });
+    expect(dependencies.requestOpenAI).toHaveBeenCalledWith(expect.objectContaining({
+      mode: 'small_talk',
+    }));
   });
 });
 
@@ -475,6 +517,7 @@ describe('createAssistantHandler orchestration', () => {
         output: {
           answer: '候補をご案内します。',
           pageIds: ['weekly-math', 'about', 'private-page'],
+        contentIds: [],
         },
         usage: successfulOpenAIResult.usage,
       })),
@@ -494,7 +537,11 @@ describe('createAssistantHandler orchestration', () => {
   it('allows the canonical Contact link even when Contact was not selected', async () => {
     const dependencies = createDependencies({
       requestOpenAI: vi.fn(async () => ({
-        output: { answer: 'お問い合わせください。', pageIds: ['contact'] },
+        output: {
+          answer: 'お問い合わせください。',
+          pageIds: ['contact'],
+          contentIds: [],
+        },
         usage: successfulOpenAIResult.usage,
       })),
     });
@@ -503,6 +550,48 @@ describe('createAssistantHandler orchestration', () => {
     expect(parsedBody(response)).toEqual({
       answer: 'お問い合わせください。',
       links: [{ pageId: 'contact', title: 'Contact', href: '/contact' }],
+    });
+  });
+
+  it('emits verified dynamic content links ahead of page links', async () => {
+    const dependencies = createDependencies({
+      searchContent: vi.fn(async () => [{
+        score: 8,
+        entry: {
+          id: 'news:welcome-to-tti-intelligence',
+          kind: 'news' as const,
+          title: 'TTI Intelligenceへようこそ',
+          href: '/news/welcome-to-tti-intelligence',
+          excerpt: 'サークル紹介です。',
+          parentPageId: 'news' as const,
+        },
+      }]),
+      requestOpenAI: vi.fn(async () => ({
+        output: {
+          answer: 'このお知らせをご覧ください。',
+          pageIds: ['news'],
+          contentIds: ['news:welcome-to-tti-intelligence'],
+        },
+        usage: successfulOpenAIResult.usage,
+      })),
+    });
+    const response = await invoke(dependencies, validPostEvent({
+      body: JSON.stringify({
+        ...validRequest,
+        message: 'TTI Intelligenceへようこそ',
+      }),
+    }));
+
+    expect(parsedBody(response)).toEqual({
+      answer: 'このお知らせをご覧ください。',
+      links: [
+        {
+          pageId: 'news',
+          title: 'TTI Intelligenceへようこそ',
+          href: '/news/welcome-to-tti-intelligence',
+        },
+        { pageId: 'news', title: 'News', href: '/news' },
+      ],
     });
   });
 });
@@ -589,12 +678,17 @@ describe('createAssistantHandler privacy-safe logging', () => {
 describe('createRuntimeDependencies', () => {
   const validEnvironment = {
     OPENAI_SECRET_ID: 'tti-ai/openai-api-key',
-    ASSISTANT_MODEL: 'gpt-5.6-luna',
+    ASSISTANT_MODEL: 'gpt-5-nano',
+    ASSISTANT_SMALL_TALK_MODEL: 'gpt-5-nano',
     ALLOWED_ORIGINS: 'https://tti-intel.com, http://localhost:5173',
     ASSISTANT_USAGE_TABLE: 'assistant-usage',
     ASSISTANT_DAILY_LIMIT: '100',
     ASSISTANT_SESSION_LIMIT: '20',
     ASSISTANT_SESSION_WINDOW_SECONDS: '600',
+    POSTS_TABLE: 'tti-ai-posts',
+    BOARD_TABLE: 'tti-ai-board',
+    FIREBASE_API_KEY: 'test-firebase-api-key',
+    FIREBASE_PROJECT_ID: 'tti-intel-d8d73',
   };
 
   it('constructs dependencies lazily from all validated environment values', () => {
@@ -611,11 +705,16 @@ describe('createRuntimeDependencies', () => {
   it.each([
     'OPENAI_SECRET_ID',
     'ASSISTANT_MODEL',
+    'ASSISTANT_SMALL_TALK_MODEL',
     'ALLOWED_ORIGINS',
     'ASSISTANT_USAGE_TABLE',
     'ASSISTANT_DAILY_LIMIT',
     'ASSISTANT_SESSION_LIMIT',
     'ASSISTANT_SESSION_WINDOW_SECONDS',
+    'POSTS_TABLE',
+    'BOARD_TABLE',
+    'FIREBASE_API_KEY',
+    'FIREBASE_PROJECT_ID',
   ])('rejects a missing %s environment value', (variableName) => {
     expect(() => createRuntimeDependencies({
       ...validEnvironment,

@@ -6,7 +6,7 @@ import type {
 } from './types';
 
 const DEFAULT_TIMEOUT_MS = 28_000;
-const INTERNAL_HREF_PATTERN = /^(?:\/|\/[a-z0-9-]+(?:\/[a-z0-9-]+)*)$/;
+const INTERNAL_HREF_PATTERN = /^(?:\/(?:[A-Za-z0-9._~%-]+(?:\/[A-Za-z0-9._~%-]+)*)?)$/;
 
 const assistantLinkSchema = z.object({
     pageId: z.string().trim().min(1),
@@ -17,17 +17,9 @@ const assistantLinkSchema = z.object({
 const assistantResponseSchema = z.object({
     answer: z.string().trim().min(1).max(500),
     links: z.array(assistantLinkSchema).max(3).superRefine((links, context) => {
-        const pageIds = new Set<string>();
         const hrefs = new Set<string>();
 
         links.forEach((link, index) => {
-            if (pageIds.has(link.pageId)) {
-                context.addIssue({
-                    code: 'custom',
-                    message: 'Duplicate pageId',
-                    path: [index, 'pageId'],
-                });
-            }
             if (hrefs.has(link.href)) {
                 context.addIssue({
                     code: 'custom',
@@ -35,7 +27,6 @@ const assistantResponseSchema = z.object({
                     path: [index, 'href'],
                 });
             }
-            pageIds.add(link.pageId);
             hrefs.add(link.href);
         });
     }),

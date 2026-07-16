@@ -16,6 +16,7 @@ export const PAGE_IDS = [
 export type PageId = (typeof PAGE_IDS)[number];
 export type Audience = 'visitor' | 'member';
 export type AssistantRole = 'user' | 'assistant';
+export type ContentKind = 'news' | 'board' | 'weekly-math';
 
 export interface HistoryMessage {
   role: AssistantRole;
@@ -61,9 +62,24 @@ export interface RankedGuideEntry {
   score: number;
 }
 
+export interface ContentEntry {
+  id: string;
+  kind: ContentKind;
+  title: string;
+  href: string;
+  excerpt: string;
+  parentPageId: PageId;
+}
+
+export interface RankedContentEntry {
+  entry: ContentEntry;
+  score: number;
+}
+
 export interface ModelGuideResponse {
   answer: string;
   pageIds: string[];
+  contentIds: string[];
 }
 
 export interface OpenAIUsage {

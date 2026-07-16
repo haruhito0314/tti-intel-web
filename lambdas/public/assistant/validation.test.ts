@@ -97,22 +97,25 @@ describe('validateModelGuideResponse', () => {
     expect(validateModelGuideResponse({
       answer: '  今週の数学はNewsから確認できます。  ',
       pageIds: ['news', 'weekly-math'],
+    contentIds: [],
     })).toEqual({
       answer: '今週の数学はNewsから確認できます。',
       pageIds: ['news', 'weekly-math'],
+    contentIds: [],
     });
   });
 
   it.each([
     ['null output', null],
     ['array output', []],
-    ['empty answer', { answer: '   ', pageIds: [] }],
-    ['501 character answer', { answer: 'a'.repeat(501), pageIds: [] }],
-    ['4 IDs', { answer: 'answer', pageIds: ['home', 'about', 'news', 'apps'] }],
-    ['duplicate ID', { answer: 'answer', pageIds: ['news', 'news'] }],
-    ['non-string ID', { answer: 'answer', pageIds: ['news', 1] }],
-    ['invalid ID format', { answer: 'answer', pageIds: ['News'] }],
-    ['extra property', { answer: 'answer', pageIds: [], extra: true }],
+    ['empty answer', { answer: '   ', pageIds: [], contentIds: [] }],
+    ['501 character answer', { answer: 'a'.repeat(501), pageIds: [], contentIds: [] }],
+    ['4 IDs', { answer: 'answer', pageIds: ['home', 'about', 'news', 'apps'], contentIds: [] }],
+    ['duplicate ID', { answer: 'answer', pageIds: ['news', 'news'], contentIds: [] }],
+    ['non-string ID', { answer: 'answer', pageIds: ['news', 1], contentIds: [] }],
+    ['invalid ID format', { answer: 'answer', pageIds: ['News'], contentIds: [] }],
+    ['missing contentIds', { answer: 'answer', pageIds: [] }],
+    ['extra property', { answer: 'answer', pageIds: [], contentIds: [], extra: true }],
   ])('rejects %s', (_name, value) => {
     expect(() => validateModelGuideResponse(value)).toThrow(UnsafeModelOutputError);
   });

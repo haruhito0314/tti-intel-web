@@ -73,15 +73,16 @@ describe('guide catalog', () => {
     }
   });
 
-  it('keeps the five About FAQs as exact public source copy', () => {
+  it('keeps the five About page FAQs as exact public source copy', () => {
     const aboutSource = readFileSync(
       new URL('../../../frontend/src/pages/About.tsx', import.meta.url),
       'utf8',
     );
     const about = GUIDE_ENTRIES.find(({ id }) => id === 'about');
+    const publicFaqs = about?.faqs.slice(0, 5) ?? [];
 
-    expect(about?.faqs).toHaveLength(5);
-    for (const faq of about?.faqs ?? []) {
+    expect(publicFaqs).toHaveLength(5);
+    for (const faq of publicFaqs) {
       expect(aboutSource).toContain(faq.question);
       expect(aboutSource).toContain(faq.answer);
     }
@@ -119,7 +120,7 @@ describe('deterministic guide search', () => {
     expect(scoreGuideEntry('Try CLI Practice now', null, entry)).toBe(5);
   });
 
-  it('adds three per unique keyword, two per FAQ phrase, and one for current page', () => {
+  it('adds three per unique keyword, three per FAQ phrase, and one for current page', () => {
     const entry = guideEntry({
       keywords: ['ALPHA', 'ＢＥＴＡ', 'alpha'],
       faqs: [
@@ -132,7 +133,87 @@ describe('deterministic guide search', () => {
       'alpha beta first phrase second phrase',
       'home',
       entry,
-    )).toBe(11);
+    )).toBe(13);
+  });
+
+  it('selects an entry from an FAQ question alone', () => {
+    const selected = selectRelevantKnowledge('コマンド操作を練習したい', '/unknown');
+
+    expect(selected.map(({ entry }) => entry.id)).toEqual(['cli-practice']);
+    expect(selected[0]?.score).toBeGreaterThanOrEqual(3);
+  });
+
+  it('matches common About paraphrases via synonym keywords', () => {
+    expect(selectRelevantKnowledge('お金かかるの？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('about');
+    expect(selectRelevantKnowledge('無料？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('about');
+    expect(selectRelevantKnowledge('初めてなんだけど入れる？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('about');
+    expect(selectRelevantKnowledge('土日だけ？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('about');
+    expect(selectRelevantKnowledge('他大学でも大丈夫？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('about');
+    expect(selectRelevantKnowledge('Codex使ってる？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('about');
+    expect(selectRelevantKnowledge('いつ集まってる？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('about');
+    expect(selectRelevantKnowledge('週何回？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('about');
+  });
+
+  it('does not let short About synonyms steal weekly-math queries', () => {
+    expect(selectRelevantKnowledge('今週の数学はどこ？', '/').map(
+      ({ entry }) => entry.id,
+    )).toEqual(['weekly-math']);
+  });
+
+  it('matches common visitor questions for activities, video, and SNS', () => {
+    expect(selectRelevantKnowledge('どんな活動をしていますか？', '/').map(
+      ({ entry }) => entry.id,
+    )).toEqual(expect.arrayContaining(['home', 'about']));
+    expect(selectRelevantKnowledge('YouTubeどこ？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('about');
+    expect(selectRelevantKnowledge('解説動画見たい', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('about');
+    expect(selectRelevantKnowledge('Discordある？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('contact');
+    expect(selectRelevantKnowledge('Instagramある？', '/')).toEqual([]);
+    expect(selectRelevantKnowledge('見学だけでもいい？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('about');
+    expect(selectRelevantKnowledge('どんなアプリがある？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('apps');
+    expect(selectRelevantKnowledge('ゲーム初心者でもいい？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('game-community');
+    expect(selectRelevantKnowledge('解答ある？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('weekly-math');
+    expect(selectRelevantKnowledge('メールで問い合わせたい', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('contact');
+    expect(selectRelevantKnowledge('応用情報やってる？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('about');
+    expect(selectRelevantKnowledge('TOEICのアプリある？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('apps');
+    expect(selectRelevantKnowledge('サイトの主なページは？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('home');
   });
 
   it('resolves only known static and dynamic paths', () => {
@@ -202,6 +283,38 @@ describe('verified links', () => {
       'cli-practice',
       'contact',
       'table-tennis',
+    ]);
+  });
+
+  it('prefers selected content hrefs and rejects unsafe dynamic paths', () => {
+    const content = [{
+      score: 9,
+      entry: {
+        id: 'board:thread-1',
+        kind: 'board' as const,
+        title: '参加相談',
+        href: '/board/thread-1',
+        excerpt: '見学したいです',
+        parentPageId: 'board' as const,
+      },
+    }];
+
+    expect(createVerifiedLinks(
+      ['board'],
+      [],
+      ['board:thread-1', 'board:missing', 'news:evil'],
+      content,
+    )).toEqual([
+      {
+        pageId: 'board',
+        title: '参加相談',
+        href: '/board/thread-1',
+      },
+      {
+        pageId: 'board',
+        title: 'Board',
+        href: '/board',
+      },
     ]);
   });
 });

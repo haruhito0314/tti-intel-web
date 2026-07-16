@@ -194,11 +194,17 @@ export class TtiAiStack extends cdk.Stack {
             environment: {
                 ASSISTANT_USAGE_TABLE: assistantUsageTable.tableName,
                 OPENAI_SECRET_ID: openAiSecret.secretName,
-                ASSISTANT_MODEL: 'gpt-5.6-luna',
+                ASSISTANT_MODEL: 'gpt-5-nano',
+                ASSISTANT_SMALL_TALK_MODEL: 'gpt-5-nano',
                 ASSISTANT_DAILY_LIMIT: '100',
                 ASSISTANT_SESSION_LIMIT: '20',
                 ASSISTANT_SESSION_WINDOW_SECONDS: '600',
                 ALLOWED_ORIGINS: 'https://tti-intel.com,http://localhost:5173',
+                POSTS_TABLE: postsTable.tableName,
+                BOARD_TABLE: boardTable.tableName,
+                // Public web config (same values as the frontend). Not a secret.
+                FIREBASE_API_KEY: 'AIzaSyBs1W-j8Dj7tmh-TLth0pvdWLTs6wLEhaQ',
+                FIREBASE_PROJECT_ID: 'tti-intel-d8d73',
             },
             bundling: {
                 target: 'node22',
@@ -217,14 +223,19 @@ export class TtiAiStack extends cdk.Stack {
             },
         }));
 
+        postsTable.grantReadData(assistantLambda);
+        boardTable.grantReadData(assistantLambda);
+
         assistantLambda.addToRolePolicy(new iam.PolicyStatement({
             actions: ['secretsmanager:GetSecretValue'],
-            resources: [this.formatArn({
-                service: 'secretsmanager',
-                resource: 'secret',
-                resourceName: 'tti-ai/openai-api-key-??????',
-                arnFormat: cdk.ArnFormat.COLON_RESOURCE_NAME,
-            })],
+            resources: [
+                this.formatArn({
+                    service: 'secretsmanager',
+                    resource: 'secret',
+                    resourceName: 'tti-ai/openai-api-key-??????',
+                    arnFormat: cdk.ArnFormat.COLON_RESOURCE_NAME,
+                }),
+            ],
         }));
 
         // Common Lambda environment variables

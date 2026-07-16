@@ -6,14 +6,17 @@ import {
     type ChangeEvent,
     type FormEvent,
     type KeyboardEvent,
+    type ReactNode,
     type RefObject,
 } from 'react';
+import { Send, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { AssistantUiMessage } from './types';
 
 const MAX_QUESTION_LENGTH = 500;
 const TOO_LONG_MESSAGE = '質問は500文字以内で入力してください。';
-const GREETING_MESSAGE = '何かお困りですか？このサイトをご案内します。';
+const GREETING_MESSAGE =
+    'こんにちは。私はこのサイトを案内するAIアシスタントです。ページの探し方や公開コンテンツについて、気軽に聞いてください。';
 
 export interface AssistantConversationProps {
     messages: readonly AssistantUiMessage[];
@@ -22,6 +25,27 @@ export interface AssistantConversationProps {
     inputRef: RefObject<HTMLTextAreaElement | null>;
     onSubmit(message: string): Promise<boolean>;
     onClearError(): void;
+}
+
+function AssistantAvatar() {
+    return (
+        <span className="assistant-avatar" aria-hidden="true">
+            <Sparkles />
+        </span>
+    );
+}
+
+function AssistantMessageRow({
+    children,
+}: {
+    children: ReactNode;
+}) {
+    return (
+        <div className="assistant-message-row assistant-message-row-assistant">
+            <AssistantAvatar />
+            {children}
+        </div>
+    );
 }
 
 export function AssistantConversation({
@@ -42,6 +66,7 @@ export function AssistantConversation({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const sending = isSending || isSubmitting;
     const displayedError = localError ?? errorMessage;
+    const canSubmit = draft.trim().length > 0 && !sending;
 
     useEffect(() => {
         const container = messagesRef.current;
@@ -116,43 +141,60 @@ export function AssistantConversation({
                 aria-label="会話"
                 aria-live="polite"
             >
-                <article
-                    className="assistant-message assistant-message-assistant"
-                    aria-label="AI Assistantの回答"
-                >
-                    <p>{GREETING_MESSAGE}</p>
-                </article>
-                {messages.map((message) => (
+                <AssistantMessageRow>
                     <article
-                        key={message.id}
-                        className={`assistant-message assistant-message-${message.role}`}
-                        aria-label={
-                            message.role === 'user'
-                                ? 'あなたの質問'
-                                : 'AI Assistantの回答'
-                        }
+                        className="assistant-message assistant-message-assistant"
+                        aria-label="AI Assistantの回答"
                     >
-                        <p>{message.content}</p>
-                        {message.role === 'assistant' && message.links.length > 0 && (
-                            <nav
-                                className="assistant-message-links"
-                                aria-label="関連ページ"
-                            >
-                                <ul>
-                                    {message.links.map((link) => (
-                                        <li key={link.pageId}>
-                                            <Link to={link.href}>{link.title}</Link>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </nav>
-                        )}
+                        <p>{GREETING_MESSAGE}</p>
                     </article>
+                </AssistantMessageRow>
+                {messages.map((message) => (
+                    message.role === 'assistant' ? (
+                        <AssistantMessageRow key={message.id}>
+                            <article
+                                className="assistant-message assistant-message-assistant"
+                                aria-label="AI Assistantの回答"
+                            >
+                                <p>{message.content}</p>
+                                {message.links.length > 0 && (
+                                    <nav
+                                        className="assistant-message-links"
+                                        aria-label="関連ページ"
+                                    >
+                                        <ul>
+                                            {message.links.map((link) => (
+                                                <li key={`${link.pageId}:${link.href}`}>
+                                                    <Link to={link.href}>
+                                                        {link.title}
+                                                    </Link>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </nav>
+                                )}
+                            </article>
+                        </AssistantMessageRow>
+                    ) : (
+                        <div
+                            key={message.id}
+                            className="assistant-message-row assistant-message-row-user"
+                        >
+                            <article
+                                className="assistant-message assistant-message-user"
+                                aria-label="あなたの質問"
+                            >
+                                <p>{message.content}</p>
+                            </article>
+                        </div>
+                    )
                 ))}
                 {sending && (
-                    <p className="assistant-status">
-                        回答を準備しています…
-                    </p>
+                    <AssistantMessageRow>
+                        <p className="assistant-status">
+                            回答を準備しています…
+                        </p>
+                    </AssistantMessageRow>
                 )}
             </div>
 
@@ -177,8 +219,13 @@ export function AssistantConversation({
                         onChange={handleDraftChange}
                         onKeyDown={handleKeyDown}
                     />
-                    <button type="submit" disabled={sending}>
-                        送信
+                    <button
+                        type="submit"
+                        className="assistant-send"
+                        aria-label="送信"
+                        disabled={!canSubmit}
+                    >
+                        <Send aria-hidden="true" />
                     </button>
                 </div>
                 <div className="assistant-form-meta">
