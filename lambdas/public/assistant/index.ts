@@ -9,6 +9,7 @@ import type {
 } from 'aws-lambda';
 
 import {
+  buildFollowUpSearchQuery,
   createVerifiedLinks,
   GUIDE_ENTRIES,
   selectRelevantKnowledge,
@@ -288,11 +289,23 @@ export function createAssistantHandler(
       }
       const request = parseAssistantRequest(event.body);
       unansweredRequest = request;
-      const selected = selectRelevantKnowledge(
+      let selected = selectRelevantKnowledge(
         request.message,
         request.currentPath,
       );
-      const content = await dependencies.searchContent(request.message);
+      let content = await dependencies.searchContent(request.message);
+      const followUpQuery = selected.length === 0
+        && content.length === 0
+        && !isCasualConversation(request.message)
+        ? buildFollowUpSearchQuery(request.message, request.history)
+        : null;
+      if (followUpQuery !== null) {
+        selected = selectRelevantKnowledge(
+          followUpQuery,
+          request.currentPath,
+        );
+        content = await dependencies.searchContent(followUpQuery);
+      }
       const smallTalk = selected.length === 0
         && content.length === 0
         && isCasualConversation(request.message);

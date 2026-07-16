@@ -235,6 +235,34 @@ export function selectRelevantKnowledge(
     .slice(0, 5);
 }
 
+/**
+ * When the latest message alone misses keyword search, combine it with the
+ * most recent user turns so short follow-ups like 「どこ？」 can still match.
+ */
+export function buildFollowUpSearchQuery(
+  message: string,
+  history: readonly { role: string; content: string }[],
+  maxPriorUserMessages = 2,
+): string | null {
+  const trimmedMessage = message.trim();
+  if (trimmedMessage.length === 0 || maxPriorUserMessages <= 0) {
+    return null;
+  }
+
+  const priorUserMessages = history
+    .filter((entry) => entry.role === 'user')
+    .map((entry) => entry.content.trim())
+    .filter((content) => content.length > 0)
+    .slice(-maxPriorUserMessages);
+
+  if (priorUserMessages.length === 0) {
+    return null;
+  }
+
+  const augmented = [...priorUserMessages, trimmedMessage].join(' ');
+  return augmented === trimmedMessage ? null : augmented;
+}
+
 export function createVerifiedLinks(
   modelPageIds: readonly string[],
   selected: readonly RankedGuideEntry[],

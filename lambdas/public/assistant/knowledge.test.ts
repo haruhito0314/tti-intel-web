@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 import {
+  buildFollowUpSearchQuery,
   createVerifiedLinks,
   GUIDE_ENTRIES,
   KNOWN_PAGE_ROUTES,
@@ -174,6 +175,33 @@ describe('deterministic guide search', () => {
     expect(selectRelevantKnowledge('今週の数学はどこ？', '/').map(
       ({ entry }) => entry.id,
     )).toEqual(['weekly-math']);
+  });
+
+  it('builds a follow-up search query from recent user history only', () => {
+    expect(buildFollowUpSearchQuery('どこから見るの？', [
+      { role: 'user', content: '活動内容を知りたい' },
+      { role: 'assistant', content: 'About Usをご覧ください。' },
+      { role: 'user', content: '今週の数学について教えて' },
+    ])).toBe('活動内容を知りたい 今週の数学について教えて どこから見るの？');
+
+    expect(buildFollowUpSearchQuery('どこから見るの？', [
+      { role: 'user', content: '古い質問1' },
+      { role: 'user', content: '古い質問2' },
+      { role: 'user', content: '今週の数学について教えて' },
+    ], 1)).toBe('今週の数学について教えて どこから見るの？');
+
+    expect(buildFollowUpSearchQuery('どこ？', [])).toBeNull();
+    expect(buildFollowUpSearchQuery('どこ？', [
+      { role: 'assistant', content: 'About Usをご覧ください。' },
+    ])).toBeNull();
+  });
+
+  it('matches short follow-ups when recent user history is included in the query', () => {
+    expect(selectRelevantKnowledge('どこから見るの？', '/')).toEqual([]);
+    expect(selectRelevantKnowledge(
+      '今週の数学について教えて どこから見るの？',
+      '/',
+    ).map(({ entry }) => entry.id)).toContain('weekly-math');
   });
 
   it('matches common visitor questions for activities, video, and SNS', () => {

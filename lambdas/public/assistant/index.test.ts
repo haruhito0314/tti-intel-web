@@ -267,7 +267,7 @@ describe('createAssistantHandler CORS and early exits', () => {
 
     expect(response.statusCode).toBe(200);
     expect(parsedBody(response)).toEqual(CONTACT_FALLBACK);
-    expect(dependencies.searchContent).toHaveBeenCalledTimes(1);
+    expect(dependencies.searchContent).toHaveBeenCalledTimes(2);
     expect(dependencies.recordUnanswered).toHaveBeenCalledWith({
       requestId: 'api-gateway-request-1',
       message: '銀河の年齢を教えてください',
@@ -304,6 +304,79 @@ describe('createAssistantHandler CORS and early exits', () => {
         { pageId: 'contact', title: 'Contact', href: '/contact' },
       ],
     });
+    expect(dependencies.requestOpenAI).toHaveBeenCalledWith(expect.objectContaining({
+      mode: 'small_talk',
+    }));
+  });
+
+  it('retries knowledge search with recent user history for short follow-ups', async () => {
+    const dependencies = createDependencies({
+      requestOpenAI: vi.fn(async () => ({
+        output: {
+          answer: '今週の数学ページから確認できます。',
+          pageIds: ['weekly-math'],
+          contentIds: [],
+        },
+        usage: { inputTokens: 40, outputTokens: 20, totalTokens: 60 },
+      })),
+    });
+    const response = await invoke(dependencies, validPostEvent({
+      body: JSON.stringify({
+        ...validRequest,
+        message: 'どこから見るの？',
+        history: [
+          { role: 'user', content: '今週の数学について教えて' },
+        ],
+      }),
+    }));
+
+    expect(response.statusCode).toBe(200);
+    expect(parsedBody(response)).toEqual({
+      answer: '今週の数学ページから確認できます。',
+      links: [{
+        pageId: 'weekly-math',
+        title: '今週の数学',
+        href: '/weekly-math',
+      }],
+    });
+    expect(dependencies.searchContent).toHaveBeenCalledTimes(2);
+    expect(dependencies.searchContent).toHaveBeenNthCalledWith(1, 'どこから見るの？');
+    expect(dependencies.searchContent).toHaveBeenNthCalledWith(
+      2,
+      '今週の数学について教えて どこから見るの？',
+    );
+    expect(dependencies.requestOpenAI).toHaveBeenCalledWith(expect.objectContaining({
+      mode: 'guide',
+      request: expect.objectContaining({
+        message: 'どこから見るの？',
+      }),
+    }));
+  });
+
+  it('does not use history for greetings even after a prior site question', async () => {
+    const dependencies = createDependencies({
+      requestOpenAI: vi.fn(async () => ({
+        output: {
+          answer: 'こんにちは！',
+          pageIds: ['home'],
+          contentIds: [],
+        },
+        usage: { inputTokens: 20, outputTokens: 10, totalTokens: 30 },
+      })),
+    });
+    const response = await invoke(dependencies, validPostEvent({
+      body: JSON.stringify({
+        ...validRequest,
+        message: 'こんにちは',
+        history: [
+          { role: 'user', content: '今週の数学について教えて' },
+        ],
+      }),
+    }));
+
+    expect(response.statusCode).toBe(200);
+    expect(dependencies.searchContent).toHaveBeenCalledTimes(1);
+    expect(dependencies.searchContent).toHaveBeenCalledWith('こんにちは');
     expect(dependencies.requestOpenAI).toHaveBeenCalledWith(expect.objectContaining({
       mode: 'small_talk',
     }));
