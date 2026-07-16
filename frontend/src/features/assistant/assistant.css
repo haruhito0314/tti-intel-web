@@ -300,4 +300,8 @@
     border-radius: 22px 22px 0 0;
     pointer-events: auto;
   }
+
+  .assistant-messages {
+    min-height: 0;
+  }
 }

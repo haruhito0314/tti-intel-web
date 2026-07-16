@@ -841,4 +841,19 @@ describe('AssistantWidget', () => {
             [...[0, 30, 40, 50, 100, 10000]].sort((left, right) => left - right),
         );
     });
+
+    it('keeps mobile controls visible by allowing only the message history to shrink', () => {
+        expect(assistantCssSource).toMatch(
+            /\.assistant-panel\s*\{[^}]*overflow:\s*hidden;/s,
+        );
+        expect(assistantCssSource).toMatch(
+            /\.assistant-messages\s*\{[^}]*overflow-y:\s*auto;/s,
+        );
+        expect(assistantCssSource).toMatch(
+            /@media\s*\(max-width:\s*767px\)[\s\S]*\.assistant-panel\s*\{[^}]*max-height:\s*min\(82dvh,\s*720px\);/s,
+        );
+        expect(assistantCssSource).toMatch(
+            /@media\s*\(max-width:\s*767px\)[\s\S]*\.assistant-messages\s*\{[^}]*min-height:\s*0;/s,
+        );
+    });
 });
