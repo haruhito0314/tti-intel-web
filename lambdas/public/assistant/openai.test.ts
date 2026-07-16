@@ -299,6 +299,9 @@ describe('buildResponsesPayload', () => {
     expect(SYSTEM_INSTRUCTIONS).toContain(
       'それ以外の質問では、その制限をわざわざ説明する必要はありません。',
     );
+    expect(SYSTEM_INSTRUCTIONS).toContain(
+      'answerには内部用語（guideEntries、contentEntries、faqs、pageIds、contentIds、allowedPageIds など）を書かないでください。',
+    );
   });
 
   it('builds a cheap nano payload for small talk without guide entries', () => {
