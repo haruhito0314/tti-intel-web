@@ -274,7 +274,10 @@ describe('AssistantWidget', () => {
         const dialog = screen.getByRole('dialog', { name: 'AIガイド' });
         expect(dialog).toHaveAttribute('aria-modal', 'false');
         expect(screen.getByRole('textbox', { name: '質問' })).toHaveFocus();
-        expect(trigger).not.toHaveAttribute('hidden');
+        expect(trigger).toHaveAttribute('hidden');
+        expect(
+            screen.queryByRole('button', { name: 'AIガイドを開く' }),
+        ).not.toBeInTheDocument();
         expect(background.inert).toBe(originalInert);
         expect(background.getAttribute('inert')).toBe(originalInertAttribute);
         expect(document.body.style.overflow).toBe('clip');
@@ -377,6 +380,7 @@ describe('AssistantWidget', () => {
         ).not.toBeInTheDocument();
 
         const root = dialog.closest('.assistant-root');
+        expect(root).toHaveClass('assistant-root-open');
         const outsideAssistantButtons = [...root!.querySelectorAll('button')]
             .filter((button) => !dialog.contains(button));
         expect(outsideAssistantButtons).toEqual([trigger]);
@@ -391,6 +395,9 @@ describe('AssistantWidget', () => {
         expect(document.body.style.overflow).toBe('auto');
         expect(trigger).not.toHaveAttribute('hidden');
         expect(trigger).toHaveFocus();
+        expect(trigger.closest('.assistant-root')).not.toHaveClass(
+            'assistant-root-open',
+        );
     });
 
     it('traps mobile focus while respecting native disclosure and visibility', () => {
@@ -533,7 +540,7 @@ describe('AssistantWidget', () => {
         expect(background.inert).toBe(originalInert);
         expect(background.getAttribute('inert')).toBe(originalInertAttribute);
         expect(document.body.style.overflow).toBe('scroll');
-        expect(trigger).not.toHaveAttribute('hidden');
+        expect(trigger).toHaveAttribute('hidden');
     });
 
     it('moves focus back inside when an open desktop dialog becomes modal', () => {
@@ -806,13 +813,19 @@ describe('AssistantWidget', () => {
             /\.assistant-root\s*\{[^}]*z-index:\s*30;/s,
         );
         expect(assistantCssSource).toMatch(
-            /\.assistant-trigger\s*\{[^}]*width:\s*44px;[^}]*height:\s*44px;/s,
+            /\.assistant-root\s*\{[^}]*right:\s*max\(20px,\s*env\(safe-area-inset-right,\s*0px\)\);[^}]*bottom:\s*max\(24px,\s*env\(safe-area-inset-bottom,\s*0px\)\);/s,
         );
         expect(assistantCssSource).toMatch(
-            /\.assistant-panel\s*\{[^}]*width:\s*min\(360px,\s*calc\(100vw - 2rem\)\);/s,
+            /\.assistant-trigger\s*\{[^}]*width:\s*64px;[^}]*height:\s*64px;/s,
         );
         expect(assistantCssSource).toMatch(
-            /@media\s*\(max-width:\s*767px\)[\s\S]*\.assistant-trigger\s*\{[^}]*width:\s*48px;[^}]*height:\s*48px;/,
+            /\.assistant-panel\s*\{[^}]*bottom:\s*10px;[^}]*width:\s*min\(387px,\s*calc\(100vw - 2\.5rem\)\);[^}]*height:\s*min\(594px,\s*calc\(100dvh - 50px\)\);/s,
+        );
+        expect(assistantCssSource).toMatch(
+            /@media\s*\(max-width:\s*767px\)[\s\S]*\.assistant-root-open\s*\{[^}]*z-index:\s*110;/,
+        );
+        expect(assistantCssSource).toMatch(
+            /@media\s*\(max-width:\s*767px\)[\s\S]*\.assistant-trigger\s*\{[^}]*right:\s*max\(20px,\s*env\(safe-area-inset-right,\s*0px\)\);[^}]*bottom:\s*max\(24px,\s*env\(safe-area-inset-bottom,\s*0px\)\);[^}]*width:\s*64px;[^}]*height:\s*64px;/,
         );
         expect(assistantCssSource).toMatch(
             /\.assistant-trigger\[hidden\]\s*\{[^}]*display:\s*none;/s,
@@ -837,8 +850,9 @@ describe('AssistantWidget', () => {
         expect(indexCssSource).toMatch(
             /\.initial-splash\s*\{[^}]*z-index:\s*10000;/s,
         );
-        expect([0, 30, 40, 50, 100, 10000]).toEqual(
-            [...[0, 30, 40, 50, 100, 10000]].sort((left, right) => left - right),
+        expect([0, 30, 40, 50, 100, 110, 10000]).toEqual(
+            [...[0, 30, 40, 50, 100, 110, 10000]]
+                .sort((left, right) => left - right),
         );
     });
 
@@ -850,7 +864,7 @@ describe('AssistantWidget', () => {
             /\.assistant-messages\s*\{[^}]*overflow-y:\s*auto;/s,
         );
         expect(assistantCssSource).toMatch(
-            /@media\s*\(max-width:\s*767px\)[\s\S]*\.assistant-panel\s*\{[^}]*max-height:\s*min\(82dvh,\s*720px\);/s,
+            /@media\s*\(max-width:\s*767px\)[\s\S]*\.assistant-panel\s*\{[^}]*top:\s*0;[^}]*right:\s*0;[^}]*bottom:\s*auto;[^}]*left:\s*0;[^}]*width:\s*100%;[^}]*height:\s*100dvh;[^}]*min-height:\s*calc\(100dvh - 120px\);[^}]*max-height:\s*594px;/s,
         );
         expect(assistantCssSource).toMatch(
             /@media\s*\(max-width:\s*767px\)[\s\S]*\.assistant-messages\s*\{[^}]*min-height:\s*0;/s,

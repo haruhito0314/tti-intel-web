@@ -78,13 +78,19 @@ export function AssistantWidget({
     };
 
     return (
-        <div className="assistant-root">
+        <div
+            className={
+                active
+                    ? 'assistant-root assistant-root-open'
+                    : 'assistant-root'
+            }
+        >
             <button
                 ref={triggerRef}
                 type="button"
                 className="assistant-trigger"
                 aria-label="AIガイドを開く"
-                hidden={isMobile && isOpen}
+                hidden={isOpen}
                 onClick={open}
             >
                 <Sparkles aria-hidden="true" />

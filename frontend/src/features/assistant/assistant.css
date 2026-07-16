@@ -5,15 +5,15 @@
 
 .assistant-root {
   position: fixed;
-  right: max(1rem, env(safe-area-inset-right, 0px));
-  bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  right: max(20px, env(safe-area-inset-right, 0px));
+  bottom: max(24px, env(safe-area-inset-bottom, 0px));
   z-index: 30;
 }
 
 .assistant-trigger {
   display: inline-flex;
-  width: 44px;
-  height: 44px;
+  width: 64px;
+  height: 64px;
   align-items: center;
   justify-content: center;
   padding: 0;
@@ -39,10 +39,10 @@
 .assistant-panel {
   position: absolute;
   right: 0;
-  bottom: 56px;
+  bottom: 10px;
   display: flex;
-  width: min(360px, calc(100vw - 2rem));
-  max-height: min(640px, calc(100dvh - 5rem));
+  width: min(387px, calc(100vw - 2.5rem));
+  height: min(594px, calc(100dvh - 50px));
   min-width: 0;
   flex-direction: column;
   overflow: hidden;
@@ -280,24 +280,31 @@
     pointer-events: none;
   }
 
+  .assistant-root-open {
+    z-index: 110;
+  }
+
   .assistant-trigger {
     position: absolute;
-    right: max(1rem, env(safe-area-inset-right, 0px));
-    bottom: max(1rem, env(safe-area-inset-bottom, 0px));
-    width: 48px;
-    height: 48px;
+    right: max(20px, env(safe-area-inset-right, 0px));
+    bottom: max(24px, env(safe-area-inset-bottom, 0px));
+    width: 64px;
+    height: 64px;
     pointer-events: auto;
   }
 
   .assistant-panel {
     position: absolute;
+    top: 0;
     right: 0;
-    bottom: 0;
+    bottom: auto;
     left: 0;
     width: 100%;
-    max-height: min(82dvh, 720px);
+    height: 100dvh;
+    min-height: calc(100dvh - 120px);
+    max-height: 594px;
     padding-bottom: env(safe-area-inset-bottom, 0px);
-    border-radius: 22px 22px 0 0;
+    border-radius: 0 0 22px 22px;
     pointer-events: auto;
   }
 
