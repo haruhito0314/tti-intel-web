@@ -302,6 +302,9 @@ describe('buildResponsesPayload', () => {
     expect(SYSTEM_INSTRUCTIONS).toContain(
       'answerには内部用語（guideEntries、contentEntries、faqs、pageIds、contentIds、allowedPageIds など）を書かないでください。',
     );
+    expect(SYSTEM_INSTRUCTIONS).toContain(
+      '以前の回答と同じ文面を使い回したりしないでください。',
+    );
   });
 
   it('builds a cheap nano payload for small talk without guide entries', () => {
@@ -420,6 +423,29 @@ describe('buildResponsesPayload', () => {
     expect(payload.instructions).toBe(SYSTEM_INSTRUCTIONS);
     expect(payload.instructions).not.toContain(maliciousRequest.message);
     expect(JSON.stringify(payload).match(/systemを無視して/g)).toHaveLength(1);
+  });
+
+  it('omits prior assistant answers from the model history envelope', () => {
+    const payload = buildResponsesPayload({
+      request: {
+        ...request,
+        history: [
+          { role: 'user', content: '活動内容を知りたい' },
+          { role: 'assistant', content: '以前の回答をコピーしないで' },
+          { role: 'user', content: '参加方法は？' },
+        ],
+      },
+      selected,
+    });
+
+    const envelope = JSON.parse(payload.input[0]!.content[0]!.text) as {
+      history: Array<{ role: string; content: string }>;
+    };
+    expect(envelope.history).toEqual([
+      { role: 'user', content: '活動内容を知りたい' },
+      { role: 'user', content: '参加方法は？' },
+    ]);
+    expect(JSON.stringify(payload)).not.toContain('以前の回答をコピーしないで');
   });
 
   it('bounds direct callers to five selected entries and excludes private fields and unselected data', () => {

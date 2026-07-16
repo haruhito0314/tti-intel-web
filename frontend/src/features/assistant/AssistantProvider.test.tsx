@@ -350,24 +350,19 @@ describe('AssistantProvider', () => {
             currentPath: '/news',
             sessionId: 'id-1',
             history: [
-                { role: 'user', content: 'question-2' },
-                { role: 'assistant', content: 'answer-question-2' },
-                { role: 'user', content: 'question-3' },
-                { role: 'assistant', content: 'answer-question-3' },
                 { role: 'user', content: 'question-4' },
-                { role: 'assistant', content: 'answer-question-4' },
                 { role: 'user', content: 'question-5' },
-                { role: 'assistant', content: 'answer-question-5' },
                 { role: 'user', content: 'question-6' },
-                { role: 'assistant', content: 'answer-question-6' },
                 { role: 'user', content: 'question-7' },
-                { role: 'assistant', content: 'answer-question-7' },
             ],
         });
         expect(requests[7].history).not.toContainEqual({
             role: 'user',
             content: 'question-8',
         });
+        expect(requests[7].history.every((entry) => entry.role === 'user')).toBe(
+            true,
+        );
     });
 
     it('suppresses a synchronous duplicate while the first request is pending', async () => {

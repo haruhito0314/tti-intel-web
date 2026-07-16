@@ -67,8 +67,12 @@ describe('createAssistantApi', () => {
             'https://api.example.com/prod/assistant',
             expect.objectContaining({
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-store',
+                },
                 body: JSON.stringify(request),
+                cache: 'no-store',
             }),
         );
     });

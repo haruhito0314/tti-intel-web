@@ -98,8 +98,11 @@ export function AssistantProvider({
             return false;
         }
 
+        // Send recent user turns only. Including prior assistant answers makes
+        // small models echo the last reply instead of answering the new message.
         const history: AssistantHistoryMessage[] = messagesRef.current
-            .slice(-12)
+            .filter((entry) => entry.role === 'user')
+            .slice(-4)
             .map(({ role, content }) => ({ role, content }));
         const optimisticId = createId();
         const optimisticMessage: AssistantUiMessage = {
