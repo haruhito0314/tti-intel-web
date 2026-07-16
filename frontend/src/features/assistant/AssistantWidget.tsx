@@ -1,0 +1,149 @@
+import {
+    useId,
+    useRef,
+    type KeyboardEvent,
+    type RefObject,
+} from 'react';
+import {
+    Ellipsis,
+    EyeOff,
+    Sparkles,
+    X,
+} from 'lucide-react';
+import { AssistantConversation } from './AssistantConversation';
+import { useAssistant } from './useAssistant';
+import { useAssistantDialogBehavior } from './useAssistantDialogBehavior';
+
+export interface AssistantWidgetProps {
+    enabled: boolean;
+    backgroundRef: RefObject<HTMLElement | null>;
+}
+
+export function AssistantWidget({
+    enabled,
+    backgroundRef,
+}: AssistantWidgetProps) {
+    const {
+        messages,
+        isOpen,
+        isHiddenForTab,
+        isSending,
+        errorMessage,
+        open,
+        close,
+        hideForTab,
+        clearError,
+        sendMessage,
+    } = useAssistant();
+    const generatedId = useId();
+    const titleId = `assistant-title-${generatedId}`;
+    const dialogRef = useRef<HTMLElement>(null);
+    const inputRef = useRef<HTMLTextAreaElement>(null);
+    const triggerRef = useRef<HTMLButtonElement>(null);
+    const detailsRef = useRef<HTMLDetailsElement>(null);
+    const summaryRef = useRef<HTMLElement>(null);
+    const active = enabled && isOpen && !isHiddenForTab;
+    const { isMobile } = useAssistantDialogBehavior({
+        active,
+        hidden: isHiddenForTab,
+        dialogRef,
+        inputRef,
+        triggerRef,
+        backgroundRef,
+        onClose: close,
+    });
+
+    if (!enabled || isHiddenForTab) {
+        return null;
+    }
+
+    const handleDisclosureKeyDown = (
+        event: KeyboardEvent<HTMLDetailsElement>,
+    ) => {
+        if (event.key !== 'Escape' || !detailsRef.current?.open) {
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        detailsRef.current.open = false;
+        summaryRef.current?.focus();
+    };
+
+    const handleHide = () => {
+        if (detailsRef.current) {
+            detailsRef.current.open = false;
+        }
+        hideForTab();
+    };
+
+    return (
+        <div className="assistant-root">
+            <button
+                ref={triggerRef}
+                type="button"
+                className="assistant-trigger"
+                aria-label="AIガイドを開く"
+                hidden={isMobile && isOpen}
+                onClick={open}
+            >
+                <Sparkles aria-hidden="true" />
+            </button>
+
+            {active && (
+                <section
+                    ref={dialogRef}
+                    className="assistant-panel"
+                    role="dialog"
+                    aria-labelledby={titleId}
+                    aria-modal={isMobile}
+                >
+                    <header className="assistant-header">
+                        <h2 id={titleId} className="assistant-title">
+                            AIガイド
+                        </h2>
+                        <button
+                            type="button"
+                            className="assistant-close"
+                            aria-label="AIガイドを閉じる"
+                            onClick={close}
+                        >
+                            <X aria-hidden="true" />
+                        </button>
+                    </header>
+
+                    <AssistantConversation
+                        messages={messages}
+                        isSending={isSending}
+                        errorMessage={errorMessage}
+                        inputRef={inputRef}
+                        onSubmit={sendMessage}
+                        onClearError={clearError}
+                    />
+
+                    <details
+                        ref={detailsRef}
+                        className="assistant-menu"
+                        onKeyDown={handleDisclosureKeyDown}
+                    >
+                        <summary
+                            ref={summaryRef}
+                            className="assistant-menu-summary"
+                            aria-label="AIガイドのメニュー"
+                        >
+                            <Ellipsis aria-hidden="true" />
+                        </summary>
+                        <button
+                            type="button"
+                            className="assistant-menu-button"
+                            onClick={handleHide}
+                        >
+                            <EyeOff aria-hidden="true" />
+                            <span>このタブで右下ボタンを非表示</span>
+                        </button>
+                    </details>
+                </section>
+            )}
+        </div>
+    );
+}
