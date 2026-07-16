@@ -61,25 +61,13 @@ export function AssistantConversation({
     const errorId = `${inputId}-error`;
     const messagesRef = useRef<HTMLDivElement>(null);
     const submittingRef = useRef(false);
+    const isComposingRef = useRef(false);
     const [draft, setDraft] = useState('');
     const [localError, setLocalError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const sending = isSending || isSubmitting;
     const displayedError = localError ?? errorMessage;
     const canSubmit = draft.trim().length > 0 && !sending;
-
-    const enterCountRef = useRef(0);
-    const lastEnterAtRef = useRef(0);
-    const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    const resetEnterSequence = () => {
-        enterCountRef.current = 0;
-        lastEnterAtRef.current = 0;
-        if (resetTimerRef.current) {
-            clearTimeout(resetTimerRef.current);
-            resetTimerRef.current = null;
-        }
-    };
 
     useEffect(() => {
         const container = messagesRef.current;
@@ -89,7 +77,7 @@ export function AssistantConversation({
     }, [messages, sending]);
 
     const submitDraft = async (rawDraft = draft) => {
-        if (submittingRef.current || isSending) {
+        if (submittingRef.current || isSending || isComposingRef.current) {
             return;
         }
 
@@ -120,7 +108,6 @@ export function AssistantConversation({
     };
 
     const handleDraftChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
-        resetEnterSequence();
         setDraft(event.target.value);
         setLocalError(null);
         if (errorMessage !== null) {
@@ -128,55 +115,37 @@ export function AssistantConversation({
         }
     };
 
+    const handleCompositionStart = () => {
+        isComposingRef.current = true;
+    };
+
+    const handleCompositionEnd = () => {
+        isComposingRef.current = false;
+    };
+
     const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-        if (event.key !== 'Enter') return;
-        if (event.nativeEvent.isComposing) return;
-
-        // Keep Shift+Enter as a plain newline (no submit).
-        if (event.shiftKey) return;
-
-        // Explicit submit shortcut (Ctrl/Cmd + Enter).
-        if (event.ctrlKey || event.metaKey) {
-            event.preventDefault();
-            resetEnterSequence();
-            void submitDraft();
+        if (event.key !== 'Enter') {
             return;
         }
 
-        // Submit on "Enter twice" (double Enter) to support quick multi-line messages.
-        const now = Date.now();
-        const DOUBLE_ENTER_WINDOW_MS = 900;
-
-        if (resetTimerRef.current) {
-            clearTimeout(resetTimerRef.current);
-            resetTimerRef.current = null;
-        }
-
-        // First Enter: allow newline to be inserted by the browser.
-        if (enterCountRef.current === 0) {
-            enterCountRef.current = 1;
-            lastEnterAtRef.current = now;
-            resetTimerRef.current = setTimeout(() => {
-                resetEnterSequence();
-            }, DOUBLE_ENTER_WINDOW_MS);
+        // Ignore Enter while IME is converting (some browsers still fire
+        // keydown with isComposing=false on the confirm Enter; keyCode 229
+        // and our composition ref cover that case).
+        if (
+            event.nativeEvent.isComposing
+            || isComposingRef.current
+            || event.keyCode === 229
+        ) {
             return;
         }
 
-        // Second Enter: if it's within the window, submit.
-        const delta = now - lastEnterAtRef.current;
-        if (delta <= DOUBLE_ENTER_WINDOW_MS) {
-            resetEnterSequence();
-            event.preventDefault();
-            void submitDraft();
+        // Shift+Enter inserts a newline; Enter alone submits.
+        if (event.shiftKey) {
             return;
         }
 
-        // Outside the window: treat this Enter as the new first Enter.
-        enterCountRef.current = 1;
-        lastEnterAtRef.current = now;
-        resetTimerRef.current = setTimeout(() => {
-            resetEnterSequence();
-        }, DOUBLE_ENTER_WINDOW_MS);
+        event.preventDefault();
+        void submitDraft();
     };
 
     const handleFormSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -269,6 +238,8 @@ export function AssistantConversation({
                         aria-describedby={`${countId}${displayedError ? ` ${errorId}` : ''}`}
                         aria-invalid={displayedError !== null}
                         onChange={handleDraftChange}
+                        onCompositionStart={handleCompositionStart}
+                        onCompositionEnd={handleCompositionEnd}
                         onKeyDown={handleKeyDown}
                     />
                     <button

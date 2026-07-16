@@ -220,42 +220,45 @@ describe('AssistantConversation', () => {
         expect(onSubmit).toHaveBeenCalledWith('x'.repeat(500));
     });
 
-    it('submits with Enter twice, allows Enter newline, and ignores composing Enter', async () => {
+    it('submits with Enter, allows Shift+Enter newline, and ignores composing Enter', async () => {
         const onSubmit = vi.fn(async () => false);
         renderConversation({ onSubmit });
         const textarea = screen.getByRole('textbox', { name: '質問' });
 
         enterQuestion('  Enterで送る  ');
-        // First Enter: should not submit.
-        fireEvent.keyDown(textarea, { key: 'Enter', code: 'Enter' });
-        expect(onSubmit).toHaveBeenCalledTimes(0);
+        const enterResult = fireEvent.keyDown(textarea, {
+            key: 'Enter',
+            code: 'Enter',
+        });
 
-        // Second Enter: submits.
-        fireEvent.keyDown(textarea, { key: 'Enter', code: 'Enter' });
+        expect(enterResult).toBe(false);
         await waitFor(() => {
             expect(onSubmit).toHaveBeenCalledWith('Enterで送る');
         });
-        expect(onSubmit).toHaveBeenCalledTimes(1);
 
-        // Shift+Enter should still be a newline (no submit).
         fireEvent.keyDown(textarea, {
             key: 'Enter',
             code: 'Enter',
             shiftKey: true,
         });
+        fireEvent.change(textarea, {
+            target: { value: 'Enterで送る\n次の行' },
+        });
+        expect(textarea).toHaveValue('Enterで送る\n次の行');
         expect(onSubmit).toHaveBeenCalledTimes(1);
 
-        // Composing Enter should be ignored.
-        enterQuestion('  蓄積  ');
         fireEvent.keyDown(textarea, {
             key: 'Enter',
             code: 'Enter',
             isComposing: true,
         });
+        expect(onSubmit).toHaveBeenCalledTimes(1);
+
+        // IME confirm Enter can report keyCode 229 without isComposing.
         fireEvent.keyDown(textarea, {
             key: 'Enter',
             code: 'Enter',
-            isComposing: true,
+            keyCode: 229,
         });
         expect(onSubmit).toHaveBeenCalledTimes(1);
     });
