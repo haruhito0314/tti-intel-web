@@ -300,10 +300,13 @@ describe('buildResponsesPayload', () => {
       'それ以外の質問では、その制限をわざわざ説明する必要はありません。',
     );
     expect(SYSTEM_INSTRUCTIONS).toContain(
-      'answerには内部用語（guideEntries、contentEntries、faqs、pageIds、contentIds、allowedPageIds など）を書かないでください。',
+      'answerには内部用語（guideEntries、contentEntries、faqs、pageIds、contentIds、allowedPageIds、isFollowUp など）を書かないでください。',
     );
     expect(SYSTEM_INSTRUCTIONS).toContain(
       '以前の回答と同じ文面を使い回したりしないでください。',
+    );
+    expect(SYSTEM_INSTRUCTIONS).toContain(
+      'isFollowUpがtrueのときは続き質問です。historyの質問へもう一度答え直さず、最新のmessageで新たに聞かれた点だけを短く補足してください。',
     );
   });
 
@@ -347,6 +350,7 @@ describe('buildResponsesPayload', () => {
     const userEnvelope = {
       currentPath: request.currentPath,
       currentPageId: resolveCurrentPageId(request.currentPath),
+      isFollowUp: true,
       history: request.history,
       message: request.message,
       allowedPageIds,
@@ -420,6 +424,7 @@ describe('buildResponsesPayload', () => {
     const envelope = JSON.parse(payload.input[0]!.content[0]!.text) as Record<string, unknown>;
     expect(envelope.message).toBe(maliciousRequest.message);
     expect(envelope.history).toEqual(maliciousRequest.history);
+    expect(envelope.isFollowUp).toBe(true);
     expect(payload.instructions).toBe(SYSTEM_INSTRUCTIONS);
     expect(payload.instructions).not.toContain(maliciousRequest.message);
     expect(JSON.stringify(payload).match(/systemを無視して/g)).toHaveLength(1);
@@ -440,12 +445,27 @@ describe('buildResponsesPayload', () => {
 
     const envelope = JSON.parse(payload.input[0]!.content[0]!.text) as {
       history: Array<{ role: string; content: string }>;
+      isFollowUp: boolean;
+      message: string;
     };
+    expect(envelope.isFollowUp).toBe(true);
+    expect(envelope.message).toBe(request.message);
     expect(envelope.history).toEqual([
       { role: 'user', content: '活動内容を知りたい' },
       { role: 'user', content: '参加方法は？' },
     ]);
     expect(JSON.stringify(payload)).not.toContain('以前の回答をコピーしないで');
+  });
+
+  it('marks the first turn as not a follow-up', () => {
+    const payload = buildResponsesPayload({
+      request: { ...request, history: [] },
+      selected,
+    });
+    const envelope = JSON.parse(payload.input[0]!.content[0]!.text) as {
+      isFollowUp: boolean;
+    };
+    expect(envelope.isFollowUp).toBe(false);
   });
 
   it('bounds direct callers to five selected entries and excludes private fields and unselected data', () => {

@@ -10,8 +10,21 @@ const CASUAL_EXACT = new Set([
   'よろしくお願いします',
   'よろしくお願いいたします',
   'ありがとう',
+  'ありがとうね',
+  'ありがとうよ',
+  'ありがと',
+  'ありがとね',
   'ありがとうございます',
+  'ありがとうございました',
   'どうも',
+  'どうもありがとう',
+  'どうもありがとうございます',
+  'どうもありがとうございました',
+  'サンキュー',
+  'さんきゅー',
+  'サンキュ',
+  'thx',
+  'ty',
   'お疲れ',
   'お疲れさま',
   'お疲れ様',
@@ -21,7 +34,9 @@ const CASUAL_EXACT = new Set([
   'hi',
   'hey',
   'thanks',
+  'thanks!',
   'thank you',
+  'thank you!',
   'やあ',
   'ども',
 ]);
@@ -33,13 +48,30 @@ const CASUAL_PREFIXES = [
   'はじめまして',
   'よろしく',
   'ありがとう',
+  'ありがと',
+  'どうもありがとう',
+  'サンキュー',
+  'さんきゅー',
   'お疲れ',
   'hello',
   'hi ',
   'hey ',
   'thanks',
   'thank you',
+  'thx',
 ] as const;
+
+const CASUAL_PREFIX_RESTS = new Set([
+  '',
+  'です',
+  'ございます',
+  'ございました',
+  'ね',
+  'よ',
+  'ー',
+  '〜',
+  '!',
+]);
 
 /**
  * Detect short greetings / thanks that should get a warm nano reply
@@ -63,12 +95,6 @@ export function isCasualConversation(message: string): boolean {
   return CASUAL_PREFIXES.some((prefix) => {
     if (!normalized.startsWith(prefix)) return false;
     const rest = normalized.slice(prefix.length).trim();
-    return rest.length === 0
-      || rest === 'です'
-      || rest === 'ございます'
-      || rest === 'ね'
-      || rest === 'よ'
-      || rest === 'ー'
-      || rest === '〜';
+    return CASUAL_PREFIX_RESTS.has(rest);
   });
 }

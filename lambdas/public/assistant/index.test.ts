@@ -309,6 +309,38 @@ describe('createAssistantHandler CORS and early exits', () => {
     }));
   });
 
+  it('routes thanks through OpenAI small-talk instead of Contact fallback', async () => {
+    const dependencies = createDependencies({
+      requestOpenAI: vi.fn(async () => ({
+        output: {
+          answer: 'どういたしまして！ほかにも知りたいことがあれば聞いてください。',
+          pageIds: ['home', 'contact'],
+          contentIds: [],
+        },
+        usage: { inputTokens: 30, outputTokens: 20, totalTokens: 50 },
+      })),
+    });
+    const response = await invoke(dependencies, validPostEvent({
+      body: JSON.stringify({
+        ...validRequest,
+        message: 'ありがとうございました',
+        history: [{ role: 'user', content: '今週の数学について教えて' }],
+      }),
+    }));
+
+    expect(response.statusCode).toBe(200);
+    expect(dependencies.searchContent).toHaveBeenCalledTimes(1);
+    expect(dependencies.requestOpenAI).toHaveBeenCalledWith(expect.objectContaining({
+      mode: 'small_talk',
+      request: expect.objectContaining({
+        message: 'ありがとうございました',
+      }),
+    }));
+    expect(parsedBody(response)).toMatchObject({
+      answer: 'どういたしまして！ほかにも知りたいことがあれば聞いてください。',
+    });
+  });
+
   it('retries knowledge search with recent user history for short follow-ups', async () => {
     const dependencies = createDependencies({
       requestOpenAI: vi.fn(async () => ({

@@ -12,10 +12,20 @@ describe('isCasualConversation', () => {
     'はじめまして',
     'よろしくお願いします',
     'ありがとう',
+    'ありがとう！',
+    'ありがとうね',
     'ありがとうございます',
+    'ありがとうございました',
+    'どうもありがとう',
+    'どうもありがとうございます',
+    'どうもありがとうございました',
+    'ありがと',
+    'サンキュー',
+    'thx',
     'Hello',
     'hi',
     'thanks',
+    'Thank you!',
   ])('accepts %j', (message) => {
     expect(isCasualConversation(message)).toBe(true);
   });
@@ -26,6 +36,7 @@ describe('isCasualConversation', () => {
     '今週の数学はどこ？',
     'Instagramある？',
     'こんにちは、費用はかかりますか？',
+    'ありがとう、費用はいくら？',
     '',
   ])('rejects %j', (message) => {
     expect(isCasualConversation(message)).toBe(false);
