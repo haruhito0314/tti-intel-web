@@ -45,7 +45,7 @@ export function AssistantWidget({
     const active = enabled && isOpen && !isHiddenForTab;
     const { isMobile } = useAssistantDialogBehavior({
         active,
-        hidden: isHiddenForTab,
+        hidden: isHiddenForTab || !enabled,
         dialogRef,
         inputRef,
         triggerRef,
@@ -57,8 +57,8 @@ export function AssistantWidget({
         return null;
     }
 
-    const handleDisclosureKeyDown = (
-        event: KeyboardEvent<HTMLDetailsElement>,
+    const handlePanelKeyDown = (
+        event: KeyboardEvent<HTMLElement>,
     ) => {
         if (event.key !== 'Escape' || !detailsRef.current?.open) {
             return;
@@ -97,6 +97,7 @@ export function AssistantWidget({
                     role="dialog"
                     aria-labelledby={titleId}
                     aria-modal={isMobile}
+                    onKeyDown={handlePanelKeyDown}
                 >
                     <header className="assistant-header">
                         <h2 id={titleId} className="assistant-title">
@@ -124,7 +125,6 @@ export function AssistantWidget({
                     <details
                         ref={detailsRef}
                         className="assistant-menu"
-                        onKeyDown={handleDisclosureKeyDown}
                     >
                         <summary
                             ref={summaryRef}

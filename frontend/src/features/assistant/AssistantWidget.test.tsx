@@ -1,6 +1,7 @@
 /// <reference types="node" />
 
 import {
+    StrictMode,
     useCallback,
     useRef,
 } from 'react';
@@ -100,6 +101,7 @@ interface WidgetHarnessProps {
     client: AssistantClient;
     createId: () => string;
     enabled: boolean;
+    mounted: boolean;
     initiallyInert: boolean;
 }
 
@@ -107,6 +109,7 @@ function WidgetHarness({
     client,
     createId,
     enabled,
+    mounted,
     initiallyInert,
 }: WidgetHarnessProps) {
     const backgroundRef = useRef<HTMLElement>(null);
@@ -129,10 +132,12 @@ function WidgetHarness({
                 <main tabIndex={-1}>ページ本文</main>
             </div>
             <AssistantProvider client={client} createId={createId}>
-                <AssistantWidget
-                    enabled={enabled}
-                    backgroundRef={backgroundRef}
-                />
+                {mounted && (
+                    <AssistantWidget
+                        enabled={enabled}
+                        backgroundRef={backgroundRef}
+                    />
+                )}
             </AssistantProvider>
         </MemoryRouter>
     );
@@ -159,6 +164,7 @@ function renderWidget({
     let nextId = 0;
     const createId = vi.fn(() => `widget-id-${++nextId}`);
     let currentEnabled = enabled;
+    let currentMounted = true;
     document.body.style.overflow = initialOverflow;
 
     const view = render(
@@ -166,6 +172,7 @@ function renderWidget({
             client={client}
             createId={createId}
             enabled={currentEnabled}
+            mounted={currentMounted}
             initiallyInert={initiallyInert}
         />,
     );
@@ -177,13 +184,18 @@ function renderWidget({
         getBackground() {
             return screen.getByTestId('page-background');
         },
-        rerenderWidget(next: { enabled: boolean }) {
-            currentEnabled = next.enabled;
+        rerenderWidget(next: {
+            enabled?: boolean;
+            mounted?: boolean;
+        }) {
+            currentEnabled = next.enabled ?? currentEnabled;
+            currentMounted = next.mounted ?? currentMounted;
             view.rerender(
                 <WidgetHarness
                     client={client}
                     createId={createId}
                     enabled={currentEnabled}
+                    mounted={currentMounted}
                     initiallyInert={initiallyInert}
                 />,
             );
@@ -473,6 +485,27 @@ describe('AssistantWidget', () => {
         ).toBe(false);
     });
 
+    it('closes an open disclosure before the dialog when Escape starts elsewhere in the panel', () => {
+        renderWidget({ mobile: false });
+        const trigger = openWidget();
+        const menu = openMenu();
+        const textarea = screen.getByRole('textbox', { name: '質問' });
+
+        textarea.focus();
+        fireEvent.keyDown(textarea, { key: 'Escape' });
+
+        expect(menu.details.open).toBe(false);
+        expect(menu.summary).toHaveFocus();
+        expect(
+            screen.getByRole('dialog', { name: 'AIガイド' }),
+        ).toBeInTheDocument();
+
+        fireEvent.keyDown(menu.summary, { key: 'Escape' });
+
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        expect(trigger).toHaveFocus();
+    });
+
     it('switches modal side effects when matchMedia changes while open', () => {
         const { getBackground, matchMedia } = renderWidget({
             mobile: false,
@@ -503,6 +536,26 @@ describe('AssistantWidget', () => {
         expect(trigger).not.toHaveAttribute('hidden');
     });
 
+    it('moves focus back inside when an open desktop dialog becomes modal', () => {
+        const { getBackground, matchMedia } = renderWidget({
+            mobile: false,
+        });
+        const background = getBackground();
+        openWidget();
+        const outsideLink = within(background).getByRole('link', {
+            name: 'ページ内リンク',
+        });
+        const textarea = screen.getByRole('textbox', { name: '質問' });
+
+        outsideLink.focus();
+        expect(outsideLink).toHaveFocus();
+        matchMedia.setMobile(true);
+
+        expect(background).toHaveAttribute('inert');
+        expect(document.body.style.overflow).toBe('hidden');
+        expect(textarea).toHaveFocus();
+    });
+
     it('restores pre-existing inert and overflow on disable and unmount', () => {
         const view = renderWidget({
             mobile: true,
@@ -510,6 +563,7 @@ describe('AssistantWidget', () => {
             initialOverflow: 'clip',
         });
         const background = view.getBackground();
+        const main = within(background).getByRole('main');
         const trigger = openWidget();
 
         expect(background.getAttribute('inert')).toBe('');
@@ -526,6 +580,7 @@ describe('AssistantWidget', () => {
         expect(background.getAttribute('inert')).toBe('preset');
         expect(background.inert).toBe(true);
         expect(document.body.style.overflow).toBe('clip');
+        expect(main).toHaveFocus();
 
         view.rerenderWidget({ enabled: true });
         expect(screen.getByRole('dialog', { name: 'AIガイド' })).toBeInTheDocument();
@@ -538,6 +593,95 @@ describe('AssistantWidget', () => {
         expect(
             view.matchMedia.mediaQueryList.removeEventListener,
         ).toHaveBeenCalledWith('change', expect.any(Function));
+    });
+
+    it('restores main focus after an open mobile widget unmounts', () => {
+        const view = renderWidget({
+            mobile: true,
+            initialOverflow: 'scroll',
+        });
+        const background = view.getBackground();
+        const main = within(background).getByRole('main');
+        openWidget();
+
+        expect(background).toHaveAttribute('inert');
+        expect(document.body.style.overflow).toBe('hidden');
+
+        view.rerenderWidget({ mounted: false });
+
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        expect(
+            screen.queryByLabelText('AIガイドを開く'),
+        ).not.toBeInTheDocument();
+        expect(background).not.toHaveAttribute('inert');
+        expect(document.body.style.overflow).toBe('scroll');
+        expect(main).toHaveFocus();
+    });
+
+    it('does not steal focus during Strict Mode cleanup while disabled', () => {
+        installMatchMedia(true);
+        render(<button type="button">既存のフォーカス</button>);
+        const outsideButton = screen.getByRole('button', {
+            name: '既存のフォーカス',
+        });
+        outsideButton.focus();
+        let nextId = 0;
+
+        const view = render(
+            <StrictMode>
+                <WidgetHarness
+                    client={{
+                        send: vi.fn().mockResolvedValue(response),
+                    }}
+                    createId={() => `strict-id-${++nextId}`}
+                    enabled={false}
+                    mounted
+                    initiallyInert={false}
+                />
+            </StrictMode>,
+        );
+
+        expect(outsideButton).toHaveFocus();
+
+        view.unmount();
+    });
+
+    it('preserves unrelated page focus when a closed widget unmounts', () => {
+        const view = renderWidget({ mobile: false });
+        const background = view.getBackground();
+        const outsideLink = within(background).getByRole('link', {
+            name: 'ページ内リンク',
+        });
+
+        outsideLink.focus();
+        view.rerenderWidget({ mounted: false });
+
+        expect(outsideLink).toHaveFocus();
+    });
+
+    it('restores main when a focused closed trigger is disabled or unmounted', () => {
+        const disabledView = renderWidget({ mobile: false });
+        const disabledBackground = disabledView.getBackground();
+        const disabledMain = within(disabledBackground).getByRole('main');
+        const disabledTrigger = screen.getByRole('button', {
+            name: 'AIガイドを開く',
+        });
+
+        disabledTrigger.focus();
+        disabledView.rerenderWidget({ enabled: false });
+        expect(disabledMain).toHaveFocus();
+        disabledView.unmount();
+
+        const unmountedView = renderWidget({ mobile: false });
+        const unmountedBackground = unmountedView.getBackground();
+        const unmountedMain = within(unmountedBackground).getByRole('main');
+        const unmountedTrigger = screen.getByRole('button', {
+            name: 'AIガイドを開く',
+        });
+
+        unmountedTrigger.focus();
+        unmountedView.rerenderWidget({ mounted: false });
+        expect(unmountedMain).toHaveFocus();
     });
 
     it('renders nothing and applies no side effects while disabled', () => {

@@ -91,6 +91,12 @@ function getFocusableElements(dialog: HTMLElement) {
         ));
 }
 
+function focusBackgroundMain(background: HTMLElement | null) {
+    background
+        ?.querySelector<HTMLElement>('main[tabindex="-1"]')
+        ?.focus();
+}
+
 export function useAssistantDialogBehavior({
     active,
     hidden,
@@ -102,6 +108,8 @@ export function useAssistantDialogBehavior({
 }: AssistantDialogBehaviorOptions): { isMobile: boolean } {
     const [isMobile, setIsMobile] = useState(getInitialMobile);
     const wasActiveRef = useRef(false);
+    const wasHiddenRef = useRef(hidden);
+    const ownsAssistantFocusRef = useRef(false);
 
     useEffect(() => {
         const mediaQuery = window.matchMedia(MOBILE_QUERY);
@@ -155,6 +163,22 @@ export function useAssistantDialogBehavior({
     }, [active, backgroundRef, isMobile]);
 
     useEffect(() => {
+        const handleFocusIn = (event: FocusEvent) => {
+            const target = event.target;
+            ownsAssistantFocusRef.current = target instanceof Node
+                && (
+                    target === triggerRef.current
+                    || dialogRef.current?.contains(target) === true
+                );
+        };
+
+        document.addEventListener('focusin', handleFocusIn);
+        return () => {
+            document.removeEventListener('focusin', handleFocusIn);
+        };
+    }, [dialogRef, triggerRef]);
+
+    useEffect(() => {
         if (active) {
             const input = inputRef.current;
             input?.focus();
@@ -165,7 +189,7 @@ export function useAssistantDialogBehavior({
                 }
             }
         }
-    }, [active, dialogRef, inputRef]);
+    }, [active, dialogRef, inputRef, isMobile]);
 
     useEffect(() => {
         if (!active) {
@@ -218,21 +242,48 @@ export function useAssistantDialogBehavior({
 
     useEffect(() => {
         const wasActive = wasActiveRef.current;
+        const wasHidden = wasHiddenRef.current;
         wasActiveRef.current = active;
+        wasHiddenRef.current = hidden;
 
-        if (!wasActive || active) {
+        const becameInactive = wasActive && !active;
+        const becameHidden = !wasHidden && hidden;
+        if (!becameInactive && !becameHidden) {
             return;
         }
 
-        if (hidden) {
-            backgroundRef.current
-                ?.querySelector<HTMLElement>('main[tabindex="-1"]')
-                ?.focus();
+        const trigger = triggerRef.current;
+        if (!hidden && trigger) {
+            trigger.focus();
             return;
         }
 
-        triggerRef.current?.focus();
+        focusBackgroundMain(backgroundRef.current);
     }, [active, backgroundRef, hidden, triggerRef]);
+
+    useEffect(() => {
+        const background = backgroundRef.current;
+        const trigger = triggerRef.current;
+        const dialog = dialogRef.current;
+
+        return () => {
+            if (
+                !wasActiveRef.current
+                && !ownsAssistantFocusRef.current
+            ) {
+                return;
+            }
+
+            if (
+                trigger?.isConnected
+                || dialog?.isConnected
+            ) {
+                return;
+            }
+
+            focusBackgroundMain(background);
+        };
+    }, [backgroundRef, dialogRef, triggerRef]);
 
     return { isMobile };
 }
