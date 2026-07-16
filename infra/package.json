@@ -5,6 +5,7 @@
   "main": "lib/tti-ai-stack.ts",
   "scripts": {
     "build": "tsc",
+    "test": "vitest run",
     "watch": "tsc -w",
     "cdk": "cdk",
     "deploy": "cdk deploy",
@@ -29,8 +30,10 @@
   "devDependencies": {
     "@types/aws-lambda": "^8.10.160",
     "@types/node": "^22.19.10",
+    "aws-cdk": "2.1131.0",
     "source-map-support": "^0.5.21",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.9"
   }
 }

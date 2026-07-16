@@ -23,6 +23,9 @@
         "outDir": "./dist",
         "rootDir": "."
     },
+    "ts-node": {
+        "experimentalResolver": true
+    },
     "include": [
         "bin/**/*",
         "lib/**/*"

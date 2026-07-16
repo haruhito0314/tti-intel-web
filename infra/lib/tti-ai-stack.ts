@@ -2,9 +2,11 @@ import * as cdk from 'aws-cdk-lib';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as nodejs from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 import * as path from 'path';
 
@@ -75,6 +77,15 @@ export class TtiAiStack extends cdk.Stack {
             billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
             removalPolicy: cdk.RemovalPolicy.RETAIN,
             timeToLiveAttribute: 'expiresAt',
+        });
+
+        const assistantUsageTable = new dynamodb.Table(this, 'AssistantUsageTable', {
+            tableName: 'tti-ai-assistant-usage',
+            partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
+            sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
+            billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+            timeToLiveAttribute: 'expiresAt',
+            removalPolicy: cdk.RemovalPolicy.RETAIN,
         });
 
         // =====================
@@ -165,6 +176,56 @@ export class TtiAiStack extends cdk.Stack {
         // =====================
 
         const lambdasDir = path.join(__dirname, '../../lambdas');
+
+        const openAiSecret = secretsmanager.Secret.fromSecretNameV2(
+            this,
+            'OpenAiApiKeySecret',
+            'tti-ai/openai-api-key',
+        );
+
+        const assistantLambda = new nodejs.NodejsFunction(this, 'AssistantLambda', {
+            functionName: 'tti-ai-site-assistant',
+            runtime: lambda.Runtime.NODEJS_22_X,
+            entry: path.join(lambdasDir, 'public/assistant/index.ts'),
+            handler: 'handler',
+            projectRoot: lambdasDir,
+            depsLockFilePath: path.join(lambdasDir, 'package-lock.json'),
+            timeout: cdk.Duration.seconds(25),
+            environment: {
+                ASSISTANT_USAGE_TABLE: assistantUsageTable.tableName,
+                OPENAI_SECRET_ID: openAiSecret.secretName,
+                ASSISTANT_MODEL: 'gpt-5.6-luna',
+                ASSISTANT_DAILY_LIMIT: '100',
+                ASSISTANT_SESSION_LIMIT: '20',
+                ASSISTANT_SESSION_WINDOW_SECONDS: '600',
+                ALLOWED_ORIGINS: 'https://tti-intel.com,http://localhost:5173',
+            },
+            bundling: {
+                target: 'node22',
+                externalModules: ['@aws-sdk/*'],
+                sourceMap: true,
+            },
+        });
+
+        assistantLambda.addToRolePolicy(new iam.PolicyStatement({
+            actions: ['dynamodb:UpdateItem'],
+            resources: [assistantUsageTable.tableArn],
+            conditions: {
+                StringEquals: {
+                    'dynamodb:EnclosingOperation': 'TransactWriteItems',
+                },
+            },
+        }));
+
+        assistantLambda.addToRolePolicy(new iam.PolicyStatement({
+            actions: ['secretsmanager:GetSecretValue'],
+            resources: [this.formatArn({
+                service: 'secretsmanager',
+                resource: 'secret',
+                resourceName: 'tti-ai/openai-api-key-??????',
+                arnFormat: cdk.ArnFormat.COLON_RESOURCE_NAME,
+            })],
+        }));
 
         // Common Lambda environment variables
         const commonEnv = {
@@ -273,29 +334,40 @@ export class TtiAiStack extends cdk.Stack {
         // API Gateway
         // =====================
 
+        const publicCors: apigateway.CorsOptions = {
+            allowOrigins: apigateway.Cors.ALL_ORIGINS,
+            allowMethods: apigateway.Cors.ALL_METHODS,
+            allowHeaders: ['Content-Type', 'Authorization', 'X-Device-Id'],
+        };
+
         const api = new apigateway.RestApi(this, 'TtiAiApi', {
             restApiName: 'TTI AI Club API',
             description: 'API for TTI AI Club Website',
-            defaultCorsPreflightOptions: {
-                allowOrigins: apigateway.Cors.ALL_ORIGINS,
-                allowMethods: apigateway.Cors.ALL_METHODS,
-                allowHeaders: ['Content-Type', 'Authorization', 'X-Device-Id'],
-            },
             deployOptions: {
                 stageName: 'prod',
                 throttlingRateLimit: 100,
                 throttlingBurstLimit: 200,
+                methodOptions: {
+                    '/assistant/POST': {
+                        throttlingRateLimit: 2,
+                        throttlingBurstLimit: 4,
+                    },
+                },
             },
         });
 
         // Public API Endpoints
-        const postsResource = api.root.addResource('posts');
+        const postsResource = api.root.addResource('posts', {
+            defaultCorsPreflightOptions: publicCors,
+        });
         postsResource.addMethod('GET', new apigateway.LambdaIntegration(getPostsLambda));
 
         const postSlugResource = postsResource.addResource('{slug}');
         postSlugResource.addMethod('GET', new apigateway.LambdaIntegration(getPostLambda));
 
-        const threadsResource = api.root.addResource('threads');
+        const threadsResource = api.root.addResource('threads', {
+            defaultCorsPreflightOptions: publicCors,
+        });
         threadsResource.addMethod('GET', new apigateway.LambdaIntegration(getThreadsLambda));
         threadsResource.addMethod('POST', new apigateway.LambdaIntegration(createThreadLambda));
 
@@ -305,8 +377,15 @@ export class TtiAiStack extends cdk.Stack {
         const commentsResource = threadIdResource.addResource('comments');
         commentsResource.addMethod('POST', new apigateway.LambdaIntegration(createCommentLambda));
 
-        const contactResource = api.root.addResource('contact');
+        const contactResource = api.root.addResource('contact', {
+            defaultCorsPreflightOptions: publicCors,
+        });
         contactResource.addMethod('POST', new apigateway.LambdaIntegration(sendContactLambda));
+
+        const assistantIntegration = new apigateway.LambdaIntegration(assistantLambda);
+        const assistantResource = api.root.addResource('assistant');
+        assistantResource.addMethod('OPTIONS', assistantIntegration);
+        assistantResource.addMethod('POST', assistantIntegration);
 
         // =====================
         // Outputs
@@ -314,7 +393,7 @@ export class TtiAiStack extends cdk.Stack {
 
         new cdk.CfnOutput(this, 'ApiUrl', {
             value: api.url,
-            description: 'API Gateway URL',
+            description: 'Base URL for VITE_API_BASE_URL',
         });
 
         new cdk.CfnOutput(this, 'UserPoolId', {
