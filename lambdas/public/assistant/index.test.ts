@@ -135,6 +135,7 @@ function createDependencies(
     reserveQuota: vi.fn(async () => undefined),
     searchContent: vi.fn(async () => []),
     requestOpenAI: vi.fn(async () => successfulOpenAIResult),
+    recordUnanswered: vi.fn(async () => undefined),
     log: vi.fn(),
     ...overrides,
   };
@@ -267,6 +268,13 @@ describe('createAssistantHandler CORS and early exits', () => {
     expect(response.statusCode).toBe(200);
     expect(parsedBody(response)).toEqual(CONTACT_FALLBACK);
     expect(dependencies.searchContent).toHaveBeenCalledTimes(1);
+    expect(dependencies.recordUnanswered).toHaveBeenCalledWith({
+      requestId: 'api-gateway-request-1',
+      message: '銀河の年齢を教えてください',
+      currentPath: '/not-a-known-page',
+      reason: 'no_relevant_knowledge',
+      now: quotaNow,
+    });
     expectNoPaidModelCalls(dependencies);
   });
 
@@ -473,6 +481,13 @@ describe('createAssistantHandler orchestration', () => {
       expect(parsedBody(response)).toEqual(CONTACT_FALLBACK);
       expect(dependencies.reserveQuota).toHaveBeenCalledTimes(1);
       expect(dependencies.requestOpenAI).toHaveBeenCalledTimes(1);
+      expect(dependencies.recordUnanswered).toHaveBeenCalledWith({
+        requestId: 'api-gateway-request-1',
+        message: validRequest.message,
+        currentPath: validRequest.currentPath,
+        reason: 'unsafe_model_output',
+        now: quotaNow,
+      });
     },
   );
 
@@ -487,6 +502,13 @@ describe('createAssistantHandler orchestration', () => {
 
     expect(response.statusCode).toBe(200);
     expect(parsedBody(response)).toEqual(CONTACT_FALLBACK);
+    expect(dependencies.recordUnanswered).toHaveBeenCalledWith({
+      requestId: 'api-gateway-request-1',
+      message: validRequest.message,
+      currentPath: validRequest.currentPath,
+      reason: 'unsafe_model_output',
+      now: quotaNow,
+    });
   });
 
   it('never retries OpenAI or invokes an injected quota refund after failure', async () => {
@@ -682,6 +704,7 @@ describe('createRuntimeDependencies', () => {
     ASSISTANT_SMALL_TALK_MODEL: 'gpt-5-nano',
     ALLOWED_ORIGINS: 'https://tti-intel.com, http://localhost:5173',
     ASSISTANT_USAGE_TABLE: 'assistant-usage',
+    ASSISTANT_UNANSWERED_TABLE: 'assistant-unanswered',
     ASSISTANT_DAILY_LIMIT: '100',
     ASSISTANT_SESSION_LIMIT: '20',
     ASSISTANT_SESSION_WINDOW_SECONDS: '600',
@@ -708,6 +731,7 @@ describe('createRuntimeDependencies', () => {
     'ASSISTANT_SMALL_TALK_MODEL',
     'ALLOWED_ORIGINS',
     'ASSISTANT_USAGE_TABLE',
+    'ASSISTANT_UNANSWERED_TABLE',
     'ASSISTANT_DAILY_LIMIT',
     'ASSISTANT_SESSION_LIMIT',
     'ASSISTANT_SESSION_WINDOW_SECONDS',

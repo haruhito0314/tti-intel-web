@@ -43,6 +43,10 @@ import type {
   RankedGuideEntry,
 } from './types.js';
 import {
+  recordUnansweredQuestion,
+  type UnansweredReason,
+} from './unansweredQuestions.js';
+import {
   parseAssistantRequest,
   RequestValidationError,
   UnsafeModelOutputError,
@@ -104,6 +108,13 @@ export interface AssistantHandlerDependencies {
     content?: readonly RankedContentEntry[];
     mode?: AssistantOpenAIMode;
   }): Promise<OpenAIResult>;
+  recordUnanswered(input: {
+    requestId: string;
+    message: string;
+    currentPath: string;
+    reason: UnansweredReason;
+    now: Date;
+  }): Promise<void>;
   log(record: Record<string, string | number>): void;
 }
 
@@ -211,6 +222,23 @@ function safeUsage(usage: Readonly<OpenAIUsage>): OpenAIUsage {
   };
 }
 
+async function captureUnanswered(
+  dependencies: AssistantHandlerDependencies,
+  input: {
+    requestId: string;
+    message: string;
+    currentPath: string;
+    reason: UnansweredReason;
+    now: Date;
+  },
+): Promise<void> {
+  try {
+    await dependencies.recordUnanswered(input);
+  } catch {
+    // Persistence must never change the client response.
+  }
+}
+
 export function createAssistantHandler(
   dependencies: AssistantHandlerDependencies,
 ): AssistantHandler {
@@ -224,6 +252,7 @@ export function createAssistantHandler(
     let inputTokens = 0;
     let outputTokens = 0;
     let totalTokens = 0;
+    let unansweredRequest: AssistantRequest | undefined;
 
     try {
       const requestedOrigin = readOrigin(event);
@@ -258,6 +287,7 @@ export function createAssistantHandler(
         throw new RequestValidationError('Invalid assistant request');
       }
       const request = parseAssistantRequest(event.body);
+      unansweredRequest = request;
       const selected = selectRelevantKnowledge(
         request.message,
         request.currentPath,
@@ -270,6 +300,13 @@ export function createAssistantHandler(
       if (selected.length === 0 && content.length === 0 && !smallTalk) {
         outcome = 'no_relevant_knowledge';
         statusCode = 200;
+        await captureUnanswered(dependencies, {
+          requestId,
+          message: request.message,
+          currentPath: request.currentPath,
+          reason: 'no_relevant_knowledge',
+          now: dependencies.now(),
+        });
         return jsonResponse(statusCode, CONTACT_FALLBACK, origin);
       }
 
@@ -342,6 +379,15 @@ export function createAssistantHandler(
         }
         outcome = 'unsafe_model_output';
         statusCode = 200;
+        if (unansweredRequest !== undefined) {
+          await captureUnanswered(dependencies, {
+            requestId,
+            message: unansweredRequest.message,
+            currentPath: unansweredRequest.currentPath,
+            reason: 'unsafe_model_output',
+            now: dependencies.now(),
+          });
+        }
         return jsonResponse(statusCode, CONTACT_FALLBACK, origin);
       }
 
@@ -400,6 +446,10 @@ export function createRuntimeDependencies(
   );
   const postsTable = requireEnvironmentValue(environment, 'POSTS_TABLE');
   const boardTable = requireEnvironmentValue(environment, 'BOARD_TABLE');
+  const unansweredTable = requireEnvironmentValue(
+    environment,
+    'ASSISTANT_UNANSWERED_TABLE',
+  );
   const firebaseApiKey = requireEnvironmentValue(environment, 'FIREBASE_API_KEY');
   const firebaseProjectId = requireEnvironmentValue(
     environment,
@@ -445,6 +495,11 @@ export function createRuntimeDependencies(
         model: mode === 'small_talk' ? smallTalkModel : model,
         timeoutMs: OPENAI_TIMEOUT_MS,
       })
+    ),
+    recordUnanswered: (input) => recordUnansweredQuestion(
+      documentClient,
+      unansweredTable,
+      input,
     ),
     log: (record) => {
       console.info(JSON.stringify(record));

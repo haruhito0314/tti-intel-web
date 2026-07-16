@@ -102,6 +102,27 @@ describe('TtiAiStack site assistant infrastructure', () => {
         });
     });
 
+    it('creates the retained unanswered-questions table with pk/sk and TTL', () => {
+        template.hasResourceProperties('AWS::DynamoDB::Table', {
+            TableName: 'tti-ai-assistant-unanswered',
+            BillingMode: 'PAY_PER_REQUEST',
+            KeySchema: [
+                { AttributeName: 'pk', KeyType: 'HASH' },
+                { AttributeName: 'sk', KeyType: 'RANGE' },
+            ],
+            TimeToLiveSpecification: { AttributeName: 'expiresAt', Enabled: true },
+        });
+
+        const matches = resourcesOfType('AWS::DynamoDB::Table').filter(([, resource]) => {
+            return resource.Properties?.TableName === 'tti-ai-assistant-unanswered';
+        });
+        expect(matches).toHaveLength(1);
+        expect(matches[0][1]).toMatchObject({
+            DeletionPolicy: 'Retain',
+            UpdateReplacePolicy: 'Retain',
+        });
+    });
+
     it('configures the assistant Lambda with the required content-aware settings', () => {
         template.hasResourceProperties('AWS::Lambda::Function', {
             FunctionName: 'tti-ai-site-assistant',
@@ -111,6 +132,7 @@ describe('TtiAiStack site assistant infrastructure', () => {
             Environment: {
                 Variables: Match.objectLike({
                     ASSISTANT_USAGE_TABLE: Match.anyValue(),
+                    ASSISTANT_UNANSWERED_TABLE: Match.anyValue(),
                     OPENAI_SECRET_ID: 'tti-ai/openai-api-key',
                     ASSISTANT_MODEL: 'gpt-5-nano',
                     ASSISTANT_SMALL_TALK_MODEL: 'gpt-5-nano',
@@ -129,6 +151,9 @@ describe('TtiAiStack site assistant infrastructure', () => {
         const usageTable = resourcesOfType('AWS::DynamoDB::Table').find(([, resource]) => {
             return resource.Properties?.TableName === 'tti-ai-assistant-usage';
         });
+        const unansweredTable = resourcesOfType('AWS::DynamoDB::Table').find(([, resource]) => {
+            return resource.Properties?.TableName === 'tti-ai-assistant-unanswered';
+        });
         const postsTable = resourcesOfType('AWS::DynamoDB::Table').find(([, resource]) => {
             return resource.Properties?.TableName === 'tti-ai-posts';
         });
@@ -140,6 +165,7 @@ describe('TtiAiStack site assistant infrastructure', () => {
         });
 
         expect(usageTable).toBeDefined();
+        expect(unansweredTable).toBeDefined();
         expect(postsTable).toBeDefined();
         expect(boardTable).toBeDefined();
         expect(assistantLambda).toBeDefined();
@@ -154,6 +180,7 @@ describe('TtiAiStack site assistant infrastructure', () => {
             'ASSISTANT_SESSION_LIMIT',
             'ASSISTANT_SESSION_WINDOW_SECONDS',
             'ASSISTANT_SMALL_TALK_MODEL',
+            'ASSISTANT_UNANSWERED_TABLE',
             'ASSISTANT_USAGE_TABLE',
             'BOARD_TABLE',
             'FIREBASE_API_KEY',
@@ -162,6 +189,7 @@ describe('TtiAiStack site assistant infrastructure', () => {
             'POSTS_TABLE',
         ]);
         expect(variables?.ASSISTANT_USAGE_TABLE).toEqual({ Ref: usageTable?.[0] });
+        expect(variables?.ASSISTANT_UNANSWERED_TABLE).toEqual({ Ref: unansweredTable?.[0] });
         expect(variables?.POSTS_TABLE).toEqual({ Ref: postsTable?.[0] });
         expect(variables?.BOARD_TABLE).toEqual({ Ref: boardTable?.[0] });
     });
@@ -192,6 +220,7 @@ describe('TtiAiStack site assistant infrastructure', () => {
             'dynamodb:UpdateItem',
             'dynamodb:GetItem',
             'dynamodb:Query',
+            'dynamodb:PutItem',
         ]));
 
         const secretStatements = statements.filter((statement) => {

@@ -88,6 +88,15 @@ export class TtiAiStack extends cdk.Stack {
             removalPolicy: cdk.RemovalPolicy.RETAIN,
         });
 
+        const assistantUnansweredTable = new dynamodb.Table(this, 'AssistantUnansweredTable', {
+            tableName: 'tti-ai-assistant-unanswered',
+            partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
+            sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
+            billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+            timeToLiveAttribute: 'expiresAt',
+            removalPolicy: cdk.RemovalPolicy.RETAIN,
+        });
+
         // =====================
         // S3 Bucket for Images
         // =====================
@@ -193,6 +202,7 @@ export class TtiAiStack extends cdk.Stack {
             timeout: cdk.Duration.seconds(25),
             environment: {
                 ASSISTANT_USAGE_TABLE: assistantUsageTable.tableName,
+                ASSISTANT_UNANSWERED_TABLE: assistantUnansweredTable.tableName,
                 OPENAI_SECRET_ID: openAiSecret.secretName,
                 ASSISTANT_MODEL: 'gpt-5-nano',
                 ASSISTANT_SMALL_TALK_MODEL: 'gpt-5-nano',
@@ -225,6 +235,7 @@ export class TtiAiStack extends cdk.Stack {
 
         postsTable.grantReadData(assistantLambda);
         boardTable.grantReadData(assistantLambda);
+        assistantUnansweredTable.grantWriteData(assistantLambda);
 
         assistantLambda.addToRolePolicy(new iam.PolicyStatement({
             actions: ['secretsmanager:GetSecretValue'],
