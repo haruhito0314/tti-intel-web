@@ -136,7 +136,7 @@ describe('TtiAiStack site assistant infrastructure', () => {
                     OPENAI_SECRET_ID: 'tti-ai/openai-api-key',
                     ASSISTANT_MODEL: 'gpt-5-nano',
                     ASSISTANT_SMALL_TALK_MODEL: 'gpt-5-nano',
-                    ASSISTANT_DAILY_LIMIT: '100',
+                    ASSISTANT_DAILY_LIMIT: '200',
                     ASSISTANT_SESSION_LIMIT: '20',
                     ASSISTANT_SESSION_WINDOW_SECONDS: '600',
                     ALLOWED_ORIGINS: 'https://tti-intel.com,https://www.tti-intel.com,http://localhost:5173,http://127.0.0.1:5173',

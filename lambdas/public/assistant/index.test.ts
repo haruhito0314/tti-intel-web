@@ -186,7 +186,7 @@ describe('createAssistantHandler CORS and early exits', () => {
       headers: {
         'Access-Control-Allow-Origin': origin,
         'Access-Control-Allow-Methods': 'POST,OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Headers': 'Content-Type,Cache-Control',
         'Access-Control-Max-Age': '600',
         Vary: 'Origin',
         'Content-Type': 'application/json; charset=utf-8',
@@ -778,7 +778,7 @@ describe('createRuntimeDependencies', () => {
     ALLOWED_ORIGINS: 'https://tti-intel.com, http://localhost:5173',
     ASSISTANT_USAGE_TABLE: 'assistant-usage',
     ASSISTANT_UNANSWERED_TABLE: 'assistant-unanswered',
-    ASSISTANT_DAILY_LIMIT: '100',
+    ASSISTANT_DAILY_LIMIT: '200',
     ASSISTANT_SESSION_LIMIT: '20',
     ASSISTANT_SESSION_WINDOW_SECONDS: '600',
     POSTS_TABLE: 'tti-ai-posts',

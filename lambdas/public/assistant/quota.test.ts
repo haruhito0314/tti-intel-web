@@ -15,7 +15,7 @@ import {
 
 const config: QuotaConfig = {
   tableName: 'assistant-usage',
-  dailyLimit: 100,
+  dailyLimit: 200,
   sessionLimit: 20,
   sessionWindowSeconds: 600,
 };
@@ -28,7 +28,7 @@ const input: QuotaReservationInput = {
 
 const validEnvironment = {
   ASSISTANT_USAGE_TABLE: 'assistant-usage',
-  ASSISTANT_DAILY_LIMIT: '100',
+  ASSISTANT_DAILY_LIMIT: '200',
   ASSISTANT_SESSION_LIMIT: '20',
   ASSISTANT_SESSION_WINDOW_SECONDS: '600',
 };
@@ -195,7 +195,7 @@ describe('buildQuotaTransaction', () => {
       ExpressionAttributeValues: {
         ':zero': 0,
         ':one': 1,
-        ':limit': 100,
+        ':limit': 200,
         ':expiresAt': 1_784_386_800,
         ':kind': 'daily',
       },
@@ -351,9 +351,9 @@ describe('reserveQuota', () => {
     )).toBe(1);
   });
 
-  it('atomically allows only 100 of 101 distinct sessions for one day', async () => {
+  it('atomically allows only 200 of 201 distinct sessions for one day', async () => {
     const fake = createAtomicFakeWriter();
-    const inputs = Array.from({ length: 101 }, (_, index): QuotaReservationInput => ({
+    const inputs = Array.from({ length: 201 }, (_, index): QuotaReservationInput => ({
       sessionId: `session-${index}`,
       requestId: `request-${index}`,
       now: input.now,
@@ -364,14 +364,14 @@ describe('reserveQuota', () => {
     )));
     const successes = results.filter(({ status }) => status === 'fulfilled');
     const failures = results.filter(({ status }) => status === 'rejected');
-    const failedSessionUpdate = updateAt(buildQuotaTransaction(config, inputs[100]!), 1);
+    const failedSessionUpdate = updateAt(buildQuotaTransaction(config, inputs[200]!), 1);
 
-    expect(successes).toHaveLength(100);
+    expect(successes).toHaveLength(200);
     expect(failures).toHaveLength(1);
     expect(failures[0]).toMatchObject({
       reason: { name: 'QuotaExceededError', scope: 'daily' },
     });
-    expect(fake.countFor('DAY#2026-07-17', 'GLOBAL')).toBe(100);
+    expect(fake.countFor('DAY#2026-07-17', 'GLOBAL')).toBe(200);
     expect(fake.countFor(
       String(failedSessionUpdate.Key?.pk),
       String(failedSessionUpdate.Key?.sk),

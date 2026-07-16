@@ -145,7 +145,7 @@ function responseHeaders(origin: string | undefined): Record<string, string> {
   return {
     'Access-Control-Allow-Origin': origin,
     'Access-Control-Allow-Methods': 'POST,OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type,Cache-Control',
     'Access-Control-Max-Age': '600',
     Vary: 'Origin',
     'Content-Type': 'application/json; charset=utf-8',
