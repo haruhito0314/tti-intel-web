@@ -281,7 +281,13 @@ describe('Layout assistant integration', () => {
         expect(secondSessionId).not.toBe(firstSessionId);
     });
 
-    it.each(['/admin', '/admin/members'])(
+    it.each([
+        '/admin',
+        '/admin/members',
+        '/Admin',
+        '/ADMIN/MEMBERS',
+        '/aDmIn/MeMbErS',
+    ])(
         'does not expose the assistant on %s',
         (initialEntry) => {
             const { client, createId, send } = createHarness();
@@ -295,19 +301,22 @@ describe('Layout assistant integration', () => {
         },
     );
 
-    it('does not treat the public /administrator lookalike as an admin route', () => {
-        const { client, createId } = createHarness();
-        renderRoutes({
-            initialEntry: '/administrator',
-            client,
-            createId,
-        });
+    it.each(['/administrator', '/Administrator', '/aDmInIsTrAtOr'])(
+        'does not treat the public lookalike %s as an admin route',
+        (initialEntry) => {
+            const { client, createId } = createHarness();
+            renderRoutes({
+                initialEntry,
+                client,
+                createId,
+            });
 
-        expect(screen.getByText('Public lookalike')).toBeInTheDocument();
-        expect(
-            screen.getByRole('button', { name: 'AIガイドを開く' }),
-        ).toBeInTheDocument();
-    });
+            expect(screen.getByText('Public lookalike')).toBeInTheDocument();
+            expect(
+                screen.getByRole('button', { name: 'AIガイドを開く' }),
+            ).toBeInTheDocument();
+        },
+    );
 
     it('keeps the existing layout contracts and places the widget outside its background', () => {
         const { client, createId } = createHarness();

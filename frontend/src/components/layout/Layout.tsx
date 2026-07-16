@@ -13,6 +13,15 @@ function isDevelopmentPath(pathname: string) {
     return pathname === '/development' || pathname.startsWith('/development/');
 }
 
+function isAdminPath(pathname: string) {
+    const normalizedPathname = pathname.toLowerCase();
+
+    return (
+        normalizedPathname === '/admin'
+        || normalizedPathname.startsWith('/admin/')
+    );
+}
+
 export interface LayoutProps {
     assistantClient?: AssistantClient;
     assistantCreateId?: () => string;
@@ -25,10 +34,7 @@ export function Layout({
     const { pathname } = useLocation();
     const backgroundRef = useRef<HTMLDivElement>(null);
     const isDevPage = isDevelopmentPath(pathname);
-    const assistantEnabled = (
-        pathname !== '/admin'
-        && !pathname.startsWith('/admin/')
-    );
+    const assistantEnabled = !isAdminPath(pathname);
 
     return (
         <AssistantProvider
