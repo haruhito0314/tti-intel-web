@@ -68,6 +68,19 @@ export function AssistantConversation({
     const displayedError = localError ?? errorMessage;
     const canSubmit = draft.trim().length > 0 && !sending;
 
+    const enterCountRef = useRef(0);
+    const lastEnterAtRef = useRef(0);
+    const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const resetEnterSequence = () => {
+        enterCountRef.current = 0;
+        lastEnterAtRef.current = 0;
+        if (resetTimerRef.current) {
+            clearTimeout(resetTimerRef.current);
+            resetTimerRef.current = null;
+        }
+    };
+
     useEffect(() => {
         const container = messagesRef.current;
         if (container) {
@@ -107,6 +120,7 @@ export function AssistantConversation({
     };
 
     const handleDraftChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
+        resetEnterSequence();
         setDraft(event.target.value);
         setLocalError(null);
         if (errorMessage !== null) {
@@ -115,16 +129,54 @@ export function AssistantConversation({
     };
 
     const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-        if (
-            event.key !== 'Enter'
-            || event.shiftKey
-            || event.nativeEvent.isComposing
-        ) {
+        if (event.key !== 'Enter') return;
+        if (event.nativeEvent.isComposing) return;
+
+        // Keep Shift+Enter as a plain newline (no submit).
+        if (event.shiftKey) return;
+
+        // Explicit submit shortcut (Ctrl/Cmd + Enter).
+        if (event.ctrlKey || event.metaKey) {
+            event.preventDefault();
+            resetEnterSequence();
+            void submitDraft();
             return;
         }
 
-        event.preventDefault();
-        void submitDraft();
+        // Submit on "Enter twice" (double Enter) to support quick multi-line messages.
+        const now = Date.now();
+        const DOUBLE_ENTER_WINDOW_MS = 900;
+
+        if (resetTimerRef.current) {
+            clearTimeout(resetTimerRef.current);
+            resetTimerRef.current = null;
+        }
+
+        // First Enter: allow newline to be inserted by the browser.
+        if (enterCountRef.current === 0) {
+            enterCountRef.current = 1;
+            lastEnterAtRef.current = now;
+            resetTimerRef.current = setTimeout(() => {
+                resetEnterSequence();
+            }, DOUBLE_ENTER_WINDOW_MS);
+            return;
+        }
+
+        // Second Enter: if it's within the window, submit.
+        const delta = now - lastEnterAtRef.current;
+        if (delta <= DOUBLE_ENTER_WINDOW_MS) {
+            resetEnterSequence();
+            event.preventDefault();
+            void submitDraft();
+            return;
+        }
+
+        // Outside the window: treat this Enter as the new first Enter.
+        enterCountRef.current = 1;
+        lastEnterAtRef.current = now;
+        resetTimerRef.current = setTimeout(() => {
+            resetEnterSequence();
+        }, DOUBLE_ENTER_WINDOW_MS);
     };
 
     const handleFormSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -212,7 +264,7 @@ export function AssistantConversation({
                         value={draft}
                         rows={1}
                         maxLength={MAX_QUESTION_LENGTH}
-                        placeholder="メッセージを入力します"
+                        placeholder="メッセージを入力します（Enterを2回で送信）"
                         disabled={sending}
                         aria-describedby={`${countId}${displayedError ? ` ${errorId}` : ''}`}
                         aria-invalid={displayedError !== null}

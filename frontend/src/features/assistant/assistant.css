@@ -410,18 +410,17 @@
 
   .assistant-panel {
     position: absolute;
-    top: max(8px, env(safe-area-inset-top, 0px));
+    top: 0;
     right: 0;
     bottom: 0;
     left: 0;
     width: 100%;
-    height: auto;
+    height: 100%;
     max-height: none;
     min-height: 0;
-    border-radius: 22px 22px 0 0;
-    border-left: 0;
-    border-right: 0;
-    border-bottom: 0;
+    border: 0;
+    border-radius: 0;
+    padding-top: env(safe-area-inset-top, 0px);
     pointer-events: auto;
   }
 

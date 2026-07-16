@@ -384,6 +384,10 @@ describe('AssistantWidget', () => {
         expect(
             screen.queryByRole('button', { name: 'AI Assistantを開く' }),
         ).not.toBeInTheDocument();
+        expect(screen.getByRole('textbox', { name: '質問' })).not.toHaveFocus();
+        expect(
+            screen.getByRole('button', { name: 'AI Assistantを閉じる' }),
+        ).toHaveFocus();
 
         const root = dialog.closest('.assistant-root');
         expect(root).toHaveClass('assistant-root-open');
@@ -574,7 +578,6 @@ describe('AssistantWidget', () => {
         const outsideLink = within(background).getByRole('link', {
             name: 'ページ内リンク',
         });
-        const textarea = screen.getByRole('textbox', { name: '質問' });
 
         outsideLink.focus();
         expect(outsideLink).toHaveFocus();
@@ -582,7 +585,11 @@ describe('AssistantWidget', () => {
 
         expect(background).toHaveAttribute('inert');
         expect(document.body.style.overflow).toBe('hidden');
-        expect(textarea).toHaveFocus();
+        // Mobile avoids autofocusing the textarea so the keyboard stays closed.
+        expect(screen.getByRole('textbox', { name: '質問' })).not.toHaveFocus();
+        expect(
+            screen.getByRole('button', { name: 'AI Assistantを閉じる' }),
+        ).toHaveFocus();
     });
 
     it('preserves dialog focus across breakpoint changes when it is already inside', () => {
@@ -886,7 +893,7 @@ describe('AssistantWidget', () => {
             /\.assistant-messages\s*\{[^}]*overflow-y:\s*auto;/s,
         );
         expect(assistantCssSource).toMatch(
-            /@media\s*\(max-width:\s*767px\)[\s\S]*\.assistant-panel\s*\{[^}]*top:\s*max\(8px,\s*env\(safe-area-inset-top,\s*0px\)\);[^}]*right:\s*0;[^}]*bottom:\s*0;[^}]*left:\s*0;[^}]*width:\s*100%;[^}]*height:\s*auto;/s,
+            /@media\s*\(max-width:\s*767px\)[\s\S]*\.assistant-panel\s*\{[^}]*top:\s*0;[^}]*right:\s*0;[^}]*bottom:\s*0;[^}]*left:\s*0;[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*border-radius:\s*0;/s,
         );
         expect(assistantCssSource).toMatch(
             /@media\s*\(max-width:\s*767px\)[\s\S]*\.assistant-scrim\s*\{[^}]*pointer-events:\s*auto;/s,

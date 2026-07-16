@@ -193,7 +193,7 @@ describe('AssistantConversation', () => {
         expect(textarea).toHaveAttribute('rows', '1');
         expect(textarea).toHaveAttribute(
             'placeholder',
-            'メッセージを入力します',
+            'メッセージを入力します（Enterを2回で送信）',
         );
         expect(textarea.labels?.[0]).toHaveClass('assistant-visually-hidden');
         expect(screen.getByText('0 / 500')).toBeInTheDocument();
@@ -220,33 +220,38 @@ describe('AssistantConversation', () => {
         expect(onSubmit).toHaveBeenCalledWith('x'.repeat(500));
     });
 
-    it('submits with Enter, allows Shift+Enter newline, and ignores composing Enter', async () => {
+    it('submits with Enter twice, allows Enter newline, and ignores composing Enter', async () => {
         const onSubmit = vi.fn(async () => false);
         renderConversation({ onSubmit });
         const textarea = screen.getByRole('textbox', { name: '質問' });
 
         enterQuestion('  Enterで送る  ');
-        const enterResult = fireEvent.keyDown(textarea, {
-            key: 'Enter',
-            code: 'Enter',
-        });
+        // First Enter: should not submit.
+        fireEvent.keyDown(textarea, { key: 'Enter', code: 'Enter' });
+        expect(onSubmit).toHaveBeenCalledTimes(0);
 
-        expect(enterResult).toBe(false);
+        // Second Enter: submits.
+        fireEvent.keyDown(textarea, { key: 'Enter', code: 'Enter' });
         await waitFor(() => {
             expect(onSubmit).toHaveBeenCalledWith('Enterで送る');
         });
+        expect(onSubmit).toHaveBeenCalledTimes(1);
 
+        // Shift+Enter should still be a newline (no submit).
         fireEvent.keyDown(textarea, {
             key: 'Enter',
             code: 'Enter',
             shiftKey: true,
         });
-        fireEvent.change(textarea, {
-            target: { value: 'Enterで送る\n次の行' },
-        });
-        expect(textarea).toHaveValue('Enterで送る\n次の行');
         expect(onSubmit).toHaveBeenCalledTimes(1);
 
+        // Composing Enter should be ignored.
+        enterQuestion('  蓄積  ');
+        fireEvent.keyDown(textarea, {
+            key: 'Enter',
+            code: 'Enter',
+            isComposing: true,
+        });
         fireEvent.keyDown(textarea, {
             key: 'Enter',
             code: 'Enter',

@@ -200,6 +200,20 @@ export function useAssistantDialogBehavior({
             return;
         }
 
+        // On mobile, avoid autofocusing the textarea so the virtual keyboard
+        // stays closed until the user taps the message box themselves.
+        if (isMobile) {
+            if (!dialog) {
+                return;
+            }
+            const focusable = getFocusableElements(dialog);
+            const preferred = focusable.find((element) => (
+                element !== inputRef.current
+            )) ?? focusable[0];
+            preferred?.focus();
+            return;
+        }
+
         const input = inputRef.current;
         input?.focus();
         if (document.activeElement !== input && dialog) {
