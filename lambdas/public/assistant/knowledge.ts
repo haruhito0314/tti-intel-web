@@ -1,0 +1,265 @@
+import rawGuideEntries from './knowledge/site-guide.json' with { type: 'json' };
+import { PAGE_IDS } from './types.js';
+import type {
+  AssistantLink,
+  Audience,
+  GuideEntry,
+  GuideFaq,
+  PageId,
+  RankedGuideEntry,
+} from './types.js';
+
+export const KNOWN_PAGE_ROUTES = {
+  home: { title: 'Home', href: '/' },
+  about: { title: 'About Us', href: '/about' },
+  news: { title: 'News', href: '/news' },
+  apps: { title: 'Apps', href: '/app' },
+  development: { title: 'Development', href: '/development' },
+  board: { title: 'Board', href: '/board' },
+  contact: { title: 'Contact', href: '/contact' },
+  'game-community': { title: 'Game Community', href: '/game-community' },
+  'weekly-math': { title: '今週の数学', href: '/weekly-math' },
+  'table-tennis': { title: 'Table Tennis Match Maker', href: '/app/table-tennis' },
+  'color-sort': { title: 'Color Sort Puzzle', href: '/app/color-sort' },
+  'cli-practice': { title: 'CLI Practice', href: '/app/cli-practice' },
+} as const satisfies Record<PageId, { title: string; href: string }>;
+
+const PAGE_ID_SET: ReadonlySet<string> = new Set(PAGE_IDS);
+
+function invalidGuide(reason: string): never {
+  throw new TypeError(`Invalid site guide: ${reason}`);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isPageId(value: unknown): value is PageId {
+  return typeof value === 'string' && PAGE_ID_SET.has(value);
+}
+
+function parseNonEmptyString(value: unknown, field: string): string {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return invalidGuide(`${field} must be a non-empty string`);
+  }
+  return value;
+}
+
+function parseStringArray(value: unknown, field: string): string[] {
+  if (!Array.isArray(value)) {
+    return invalidGuide(`${field} must be an array`);
+  }
+
+  return value.map((item, index) => parseNonEmptyString(item, `${field}[${index}]`));
+}
+
+function parseAudiences(value: unknown, field: string): Audience[] {
+  if (!Array.isArray(value)) {
+    return invalidGuide(`${field} must be an array`);
+  }
+
+  const audiences: Audience[] = [];
+  for (const audience of value) {
+    if (audience !== 'visitor' && audience !== 'member') {
+      return invalidGuide(`${field} contains an unknown audience`);
+    }
+    audiences.push(audience);
+  }
+
+  if (
+    audiences.length !== 2
+    || new Set(audiences).size !== 2
+    || !audiences.includes('visitor')
+    || !audiences.includes('member')
+  ) {
+    return invalidGuide(`${field} must contain visitor and member exactly once`);
+  }
+
+  return audiences;
+}
+
+function parseFaqs(value: unknown, field: string): GuideFaq[] {
+  if (!Array.isArray(value)) {
+    return invalidGuide(`${field} must be an array`);
+  }
+
+  return value.map((faq, index) => {
+    if (!isRecord(faq)) {
+      return invalidGuide(`${field}[${index}] must be an object`);
+    }
+
+    return {
+      question: parseNonEmptyString(faq.question, `${field}[${index}].question`),
+      answer: parseNonEmptyString(faq.answer, `${field}[${index}].answer`),
+    };
+  });
+}
+
+function parseRelatedPageIds(value: unknown, field: string): PageId[] {
+  if (!Array.isArray(value)) {
+    return invalidGuide(`${field} must be an array`);
+  }
+
+  const relatedPageIds: PageId[] = [];
+  for (const relatedPageId of value) {
+    if (!isPageId(relatedPageId)) {
+      return invalidGuide(`${field} contains an unknown page id`);
+    }
+    if (relatedPageIds.includes(relatedPageId)) {
+      return invalidGuide(`${field} contains a duplicate page id`);
+    }
+    relatedPageIds.push(relatedPageId);
+  }
+  return relatedPageIds;
+}
+
+function parseGuideEntry(value: unknown, index: number): GuideEntry {
+  const field = `entries[${index}]`;
+  if (!isRecord(value)) {
+    return invalidGuide(`${field} must be an object`);
+  }
+  if (!isPageId(value.id)) {
+    return invalidGuide(`${field}.id is unknown`);
+  }
+
+  const route = parseNonEmptyString(value.route, `${field}.route`);
+  if (route !== KNOWN_PAGE_ROUTES[value.id].href) {
+    return invalidGuide(`${field}.route is not canonical for ${value.id}`);
+  }
+
+  return {
+    id: value.id,
+    route,
+    title: parseNonEmptyString(value.title, `${field}.title`),
+    summary: parseNonEmptyString(value.summary, `${field}.summary`),
+    audiences: parseAudiences(value.audiences, `${field}.audiences`),
+    keywords: parseStringArray(value.keywords, `${field}.keywords`),
+    faqs: parseFaqs(value.faqs, `${field}.faqs`),
+    relatedPageIds: parseRelatedPageIds(
+      value.relatedPageIds,
+      `${field}.relatedPageIds`,
+    ),
+  };
+}
+
+function parseGuideEntries(value: unknown): readonly GuideEntry[] {
+  if (!Array.isArray(value) || value.length !== PAGE_IDS.length) {
+    return invalidGuide(`catalog must contain exactly ${PAGE_IDS.length} entries`);
+  }
+
+  const entries = value.map(parseGuideEntry);
+  const seenPageIds = new Set<PageId>();
+  for (const entry of entries) {
+    if (seenPageIds.has(entry.id)) {
+      return invalidGuide(`catalog contains duplicate page id ${entry.id}`);
+    }
+    seenPageIds.add(entry.id);
+  }
+  for (const pageId of PAGE_IDS) {
+    if (!seenPageIds.has(pageId)) {
+      return invalidGuide(`catalog is missing page id ${pageId}`);
+    }
+  }
+
+  return entries;
+}
+
+export const GUIDE_ENTRIES = parseGuideEntries(rawGuideEntries);
+
+const DYNAMIC_PAGE_PATTERNS: readonly [RegExp, PageId][] = [
+  [/^\/news\/[^/]+$/, 'news'],
+  [/^\/weekly-math\/[^/]+$/, 'weekly-math'],
+  [/^\/weekly-math\/[^/]+\/solution$/, 'weekly-math'],
+  [/^\/board\/[^/]+$/, 'board'],
+];
+
+export function normalizeSearchText(value: string): string {
+  return value.normalize('NFKC').toLocaleLowerCase('ja-JP').trim().replace(/\s+/g, ' ');
+}
+
+export function resolveCurrentPageId(currentPath: string): PageId | null {
+  for (const pageId of PAGE_IDS) {
+    if (KNOWN_PAGE_ROUTES[pageId].href === currentPath) {
+      return pageId;
+    }
+  }
+
+  for (const [pattern, pageId] of DYNAMIC_PAGE_PATTERNS) {
+    if (pattern.test(currentPath)) {
+      return pageId;
+    }
+  }
+
+  return null;
+}
+
+export function scoreGuideEntry(
+  normalizedQuery: string,
+  currentPageId: PageId | null,
+  entry: GuideEntry,
+): number {
+  const query = normalizeSearchText(normalizedQuery);
+  const title = normalizeSearchText(entry.title);
+  let score = query === title ? 8 : query.includes(title) ? 5 : 0;
+
+  for (const keyword of new Set(entry.keywords.map(normalizeSearchText))) {
+    if (keyword && query.includes(keyword)) score += 3;
+  }
+  for (const faq of entry.faqs) {
+    const question = normalizeSearchText(faq.question);
+    if (question && query.includes(question)) score += 2;
+  }
+  if (currentPageId === entry.id) score += 1;
+  return score;
+}
+
+export function selectRelevantKnowledge(
+  query: string,
+  currentPath: string,
+): RankedGuideEntry[] {
+  const currentPageId = resolveCurrentPageId(currentPath);
+
+  return GUIDE_ENTRIES
+    .map((entry) => ({
+      entry,
+      score: scoreGuideEntry(query, currentPageId, entry),
+    }))
+    .filter(({ score }) => score >= 3)
+    .sort((a, b) => {
+      if (a.score !== b.score) return b.score - a.score;
+      return a.entry.id < b.entry.id ? -1 : a.entry.id > b.entry.id ? 1 : 0;
+    })
+    .slice(0, 5);
+}
+
+export function createVerifiedLinks(
+  modelPageIds: readonly string[],
+  selected: readonly RankedGuideEntry[],
+): AssistantLink[] {
+  const allowedPageIds = new Set<PageId>([
+    ...selected.map(({ entry }) => entry.id),
+    'contact',
+  ]);
+  const seenPageIds = new Set<PageId>();
+  const links: AssistantLink[] = [];
+
+  for (const pageId of modelPageIds) {
+    if (links.length === 3) break;
+    if (
+      !isPageId(pageId)
+      || !allowedPageIds.has(pageId)
+      || seenPageIds.has(pageId)
+    ) {
+      continue;
+    }
+
+    seenPageIds.add(pageId);
+    links.push({
+      pageId,
+      title: KNOWN_PAGE_ROUTES[pageId].title,
+      href: KNOWN_PAGE_ROUTES[pageId].href,
+    });
+  }
+
+  return links;
+}
