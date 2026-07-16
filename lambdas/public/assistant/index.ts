@@ -1,0 +1,393 @@
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
+import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
+import type {
+  APIGatewayProxyEvent,
+  APIGatewayProxyHandler,
+  APIGatewayProxyResult,
+  Context,
+} from 'aws-lambda';
+
+import {
+  createVerifiedLinks,
+  selectRelevantKnowledge,
+} from './knowledge.js';
+import {
+  createApiKeyProvider,
+  OpenAiTimeoutError,
+  OpenAiUpstreamError,
+  requestOpenAI,
+  SecretUnavailableError,
+} from './openai.js';
+import {
+  QuotaExceededError,
+  QuotaInfrastructureError,
+  readQuotaConfig,
+  reserveQuota,
+  type QuotaReservationInput,
+} from './quota.js';
+import type {
+  AssistantRequest,
+  AssistantResponse,
+  OpenAIResult,
+  RankedGuideEntry,
+} from './types.js';
+import {
+  parseAssistantRequest,
+  RequestValidationError,
+  UnsafeModelOutputError,
+  validateModelGuideResponse,
+} from './validation.js';
+
+const OPENAI_TIMEOUT_MS = 20_000;
+
+const ERROR_RESPONSES = {
+  400: {
+    code: 'INVALID_REQUEST',
+    message: '質問内容を確認して、もう一度送信してください。',
+  },
+  403: {
+    code: 'ORIGIN_NOT_ALLOWED',
+    message: 'この場所からはAIガイドを利用できません。',
+  },
+  429: {
+    code: 'RATE_LIMITED',
+    message: '本日のAIガイド利用上限に達しました。通常のメニューをご利用ください。',
+  },
+  500: {
+    code: 'INTERNAL_ERROR',
+    message: 'AIガイドで問題が発生しました。通常のメニューをご利用ください。',
+  },
+  502: {
+    code: 'UPSTREAM_UNAVAILABLE',
+    message: '現在AIガイドを利用できません。通常のメニューをご利用ください。',
+  },
+  504: {
+    code: 'UPSTREAM_TIMEOUT',
+    message: 'AIガイドの応答に時間がかかっています。しばらくしてからお試しください。',
+  },
+} as const;
+
+type ErrorStatusCode = keyof typeof ERROR_RESPONSES;
+type DependencyStage = 'internal' | 'secret' | 'quota' | 'openai';
+type RuntimeEnvironment = Readonly<Record<string, string | undefined>>;
+
+export const CONTACT_FALLBACK: AssistantResponse = {
+  answer: '案内できる情報が見つかりませんでした。お問い合わせページをご利用ください。',
+  links: [{ pageId: 'contact', title: 'Contact', href: '/contact' }],
+};
+
+export interface AssistantHandlerDependencies {
+  allowedOrigins: ReadonlySet<string>;
+  now(): Date;
+  getApiKey(): Promise<string>;
+  reserveQuota(input: QuotaReservationInput): Promise<void>;
+  requestOpenAI(input: {
+    apiKey: string;
+    request: AssistantRequest;
+    selected: readonly RankedGuideEntry[];
+  }): Promise<OpenAIResult>;
+  log(record: Record<string, string | number>): void;
+}
+
+export type AssistantHandler = (
+  event: APIGatewayProxyEvent,
+  context: Context,
+) => Promise<APIGatewayProxyResult>;
+
+function readOrigin(event: APIGatewayProxyEvent): string | undefined {
+  const direct = event.headers.origin ?? event.headers.Origin;
+  if (direct !== undefined) return direct;
+
+  for (const [name, value] of Object.entries(event.headers)) {
+    if (name.toLowerCase() === 'origin' && value !== undefined) {
+      return value;
+    }
+  }
+
+  return undefined;
+}
+
+function responseHeaders(origin: string | undefined): Record<string, string> {
+  if (origin === undefined) {
+    return { 'Content-Type': 'application/json; charset=utf-8' };
+  }
+
+  return {
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Methods': 'POST,OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Max-Age': '600',
+    Vary: 'Origin',
+    'Content-Type': 'application/json; charset=utf-8',
+  };
+}
+
+function jsonResponse(
+  statusCode: number,
+  body: unknown,
+  origin: string | undefined,
+): APIGatewayProxyResult {
+  return {
+    statusCode,
+    headers: responseHeaders(origin),
+    body: JSON.stringify(body),
+  };
+}
+
+function errorResponse(
+  statusCode: ErrorStatusCode,
+  origin: string | undefined,
+): APIGatewayProxyResult {
+  return jsonResponse(statusCode, ERROR_RESPONSES[statusCode], origin);
+}
+
+function requestIdFor(
+  event: APIGatewayProxyEvent,
+  context: Context,
+): string {
+  const gatewayRequestId = event.requestContext.requestId?.trim();
+  const lambdaRequestId = context.awsRequestId?.trim();
+  return gatewayRequestId || lambdaRequestId || '';
+}
+
+function requireEnvironmentValue(
+  environment: RuntimeEnvironment,
+  variableName: string,
+): string {
+  const value = environment[variableName]?.trim();
+  if (value === undefined || value.length === 0) {
+    throw new Error(
+      `Invalid assistant configuration: ${variableName} is required`,
+    );
+  }
+  return value;
+}
+
+function readAllowedOrigins(environment: RuntimeEnvironment): ReadonlySet<string> {
+  const rawOrigins = requireEnvironmentValue(environment, 'ALLOWED_ORIGINS');
+  const origins = new Set(
+    rawOrigins
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter((origin) => origin.length > 0),
+  );
+
+  if (origins.size === 0) {
+    throw new Error(
+      'Invalid assistant configuration: ALLOWED_ORIGINS must contain an origin',
+    );
+  }
+
+  return origins;
+}
+
+function safeUsage(result: OpenAIResult): OpenAIResult['usage'] {
+  const token = (value: number): number => (
+    Number.isSafeInteger(value) && value >= 0 ? value : 0
+  );
+
+  return {
+    inputTokens: token(result.usage.inputTokens),
+    outputTokens: token(result.usage.outputTokens),
+    totalTokens: token(result.usage.totalTokens),
+  };
+}
+
+export function createAssistantHandler(
+  dependencies: AssistantHandlerDependencies,
+): AssistantHandler {
+  return async (event, context) => {
+    const startedAt = Date.now();
+    const requestId = requestIdFor(event, context);
+    let origin: string | undefined;
+    let outcome = 'internal_error';
+    let statusCode = 500;
+    let dependencyStage: DependencyStage = 'internal';
+    let inputTokens = 0;
+    let outputTokens = 0;
+    let totalTokens = 0;
+
+    try {
+      const requestedOrigin = readOrigin(event);
+      if (
+        requestedOrigin !== undefined
+        && !dependencies.allowedOrigins.has(requestedOrigin)
+      ) {
+        outcome = 'origin_not_allowed';
+        statusCode = 403;
+        return errorResponse(403, undefined);
+      }
+      origin = requestedOrigin;
+
+      const method = event.httpMethod.toUpperCase();
+      if (method !== 'POST' && method !== 'OPTIONS') {
+        outcome = 'invalid_request';
+        statusCode = 400;
+        return errorResponse(400, origin);
+      }
+
+      if (method === 'OPTIONS') {
+        outcome = 'preflight';
+        statusCode = 204;
+        return {
+          statusCode,
+          headers: responseHeaders(origin),
+          body: '',
+        };
+      }
+
+      if (event.isBase64Encoded) {
+        throw new RequestValidationError('Invalid assistant request');
+      }
+      const request = parseAssistantRequest(event.body);
+      const selected = selectRelevantKnowledge(
+        request.message,
+        request.currentPath,
+      );
+
+      if (selected.length === 0) {
+        outcome = 'no_relevant_knowledge';
+        statusCode = 200;
+        return jsonResponse(statusCode, CONTACT_FALLBACK, origin);
+      }
+
+      if (requestId.length === 0) {
+        outcome = 'internal_error';
+        statusCode = 500;
+        return errorResponse(500, origin);
+      }
+
+      dependencyStage = 'secret';
+      const apiKey = await dependencies.getApiKey();
+      dependencyStage = 'internal';
+
+      const capturedNow = dependencies.now();
+      const reservationInput: QuotaReservationInput = {
+        sessionId: request.sessionId,
+        requestId,
+        now: capturedNow,
+      };
+      dependencyStage = 'quota';
+      await dependencies.reserveQuota(reservationInput);
+      dependencyStage = 'internal';
+
+      dependencyStage = 'openai';
+      const result = await dependencies.requestOpenAI({
+        apiKey,
+        request,
+        selected,
+      });
+      dependencyStage = 'internal';
+
+      const usage = safeUsage(result);
+      inputTokens = usage.inputTokens;
+      outputTokens = usage.outputTokens;
+      totalTokens = usage.totalTokens;
+      const output = validateModelGuideResponse(result.output);
+
+      outcome = 'success';
+      statusCode = 200;
+      return jsonResponse(statusCode, {
+        answer: output.answer,
+        links: createVerifiedLinks(output.pageIds, selected),
+      } satisfies AssistantResponse, origin);
+    } catch (error) {
+      if (error instanceof RequestValidationError) {
+        outcome = 'invalid_request';
+        statusCode = 400;
+        return errorResponse(400, origin);
+      }
+
+      if (error instanceof UnsafeModelOutputError) {
+        outcome = 'unsafe_model_output';
+        statusCode = 200;
+        return jsonResponse(statusCode, CONTACT_FALLBACK, origin);
+      }
+
+      if (error instanceof QuotaExceededError) {
+        outcome = 'rate_limited';
+        statusCode = 429;
+        return errorResponse(429, origin);
+      }
+
+      if (error instanceof OpenAiTimeoutError) {
+        outcome = 'upstream_timeout';
+        statusCode = 504;
+        return errorResponse(504, origin);
+      }
+
+      if (
+        error instanceof SecretUnavailableError
+        || error instanceof QuotaInfrastructureError
+        || error instanceof OpenAiUpstreamError
+        || dependencyStage !== 'internal'
+      ) {
+        outcome = 'upstream_unavailable';
+        statusCode = 502;
+        return errorResponse(502, origin);
+      }
+
+      outcome = 'internal_error';
+      statusCode = 500;
+      return errorResponse(500, origin);
+    } finally {
+      try {
+        dependencies.log({
+          requestId,
+          outcome,
+          statusCode,
+          durationMs: Math.max(0, Date.now() - startedAt),
+          inputTokens,
+          outputTokens,
+          totalTokens,
+        });
+      } catch {
+        // Logging must never change the client response or expose error details.
+      }
+    }
+  };
+}
+
+export function createRuntimeDependencies(
+  environment: RuntimeEnvironment = process.env,
+): AssistantHandlerDependencies {
+  const secretId = requireEnvironmentValue(environment, 'OPENAI_SECRET_ID');
+  const model = requireEnvironmentValue(environment, 'ASSISTANT_MODEL');
+  const allowedOrigins = readAllowedOrigins(environment);
+  const quotaConfig = readQuotaConfig(environment);
+
+  const secretsClient = new SecretsManagerClient({});
+  const getApiKey = createApiKeyProvider(secretsClient, secretId);
+  const documentClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+
+  return {
+    allowedOrigins,
+    now: () => new Date(),
+    getApiKey,
+    reserveQuota: (input) => reserveQuota(
+      (command) => documentClient.send(command),
+      quotaConfig,
+      input,
+    ),
+    requestOpenAI: ({ apiKey, request, selected }) => requestOpenAI({
+      apiKey,
+      request,
+      selected,
+      model,
+      timeoutMs: OPENAI_TIMEOUT_MS,
+    }),
+    log: (record) => {
+      console.info(JSON.stringify(record));
+    },
+  };
+}
+
+let runtimeHandler: AssistantHandler | undefined;
+
+export const handler: APIGatewayProxyHandler = async (event, context) => {
+  runtimeHandler ??= createAssistantHandler(
+    createRuntimeDependencies(process.env),
+  );
+  return runtimeHandler(event, context);
+};
