@@ -13,12 +13,7 @@ import type { AssistantUiMessage } from './types';
 
 const MAX_QUESTION_LENGTH = 500;
 const TOO_LONG_MESSAGE = '質問は500文字以内で入力してください。';
-
-const suggestions = [
-    '活動内容を知りたい',
-    '参加方法を知りたい',
-    '目的のページを探す',
-] as const;
+const GREETING_MESSAGE = '何かお困りですか？このサイトをご案内します。';
 
 export interface AssistantConversationProps {
     messages: readonly AssistantUiMessage[];
@@ -112,15 +107,6 @@ export function AssistantConversation({
         void submitDraft();
     };
 
-    const handleSuggestion = (suggestion: string) => {
-        setDraft(suggestion);
-        setLocalError(null);
-        if (errorMessage !== null) {
-            onClearError();
-        }
-        void submitDraft(suggestion);
-    };
-
     return (
         <div className="assistant-conversation">
             <div
@@ -130,6 +116,12 @@ export function AssistantConversation({
                 aria-label="会話"
                 aria-live="polite"
             >
+                <article
+                    className="assistant-message assistant-message-assistant"
+                    aria-label="AI Assistantの回答"
+                >
+                    <p>{GREETING_MESSAGE}</p>
+                </article>
                 {messages.map((message) => (
                     <article
                         key={message.id}
@@ -137,7 +129,7 @@ export function AssistantConversation({
                         aria-label={
                             message.role === 'user'
                                 ? 'あなたの質問'
-                                : 'AIガイドの回答'
+                                : 'AI Assistantの回答'
                         }
                     >
                         <p>{message.content}</p>
@@ -164,39 +156,33 @@ export function AssistantConversation({
                 )}
             </div>
 
-            {messages.length === 0 && (
-                <div className="assistant-suggestions" aria-label="質問の候補">
-                    {suggestions.map((suggestion) => (
-                        <button
-                            key={suggestion}
-                            type="button"
-                            disabled={sending}
-                            onClick={() => handleSuggestion(suggestion)}
-                        >
-                            {suggestion}
-                        </button>
-                    ))}
-                </div>
-            )}
-
             <form className="assistant-form" onSubmit={handleFormSubmit}>
-                <label htmlFor={inputId}>質問</label>
-                <textarea
-                    ref={inputRef}
-                    id={inputId}
-                    value={draft}
-                    maxLength={MAX_QUESTION_LENGTH}
-                    disabled={sending}
-                    aria-describedby={`${countId}${displayedError ? ` ${errorId}` : ''}`}
-                    aria-invalid={displayedError !== null}
-                    onChange={handleDraftChange}
-                    onKeyDown={handleKeyDown}
-                />
-                <div className="assistant-form-meta">
-                    <span id={countId}>{draft.length} / {MAX_QUESTION_LENGTH}</span>
+                <label
+                    className="assistant-visually-hidden"
+                    htmlFor={inputId}
+                >
+                    質問
+                </label>
+                <div className="assistant-input-row">
+                    <textarea
+                        ref={inputRef}
+                        id={inputId}
+                        value={draft}
+                        rows={1}
+                        maxLength={MAX_QUESTION_LENGTH}
+                        placeholder="メッセージを入力します"
+                        disabled={sending}
+                        aria-describedby={`${countId}${displayedError ? ` ${errorId}` : ''}`}
+                        aria-invalid={displayedError !== null}
+                        onChange={handleDraftChange}
+                        onKeyDown={handleKeyDown}
+                    />
                     <button type="submit" disabled={sending}>
                         送信
                     </button>
+                </div>
+                <div className="assistant-form-meta">
+                    <span id={countId}>{draft.length} / {MAX_QUESTION_LENGTH}</span>
                 </div>
                 {displayedError && (
                     <p id={errorId} role="alert">

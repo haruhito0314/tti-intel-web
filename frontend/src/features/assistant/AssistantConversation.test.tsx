@@ -20,12 +20,6 @@ import {
 import assistantConversationSource from './AssistantConversation.tsx?raw';
 import type { AssistantUiMessage } from './types';
 
-const suggestions = [
-    '活動内容を知りたい',
-    '参加方法を知りたい',
-    '目的のページを探す',
-] as const;
-
 interface Deferred<T> {
     promise: Promise<T>;
     resolve(value: T): void;
@@ -98,44 +92,47 @@ afterEach(() => {
 });
 
 describe('AssistantConversation', () => {
-    it('shows the exact three suggestions without sending on mount', () => {
+    it('shows the assistant greeting without suggestions or sending on mount', () => {
         const onSubmit = vi.fn(async () => true);
 
         renderConversation({ onSubmit });
 
-        for (const suggestion of suggestions) {
-            expect(
-                screen.getByRole('button', { name: suggestion }),
-            ).toBeInTheDocument();
-        }
+        expect(
+            screen.getByRole('article', { name: 'AI Assistantの回答' }),
+        ).toHaveTextContent(
+            '何かお困りですか？このサイトをご案内します。',
+        );
+        expect(
+            screen.queryByRole('button', { name: '活動内容を知りたい' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: '参加方法を知りたい' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: '目的のページを探す' }),
+        ).not.toBeInTheDocument();
+        expect(screen.queryByLabelText('質問の候補')).not.toBeInTheDocument();
         expect(onSubmit).not.toHaveBeenCalled();
     });
 
-    it('submits a clicked suggestion exactly once and hides suggestions after conversation starts', async () => {
-        const onSubmit = vi.fn(async () => true);
-        const { rerenderConversation } = renderConversation({ onSubmit });
-
-        fireEvent.click(
-            screen.getByRole('button', { name: suggestions[1] }),
-        );
-
-        await waitFor(() => {
-            expect(onSubmit).toHaveBeenCalledTimes(1);
-        });
-        expect(onSubmit).toHaveBeenCalledWith(suggestions[1]);
-
+    it('keeps the UI-only greeting before conversation messages', () => {
+        const { rerenderConversation } = renderConversation();
         rerenderConversation({
             messages: [{
                 id: 'user-1',
                 role: 'user',
-                content: suggestions[1],
+                content: '今週の数学を見たい',
             }],
         });
-        for (const suggestion of suggestions) {
-            expect(
-                screen.queryByRole('button', { name: suggestion }),
-            ).not.toBeInTheDocument();
-        }
+
+        const articles = screen.getAllByRole('article');
+        expect(articles).toHaveLength(2);
+        expect(articles[0]).toHaveAccessibleName('AI Assistantの回答');
+        expect(articles[0]).toHaveTextContent(
+            '何かお困りですか？このサイトをご案内します。',
+        );
+        expect(articles[1]).toHaveAccessibleName('あなたの質問');
+        expect(articles[1]).toHaveTextContent('今週の数学を見たい');
     });
 
     it('labels and limits the textarea, exposes a count, and passes only valid trimmed drafts', async () => {
@@ -143,9 +140,17 @@ describe('AssistantConversation', () => {
         const inputRef = createRef<HTMLTextAreaElement>();
         renderConversation({ inputRef, onSubmit });
 
-        const textarea = screen.getByRole('textbox', { name: '質問' });
+        const textarea = screen.getByRole('textbox', {
+            name: '質問',
+        }) as HTMLTextAreaElement;
         expect(inputRef.current).toBe(textarea);
         expect(textarea).toHaveAttribute('maxLength', '500');
+        expect(textarea).toHaveAttribute('rows', '1');
+        expect(textarea).toHaveAttribute(
+            'placeholder',
+            'メッセージを入力します',
+        );
+        expect(textarea.labels?.[0]).toHaveClass('assistant-visually-hidden');
         expect(screen.getByText('0 / 500')).toBeInTheDocument();
 
         enterQuestion('   ');
@@ -210,11 +215,6 @@ describe('AssistantConversation', () => {
 
         expect(screen.getByRole('textbox', { name: '質問' })).toBeDisabled();
         expect(screen.getByRole('button', { name: '送信' })).toBeDisabled();
-        for (const suggestion of suggestions) {
-            expect(
-                screen.getByRole('button', { name: suggestion }),
-            ).toBeDisabled();
-        }
 
         const messages = screen.getByRole('log', { name: '会話' });
         expect(messages).toHaveAttribute('aria-live', 'polite');
@@ -235,11 +235,6 @@ describe('AssistantConversation', () => {
         expect(onSubmit).toHaveBeenCalledTimes(1);
         expect(screen.getByRole('textbox', { name: '質問' })).toBeDisabled();
         expect(screen.getByRole('button', { name: '送信' })).toBeDisabled();
-        for (const suggestion of suggestions) {
-            expect(
-                screen.getByRole('button', { name: suggestion }),
-            ).toBeDisabled();
-        }
 
         await act(async () => {
             submission.resolve(false);
@@ -344,12 +339,12 @@ describe('AssistantConversation', () => {
     it('renders provider errors as alerts and clears them when input changes', () => {
         const onClearError = vi.fn();
         renderConversation({
-            errorMessage: '現在AIガイドを利用できません。',
+            errorMessage: '現在AI Assistantを利用できません。',
             onClearError,
         });
 
         expect(screen.getByRole('alert')).toHaveTextContent(
-            '現在AIガイドを利用できません。',
+            '現在AI Assistantを利用できません。',
         );
 
         enterQuestion('別の質問');

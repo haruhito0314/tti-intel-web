@@ -204,13 +204,13 @@ function renderWidget({
 }
 
 function openWidget() {
-    const trigger = screen.getByRole('button', { name: 'AIガイドを開く' });
+    const trigger = screen.getByRole('button', { name: 'AI Assistantを開く' });
     fireEvent.click(trigger);
     return trigger;
 }
 
 function getMenuSummary() {
-    return screen.getByLabelText('AIガイドのメニュー');
+    return screen.getByLabelText('AI Assistantのメニュー');
 }
 
 function openMenu() {
@@ -249,7 +249,7 @@ describe('AssistantWidget', () => {
         renderWidget({ client, mobile: false });
 
         expect(
-            screen.getAllByRole('button', { name: 'AIガイドを開く' }),
+            screen.getAllByRole('button', { name: 'AI Assistantを開く' }),
         ).toHaveLength(1);
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
         expect(client.send).not.toHaveBeenCalled();
@@ -271,12 +271,18 @@ describe('AssistantWidget', () => {
 
         const trigger = openWidget();
 
-        const dialog = screen.getByRole('dialog', { name: 'AIガイド' });
+        const dialog = screen.getByRole('dialog', { name: 'AI Assistant' });
         expect(dialog).toHaveAttribute('aria-modal', 'false');
         expect(screen.getByRole('textbox', { name: '質問' })).toHaveFocus();
+        expect(
+            screen.getByRole('article', { name: 'AI Assistantの回答' }),
+        ).toHaveTextContent(
+            '何かお困りですか？このサイトをご案内します。',
+        );
+        expect(screen.queryByLabelText('質問の候補')).not.toBeInTheDocument();
         expect(trigger).toHaveAttribute('hidden');
         expect(
-            screen.queryByRole('button', { name: 'AIガイドを開く' }),
+            screen.queryByRole('button', { name: 'AI Assistantを開く' }),
         ).not.toBeInTheDocument();
         expect(background.inert).toBe(originalInert);
         expect(background.getAttribute('inert')).toBe(originalInertAttribute);
@@ -289,7 +295,7 @@ describe('AssistantWidget', () => {
         const trigger = openWidget();
 
         fireEvent.click(
-            screen.getByRole('button', { name: 'AIガイドを閉じる' }),
+            screen.getByRole('button', { name: 'AI Assistantを閉じる' }),
         );
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
         expect(trigger).toHaveFocus();
@@ -318,7 +324,7 @@ describe('AssistantWidget', () => {
         expect(textarea).toBeDisabled();
 
         fireEvent.click(
-            screen.getByRole('button', { name: 'AIガイドを閉じる' }),
+            screen.getByRole('button', { name: 'AI Assistantを閉じる' }),
         );
         expect(trigger).toHaveFocus();
         fireEvent.click(trigger);
@@ -326,7 +332,7 @@ describe('AssistantWidget', () => {
         expect(trigger).toHaveAttribute('hidden');
         expect(screen.getByRole('textbox', { name: '質問' })).toBeDisabled();
         expect(
-            screen.getByRole('button', { name: 'AIガイドを閉じる' }),
+            screen.getByRole('button', { name: 'AI Assistantを閉じる' }),
         ).toHaveFocus();
     });
 
@@ -345,13 +351,13 @@ describe('AssistantWidget', () => {
 
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
         expect(
-            screen.queryByRole('button', { name: 'AIガイドを開く' }),
+            screen.queryByRole('button', { name: 'AI Assistantを開く' }),
         ).not.toBeInTheDocument();
         expect(
-            screen.queryByLabelText('AIガイドを開く'),
+            screen.queryByLabelText('AI Assistantを開く'),
         ).not.toBeInTheDocument();
         expect(
-            screen.queryByText(/元に戻す|AIガイドを表示/),
+            screen.queryByText(/元に戻す|AI Assistantを表示/),
         ).not.toBeInTheDocument();
         expect(background).not.toHaveAttribute('inert');
         expect(document.body.style.overflow).toBe('scroll');
@@ -369,14 +375,14 @@ describe('AssistantWidget', () => {
         const originalInertAttribute = background.getAttribute('inert');
         const trigger = openWidget();
 
-        const dialog = screen.getByRole('dialog', { name: 'AIガイド' });
+        const dialog = screen.getByRole('dialog', { name: 'AI Assistant' });
         expect(dialog).toHaveAttribute('aria-modal', 'true');
         expect(background.inert).toBe(true);
         expect(background).toHaveAttribute('inert');
         expect(document.body.style.overflow).toBe('hidden');
         expect(trigger).toHaveAttribute('hidden');
         expect(
-            screen.queryByRole('button', { name: 'AIガイドを開く' }),
+            screen.queryByRole('button', { name: 'AI Assistantを開く' }),
         ).not.toBeInTheDocument();
 
         const root = dialog.closest('.assistant-root');
@@ -387,7 +393,7 @@ describe('AssistantWidget', () => {
         expect(outsideAssistantButtons[0]).toHaveAttribute('hidden');
 
         fireEvent.click(
-            screen.getByRole('button', { name: 'AIガイドを閉じる' }),
+            screen.getByRole('button', { name: 'AI Assistantを閉じる' }),
         );
 
         expect(background.inert).toBe(originalInert);
@@ -403,9 +409,9 @@ describe('AssistantWidget', () => {
     it('traps mobile focus while respecting native disclosure and visibility', () => {
         renderWidget({ mobile: true });
         openWidget();
-        const dialog = screen.getByRole('dialog', { name: 'AIガイド' });
+        const dialog = screen.getByRole('dialog', { name: 'AI Assistant' });
         const closeButton = screen.getByRole('button', {
-            name: 'AIガイドを閉じる',
+            name: 'AI Assistantを閉じる',
         });
         const summary = getMenuSummary();
         const details = summary.closest('details') as HTMLDetailsElement;
@@ -463,7 +469,7 @@ describe('AssistantWidget', () => {
         fireEvent.keyDown(menu.hideButton, { key: 'Escape' });
         expect(menu.details.open).toBe(false);
         expect(menu.summary).toHaveFocus();
-        expect(screen.getByRole('dialog', { name: 'AIガイド' })).toBeInTheDocument();
+        expect(screen.getByRole('dialog', { name: 'AI Assistant' })).toBeInTheDocument();
 
         fireEvent.keyDown(menu.summary, { key: 'Escape' });
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -475,7 +481,7 @@ describe('AssistantWidget', () => {
         ).toBe(false);
         menu = openMenu();
         fireEvent.click(
-            screen.getByRole('button', { name: 'AIガイドを閉じる' }),
+            screen.getByRole('button', { name: 'AI Assistantを閉じる' }),
         );
         fireEvent.click(trigger);
         expect(
@@ -486,7 +492,7 @@ describe('AssistantWidget', () => {
         view.rerenderWidget({ enabled: false });
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
         view.rerenderWidget({ enabled: true });
-        expect(screen.getByRole('dialog', { name: 'AIガイド' })).toBeInTheDocument();
+        expect(screen.getByRole('dialog', { name: 'AI Assistant' })).toBeInTheDocument();
         expect(
             (getMenuSummary().closest('details') as HTMLDetailsElement).open,
         ).toBe(false);
@@ -504,7 +510,7 @@ describe('AssistantWidget', () => {
         expect(menu.details.open).toBe(false);
         expect(menu.summary).toHaveFocus();
         expect(
-            screen.getByRole('dialog', { name: 'AIガイド' }),
+            screen.getByRole('dialog', { name: 'AI Assistant' }),
         ).toBeInTheDocument();
 
         fireEvent.keyDown(menu.summary, { key: 'Escape' });
@@ -522,7 +528,7 @@ describe('AssistantWidget', () => {
         const originalInert = background.inert;
         const originalInertAttribute = background.getAttribute('inert');
         const trigger = openWidget();
-        const dialog = screen.getByRole('dialog', { name: 'AIガイド' });
+        const dialog = screen.getByRole('dialog', { name: 'AI Assistant' });
 
         expect(dialog).toHaveAttribute('aria-modal', 'false');
         expect(document.body.style.overflow).toBe('scroll');
@@ -597,7 +603,7 @@ describe('AssistantWidget', () => {
 
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
         expect(
-            screen.queryByLabelText('AIガイドを開く'),
+            screen.queryByLabelText('AI Assistantを開く'),
         ).not.toBeInTheDocument();
         expect(background.getAttribute('inert')).toBe('preset');
         expect(background.inert).toBe(true);
@@ -605,7 +611,7 @@ describe('AssistantWidget', () => {
         expect(main).toHaveFocus();
 
         view.rerenderWidget({ enabled: true });
-        expect(screen.getByRole('dialog', { name: 'AIガイド' })).toBeInTheDocument();
+        expect(screen.getByRole('dialog', { name: 'AI Assistant' })).toBeInTheDocument();
         expect(document.body.style.overflow).toBe('hidden');
         view.unmount();
 
@@ -633,7 +639,7 @@ describe('AssistantWidget', () => {
 
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
         expect(
-            screen.queryByLabelText('AIガイドを開く'),
+            screen.queryByLabelText('AI Assistantを開く'),
         ).not.toBeInTheDocument();
         expect(background).not.toHaveAttribute('inert');
         expect(document.body.style.overflow).toBe('scroll');
@@ -699,7 +705,7 @@ describe('AssistantWidget', () => {
         const disabledBackground = disabledView.getBackground();
         const disabledMain = within(disabledBackground).getByRole('main');
         const disabledTrigger = screen.getByRole('button', {
-            name: 'AIガイドを開く',
+            name: 'AI Assistantを開く',
         });
 
         disabledTrigger.focus();
@@ -711,7 +717,7 @@ describe('AssistantWidget', () => {
         const unmountedBackground = unmountedView.getBackground();
         const unmountedMain = within(unmountedBackground).getByRole('main');
         const unmountedTrigger = screen.getByRole('button', {
-            name: 'AIガイドを開く',
+            name: 'AI Assistantを開く',
         });
 
         unmountedTrigger.focus();
@@ -728,7 +734,7 @@ describe('AssistantWidget', () => {
         const background = getBackground();
 
         expect(
-            screen.queryByLabelText('AIガイドを開く'),
+            screen.queryByLabelText('AI Assistantを開く'),
         ).not.toBeInTheDocument();
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
         expect(background).not.toHaveAttribute('inert');
@@ -768,14 +774,14 @@ describe('AssistantWidget', () => {
 
         render(<DoubleWidgetHarness />);
         const triggers = screen.getAllByRole('button', {
-            name: 'AIガイドを開く',
+            name: 'AI Assistantを開く',
         });
         fireEvent.click(triggers[0]);
         fireEvent.click(triggers[1]);
 
-        const dialogs = screen.getAllByRole('dialog', { name: 'AIガイド' });
+        const dialogs = screen.getAllByRole('dialog', { name: 'AI Assistant' });
         const titleIds = dialogs.map((dialog) => (
-            within(dialog).getByRole('heading', { name: 'AIガイド' }).id
+            within(dialog).getByRole('heading', { name: 'AI Assistant' }).id
         ));
         const labelledByIds = dialogs.map(
             (dialog) => dialog.getAttribute('aria-labelledby'),
@@ -793,13 +799,13 @@ describe('AssistantWidget', () => {
     it('keeps native disclosure semantics and exports only the public frontend surface', () => {
         expect(assistantWidgetSource).toMatch(/<details/);
         expect(assistantWidgetSource).toMatch(
-            /<summary[\s\S]*aria-label="AIガイドのメニュー"/,
+            /<summary[\s\S]*aria-label="AI Assistantのメニュー"/,
         );
         expect(assistantWidgetSource).not.toMatch(
             /role=["'](?:menu|menuitem)["']|aria-haspopup/,
         );
         expect(assistantWidgetSource).not.toMatch(
-            /localStorage|sessionStorage|Toast|元に戻す|AIガイドを表示/,
+            /localStorage|sessionStorage|Toast|元に戻す|AI Assistantを表示/,
         );
         expect(assistantIndexSource.match(/assistant\.css/g)).toHaveLength(1);
         expect(assistantIndexSource).toMatch(/AssistantProvider/);
@@ -869,5 +875,15 @@ describe('AssistantWidget', () => {
         expect(assistantCssSource).toMatch(
             /@media\s*\(max-width:\s*767px\)[\s\S]*\.assistant-messages\s*\{[^}]*min-height:\s*0;/s,
         );
+        expect(assistantCssSource).toMatch(
+            /\.assistant-input-row\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;/s,
+        );
+        expect(assistantCssSource).toMatch(
+            /\.assistant-form textarea\s*\{[^}]*height:\s*48px;[^}]*min-height:\s*48px;[^}]*border-radius:\s*999px;/s,
+        );
+        expect(assistantCssSource).toMatch(
+            /\.assistant-form button\s*\{[^}]*min-height:\s*48px;[^}]*border-radius:\s*999px;/s,
+        );
+        expect(assistantCssSource).not.toMatch(/\.assistant-suggestions/);
     });
 });

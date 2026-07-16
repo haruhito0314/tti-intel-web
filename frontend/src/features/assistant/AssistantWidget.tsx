@@ -89,7 +89,7 @@ export function AssistantWidget({
                 ref={triggerRef}
                 type="button"
                 className="assistant-trigger"
-                aria-label="AIガイドを開く"
+                aria-label="AI Assistantを開く"
                 hidden={isOpen}
                 onClick={open}
             >
@@ -107,12 +107,12 @@ export function AssistantWidget({
                 >
                     <header className="assistant-header">
                         <h2 id={titleId} className="assistant-title">
-                            AIガイド
+                            AI Assistant
                         </h2>
                         <button
                             type="button"
                             className="assistant-close"
-                            aria-label="AIガイドを閉じる"
+                            aria-label="AI Assistantを閉じる"
                             onClick={close}
                         >
                             <X aria-hidden="true" />
@@ -135,7 +135,7 @@ export function AssistantWidget({
                         <summary
                             ref={summaryRef}
                             className="assistant-menu-summary"
-                            aria-label="AIガイドのメニュー"
+                            aria-label="AI Assistantのメニュー"
                         >
                             <Ellipsis aria-hidden="true" />
                         </summary>

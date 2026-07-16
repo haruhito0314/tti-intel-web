@@ -49,10 +49,10 @@ export interface CreateAssistantApiOptions {
 
 export const ASSISTANT_ERROR_MESSAGES: Record<AssistantApiErrorKind, string> = {
     'invalid-request': '質問内容を確認して、もう一度送信してください。',
-    'rate-limited': '本日のAIガイド利用上限に達しました。通常のメニューをご利用ください。',
-    timeout: 'AIガイドの応答に時間がかかっています。しばらくしてからお試しください。',
-    unavailable: '現在AIガイドを利用できません。通常のメニューをご利用ください。',
-    'invalid-response': '現在AIガイドを利用できません。通常のメニューをご利用ください。',
+    'rate-limited': '本日のAI Assistant利用上限に達しました。通常のメニューをご利用ください。',
+    timeout: 'AI Assistantの応答に時間がかかっています。しばらくしてからお試しください。',
+    unavailable: '現在AI Assistantを利用できません。通常のメニューをご利用ください。',
+    'invalid-response': '現在AI Assistantを利用できません。通常のメニューをご利用ください。',
 };
 
 export class AssistantApiError extends Error {

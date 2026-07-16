@@ -40,6 +40,20 @@ afterEach(() => {
 });
 
 describe('createAssistantApi', () => {
+    it('uses the AI Assistant name in user-facing product errors', () => {
+        expect(ASSISTANT_ERROR_MESSAGES['rate-limited']).toContain(
+            'AI Assistant',
+        );
+        expect(ASSISTANT_ERROR_MESSAGES.timeout).toContain('AI Assistant');
+        expect(ASSISTANT_ERROR_MESSAGES.unavailable).toContain('AI Assistant');
+        expect(ASSISTANT_ERROR_MESSAGES['invalid-response']).toContain(
+            'AI Assistant',
+        );
+        expect(Object.values(ASSISTANT_ERROR_MESSAGES).join('\n')).not.toContain(
+            'AIガイド',
+        );
+    });
+
     it('normalizes the base URL and posts once', async () => {
         const fetchMock = vi.fn().mockResolvedValue(jsonResponse(response));
         const client = createAssistantApi({

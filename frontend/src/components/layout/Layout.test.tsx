@@ -142,9 +142,9 @@ function createHarness() {
 
 function openAssistant() {
     fireEvent.click(
-        screen.getByRole('button', { name: 'AIガイドを開く' }),
+        screen.getByRole('button', { name: 'AI Assistantを開く' }),
     );
-    return screen.getByRole('dialog', { name: 'AIガイド' });
+    return screen.getByRole('dialog', { name: 'AI Assistant' });
 }
 
 async function sendQuestion(question: string) {
@@ -181,7 +181,7 @@ describe('Layout assistant integration', () => {
         await screen.findByRole('heading', { name: '今週の数学' });
 
         expect(
-            screen.getByRole('dialog', { name: 'AIガイド' }),
+            screen.getByRole('dialog', { name: 'AI Assistant' }),
         ).toBeInTheDocument();
         expect(screen.getByText('お知らせについて教えて')).toBeInTheDocument();
         expect(screen.getByText(response.answer)).toBeInTheDocument();
@@ -216,7 +216,7 @@ describe('Layout assistant integration', () => {
 
         const main = screen.getByRole('main');
         openAssistant();
-        const summary = screen.getByLabelText('AIガイドのメニュー');
+        const summary = screen.getByLabelText('AI Assistantのメニュー');
         fireEvent.click(summary);
         fireEvent.click(
             screen.getByRole('button', {
@@ -226,7 +226,7 @@ describe('Layout assistant integration', () => {
 
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
         expect(
-            screen.queryByRole('button', { name: 'AIガイドを開く' }),
+            screen.queryByRole('button', { name: 'AI Assistantを開く' }),
         ).not.toBeInTheDocument();
         expect(main).toHaveFocus();
 
@@ -236,7 +236,7 @@ describe('Layout assistant integration', () => {
         await screen.findByRole('heading', { name: '今週の数学' });
 
         expect(
-            screen.queryByRole('button', { name: 'AIガイドを開く' }),
+            screen.queryByRole('button', { name: 'AI Assistantを開く' }),
         ).not.toBeInTheDocument();
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
@@ -249,21 +249,21 @@ describe('Layout assistant integration', () => {
         await sendQuestion('最初の質問');
         await waitFor(() => expect(send).toHaveBeenCalledTimes(1));
         const firstSessionId = send.mock.calls[0][0].sessionId;
-        fireEvent.click(screen.getByLabelText('AIガイドのメニュー'));
+        fireEvent.click(screen.getByLabelText('AI Assistantのメニュー'));
         fireEvent.click(
             screen.getByRole('button', {
                 name: 'このタブで右下ボタンを非表示',
             }),
         );
         expect(
-            screen.queryByRole('button', { name: 'AIガイドを開く' }),
+            screen.queryByRole('button', { name: 'AI Assistantを開く' }),
         ).not.toBeInTheDocument();
 
         firstMount.unmount();
 
         renderRoutes({ client, createId });
         expect(
-            screen.getByRole('button', { name: 'AIガイドを開く' }),
+            screen.getByRole('button', { name: 'AI Assistantを開く' }),
         ).toBeInTheDocument();
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
@@ -271,8 +271,11 @@ describe('Layout assistant integration', () => {
         expect(screen.queryByText('最初の質問')).not.toBeInTheDocument();
         expect(screen.queryByText(response.answer)).not.toBeInTheDocument();
         expect(
-            screen.getByLabelText('質問の候補'),
-        ).toBeInTheDocument();
+            screen.getByRole('article', { name: 'AI Assistantの回答' }),
+        ).toHaveTextContent(
+            '何かお困りですか？このサイトをご案内します。',
+        );
+        expect(screen.queryByLabelText('質問の候補')).not.toBeInTheDocument();
 
         await sendQuestion('新しい質問');
         await waitFor(() => expect(send).toHaveBeenCalledTimes(2));
@@ -294,7 +297,7 @@ describe('Layout assistant integration', () => {
             renderRoutes({ initialEntry, client, createId });
 
             expect(
-                screen.queryByRole('button', { name: 'AIガイドを開く' }),
+                screen.queryByRole('button', { name: 'AI Assistantを開く' }),
             ).not.toBeInTheDocument();
             expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
             expect(send).not.toHaveBeenCalled();
@@ -313,7 +316,7 @@ describe('Layout assistant integration', () => {
 
             expect(screen.getByText('Public lookalike')).toBeInTheDocument();
             expect(
-                screen.getByRole('button', { name: 'AIガイドを開く' }),
+                screen.getByRole('button', { name: 'AI Assistantを開く' }),
             ).toBeInTheDocument();
         },
     );
@@ -325,7 +328,7 @@ describe('Layout assistant integration', () => {
         const main = screen.getByRole('main');
         const background = main.parentElement;
         const trigger = screen.getByRole('button', {
-            name: 'AIガイドを開く',
+            name: 'AI Assistantを開く',
         });
 
         expect(main).toHaveAttribute('tabindex', '-1');
