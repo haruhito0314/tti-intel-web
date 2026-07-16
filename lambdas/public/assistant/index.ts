@@ -48,23 +48,23 @@ const ERROR_RESPONSES = {
   },
   403: {
     code: 'ORIGIN_NOT_ALLOWED',
-    message: 'この場所からはAIガイドを利用できません。',
+    message: 'この場所からはAI Assistantを利用できません。',
   },
   429: {
     code: 'RATE_LIMITED',
-    message: '本日のAIガイド利用上限に達しました。通常のメニューをご利用ください。',
+    message: '本日のAI Assistant利用上限に達しました。通常のメニューをご利用ください。',
   },
   500: {
     code: 'INTERNAL_ERROR',
-    message: 'AIガイドで問題が発生しました。通常のメニューをご利用ください。',
+    message: 'AI Assistantで問題が発生しました。通常のメニューをご利用ください。',
   },
   502: {
     code: 'UPSTREAM_UNAVAILABLE',
-    message: '現在AIガイドを利用できません。通常のメニューをご利用ください。',
+    message: '現在AI Assistantを利用できません。通常のメニューをご利用ください。',
   },
   504: {
     code: 'UPSTREAM_TIMEOUT',
-    message: 'AIガイドの応答に時間がかかっています。しばらくしてからお試しください。',
+    message: 'AI Assistantの応答に時間がかかっています。しばらくしてからお試しください。',
   },
 } as const;
 

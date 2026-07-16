@@ -196,7 +196,7 @@ describe('createAssistantHandler CORS and early exits', () => {
     expect(response.headers).not.toHaveProperty('Access-Control-Allow-Origin');
     expect(parsedBody(response)).toEqual({
       code: 'ORIGIN_NOT_ALLOWED',
-      message: 'この場所からはAIガイドを利用できません。',
+      message: 'この場所からはAI Assistantを利用できません。',
     });
     expectNoOperationalCalls(dependencies);
   });
@@ -336,7 +336,7 @@ describe('createAssistantHandler orchestration', () => {
     expect(response.statusCode).toBe(500);
     expect(parsedBody(response)).toEqual({
       code: 'INTERNAL_ERROR',
-      message: 'AIガイドで問題が発生しました。通常のメニューをご利用ください。',
+      message: 'AI Assistantで問題が発生しました。通常のメニューをご利用ください。',
     });
     expect(dependencies.getApiKey).not.toHaveBeenCalled();
     expect(dependencies.reserveQuota).not.toHaveBeenCalled();
@@ -356,7 +356,7 @@ describe('createAssistantHandler orchestration', () => {
       expect(response.statusCode).toBe(429);
       expect(parsedBody(response)).toEqual({
         code: 'RATE_LIMITED',
-        message: '本日のAIガイド利用上限に達しました。通常のメニューをご利用ください。',
+        message: '本日のAI Assistant利用上限に達しました。通常のメニューをご利用ください。',
       });
       expect(dependencies.requestOpenAI).not.toHaveBeenCalled();
     },
@@ -392,7 +392,7 @@ describe('createAssistantHandler orchestration', () => {
       expect(response.statusCode).toBe(502);
       expect(parsedBody(response)).toEqual({
         code: 'UPSTREAM_UNAVAILABLE',
-        message: '現在AIガイドを利用できません。通常のメニューをご利用ください。',
+        message: '現在AI Assistantを利用できません。通常のメニューをご利用ください。',
       });
       expect(serialized).not.toContain(error.message);
       expect(serialized).not.toContain('sk-test');
@@ -413,7 +413,7 @@ describe('createAssistantHandler orchestration', () => {
     expect(response.statusCode).toBe(504);
     expect(parsedBody(response)).toEqual({
       code: 'UPSTREAM_TIMEOUT',
-      message: 'AIガイドの応答に時間がかかっています。しばらくしてからお試しください。',
+      message: 'AI Assistantの応答に時間がかかっています。しばらくしてからお試しください。',
     });
   });
 

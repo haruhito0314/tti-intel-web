@@ -269,6 +269,13 @@ describe('createApiKeyProvider', () => {
 });
 
 describe('buildResponsesPayload', () => {
+  it('identifies itself to the model as AI Assistant', () => {
+    expect(SYSTEM_INSTRUCTIONS).toContain(
+      'あなたはTTI Intelligence公開サイト内だけを案内するAI Assistantです。',
+    );
+    expect(SYSTEM_INSTRUCTIONS).not.toContain('AIガイド');
+  });
+
   it('builds the exact bounded Luna Structured Outputs payload', () => {
     const payload = buildResponsesPayload({ request, selected });
     const allowedPageIds = [
