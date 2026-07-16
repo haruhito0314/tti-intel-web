@@ -7,6 +7,17 @@ import { Card, CardContent, Badge, Input, Button } from '@/components/ui';
 // Dummy data for MVP
 const posts = [
     {
+        id: '3',
+        slug: 'ai-assistant-launched',
+        title: 'サイト内AI Assistantを公開しました',
+        excerpt: '活動内容やページの場所など、サイト内の案内をチャットで聞けるAI Assistantを公開しました。画面右下からいつでも開けます。',
+        publishedAt: '2026-07-17',
+        category: 'お知らせ',
+        tags: ['AI Assistant', 'お知らせ'],
+        pinned: false,
+        coverImageUrl: null,
+    },
+    {
         id: '2',
         slug: 'web-development-tutorial-released',
         title: 'Web開発をゼロから学べるサイトを公開しました',

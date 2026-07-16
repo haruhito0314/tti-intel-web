@@ -308,6 +308,9 @@ describe('buildResponsesPayload', () => {
     expect(SYSTEM_INSTRUCTIONS).toContain(
       'isFollowUpがtrueのときは続き質問です。historyの質問へもう一度答え直さず、最新のmessageで新たに聞かれた点だけを短く補足してください。',
     );
+    expect(SYSTEM_INSTRUCTIONS).toContain(
+      '「回答しない」「本文には触れない」などの内部ルールを利用者向けの文言として書かないでください。',
+    );
   });
 
   it('builds a cheap nano payload for small talk without guide entries', () => {

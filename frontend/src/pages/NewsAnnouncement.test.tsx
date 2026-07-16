@@ -137,3 +137,43 @@ describe('Web開発学習サイト公開のお知らせ', () => {
         expect(contactLink).not.toHaveClass('bg-[#0066CC]', 'w-full');
     });
 });
+
+describe('AI Assistant公開のお知らせ', () => {
+    const title = 'サイト内AI Assistantを公開しました';
+    const path = '/news/ai-assistant-launched';
+
+    it('トップと一覧から新しいお知らせへ移動できる', () => {
+        const { unmount } = render(
+            <MemoryRouter>
+                <Home />
+            </MemoryRouter>,
+        );
+        expect(screen.getByRole('link', { name: new RegExp(title) }))
+            .toHaveAttribute('href', path);
+        unmount();
+
+        render(
+            <MemoryRouter>
+                <News />
+            </MemoryRouter>,
+        );
+        expect(screen.getByRole('link', { name: new RegExp(title) }))
+            .toHaveAttribute('href', path);
+        expect(screen.getByText(/サイト内の案内をチャットで聞ける/)).toBeInTheDocument();
+    });
+
+    it('記事詳細に案内内容を表示し、内部技術の話は含めない', () => {
+        render(
+            <MemoryRouter initialEntries={[path]}>
+                <Routes>
+                    <Route path="/news/:slug" element={<NewsDetail />} />
+                </Routes>
+            </MemoryRouter>,
+        );
+
+        expect(screen.getByRole('heading', { name: title, level: 1 })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: '使い方' })).toBeInTheDocument();
+        expect(screen.getByText(/画面右下のボタンから/)).toBeInTheDocument();
+        expect(screen.queryByText(/Lambda|OpenAI|Dynamo|API Gateway|CORS/i)).not.toBeInTheDocument();
+    });
+});
