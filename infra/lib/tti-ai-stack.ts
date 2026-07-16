@@ -159,7 +159,7 @@ export class TtiAiStack extends cdk.Stack {
                 ],
             },
             supportedIdentityProviders: [
-                cognito.UserPoolClientIdentityProvider.GOOGLE,
+                cognito.UserPoolClientIdentityProvider.COGNITO,
             ],
             generateSecret: false,
         });

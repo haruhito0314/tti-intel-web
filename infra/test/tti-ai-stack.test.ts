@@ -70,6 +70,17 @@ function inlineStatementsForRole(roleLogicalId: string): CloudFormationStatement
 }
 
 describe('TtiAiStack site assistant infrastructure', () => {
+    it('does not require an unconfigured external Cognito identity provider', () => {
+        const clients = resourcesOfType('AWS::Cognito::UserPoolClient');
+
+        expect(clients).toHaveLength(1);
+        expect(clients[0][1].Properties?.SupportedIdentityProviders).toEqual([
+            'COGNITO',
+        ]);
+        expect(JSON.stringify(clients[0][1])).not.toContain('Google');
+        expect(resourcesOfType('AWS::Cognito::UserPoolIdentityProvider')).toHaveLength(0);
+    });
+
     it('creates the retained on-demand assistant usage table with pk/sk and TTL', () => {
         template.hasResourceProperties('AWS::DynamoDB::Table', {
             TableName: 'tti-ai-assistant-usage',
