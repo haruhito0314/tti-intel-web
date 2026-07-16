@@ -264,7 +264,7 @@ export function AssistantConversation({
                         value={draft}
                         rows={1}
                         maxLength={MAX_QUESTION_LENGTH}
-                        placeholder="メッセージを入力します（Enterを2回で送信）"
+                        placeholder="メッセージを入力します"
                         disabled={sending}
                         aria-describedby={`${countId}${displayedError ? ` ${errorId}` : ''}`}
                         aria-invalid={displayedError !== null}

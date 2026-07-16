@@ -193,7 +193,7 @@ describe('AssistantConversation', () => {
         expect(textarea).toHaveAttribute('rows', '1');
         expect(textarea).toHaveAttribute(
             'placeholder',
-            'メッセージを入力します（Enterを2回で送信）',
+            'メッセージを入力します',
         );
         expect(textarea.labels?.[0]).toHaveClass('assistant-visually-hidden');
         expect(screen.getByText('0 / 500')).toBeInTheDocument();
