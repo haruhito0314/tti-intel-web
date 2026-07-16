@@ -2,6 +2,7 @@ import type {
   AssistantRequest,
   HistoryMessage,
   ModelGuideResponse,
+  OpenAIUsage,
 } from './types.js';
 
 const MAX_RAW_BODY_LENGTH = 65_536;
@@ -22,6 +23,13 @@ export class RequestValidationError extends Error {
 
 export class UnsafeModelOutputError extends Error {
   readonly name = 'UnsafeModelOutputError';
+
+  readonly usage?: Readonly<OpenAIUsage>;
+
+  constructor(message: string, usage?: OpenAIUsage) {
+    super(message);
+    this.usage = usage === undefined ? undefined : { ...usage };
+  }
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {

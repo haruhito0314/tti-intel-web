@@ -174,6 +174,17 @@ async function captureRejection(promise: Promise<unknown>): Promise<Error> {
   throw new Error('Expected promise to reject');
 }
 
+function captureThrow(run: () => unknown): Error {
+  try {
+    run();
+  } catch (error) {
+    if (error instanceof Error) return error;
+    throw new Error('Function threw a non-Error value');
+  }
+
+  throw new Error('Expected function to throw');
+}
+
 afterEach(() => {
   vi.useRealTimers();
 });
@@ -521,7 +532,17 @@ describe('parseResponsesEnvelope', () => {
       refusal: 'I cannot help with that.',
     });
 
-    expect(() => parseResponsesEnvelope(envelope)).toThrow(UnsafeModelOutputError);
+    const error = captureThrow(() => parseResponsesEnvelope(envelope));
+
+    expect(error).toBeInstanceOf(UnsafeModelOutputError);
+    expect(error).toMatchObject({
+      usage: {
+        inputTokens: 120,
+        outputTokens: 24,
+        totalTokens: 144,
+      },
+    });
+    expect(JSON.stringify(error)).not.toContain('I cannot help with that.');
   });
 
   it.each([
@@ -580,8 +601,26 @@ describe('parseResponsesEnvelope', () => {
       extra: true,
     })],
   ])('post-validates and rejects %s', (_name, outputText) => {
-    expect(() => parseResponsesEnvelope(completedEnvelope([outputText])))
-      .toThrow(UnsafeModelOutputError);
+    const error = captureThrow(() => (
+      parseResponsesEnvelope(completedEnvelope([outputText]))
+    ));
+
+    expect(error).toBeInstanceOf(UnsafeModelOutputError);
+    expect(error).toMatchObject({
+      usage: {
+        inputTokens: 120,
+        outputTokens: 24,
+        totalTokens: 144,
+      },
+    });
+    expect(JSON.parse(JSON.stringify(error))).toEqual({
+      name: 'UnsafeModelOutputError',
+      usage: {
+        inputTokens: 120,
+        outputTokens: 24,
+        totalTokens: 144,
+      },
+    });
   });
 });
 

@@ -7,6 +7,7 @@ import { resolveCurrentPageId } from './knowledge.js';
 import type {
   AssistantRequest,
   OpenAIResult,
+  OpenAIUsage,
   PageId,
   RankedGuideEntry,
 } from './types.js';
@@ -84,8 +85,8 @@ function secretUnavailable(): never {
   throw new SecretUnavailableError();
 }
 
-function unsafeModelOutput(): never {
-  throw new UnsafeModelOutputError('Unsafe model output');
+function unsafeModelOutput(usage?: OpenAIUsage): never {
+  throw new UnsafeModelOutputError('Unsafe model output', usage);
 }
 
 function parseApiKey(output: GetSecretValueCommandOutput): string {
@@ -237,7 +238,22 @@ function parseUsageToken(value: unknown): number {
   ) ? value : 0;
 }
 
+function parseResponsesUsage(value: unknown): OpenAIUsage {
+  const usage = (
+    isPlainObject(value)
+    && isPlainObject(value.usage)
+  ) ? value.usage : {};
+
+  return {
+    inputTokens: parseUsageToken(usage.input_tokens),
+    outputTokens: parseUsageToken(usage.output_tokens),
+    totalTokens: parseUsageToken(usage.total_tokens),
+  };
+}
+
 export function parseResponsesEnvelope(value: unknown): OpenAIResult {
+  const usage = parseResponsesUsage(value);
+
   if (
     !isPlainObject(value)
     || value.status !== 'completed'
@@ -245,54 +261,61 @@ export function parseResponsesEnvelope(value: unknown): OpenAIResult {
     || (value.error !== undefined && value.error !== null)
     || (value.incomplete_details !== undefined && value.incomplete_details !== null)
   ) {
-    return unsafeModelOutput();
+    return unsafeModelOutput(usage);
   }
 
   const outputTexts: string[] = [];
   for (const outputItem of value.output) {
-    if (!isPlainObject(outputItem)) return unsafeModelOutput();
+    if (!isPlainObject(outputItem)) return unsafeModelOutput(usage);
     if (
       outputItem.status !== undefined
       && outputItem.status !== 'completed'
     ) {
-      return unsafeModelOutput();
+      return unsafeModelOutput(usage);
     }
 
     if (outputItem.content === undefined) continue;
-    if (!Array.isArray(outputItem.content)) return unsafeModelOutput();
+    if (!Array.isArray(outputItem.content)) return unsafeModelOutput(usage);
 
     for (const contentItem of outputItem.content) {
-      if (!isPlainObject(contentItem)) return unsafeModelOutput();
+      if (!isPlainObject(contentItem)) return unsafeModelOutput(usage);
       if (
         contentItem.type === 'refusal'
         || contentItem.type === 'content_filter'
       ) {
-        return unsafeModelOutput();
+        return unsafeModelOutput(usage);
       }
       if (contentItem.type === 'output_text') {
-        if (typeof contentItem.text !== 'string') return unsafeModelOutput();
+        if (typeof contentItem.text !== 'string') {
+          return unsafeModelOutput(usage);
+        }
         outputTexts.push(contentItem.text);
       }
     }
   }
 
-  if (outputTexts.length !== 1) return unsafeModelOutput();
+  if (outputTexts.length !== 1) return unsafeModelOutput(usage);
 
   let parsedOutput: unknown;
   try {
     parsedOutput = JSON.parse(outputTexts[0]!) as unknown;
   } catch {
-    return unsafeModelOutput();
+    return unsafeModelOutput(usage);
   }
 
-  const usage = isPlainObject(value.usage) ? value.usage : {};
+  let output: OpenAIResult['output'];
+  try {
+    output = validateModelGuideResponse(parsedOutput);
+  } catch (error) {
+    if (error instanceof UnsafeModelOutputError) {
+      return unsafeModelOutput(usage);
+    }
+    throw error;
+  }
+
   return {
-    output: validateModelGuideResponse(parsedOutput),
-    usage: {
-      inputTokens: parseUsageToken(usage.input_tokens),
-      outputTokens: parseUsageToken(usage.output_tokens),
-      totalTokens: parseUsageToken(usage.total_tokens),
-    },
+    output,
+    usage,
   };
 }
 

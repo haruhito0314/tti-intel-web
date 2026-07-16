@@ -30,6 +30,7 @@ import type {
   AssistantRequest,
   AssistantResponse,
   OpenAIResult,
+  OpenAIUsage,
   RankedGuideEntry,
 } from './types.js';
 import {
@@ -182,15 +183,15 @@ function readAllowedOrigins(environment: RuntimeEnvironment): ReadonlySet<string
   return origins;
 }
 
-function safeUsage(result: OpenAIResult): OpenAIResult['usage'] {
+function safeUsage(usage: Readonly<OpenAIUsage>): OpenAIUsage {
   const token = (value: number): number => (
     Number.isSafeInteger(value) && value >= 0 ? value : 0
   );
 
   return {
-    inputTokens: token(result.usage.inputTokens),
-    outputTokens: token(result.usage.outputTokens),
-    totalTokens: token(result.usage.totalTokens),
+    inputTokens: token(usage.inputTokens),
+    outputTokens: token(usage.outputTokens),
+    totalTokens: token(usage.totalTokens),
   };
 }
 
@@ -280,7 +281,7 @@ export function createAssistantHandler(
       });
       dependencyStage = 'internal';
 
-      const usage = safeUsage(result);
+      const usage = safeUsage(result.usage);
       inputTokens = usage.inputTokens;
       outputTokens = usage.outputTokens;
       totalTokens = usage.totalTokens;
@@ -300,6 +301,12 @@ export function createAssistantHandler(
       }
 
       if (error instanceof UnsafeModelOutputError) {
+        if (error.usage !== undefined) {
+          const usage = safeUsage(error.usage);
+          inputTokens = usage.inputTokens;
+          outputTokens = usage.outputTokens;
+          totalTokens = usage.totalTokens;
+        }
         outcome = 'unsafe_model_output';
         statusCode = 200;
         return jsonResponse(statusCode, CONTACT_FALLBACK, origin);

@@ -554,6 +554,36 @@ describe('createAssistantHandler privacy-safe logging', () => {
     expect(serialized).not.toContain('sk-secret-value');
     expect(serialized).not.toContain('stack');
   });
+
+  it('logs sanitized paid-call usage for unsafe model output without response content', async () => {
+    const log = vi.fn();
+    const unsafeOutput = 'UNIQUE_UNSAFE_OUTPUT_991122';
+    const dependencies = createDependencies({
+      log,
+      requestOpenAI: vi.fn(async () => {
+        throw new UnsafeModelOutputError(unsafeOutput, {
+          inputTokens: 121,
+          outputTokens: 25,
+          totalTokens: 146,
+        });
+      }),
+    });
+
+    const response = await invoke(dependencies);
+
+    expect(response.statusCode).toBe(200);
+    expect(parsedBody(response)).toEqual(CONTACT_FALLBACK);
+    expect(log).toHaveBeenCalledWith({
+      requestId: 'api-gateway-request-1',
+      outcome: 'unsafe_model_output',
+      statusCode: 200,
+      durationMs: expect.any(Number),
+      inputTokens: 121,
+      outputTokens: 25,
+      totalTokens: 146,
+    });
+    expect(JSON.stringify(log.mock.calls)).not.toContain(unsafeOutput);
+  });
 });
 
 describe('createRuntimeDependencies', () => {
