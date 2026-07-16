@@ -209,7 +209,7 @@ export class TtiAiStack extends cdk.Stack {
                 ASSISTANT_DAILY_LIMIT: '100',
                 ASSISTANT_SESSION_LIMIT: '20',
                 ASSISTANT_SESSION_WINDOW_SECONDS: '600',
-                ALLOWED_ORIGINS: 'https://tti-intel.com,http://localhost:5173',
+                ALLOWED_ORIGINS: 'https://tti-intel.com,https://www.tti-intel.com,http://localhost:5173,http://127.0.0.1:5173',
                 POSTS_TABLE: postsTable.tableName,
                 BOARD_TABLE: boardTable.tableName,
                 // Public web config (same values as the frontend). Not a secret.
