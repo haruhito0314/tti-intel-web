@@ -19,6 +19,7 @@ import {
   SecretUnavailableError,
   SMALL_TALK_INSTRUCTIONS,
   SYSTEM_INSTRUCTIONS,
+  reasoningEffortForModel,
   type SecretReader,
 } from './openai.js';
 import type {
@@ -281,12 +282,23 @@ describe('createApiKeyProvider', () => {
   });
 });
 
+describe('reasoningEffortForModel', () => {
+  it('uses minimal for nano/mini and none for luna', () => {
+    expect(reasoningEffortForModel('gpt-5-nano')).toBe('minimal');
+    expect(reasoningEffortForModel('gpt-5-mini')).toBe('minimal');
+    expect(reasoningEffortForModel('gpt-5.6-luna')).toBe('none');
+  });
+});
+
 describe('buildResponsesPayload', () => {
   it('identifies itself to the model as AI Assistant', () => {
     expect(SYSTEM_INSTRUCTIONS).toContain(
       'あなたはTTI Intelligence公開サイト内だけを案内するAI Assistantです。',
     );
     expect(SYSTEM_INSTRUCTIONS).not.toContain('AIガイド');
+    expect(SYSTEM_INSTRUCTIONS).toContain(
+      'それ以外の質問では、その制限をわざわざ説明する必要はありません。',
+    );
   });
 
   it('builds a cheap nano payload for small talk without guide entries', () => {
@@ -298,6 +310,7 @@ describe('buildResponsesPayload', () => {
     });
 
     expect(payload.model).toBe('gpt-5-nano');
+    expect(payload.reasoning).toEqual({ effort: 'minimal' });
     expect(payload.instructions).toBe(SMALL_TALK_INSTRUCTIONS);
     expect(payload.max_output_tokens).toBe(300);
     expect(payload.text.format.name).toBe('site_ai_small_talk_response');
@@ -340,7 +353,7 @@ describe('buildResponsesPayload', () => {
       model: 'gpt-5-nano',
       store: false,
       stream: false,
-      reasoning: { effort: 'none' },
+      reasoning: { effort: 'minimal' },
       max_output_tokens: 600,
       tools: [],
       instructions: SYSTEM_INSTRUCTIONS,
