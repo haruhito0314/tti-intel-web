@@ -110,6 +110,10 @@ export function useAssistantDialogBehavior({
     const wasActiveRef = useRef(false);
     const wasHiddenRef = useRef(hidden);
     const ownsAssistantFocusRef = useRef(false);
+    const focusStateRef = useRef({
+        active: false,
+        isMobile,
+    });
 
     useEffect(() => {
         const mediaQuery = window.matchMedia(MOBILE_QUERY);
@@ -179,15 +183,27 @@ export function useAssistantDialogBehavior({
     }, [dialogRef, triggerRef]);
 
     useEffect(() => {
-        if (active) {
-            const input = inputRef.current;
-            input?.focus();
-            if (document.activeElement !== input) {
-                const dialog = dialogRef.current;
-                if (dialog) {
-                    getFocusableElements(dialog)[0]?.focus();
-                }
-            }
+        const previous = focusStateRef.current;
+        const becameActive = active && !previous.active;
+        const becameMobile = active && isMobile && !previous.isMobile;
+        focusStateRef.current = { active, isMobile };
+
+        if (!becameActive && !becameMobile) {
+            return;
+        }
+
+        const dialog = dialogRef.current;
+        if (
+            becameMobile
+            && dialog?.contains(document.activeElement)
+        ) {
+            return;
+        }
+
+        const input = inputRef.current;
+        input?.focus();
+        if (document.activeElement !== input && dialog) {
+            getFocusableElements(dialog)[0]?.focus();
         }
     }, [active, dialogRef, inputRef, isMobile]);
 
@@ -249,6 +265,14 @@ export function useAssistantDialogBehavior({
         const becameInactive = wasActive && !active;
         const becameHidden = !wasHidden && hidden;
         if (!becameInactive && !becameHidden) {
+            return;
+        }
+
+        if (
+            becameHidden
+            && !wasActive
+            && !ownsAssistantFocusRef.current
+        ) {
             return;
         }
 

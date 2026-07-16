@@ -556,6 +556,21 @@ describe('AssistantWidget', () => {
         expect(textarea).toHaveFocus();
     });
 
+    it('preserves dialog focus across breakpoint changes when it is already inside', () => {
+        const { matchMedia } = renderWidget({
+            mobile: false,
+        });
+        openWidget();
+        const summary = getMenuSummary();
+
+        summary.focus();
+        matchMedia.setMobile(true);
+        expect(summary).toHaveFocus();
+
+        matchMedia.setMobile(false);
+        expect(summary).toHaveFocus();
+    });
+
     it('restores pre-existing inert and overflow on disable and unmount', () => {
         const view = renderWidget({
             mobile: true,
@@ -655,6 +670,19 @@ describe('AssistantWidget', () => {
 
         outsideLink.focus();
         view.rerenderWidget({ mounted: false });
+
+        expect(outsideLink).toHaveFocus();
+    });
+
+    it('preserves unrelated page focus when a closed widget is disabled', () => {
+        const view = renderWidget({ mobile: false });
+        const background = view.getBackground();
+        const outsideLink = within(background).getByRole('link', {
+            name: 'ページ内リンク',
+        });
+
+        outsideLink.focus();
+        view.rerenderWidget({ enabled: false });
 
         expect(outsideLink).toHaveFocus();
     });
