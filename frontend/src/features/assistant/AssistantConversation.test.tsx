@@ -389,6 +389,30 @@ describe('AssistantConversation', () => {
         expect(screen.getByTestId('location')).toHaveTextContent('/about');
     });
 
+    it('opens Discord invite links in a new tab', () => {
+        const messages: AssistantUiMessage[] = [{
+            id: 'assistant-1',
+            role: 'assistant',
+            content: 'Discordはこちらです。',
+            links: [{
+                pageId: 'discord',
+                title: 'Discord',
+                href: 'https://discord.gg/DFWs8GrHxF',
+            }],
+        }];
+        const props = createProps({ messages });
+        render(
+            <MemoryRouter initialEntries={['/']}>
+                <AssistantConversation {...props} />
+            </MemoryRouter>,
+        );
+
+        const discordLink = screen.getByRole('link', { name: 'Discord' });
+        expect(discordLink).toHaveAttribute('href', 'https://discord.gg/DFWs8GrHxF');
+        expect(discordLink).toHaveAttribute('target', '_blank');
+        expect(discordLink).toHaveAttribute('rel', 'noopener noreferrer');
+    });
+
     it('renders provider errors as alerts and clears them when input changes', () => {
         const onClearError = vi.fn();
         renderConversation({

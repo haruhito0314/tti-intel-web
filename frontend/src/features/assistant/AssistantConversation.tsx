@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { Send, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { isExternalAssistantHref } from './assistantApi';
 import {
     MAX_ASSISTANT_QUESTION_LENGTH,
     type AssistantUiMessage,
@@ -188,9 +189,19 @@ export function AssistantConversation({
                                         <ul>
                                             {message.links.map((link) => (
                                                 <li key={`${link.pageId}:${link.href}`}>
-                                                    <Link to={link.href}>
-                                                        {link.title}
-                                                    </Link>
+                                                    {isExternalAssistantHref(link.href) ? (
+                                                        <a
+                                                            href={link.href}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                        >
+                                                            {link.title}
+                                                        </a>
+                                                    ) : (
+                                                        <Link to={link.href}>
+                                                            {link.title}
+                                                        </Link>
+                                                    )}
                                                 </li>
                                             ))}
                                         </ul>

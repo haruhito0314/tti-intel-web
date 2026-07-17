@@ -26,6 +26,9 @@ export const KNOWN_PAGE_ROUTES = {
   'cli-practice': { title: 'CLI Practice', href: '/app/cli-practice' },
 } as const satisfies Record<PageId, { title: string; href: string }>;
 
+/** Official invite; keep in sync with frontend/src/config/site.ts socialLinks.discord.url */
+export const DISCORD_INVITE_URL = 'https://discord.gg/DFWs8GrHxF';
+
 const PAGE_ID_SET: ReadonlySet<string> = new Set(PAGE_IDS);
 
 function invalidGuide(reason: string): never {
@@ -270,11 +273,22 @@ export function buildFollowUpSearchQuery(
   return augmented === trimmedMessage ? null : augmented;
 }
 
+export function isDiscordQuestion(message: string): boolean {
+  const normalized = normalizeSearchText(message);
+  return (
+    normalized.includes('discord')
+    || normalized.includes('ディスコード')
+    || normalized.includes('でぃすこーど')
+    || normalized.includes('ディスコ')
+  );
+}
+
 export function createVerifiedLinks(
   modelPageIds: readonly string[],
   selected: readonly RankedGuideEntry[],
   modelContentIds: readonly string[] = [],
   selectedContent: readonly RankedContentEntry[] = [],
+  options: { includeDiscord?: boolean } = {},
 ): AssistantLink[] {
   const allowedPageIds = new Set<PageId>([
     ...selected.map(({ entry }) => entry.id),
@@ -292,6 +306,14 @@ export function createVerifiedLinks(
     seenHrefs.add(link.href);
     links.push(link);
   };
+
+  if (options.includeDiscord) {
+    pushLink({
+      pageId: 'discord',
+      title: 'Discord',
+      href: DISCORD_INVITE_URL,
+    });
+  }
 
   for (const contentId of modelContentIds) {
     const entry = contentById.get(contentId);

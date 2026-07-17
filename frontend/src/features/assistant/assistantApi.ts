@@ -9,11 +9,19 @@ import {
 /** Client abort sits above Lambda OpenAI timeout (20s) plus API Gateway slack. */
 const DEFAULT_TIMEOUT_MS = 28_000;
 const INTERNAL_HREF_PATTERN = /^(?:\/(?:[A-Za-z0-9._~%-]+(?:\/[A-Za-z0-9._~%-]+)*)?)$/;
+/** Allowlisted Discord invite only; must match server-injected DISCORD_INVITE_URL shape. */
+const DISCORD_HREF_PATTERN = /^https:\/\/(?:discord\.gg|discord\.com\/invite)\/[A-Za-z0-9-]+$/;
+
+export function isExternalAssistantHref(href: string): boolean {
+    return DISCORD_HREF_PATTERN.test(href);
+}
 
 const assistantLinkSchema = z.object({
     pageId: z.string().trim().min(1),
     title: z.string().trim().min(1),
-    href: z.string().regex(INTERNAL_HREF_PATTERN),
+    href: z.string().refine(
+        (value) => INTERNAL_HREF_PATTERN.test(value) || DISCORD_HREF_PATTERN.test(value),
+    ),
 }).strict();
 
 const assistantResponseSchema = z.object({

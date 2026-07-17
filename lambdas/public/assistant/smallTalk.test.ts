@@ -63,7 +63,23 @@ describe('isCasualConversation', () => {
 });
 
 describe('isShortFollowUpProbe', () => {
-  it.each(['何が', '何を', '何の', 'なにが', 'どれ', 'なぜ', 'どこ', 'どこ？', 'もっと詳しく'])(
+  it.each([
+    '何が',
+    '何を',
+    '何の',
+    'なにが',
+    'どれ',
+    'なぜ',
+    'どこ',
+    'どこ？',
+    'もっと詳しく',
+    'ページ',
+    'ページは',
+    '詳細',
+    '詳細は',
+    '内容',
+    '内容は',
+  ])(
     'accepts %j',
     (message) => {
       expect(isShortFollowUpProbe(message)).toBe(true);
@@ -84,6 +100,9 @@ describe('shouldUseFollowUpHistory', () => {
     'どこでAPI見る？',
     'もっと詳しくCLI',
     'ページは？',
+    'ページ',
+    '詳細は？',
+    '内容は？',
     'リンクある？',
     'URLは？',
     '続きは？',
@@ -102,6 +121,11 @@ describe('shouldUseFollowUpHistory', () => {
     'どんなプロンプトで作ってるの',
     'どんな仕組みなの',
     'どうやって入部するの',
+    'どんなページがあるの',
+    '詳しい内容を教えて',
+    'ページについて教えて',
+    '内容を教えて',
+    '詳細を知りたい',
   ])('rejects out-of-scope or new-topic messages %j', (message) => {
     expect(shouldUseFollowUpHistory(message)).toBe(false);
   });

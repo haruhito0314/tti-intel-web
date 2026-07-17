@@ -271,6 +271,10 @@ describe('createAssistantApi', () => {
             ...response,
             links: [{ pageId: 'evil', title: 'Evil', href: 'https://evil.example' }],
         }],
+        ['non-discord https href', {
+            ...response,
+            links: [{ pageId: 'evil', title: 'Evil', href: 'https://example.com/discord' }],
+        }],
         ['backslash href', {
             ...response,
             links: [{ pageId: 'evil', title: 'Evil', href: '/app\\evil' }],
@@ -290,6 +294,36 @@ describe('createAssistantApi', () => {
         await expect(client.send(request)).rejects.toMatchObject({
             kind: 'invalid-response',
             message: ASSISTANT_ERROR_MESSAGES['invalid-response'],
+        });
+    });
+
+    it('accepts allowlisted Discord invite hrefs', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(jsonResponse({
+            answer: 'Discordはこちらです。',
+            links: [
+                {
+                    pageId: 'discord',
+                    title: 'Discord',
+                    href: 'https://discord.gg/DFWs8GrHxF',
+                },
+                { pageId: 'contact', title: 'Contact', href: '/contact' },
+            ],
+        }));
+        const client = createAssistantApi({
+            baseUrl: 'https://api.example.com',
+            fetchImpl: injectedFetch(fetchMock),
+        });
+
+        await expect(client.send(request)).resolves.toEqual({
+            answer: 'Discordはこちらです。',
+            links: [
+                {
+                    pageId: 'discord',
+                    title: 'Discord',
+                    href: 'https://discord.gg/DFWs8GrHxF',
+                },
+                { pageId: 'contact', title: 'Contact', href: '/contact' },
+            ],
         });
     });
 

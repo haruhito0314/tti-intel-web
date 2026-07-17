@@ -783,6 +783,37 @@ describe('createAssistantHandler orchestration', () => {
     });
   });
 
+  it('injects the Discord invite link when Discord is asked', async () => {
+    const dependencies = createDependencies({
+      requestOpenAI: vi.fn(async () => ({
+        output: {
+          answer: 'はい。下のDiscordリンクから参加できます。',
+          pageIds: ['contact'],
+          contentIds: [],
+        },
+        usage: successfulOpenAIResult.usage,
+      })),
+    });
+    const response = await invoke(dependencies, validPostEvent({
+      body: JSON.stringify({
+        ...validRequest,
+        message: 'Discordありますか？',
+      }),
+    }));
+
+    expect(parsedBody(response)).toEqual({
+      answer: 'はい。下のDiscordリンクから参加できます。',
+      links: [
+        {
+          pageId: 'discord',
+          title: 'Discord',
+          href: 'https://discord.gg/DFWs8GrHxF',
+        },
+        { pageId: 'contact', title: 'Contact', href: '/contact' },
+      ],
+    });
+  });
+
   it('emits verified dynamic content links ahead of page links', async () => {
     const dependencies = createDependencies({
       searchContent: vi.fn(async () => [{

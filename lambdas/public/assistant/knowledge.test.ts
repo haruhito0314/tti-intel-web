@@ -5,7 +5,9 @@ import { describe, expect, it } from 'vitest';
 import {
   buildFollowUpSearchQuery,
   createVerifiedLinks,
+  DISCORD_INVITE_URL,
   GUIDE_ENTRIES,
+  isDiscordQuestion,
   KNOWN_PAGE_ROUTES,
   normalizeSearchText,
   resolveCurrentPageId,
@@ -447,5 +449,35 @@ describe('verified links', () => {
         href: '/board',
       },
     ]);
+  });
+
+  it('injects the Discord invite when includeDiscord is set', () => {
+    expect(createVerifiedLinks(
+      ['contact', 'home'],
+      [],
+      [],
+      [],
+      { includeDiscord: true },
+    )).toEqual([
+      {
+        pageId: 'discord',
+        title: 'Discord',
+        href: DISCORD_INVITE_URL,
+      },
+      { pageId: 'contact', title: 'Contact', href: '/contact' },
+    ]);
+  });
+});
+
+describe('isDiscordQuestion', () => {
+  it.each(['Discordある？', 'ディスコードのリンク', 'discord invite'])(
+    'detects %j',
+    (message) => {
+      expect(isDiscordQuestion(message)).toBe(true);
+    },
+  );
+
+  it.each(['Contactはどこ', 'Instagramある？'])('rejects %j', (message) => {
+    expect(isDiscordQuestion(message)).toBe(false);
   });
 });

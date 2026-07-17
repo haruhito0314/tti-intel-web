@@ -29,8 +29,10 @@ export interface AssistantRequest {
   history: HistoryMessage[];
 }
 
+export type AssistantLinkPageId = PageId | 'discord';
+
 export interface AssistantLink {
-  pageId: PageId;
+  pageId: AssistantLinkPageId;
   title: string;
   href: string;
 }

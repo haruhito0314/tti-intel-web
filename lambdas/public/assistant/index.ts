@@ -12,6 +12,7 @@ import {
   buildFollowUpSearchQuery,
   createVerifiedLinks,
   GUIDE_ENTRIES,
+  isDiscordQuestion,
   selectRelevantKnowledge,
 } from './knowledge.js';
 import {
@@ -409,6 +410,7 @@ export function createAssistantHandler(
           openAiSelected,
           output.contentIds,
           openAiContent,
+          { includeDiscord: isDiscordQuestion(request.message) },
         ),
       } satisfies AssistantResponse, origin);
     } catch (error) {
