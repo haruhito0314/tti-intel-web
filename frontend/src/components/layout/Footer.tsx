@@ -48,9 +48,9 @@ export function Footer() {
     return (
         <footer className="mt-auto bg-[#F5F5F7] dark:bg-[var(--surface-2)] border-t border-[#D2D2D7] dark:border-[var(--border)]">
             <div className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-12">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
                     {/* Brand */}
-                    <div className="md:col-span-2">
+                    <div>
                         <Link to="/" className="flex items-center gap-2 mb-3">
                             <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/75 ring-1 ring-black/10 shadow-sm dark:bg-white dark:ring-white/20">
                                 <img src="/load-assets/tti-crest.png" alt="" className="h-6 w-6 object-contain" />
@@ -123,8 +123,8 @@ export function Footer() {
                         <h3 className="apple-footnote font-bold text-[#1D1D1F] dark:text-[#F5F5F7] mb-3">
                             メニュー
                         </h3>
-                        <ul className="space-y-1.5">
-                            {siteConfig.navigation.map((link) => (
+                        <ul className="grid grid-cols-2 gap-x-6 gap-y-1.5">
+                            {siteConfig.footerLinks.menu.map((link) => (
                                 <li key={link.href}>
                                     <Link
                                         to={link.href}

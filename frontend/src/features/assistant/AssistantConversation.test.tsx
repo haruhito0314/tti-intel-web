@@ -103,7 +103,7 @@ describe('AssistantConversation', () => {
                 {
                     id: 'assistant-1',
                     role: 'assistant',
-                    content: 'About Usをご覧ください。',
+                    content: 'サークルについてをご覧ください。',
                     links: [],
                 },
             ],
@@ -368,7 +368,7 @@ describe('AssistantConversation', () => {
             role: 'assistant',
             content: '活動内容はこちらです。',
             links: [
-                { pageId: 'about', title: 'About Us', href: '/about' },
+                { pageId: 'about', title: 'サークルについて', href: '/about' },
                 { pageId: 'contact', title: 'お問い合わせ', href: '/contact' },
             ],
         }];
@@ -380,7 +380,7 @@ describe('AssistantConversation', () => {
             </MemoryRouter>,
         );
 
-        const aboutLink = screen.getByRole('link', { name: 'About Us' });
+        const aboutLink = screen.getByRole('link', { name: 'サークルについて' });
         expect(aboutLink).toHaveAttribute('href', '/about');
         expect(aboutLink).not.toHaveAttribute('target');
         expect(screen.getAllByRole('link')).toHaveLength(2);

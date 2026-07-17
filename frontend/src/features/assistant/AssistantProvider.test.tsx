@@ -24,8 +24,8 @@ import type {
 } from './types';
 
 const firstResponse: AssistantResponse = {
-    answer: 'About Usで活動内容を確認できます。',
-    links: [{ pageId: 'about', title: 'About Us', href: '/about' }],
+    answer: 'サークルについてで活動内容を確認できます。',
+    links: [{ pageId: 'about', title: 'サークルについて', href: '/about' }],
 };
 
 interface Deferred<T> {

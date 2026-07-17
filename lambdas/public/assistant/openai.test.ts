@@ -315,7 +315,7 @@ describe('buildResponsesPayload', () => {
       '回答は原則1〜2文、目安120文字以内。長い説明・箇条書きの連発・前置きは避けてください。',
     );
     expect(SYSTEM_INSTRUCTIONS).toContain(
-      '今週の数学やNewsなど一覧への案内では、個別記事・個別問題のリンクを並べず、pageIdsで一覧ページだけを案内してください。',
+      '今週の数学やお知らせなど一覧への案内では、個別記事・個別問題のリンクを並べず、pageIdsで一覧ページだけを案内してください。',
     );
     expect(SYSTEM_INSTRUCTIONS).toContain(
       'answerは200文字以内、pageIdsとcontentIdsはそれぞれ許可集合から選んでください。',
@@ -360,10 +360,23 @@ describe('buildResponsesPayload', () => {
 
   it('builds the exact bounded Luna Structured Outputs payload', () => {
     const payload = buildResponsesPayload({ request, selected });
-    const allowedPageIds = [
-      ...selected.map(({ entry }) => entry.id).filter((id) => id !== 'contact'),
-      'contact' as const,
-    ];
+    const allowedPageIds: PageId[] = [];
+    const pushAllowed = (pageId: PageId) => {
+      if (!allowedPageIds.includes(pageId)) {
+        allowedPageIds.push(pageId);
+      }
+    };
+    for (const { entry } of selected) {
+      if (entry.id !== 'contact') {
+        pushAllowed(entry.id);
+      }
+      for (const relatedPageId of entry.relatedPageIds) {
+        if (relatedPageId !== 'contact') {
+          pushAllowed(relatedPageId);
+        }
+      }
+    }
+    pushAllowed('contact');
     const allowedPageIdSet = new Set<PageId>(allowedPageIds);
     const guideEntries = selected.map(({ entry }) => ({
       id: entry.id,
@@ -559,6 +572,7 @@ describe('buildResponsesPayload', () => {
     expect(envelope.allowedPageIds).toEqual([
       'news',
       'weekly-math',
+      'game-community',
       'apps',
       'board',
       'contact',
@@ -582,13 +596,15 @@ describe('buildResponsesPayload', () => {
     ]);
     expect(envelope.guideEntries[0]?.relatedPageIds).toEqual([
       'weekly-math',
+      'game-community',
       'contact',
     ]);
     expect(JSON.stringify(payload)).not.toContain('PRIVATE_KEYWORD_');
     expect(JSON.stringify(payload)).not.toContain('/private-route-');
     expect(JSON.stringify(payload)).not.toContain('SUMMARY_game-community');
     expect(JSON.stringify(payload)).not.toContain('QUESTION_game-community');
-    expect(JSON.stringify(payload)).not.toContain('game-community');
+    expect(JSON.stringify(payload)).not.toContain('TITLE_game-community');
+    expect(JSON.stringify(payload)).not.toContain('FAQ_ANSWER_game-community');
   });
 
   it('adds Contact once when no knowledge is selected', () => {

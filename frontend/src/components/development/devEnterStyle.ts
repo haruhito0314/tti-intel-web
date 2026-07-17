@@ -19,13 +19,17 @@ export function chapterShellStyle(opacity: number): CSSProperties {
 export function enterSlideY(
     reveal: number,
     distance: number,
+    scaleFrom = 1,
 ): Pick<CSSProperties, 'opacity' | 'transform'> {
     if (reveal >= 1) {
-        return { opacity: 1, transform: 'translateY(0px)' };
+        return { opacity: 1, transform: scaleFrom === 1 ? 'translateY(0px)' : 'translateY(0px) scale(1)' };
     }
+    const scale =
+        scaleFrom === 1 ? 1 : scaleFrom + (1 - scaleFrom) * reveal;
+    const translate = `translateY(${Math.round((1 - reveal) * distance)}px)`;
     return {
         opacity: reveal,
-        transform: `translateY(${Math.round((1 - reveal) * distance)}px)`,
+        transform: scaleFrom === 1 ? translate : `${translate} scale(${scale.toFixed(4)})`,
     };
 }
 
@@ -34,14 +38,16 @@ export function enterSlideYWithRotate(
     distance: number,
     rotateDeg: number,
     opacityScale = 1,
+    scaleFrom = 0.94,
 ): Pick<CSSProperties, 'opacity' | 'transform'> {
     const rotate = `rotate(${rotateDeg}deg)`;
     if (reveal >= 1) {
-        return { opacity: opacityScale, transform: rotate };
+        return { opacity: opacityScale, transform: `scale(1) ${rotate}` };
     }
+    const scale = scaleFrom + (1 - scaleFrom) * reveal;
     return {
         opacity: reveal * opacityScale,
-        transform: `translateY(${Math.round((1 - reveal) * distance)}px) ${rotate}`,
+        transform: `translateY(${Math.round((1 - reveal) * distance)}px) scale(${scale.toFixed(4)}) ${rotate}`,
     };
 }
 
@@ -56,11 +62,11 @@ export function stackCardMotionStyle(
         const exitT = 1 - exitProgress;
         return {
             opacity,
-            transform: `translateY(${Math.round(-exitT * distance)}px)`,
+            transform: `translateY(${Math.round(-exitT * distance)}px) scale(${(1 - exitT * 0.03).toFixed(4)})`,
         };
     }
 
-    return enterSlideY(enter, distance);
+    return enterSlideY(enter, distance, 0.96);
 }
 
 export function enterTranslateX(reveal: number, distance: number): string {

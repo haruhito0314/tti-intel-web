@@ -8,31 +8,46 @@ export function motionLocal(local: number, chapterIndex?: number): number {
 }
 
 // —— Section 1 ——
-export const SCENE1_TYPEWRITER_END = 0.42;
-export const SCENE1_TERMINAL_END = 0.22;
-export const SCENE1_FLOAT_BASE = 0.22;
-export const SCENE1_FLOAT_STAGGER = 0.045;
-export const SCENE1_FLOAT_SPAN = 0.14;
+/** Typewriter finishes early so the rest of the chapter can showcase floating tools */
+export const SCENE1_TYPEWRITER_END = 0.36;
+/** Terminal is mostly on-screen at first paint — empty hero reads as unfinished */
+export const SCENE1_TERMINAL_END = 0.1;
+export const SCENE1_TERMINAL_START_OPACITY = 0.94;
+export const SCENE1_FLOAT_BASE = 0.14;
+export const SCENE1_FLOAT_STAGGER = 0.05;
+export const SCENE1_FLOAT_SPAN = 0.16;
 
 export function scene1TypewriterProgress(local: number): number {
     const l = freezeAfterEnter(local, SCENE1_TYPEWRITER_END);
-    return reveal(l, 0.18, SCENE1_TYPEWRITER_END);
+    return reveal(l, 0.02, SCENE1_TYPEWRITER_END);
 }
 
 export function scene1TerminalReveal(local: number): number {
     const l = freezeAfterEnter(local, SCENE1_TERMINAL_END);
-    return reveal(l, 0.05, SCENE1_TERMINAL_END);
+    const rise = reveal(l, 0, SCENE1_TERMINAL_END);
+    return SCENE1_TERMINAL_START_OPACITY + (1 - SCENE1_TERMINAL_START_OPACITY) * rise;
 }
 
 export function scene1BadgeReveal(local: number, index: number): number {
     const l = motionLocal(local);
-    return reveal(l, 0.4 + index * 0.045, 0.45 + index * 0.045);
+    return reveal(l, 0.34 + index * 0.05, 0.42 + index * 0.05);
 }
 
 export function scene1FloatReveal(local: number, index: number): number {
     const l = motionLocal(local);
     const start = SCENE1_FLOAT_BASE + index * SCENE1_FLOAT_STAGGER;
     return reveal(l, start, start + SCENE1_FLOAT_SPAN);
+}
+
+/** Fake AI response lines — start after the typewriter finishes */
+export const SCENE1_RESPONSE_BASE = 0.38;
+export const SCENE1_RESPONSE_STAGGER = 0.055;
+export const SCENE1_RESPONSE_SPAN = 0.1;
+
+export function scene1ResponseLineReveal(local: number, index: number): number {
+    const l = motionLocal(local);
+    const start = SCENE1_RESPONSE_BASE + index * SCENE1_RESPONSE_STAGGER;
+    return reveal(l, start, start + SCENE1_RESPONSE_SPAN);
 }
 
 // —— Stack grids (sections 2 & 5) ——

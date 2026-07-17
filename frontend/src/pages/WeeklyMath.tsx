@@ -10,7 +10,7 @@ import {
     toPublicWeeklyMathKey,
     type WeeklyMathProblem,
 } from '@/lib/weeklyMath';
-import { getWeeklyMathAccentClasses, toWeeklyMathPreviewText } from '@/lib/weeklyMathDisplay';
+import { getWeeklyMathAccentClasses } from '@/lib/weeklyMathDisplay';
 import { sortWeeklyMathProblemsNewestFirst } from '@/lib/weeklyMathIdentity';
 
 export function WeeklyMath() {
@@ -70,11 +70,9 @@ export function WeeklyMath() {
                             <Card key={index} variant="elevated" className="relative overflow-hidden">
                                 <div className="absolute inset-y-0 right-0 w-1.5 bg-gray-200 dark:bg-white/10" aria-hidden="true" />
                                 <CardContent className="relative p-6 pr-9">
-                                    <div className="space-y-3">
+                                    <div className="flex flex-wrap items-center gap-2">
                                         <Skeleton className="h-7 w-2/3 max-w-[360px]" />
-                                        <Skeleton className="h-4 w-40" />
-                                        <Skeleton className="h-4 w-full max-w-[680px]" />
-                                        <Skeleton className="h-4 w-5/6 max-w-[560px]" />
+                                        <Skeleton className="h-5 w-24" />
                                     </div>
                                 </CardContent>
                             </Card>
@@ -89,7 +87,6 @@ export function WeeklyMath() {
                 ) : (
                     <div className="space-y-5">
                         {items.map((item, index) => {
-                            const preview = toWeeklyMathPreviewText(item.problem || '');
                             const isSolutionPublished = item.solutionPublished ?? true;
                             const barClasses = getWeeklyMathAccentClasses(index);
                             return (
@@ -97,7 +94,7 @@ export function WeeklyMath() {
                                     <Card variant="elevated" className="relative overflow-hidden transition-transform duration-300 hover:scale-[1.01]">
                                         <div className={`absolute inset-y-0 right-0 w-1.5 ${barClasses}`} aria-hidden="true" />
                                         <CardContent className="relative p-6 pr-9 flex items-center justify-between gap-4">
-                                            <div className="min-w-0 pr-6 space-y-3">
+                                            <div className="min-w-0 pr-6">
                                                 <div className="flex flex-wrap items-center gap-2">
                                                     <h2 className="apple-headline text-[#1D1D1F] dark:text-[#F5F5F7] group-hover:text-[#0066CC] dark:group-hover:text-[#2997FF] transition-colors">
                                                         {item.title?.trim() || '経路の場合の数'}
@@ -106,11 +103,6 @@ export function WeeklyMath() {
                                                         {isSolutionPublished ? '解答公開中' : '解答準備中'}
                                                     </Badge>
                                                 </div>
-                                                {preview && (
-                                                    <p className="text-sm leading-relaxed text-[#515154] dark:text-[rgba(235,235,245,0.72)] line-clamp-2">
-                                                        {preview}
-                                                    </p>
-                                                )}
                                             </div>
                                             <ArrowRight className="w-5 h-5 text-[#0071E3] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
                                         </CardContent>

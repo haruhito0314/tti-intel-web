@@ -6,7 +6,8 @@ import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
 import { PageSeo } from '@/components/PageSeo';
 import { ArrowLeft, Calendar, User, Tag, Share2, ExternalLink } from 'lucide-react';
-import { Badge, Card, CardContent, Button } from '@/components/ui';
+import { Badge, Button } from '@/components/ui';
+import type { ExtraProps } from 'react-markdown';
 
 // Dummy data for MVP - will be replaced with API call
 const postsData: Record<string, {
@@ -44,7 +45,7 @@ TTI Intelligenceのサイトに、AI Assistantを追加しました。
 
 AI Assistantは、このサイトの公開情報をもとに案内します。
 
-サークルの活動やページ構成についてはお手伝いできます。一方で、サイト外の一般的な話題や、個別の記事・投稿の細かい本文の要約などにはお答えできない場合があります。そのときは Contact からご連絡ください。
+サークルの活動やページ構成についてはお手伝いできます。一方で、サイト外の一般的な話題や、個別の記事・投稿の細かい本文の要約などにはお答えできない場合があります。そのときは[お問い合わせ](/contact)からご連絡ください。
 
 ## ぜひ試してみてください
 
@@ -117,24 +118,16 @@ Web開発に興味はあるものの、何から始めればよいか分から�
         content: `
 ## はじめに
 
-TTI Intelligenceへようこそ！  
-私たちは豊田工業大学の学生を中心としたAIサークルです。
+TTI Intelligenceへようこそ。私たちは豊田工業大学の学生を中心としたAIサークルです。
 
 AI技術を軸に、開発・数学・ゲーム・解説動画へ幅広く挑戦しています。
 
 ## 活動内容
 
-1. **開発**
-   - AIを使ったvibe codingで、Webサイトやアプリケーションを開発
-
-2. **数学**
-   - 自作問題を作ることをメインに、数学的な発想力を高める活動
-
-3. **ゲーム**
-   - VALORANT、Apexを中心に、たまにフォートナイト。人数が集まればMinecraft Realms（Java版）も実施予定
-
-4. **解説動画**
-   - 点数だけを目的にせず、科目の本質をついた真の理解を促す勉強解説動画を制作
+1. **開発** — AIを使ったvibe codingで、Webサイトやアプリケーションを開発
+2. **数学** — 自作問題を作ることをメインに、数学的な発想力を高める活動
+3. **ゲーム** — VALORANT、Apexを中心に、たまにフォートナイト。人数が集まればMinecraft Realms（Java版）も実施予定
+4. **解説動画** — 点数だけを目的にせず、科目の本質をついた真の理解を促す勉強解説動画を制作
 
 ## 使用しているAIツール
 
@@ -152,9 +145,9 @@ AI技術を軸に、開発・数学・ゲーム・解説動画へ幅広く挑戦
 
 ## 参加方法
 
-サークルへの参加に興味がある方は、お気軽に[お問い合わせページ](/contact)からご連絡ください。プログラミング未経験の方も大歓迎です！わからないところは1から全部サポートします。
+サークルへの参加に興味がある方は、お気軽に[お問い合わせページ](/contact)からご連絡ください。プログラミング未経験の方も大歓迎です。わからないところは1から全部サポートします。
 
-皆さんの参加をお待ちしています！
+皆さんの参加をお待ちしています。
     `,
         publishedAt: '2026-04-01',
         author: 'サークル運営',
@@ -163,6 +156,13 @@ AI技術を軸に、開発・数学・ゲーム・解説動画へ幅広く挑戦
         relatedPosts: [],
     },
 };
+
+function isCaptionParagraph(node: ExtraProps['node']): boolean {
+    if (!node || node.type !== 'element' || node.tagName !== 'p') return false;
+    if (node.children.length !== 1) return false;
+    const only = node.children[0];
+    return only.type === 'element' && only.tagName === 'em';
+}
 
 export function NewsDetail() {
     const { slug } = useParams<{ slug: string }>();
@@ -214,13 +214,11 @@ export function NewsDetail() {
                 title={`${post.title} | TTI Intelligence`}
                 description={post.content.replace(/\s+/g, ' ').trim().slice(0, 120)}
             />
-            {/* Header */}
-            <header className="relative overflow-hidden">
-                <div className="absolute inset-0 gradient-bg-subtle opacity-30" />
-                <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <header className="about-band-hero relative overflow-hidden border-b border-[#D2D2D7] dark:border-[rgba(255,255,255,0.16)]">
+                <div className="relative max-w-[720px] mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
                     <Link
                         to="/news"
-                        className="inline-flex items-center gap-2 text-[#0066CC] dark:text-[#2997FF] hover:underline mb-6"
+                        className="inline-flex items-center gap-2 text-[14px] text-[#0071E3] dark:text-[#5CABFF] hover:underline underline-offset-4 mb-6"
                     >
                         <ArrowLeft className="w-4 h-4" />
                         記事一覧
@@ -235,64 +233,78 @@ export function NewsDetail() {
                         ))}
                     </div>
 
-                    <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] mb-6">
+                    <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] mb-5 text-balance">
                         {post.title}
                     </h1>
 
-                    <div className="flex flex-wrap items-center gap-6 text-sm text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
+                    <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[14px] text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
                         <div className="flex items-center gap-2">
-                            <User className="w-4 h-4" />
+                            <User className="w-4 h-4" aria-hidden="true" />
                             {post.author}
                         </div>
                         <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
+                            <Calendar className="w-4 h-4" aria-hidden="true" />
                             {post.publishedAt}
                         </div>
                         <button
+                            type="button"
                             onClick={handleShare}
-                            className="flex items-center gap-2 hover:text-[#0066CC] dark:hover:text-[#2997FF] transition-colors"
+                            className="flex items-center gap-2 hover:text-[#0071E3] dark:hover:text-[#5CABFF] transition-colors"
                         >
-                            <Share2 className="w-4 h-4" />
+                            <Share2 className="w-4 h-4" aria-hidden="true" />
                             共有
                         </button>
                     </div>
                 </div>
             </header>
 
-            {/* Content */}
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <div className="prose prose-lg dark:prose-invert max-w-none">
+            <div className="max-w-[720px] mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14">
+                <div className="news-article-body">
                     <ReactMarkdown
                         remarkPlugins={[remarkGfm, remarkMath]}
                         rehypePlugins={[rehypeKatex]}
                         components={{
                             h2: ({ children }) => (
-                                <h2 className="apple-title text-[#1D1D1F] dark:text-[#F5F5F7] mt-8 mb-4">
+                                <h2 className="text-[22px] sm:text-[24px] font-semibold tracking-[-0.03em] text-[#1D1D1F] dark:text-[#F5F5F7] mt-12 mb-4 first:mt-0 leading-[1.25]">
                                     {children}
                                 </h2>
                             ),
                             h3: ({ children }) => (
-                                <h3 className="apple-headline text-[#1D1D1F] dark:text-[#F5F5F7] mt-6 mb-3">
+                                <h3 className="text-[18px] sm:text-[20px] font-semibold tracking-[-0.02em] text-[#1D1D1F] dark:text-[#F5F5F7] mt-8 mb-3 leading-[1.3]">
                                     {children}
                                 </h3>
                             ),
-                            p: ({ children }) => (
-                                <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-4 leading-relaxed">
-                                    {children}
-                                </p>
-                            ),
+                            p: ({ children, node }) => {
+                                if (isCaptionParagraph(node)) {
+                                    return (
+                                        <p className="mt-3 mb-8 text-[13px] leading-relaxed text-center text-[#86868B] dark:text-[rgba(235,235,245,0.45)]">
+                                            {children}
+                                        </p>
+                                    );
+                                }
+                                return (
+                                    <p className="text-[17px] sm:text-[18px] leading-[1.9] text-[#1D1D1F] dark:text-[rgba(245,245,247,0.92)] mb-5 text-pretty">
+                                        {children}
+                                    </p>
+                                );
+                            },
                             ul: ({ children }) => (
-                                <ul className="list-disc list-inside space-y-2 mb-4 text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
+                                <ul className="mb-6 space-y-2.5 pl-5 list-disc marker:text-[#86868B] dark:marker:text-[rgba(235,235,245,0.35)]">
                                     {children}
                                 </ul>
                             ),
                             ol: ({ children }) => (
-                                <ol className="list-decimal list-inside space-y-2 mb-4 text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
+                                <ol className="mb-6 space-y-3 pl-5 list-decimal marker:font-medium marker:text-[#86868B] dark:marker:text-[rgba(235,235,245,0.45)]">
                                     {children}
                                 </ol>
                             ),
+                            li: ({ children }) => (
+                                <li className="text-[17px] sm:text-[18px] leading-[1.8] text-[#1D1D1F] dark:text-[rgba(245,245,247,0.92)] pl-1">
+                                    {children}
+                                </li>
+                            ),
                             blockquote: ({ children }) => (
-                                <blockquote className="border-l-4 border-[#0071E3] pl-4 italic text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] my-4">
+                                <blockquote className="my-6 border-l-[3px] border-[#0071E3] pl-5 text-[17px] leading-[1.8] text-[#515154] dark:text-[rgba(235,235,245,0.7)]">
                                     {children}
                                 </blockquote>
                             ),
@@ -303,20 +315,28 @@ export function NewsDetail() {
                                     loading="lazy"
                                     width={1280}
                                     height={720}
-                                    className="my-6 block h-auto w-full rounded-2xl border border-black/10 shadow-sm dark:border-white/10"
+                                    className="mt-8 mb-0 block h-auto w-full rounded-2xl border border-black/10 shadow-sm dark:border-white/10"
                                 />
+                            ),
+                            em: ({ children }) => (
+                                <em className="not-italic">{children}</em>
+                            ),
+                            strong: ({ children }) => (
+                                <strong className="font-semibold text-[#1D1D1F] dark:text-[#F5F5F7]">
+                                    {children}
+                                </strong>
                             ),
                             code: ({ className, children }) => {
                                 const isInline = !className;
                                 if (isInline) {
                                     return (
-                                        <code className="px-1.5 py-0.5 rounded bg-[#F5F5F7] dark:bg-[#1C1C1E] text-[#0066CC] dark:text-[#2997FF] text-sm">
+                                        <code className="px-1.5 py-0.5 rounded-md bg-[#F5F5F7] dark:bg-[#1C1C1E] text-[#0066CC] dark:text-[#2997FF] text-[0.9em]">
                                             {children}
                                         </code>
                                     );
                                 }
                                 return (
-                                    <code className="block bg-[#1C1C1E] text-[#F5F5F7] p-4 rounded-xl overflow-x-auto my-4">
+                                    <code className="block bg-[#1C1C1E] text-[#F5F5F7] p-4 rounded-xl overflow-x-auto my-5 text-[14px] leading-relaxed">
                                         {children}
                                     </code>
                                 );
@@ -333,7 +353,7 @@ export function NewsDetail() {
                                             href={target}
                                             className={isTutorialCta
                                                 ? 'mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#0066CC] px-6 py-3.5 font-semibold text-white no-underline shadow-sm transition-colors hover:bg-[#004C99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071E3] focus-visible:ring-offset-2 dark:text-white sm:w-auto'
-                                                : 'text-[#0066CC] dark:text-[#2997FF] hover:underline'}
+                                                : 'text-[#0071E3] dark:text-[#5CABFF] underline-offset-4 hover:underline'}
                                             target={target.startsWith('http') ? '_blank' : undefined}
                                             rel={target.startsWith('http') ? 'noopener noreferrer' : undefined}
                                         >
@@ -348,7 +368,7 @@ export function NewsDetail() {
                                 return (
                                     <Link
                                         to={target || '#'}
-                                        className="text-[#0066CC] dark:text-[#2997FF] hover:underline"
+                                        className="text-[#0071E3] dark:text-[#5CABFF] underline-offset-4 hover:underline"
                                     >
                                         {children}
                                     </Link>
@@ -360,23 +380,22 @@ export function NewsDetail() {
                     </ReactMarkdown>
                 </div>
 
-                {/* Related Posts */}
                 {post.relatedPosts.length > 0 && (
-                    <section className="mt-16 pt-8 border-t border-[var(--border)]">
-                        <h2 className="apple-title text-[#1D1D1F] dark:text-[#F5F5F7] mb-6 flex items-center gap-2">
-                            <Tag className="w-5 h-5" />
+                    <section className="mt-14 pt-8 border-t border-black/10 dark:border-white/12">
+                        <h2 className="text-[18px] font-semibold tracking-[-0.02em] text-[#1D1D1F] dark:text-[#F5F5F7] mb-5 flex items-center gap-2">
+                            <Tag className="w-4 h-4" aria-hidden="true" />
                             関連記事
                         </h2>
-                        <div className="grid sm:grid-cols-2 gap-4">
+                        <div className="space-y-0 divide-y divide-black/10 dark:divide-white/12">
                             {post.relatedPosts.map((related) => (
-                                <Link key={related.slug} to={`/news/${related.slug}`}>
-                                    <Card variant="default" className="hover:bg-[#F5F5F7] dark:hover:bg-[#1C1C1E] transition-colors">
-                                        <CardContent className="p-4">
-                                            <h3 className="font-medium text-[#1D1D1F] dark:text-[#F5F5F7] hover:text-[#0066CC] dark:hover:text-[#2997FF]">
-                                                {related.title}
-                                            </h3>
-                                        </CardContent>
-                                    </Card>
+                                <Link
+                                    key={related.slug}
+                                    to={`/news/${related.slug}`}
+                                    className="flex items-center justify-between gap-4 py-4 group"
+                                >
+                                    <h3 className="font-medium text-[#1D1D1F] dark:text-[#F5F5F7] group-hover:text-[#0071E3] dark:group-hover:text-[#5CABFF] transition-colors">
+                                        {related.title}
+                                    </h3>
                                 </Link>
                             ))}
                         </div>

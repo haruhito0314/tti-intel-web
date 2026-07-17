@@ -317,8 +317,8 @@ describe('createAssistantHandler CORS and early exits', () => {
     expect(parsedBody(response)).toEqual({
       answer: 'こんにちは！活動内容や参加方法など、気軽に聞いてください。',
       links: [
-        { pageId: 'home', title: 'Home', href: '/' },
-        { pageId: 'contact', title: 'Contact', href: '/contact' },
+        { pageId: 'home', title: 'ホーム', href: '/' },
+        { pageId: 'contact', title: 'お問い合わせ', href: '/contact' },
       ],
     });
     expect(dependencies.requestOpenAI).toHaveBeenCalledWith(expect.objectContaining({
@@ -779,7 +779,7 @@ describe('createAssistantHandler orchestration', () => {
 
     expect(parsedBody(response)).toEqual({
       answer: 'お問い合わせください。',
-      links: [{ pageId: 'contact', title: 'Contact', href: '/contact' }],
+      links: [{ pageId: 'contact', title: 'お問い合わせ', href: '/contact' }],
     });
   });
 
@@ -809,7 +809,7 @@ describe('createAssistantHandler orchestration', () => {
           title: 'Discord',
           href: 'https://discord.gg/DFWs8GrHxF',
         },
-        { pageId: 'contact', title: 'Contact', href: '/contact' },
+        { pageId: 'contact', title: 'お問い合わせ', href: '/contact' },
       ],
     });
   });
@@ -851,7 +851,7 @@ describe('createAssistantHandler orchestration', () => {
           title: 'TTI Intelligenceへようこそ',
           href: '/news/welcome-to-tti-intelligence',
         },
-        { pageId: 'news', title: 'News', href: '/news' },
+        { pageId: 'news', title: 'お知らせ', href: '/news' },
       ],
     });
   });

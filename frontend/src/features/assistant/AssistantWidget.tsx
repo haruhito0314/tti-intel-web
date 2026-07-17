@@ -1,6 +1,8 @@
 import {
+    useEffect,
     useId,
     useRef,
+    useState,
     type KeyboardEvent,
     type RefObject,
 } from 'react';
@@ -14,6 +16,9 @@ import {
 import { AssistantConversation } from './AssistantConversation';
 import { useAssistant } from './useAssistant';
 import { useAssistantDialogBehavior } from './useAssistantDialogBehavior';
+
+const ASSISTANT_TRIGGER_DELAY_MS = import.meta.env.MODE === 'test' ? 0 : 2800;
+const ASSISTANT_TRIGGER_SCROLL_PX = 140;
 
 export interface AssistantWidgetProps {
     enabled: boolean;
@@ -44,6 +49,7 @@ export function AssistantWidget({
     const triggerRef = useRef<HTMLButtonElement>(null);
     const detailsRef = useRef<HTMLDetailsElement>(null);
     const summaryRef = useRef<HTMLElement>(null);
+    const [triggerReady, setTriggerReady] = useState(ASSISTANT_TRIGGER_DELAY_MS === 0);
     const active = enabled && isOpen && !isHiddenForTab;
     const { isMobile } = useAssistantDialogBehavior({
         active,
@@ -54,6 +60,29 @@ export function AssistantWidget({
         backgroundRef,
         onClose: close,
     });
+
+    useEffect(() => {
+        if (!enabled || isHiddenForTab || triggerReady) return;
+
+        const markReady = () => setTriggerReady(true);
+        const onScroll = () => {
+            if (window.scrollY >= ASSISTANT_TRIGGER_SCROLL_PX) {
+                markReady();
+            }
+        };
+
+        if (window.scrollY >= ASSISTANT_TRIGGER_SCROLL_PX) {
+            markReady();
+            return;
+        }
+
+        const timer = window.setTimeout(markReady, ASSISTANT_TRIGGER_DELAY_MS);
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => {
+            window.clearTimeout(timer);
+            window.removeEventListener('scroll', onScroll);
+        };
+    }, [enabled, isHiddenForTab, triggerReady]);
 
     if (!enabled || isHiddenForTab) {
         return null;
@@ -97,16 +126,18 @@ export function AssistantWidget({
                     : 'assistant-root'
             }
         >
-            <button
-                ref={triggerRef}
-                type="button"
-                className="assistant-trigger"
-                aria-label="AI Assistantを開く"
-                hidden={isOpen}
-                onClick={open}
-            >
-                <Sparkles aria-hidden="true" />
-            </button>
+            {triggerReady && (
+                <button
+                    ref={triggerRef}
+                    type="button"
+                    className="assistant-trigger"
+                    aria-label="AI Assistantを開く"
+                    hidden={isOpen}
+                    onClick={open}
+                >
+                    <Sparkles aria-hidden="true" />
+                </button>
+            )}
 
             {active && (
                 <>

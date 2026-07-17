@@ -2,9 +2,12 @@
   {
     "id": "home",
     "route": "/",
-    "title": "Home",
+    "title": "ホーム",
     "summary": "TTI Intelligenceは、豊田工業大学の学生を中心にAI技術、開発、数学、ゲーム、解説動画へ取り組む学生コミュニティです。",
-    "audiences": ["visitor", "member"],
+    "audiences": [
+      "visitor",
+      "member"
+    ],
     "keywords": [
       "TTI Intelligence",
       "TTI",
@@ -42,14 +45,26 @@
       "サイトマップ",
       "メニュー",
       "一覧",
+      "どんなページ",
+      "ページがある",
+      "主なページ",
+      "ページ一覧",
+      "サイト構成",
       "アシスタント",
       "AI Assistant",
       "チャットボット",
       "使い方",
       "何聞ける",
       "何が聞ける",
+      "何を教える",
+      "教えること",
+      "なんか教えて",
+      "内容教えて",
+      "なんのページ",
+      "ページがある",
       "プロンプト",
-      "システムプロンプト"
+      "システムプロンプト",
+      "Home"
     ],
     "faqs": [
       {
@@ -73,12 +88,36 @@
         "answer": "知りたいキーワードを送ってください。関連ページへ案内します。"
       },
       {
+        "question": "どんなページがあるの？",
+        "answer": "サークルについて、お知らせ、アプリ、開発について、掲示板、今週の数学、ゲームコミュニティ、お問い合わせなどがあります。"
+      },
+      {
+        "question": "どんなページがありますか？",
+        "answer": "サークルについて、お知らせ、アプリ、開発について、掲示板、今週の数学、ゲームコミュニティ、お問い合わせなどがあります。"
+      },
+      {
+        "question": "なんのページがある？",
+        "answer": "サークルについて、お知らせ、アプリ、開発について、掲示板、今週の数学、ゲームコミュニティ、お問い合わせなどがあります。"
+      },
+      {
+        "question": "詳しい内容を教えて",
+        "answer": "知りたいテーマを送ってください。関連ページの概要とリンクを案内します。"
+      },
+      {
+        "question": "内容教えて",
+        "answer": "知りたいテーマを送ってください。関連ページの概要とリンクを案内します。"
+      },
+      {
+        "question": "なんか教えてください",
+        "answer": "活動内容、参加方法、各ページの場所など、このサイトの案内ができます。気になることを短く聞いてください。"
+      },
+      {
         "question": "どんな活動をしていますか？",
-        "answer": "開発、今週の数学、ゲーム交流、解説動画制作などです。詳細はAbout Usへ。"
+        "answer": "開発、今週の数学、ゲーム交流、解説動画制作などです。詳細はサークルについてへ。"
       },
       {
         "question": "何ができますか？",
-        "answer": "このチャットではサイト案内ができます。サークルでは開発・数学・ゲーム・解説動画などに取り組んでいます。詳細はAbout Usへ。"
+        "answer": "このチャットではサイト案内ができます。サークルでは開発・数学・ゲーム・解説動画などに取り組んでいます。詳細はサークルについてへ。"
       },
       {
         "question": "このAI Assistantは何ですか？",
@@ -86,6 +125,10 @@
       },
       {
         "question": "何が聞けますか？",
+        "answer": "活動内容、参加方法、各ページの場所など、このサイトの案内を聞けます。一般知識やサイト外の作業依頼には答えられません。"
+      },
+      {
+        "question": "何を教えることができますか？",
         "answer": "活動内容、参加方法、各ページの場所など、このサイトの案内を聞けます。一般知識やサイト外の作業依頼には答えられません。"
       },
       {
@@ -102,17 +145,29 @@
       },
       {
         "question": "サイトの主なページはどこですか？",
-        "answer": "About Us、News、Apps、Development、Board、今週の数学、Contactなどがあります。"
+        "answer": "サークルについて、お知らせ、アプリ、開発について、掲示板、今週の数学、お問い合わせなどがあります。"
       }
     ],
-    "relatedPageIds": ["about", "contact"]
+    "relatedPageIds": [
+      "about",
+      "news",
+      "apps",
+      "development",
+      "board",
+      "weekly-math",
+      "game-community",
+      "contact"
+    ]
   },
   {
     "id": "about",
     "route": "/about",
-    "title": "About Us",
+    "title": "サークルについて",
     "summary": "活動内容、参加対象、活動頻度、費用、利用するAIツールを確認できます。",
-    "audiences": ["visitor", "member"],
+    "audiences": [
+      "visitor",
+      "member"
+    ],
     "keywords": [
       "活動内容",
       "参加",
@@ -145,6 +200,8 @@
       "豊田",
       "豊田工大",
       "他大学",
+      "別の大学",
+      "他大",
       "学生だけ",
       "誰向け",
       "歓迎",
@@ -180,7 +237,9 @@
       "紹介",
       "バイト",
       "就活",
-      "就職"
+      "就職",
+      "About Us",
+      "About"
     ],
     "faqs": [
       {
@@ -209,7 +268,7 @@
       },
       {
         "question": "場所はどこ？",
-        "answer": "豊田工業大学を中心に活動しています。詳しい場所や初回の相談はContactへ。"
+        "answer": "豊田工業大学を中心に活動しています。詳しい場所や初回の相談はお問い合わせへ。"
       },
       {
         "question": "会費はある？",
@@ -220,36 +279,40 @@
         "answer": "学生向けのAIサークルです。学年や経験は問いません。他大学の学生も歓迎です。"
       },
       {
+        "question": "別の大学の人でも大丈夫なの？",
+        "answer": "大丈夫です。他大学の学生も歓迎しています。参加の相談はお問い合わせからどうぞ。"
+      },
+      {
         "question": "どんな活動をしていますか？",
-        "answer": "解説動画、AI開発、ゲーム交流、今週の数学などです。詳細はAbout Usへ。"
+        "answer": "解説動画、AI開発、ゲーム交流、今週の数学などです。詳細はサークルについてへ。"
       },
       {
         "question": "何ができますか？",
-        "answer": "開発・解説動画・ゲーム・今週の数学などに取り組んでいます。詳細はAbout Usへ。"
+        "answer": "開発・解説動画・ゲーム・今週の数学などに取り組んでいます。詳細はサークルについてへ。"
       },
       {
         "question": "解説動画やYouTubeはどこですか？",
-        "answer": "About Usの解説動画からYouTubeを見られます。"
+        "answer": "サークルについての解説動画からYouTubeを見られます。"
       },
       {
         "question": "解説動画を作ってほしい",
-        "answer": "制作相談はContactからどうぞ。"
+        "answer": "制作相談はお問い合わせからどうぞ。"
       },
       {
         "question": "動画制作をお願いできますか？",
-        "answer": "制作相談はContactからどうぞ。"
+        "answer": "制作相談はお問い合わせからどうぞ。"
       },
       {
         "question": "見学や体験だけでも大丈夫ですか？",
-        "answer": "大丈夫です。見学や体験の相談はContactからどうぞ。"
+        "answer": "大丈夫です。見学や体験の相談はお問い合わせからどうぞ。"
       },
       {
         "question": "応用情報技術者試験の勉強もしていますか？",
-        "answer": "メンバー有志で挑戦しています。詳細はAbout Usへ。"
+        "answer": "メンバー有志で挑戦しています。詳細はサークルについてへ。"
       },
       {
         "question": "バイトや就活のサポートはある？",
-        "answer": "公開しているサポート案内はありません。個別の相談はContactからどうぞ。"
+        "answer": "公開しているサポート案内はありません。個別の相談はお問い合わせからどうぞ。"
       }
     ],
     "relatedPageIds": [
@@ -263,9 +326,12 @@
   {
     "id": "news",
     "route": "/news",
-    "title": "News",
+    "title": "お知らせ",
     "summary": "公開されているお知らせの一覧です。活動報告やイベント情報はここから確認できます。",
-    "audiences": ["visitor", "member"],
+    "audiences": [
+      "visitor",
+      "member"
+    ],
     "keywords": [
       "お知らせ",
       "ニュース",
@@ -274,26 +340,33 @@
       "イベント",
       "活動報告",
       "技術記事",
-      "ブログ"
+      "ブログ",
+      "News"
     ],
     "faqs": [
       {
         "question": "お知らせはどこで見られますか？",
-        "answer": "Newsの一覧からお知らせや活動報告を確認できます。"
+        "answer": "お知らせの一覧からお知らせや活動報告を確認できます。"
       },
       {
         "question": "イベント情報はどこですか？",
-        "answer": "Newsで活動報告・イベント情報・技術記事を確認できます。"
+        "answer": "お知らせで活動報告・イベント情報・技術記事を確認できます。"
       }
     ],
-    "relatedPageIds": ["home", "contact"]
+    "relatedPageIds": [
+      "home",
+      "contact"
+    ]
   },
   {
     "id": "apps",
     "route": "/app",
-    "title": "Apps",
+    "title": "アプリ",
     "summary": "メンバーが制作したアプリやプロジェクトの一覧です。卓球の組み合わせ表、カラーソートパズル、CLI練習、TOEIC Practiceなどを紹介しています。",
-    "audiences": ["visitor", "member"],
+    "audiences": [
+      "visitor",
+      "member"
+    ],
     "keywords": [
       "アプリ",
       "作品",
@@ -306,20 +379,21 @@
       "トーイック",
       "英語",
       "練習アプリ",
-      "ジェネレーター"
+      "ジェネレーター",
+      "Apps"
     ],
     "faqs": [
       {
         "question": "作ったアプリはどこですか？",
-        "answer": "Appsで公開中のアプリ一覧を確認できます。"
+        "answer": "アプリで公開中のアプリ一覧を確認できます。"
       },
       {
         "question": "どんなアプリがありますか？",
-        "answer": "卓球の組み合わせ表、カラーソートパズル、CLI練習、TOEIC PracticeなどをAppsで紹介しています。"
+        "answer": "卓球の組み合わせ表、カラーソートパズル、CLI練習、TOEIC Practiceなどをアプリで紹介しています。"
       },
       {
         "question": "TOEICの練習アプリはありますか？",
-        "answer": "TOEIC PracticeをAppsで紹介しています。詳細やリンクはAppsから確認できます。"
+        "answer": "TOEIC Practiceをアプリで紹介しています。詳細やリンクはアプリから確認できます。"
       }
     ],
     "relatedPageIds": [
@@ -332,9 +406,12 @@
   {
     "id": "development",
     "route": "/development",
-    "title": "Development",
+    "title": "開発について",
     "summary": "AIコーディングツールやMCPを活用したWeb・アプリ開発の活動紹介です。",
-    "audiences": ["visitor", "member"],
+    "audiences": [
+      "visitor",
+      "member"
+    ],
     "keywords": [
       "開発",
       "プログラミング",
@@ -344,26 +421,34 @@
       "Web",
       "アプリ",
       "エンジニア",
-      "制作"
+      "制作",
+      "Development"
     ],
     "faqs": [
       {
         "question": "開発活動について知りたい",
-        "answer": "AIコーディングツールやMCPを使った開発の様子はDevelopmentで紹介しています。"
+        "answer": "AIコーディングツールやMCPを使った開発の様子は開発についてで紹介しています。"
       },
       {
         "question": "どんな開発をしていますか？",
-        "answer": "最新のAIコーディングツールとMCPを活用したWeb・アプリ開発です。詳細はDevelopment、作品はAppsで確認できます。"
+        "answer": "最新のAIコーディングツールとMCPを活用したWeb・アプリ開発です。詳細は開発について、作品はアプリで確認できます。"
       }
     ],
-    "relatedPageIds": ["apps", "contact", "about"]
+    "relatedPageIds": [
+      "apps",
+      "contact",
+      "about"
+    ]
   },
   {
     "id": "board",
     "route": "/board",
-    "title": "Board",
+    "title": "掲示板",
     "summary": "質問、相談、活動に関する投稿の一覧です。掲示板への投稿や確認はここから行えます。",
-    "audiences": ["visitor", "member"],
+    "audiences": [
+      "visitor",
+      "member"
+    ],
     "keywords": [
       "掲示板",
       "質問",
@@ -372,26 +457,33 @@
       "交流",
       "スレッド",
       "匿名",
-      "書き込み"
+      "書き込み",
+      "Board"
     ],
     "faqs": [
       {
         "question": "相談や質問はどこに投稿できますか？",
-        "answer": "Boardの掲示板から質問や相談を投稿・確認できます。"
+        "answer": "掲示板から質問や相談を投稿・確認できます。"
       },
       {
         "question": "掲示板は匿名で使えますか？",
         "answer": "はい。表示名を空欄にすると「匿名」で投稿できます。"
       }
     ],
-    "relatedPageIds": ["contact", "home"]
+    "relatedPageIds": [
+      "contact",
+      "home"
+    ]
   },
   {
     "id": "contact",
     "route": "/contact",
-    "title": "Contact",
+    "title": "お問い合わせ",
     "summary": "参加や活動に関する質問を送るお問い合わせページです。",
-    "audiences": ["visitor", "member"],
+    "audiences": [
+      "visitor",
+      "member"
+    ],
     "keywords": [
       "お問い合わせ",
       "問い合わせ",
@@ -430,78 +522,85 @@
       "協業",
       "スポンサー",
       "法人",
-      "取材"
+      "取材",
+      "Contact"
     ],
     "faqs": [
       {
         "question": "参加方法を知りたい",
-        "answer": "Contactのフォームから参加や活動について問い合わせてください。"
+        "answer": "お問い合わせのフォームから参加や活動について問い合わせてください。"
       },
       {
         "question": "入りたい",
-        "answer": "参加希望はContactのフォームから連絡してください。"
+        "answer": "参加希望はお問い合わせのフォームから連絡してください。"
       },
       {
         "question": "会社や企業からの提携相談はできますか？",
-        "answer": "提携・連携の相談はContactのフォームからどうぞ。"
+        "answer": "提携・連携の相談はお問い合わせのフォームからどうぞ。"
       },
       {
         "question": "提携したい",
-        "answer": "提携・連携の相談はContactのフォームからどうぞ。"
+        "answer": "提携・連携の相談はお問い合わせのフォームからどうぞ。"
       },
       {
         "question": "取材したい",
-        "answer": "取材のご相談はContactのフォームからどうぞ。"
+        "answer": "取材のご相談はお問い合わせのフォームからどうぞ。"
       },
       {
         "question": "Discordはありますか？",
-        "answer": "はい。下のDiscordリンクから参加できます。参加相談はContactからもどうぞ。"
+        "answer": "はい。下のDiscordリンクから参加できます。参加相談はお問い合わせからもどうぞ。"
       },
       {
         "question": "Instagramはありますか？",
-        "answer": "フッターにリンクはありますが、サークル公式ではなく関係者個人のアカウントです。公式の連絡はContact、交流はDiscordをご利用ください。"
+        "answer": "フッターにリンクはありますが、サークル公式ではなく関係者個人のアカウントです。公式の連絡はお問い合わせ、交流はDiscordをご利用ください。"
       },
       {
         "question": "インスタある？",
-        "answer": "フッターにリンクはありますが、サークル公式ではなく関係者個人のアカウントです。公式の連絡はContact、交流はDiscordをご利用ください。"
+        "answer": "フッターにリンクはありますが、サークル公式ではなく関係者個人のアカウントです。公式の連絡はお問い合わせ、交流はDiscordをご利用ください。"
       },
       {
         "question": "LINEやXはありますか？",
-        "answer": "公式のLINEやXは案内していません。連絡はContactからどうぞ。"
+        "answer": "公式のLINEやXは案内していません。連絡はお問い合わせからどうぞ。"
       },
       {
         "question": "メールで問い合わせできますか？",
-        "answer": "Contactのフォームから送信できます。"
+        "answer": "お問い合わせのフォームから送信できます。"
       },
       {
         "question": "メンバーは何人いますか？",
-        "answer": "メンバー名簿や正確な人数は公開していません。参加や相談はContactのフォームからどうぞ。"
+        "answer": "メンバー名簿や正確な人数は公開していません。参加や相談はお問い合わせのフォームからどうぞ。"
       },
       {
         "question": "メンバーは何人ですか？",
-        "answer": "メンバー名簿や正確な人数は公開していません。参加や相談はContactのフォームからどうぞ。"
+        "answer": "メンバー名簿や正確な人数は公開していません。参加や相談はお問い合わせのフォームからどうぞ。"
       },
       {
         "question": "メンバーを教えて",
-        "answer": "メンバー名簿は公開していません。参加や相談はContactのフォームからどうぞ。"
+        "answer": "メンバー名簿は公開していません。参加や相談はお問い合わせのフォームからどうぞ。"
       },
       {
         "question": "メンバーは誰？",
-        "answer": "メンバー名簿は公開していません。参加や相談はContactのフォームからどうぞ。"
+        "answer": "メンバー名簿は公開していません。参加や相談はお問い合わせのフォームからどうぞ。"
       },
       {
         "question": "誰がいる？",
-        "answer": "メンバー名簿は公開していません。参加や相談はContactのフォームからどうぞ。"
+        "answer": "メンバー名簿は公開していません。参加や相談はお問い合わせのフォームからどうぞ。"
       }
     ],
-    "relatedPageIds": ["about", "home"]
+    "relatedPageIds": [
+      "about",
+      "home"
+    ]
   },
   {
     "id": "game-community",
     "route": "/game-community",
-    "title": "Game Community",
+    "title": "ゲームコミュニティ",
     "summary": "VALORANT、APEX、Minecraftなどを気軽に楽しむゲームコミュニティの紹介です。",
-    "audiences": ["visitor", "member"],
+    "audiences": [
+      "visitor",
+      "member"
+    ],
     "keywords": [
       "ゲーム",
       "VALORANT",
@@ -514,7 +613,8 @@
       "聞き専",
       "パーティ",
       "ランク",
-      "カジュアル"
+      "カジュアル",
+      "Game Community"
     ],
     "faqs": [
       {
@@ -523,17 +623,23 @@
       },
       {
         "question": "ゲーム初心者でも参加できますか？",
-        "answer": "はい。VALORANTは初心者でもパーティ参加しやすく、MinecraftはFPSが苦手な人でも交流しやすいです。詳細はGame Communityで確認できます。"
+        "answer": "はい。VALORANTは初心者でもパーティ参加しやすく、MinecraftはFPSが苦手な人でも交流しやすいです。詳細はゲームコミュニティで確認できます。"
       }
     ],
-    "relatedPageIds": ["about", "contact"]
+    "relatedPageIds": [
+      "about",
+      "contact"
+    ]
   },
   {
     "id": "weekly-math",
     "route": "/weekly-math",
     "title": "今週の数学",
     "summary": "公開されている数学問題の一覧です。各問題の詳細は一覧から開いて確認できます。",
-    "audiences": ["visitor", "member"],
+    "audiences": [
+      "visitor",
+      "member"
+    ],
     "keywords": [
       "数学",
       "問題",
@@ -564,14 +670,20 @@
         "answer": "ヒントがある問題は、今週の数学の各問題ページで確認できます。ここではヒント本文も書きません。"
       }
     ],
-    "relatedPageIds": ["home", "contact"]
+    "relatedPageIds": [
+      "home",
+      "contact"
+    ]
   },
   {
     "id": "table-tennis",
     "route": "/app/table-tennis",
     "title": "Table Tennis Match Maker",
     "summary": "参加人数と試合数から卓球の対戦組み合わせを作るアプリです。",
-    "audiences": ["visitor", "member"],
+    "audiences": [
+      "visitor",
+      "member"
+    ],
     "keywords": [
       "卓球",
       "試合",
@@ -587,17 +699,22 @@
       },
       {
         "question": "卓球の対戦表アプリはどこですか？",
-        "answer": "Table Tennis Match Maker です。Appsから利用できます。"
+        "answer": "Table Tennis Match Maker です。アプリから利用できます。"
       }
     ],
-    "relatedPageIds": ["apps"]
+    "relatedPageIds": [
+      "apps"
+    ]
   },
   {
     "id": "color-sort",
     "route": "/app/color-sort",
     "title": "Color Sort Puzzle",
     "summary": "ボトル内の色をそろえるカラーソートパズルです。",
-    "audiences": ["visitor", "member"],
+    "audiences": [
+      "visitor",
+      "member"
+    ],
     "keywords": [
       "カラーソート",
       "パズル",
@@ -610,21 +727,26 @@
     "faqs": [
       {
         "question": "色をそろえるパズルはどこですか？",
-        "answer": "Color Sort Puzzle です。Appsから遊べます。"
+        "answer": "Color Sort Puzzle です。アプリから遊べます。"
       },
       {
         "question": "暇つぶしできるゲームアプリはある？",
         "answer": "ボトルの色をそろえる Color Sort Puzzle をブラウザで遊べます。"
       }
     ],
-    "relatedPageIds": ["apps"]
+    "relatedPageIds": [
+      "apps"
+    ]
   },
   {
     "id": "cli-practice",
     "route": "/app/cli-practice",
     "title": "CLI Practice",
     "summary": "ブラウザ上でGit、npm、デプロイなどのコマンドライン操作を練習できます。",
-    "audiences": ["visitor", "member"],
+    "audiences": [
+      "visitor",
+      "member"
+    ],
     "keywords": [
       "CLI",
       "コマンドライン",
@@ -647,6 +769,9 @@
         "answer": "はい。CLI Practice では git・npm・デプロイの流れを安全に体験できます。"
       }
     ],
-    "relatedPageIds": ["apps", "development"]
+    "relatedPageIds": [
+      "apps",
+      "development"
+    ]
   }
 ]

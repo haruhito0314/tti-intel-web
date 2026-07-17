@@ -133,7 +133,7 @@ describe('Web開発学習サイト公開のお知らせ', () => {
 
         const contactLink = screen.getByRole('link', { name: 'お問い合わせページ' });
         expect(contactLink).toHaveAttribute('href', '/contact');
-        expect(contactLink).toHaveClass('text-[#0066CC]');
+        expect(contactLink).toHaveClass('text-[#0071E3]');
         expect(contactLink).not.toHaveClass('bg-[#0066CC]', 'w-full');
     });
 });

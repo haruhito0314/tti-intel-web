@@ -98,11 +98,11 @@ describe('parseAssistantRequest', () => {
 describe('validateModelGuideResponse', () => {
   it('parses and trims a valid model response', () => {
     expect(validateModelGuideResponse({
-      answer: '  今週の数学はNewsから確認できます。  ',
+      answer: '  今週の数学はお知らせから確認できます。  ',
       pageIds: ['news', 'weekly-math'],
     contentIds: [],
     })).toEqual({
-      answer: '今週の数学はNewsから確認できます。',
+      answer: '今週の数学はお知らせから確認できます。',
       pageIds: ['news', 'weekly-math'],
     contentIds: [],
     });

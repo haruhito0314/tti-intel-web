@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
-import { Card, CardContent } from '@/components/ui';
 import { PageSeo } from '@/components/PageSeo';
-import { Check, ChevronDown, Calendar } from 'lucide-react';
+import { Calendar, ChevronDown, MapPin } from 'lucide-react';
 import { useState } from 'react';
 import { useTheme } from '@/contexts/useTheme';
 
@@ -13,7 +12,7 @@ const activityShowcases = [
             light: '/images/about/activity-video-light.webp',
             dark: '/images/about/activity-video-dark.webp',
         },
-        imageAlt: '動画編集用のモニター、マイク、キーボード、トラックパッド',
+        imageAlt: '動画編集用のモニター、マイク、キーボード',
         actions: [
             {
                 label: 'YouTubeを見る',
@@ -122,15 +121,14 @@ export function About() {
     return (
         <div className="animate-fade-in">
             <PageSeo
-                title="About Us | TTI Intelligence"
+                title="サークルについて | TTI Intelligence"
                 description="TTI Intelligenceの活動内容、参加条件、開催予定、よくある質問を紹介します。"
             />
-            {/* Hero Section */}
             <section className="about-band-hero relative overflow-hidden">
                 <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
                     <div className="text-center">
                         <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] mb-5">
-                            About <span className="gradient-text">TTI Intelligence</span>
+                            サークルについて
                         </h1>
                         <p className="apple-body text-pretty text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] max-w-[36em] mx-auto leading-[1.8]">
                             私たちは豊田工業大学の学生を中心としたAIサークルです。
@@ -196,104 +194,65 @@ export function About() {
                 </div>
             </section>
 
-            {/* Next Event */}
-            <section className="about-band-gray max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-                <Card variant="default" className="overflow-hidden !bg-transparent dark:!bg-transparent border-[#D2D2D7]/60 dark:border-white/10 shadow-none">
-                    <div className="flex flex-col md:flex-row">
-                        <div className="md:w-[42%] p-6 md:p-8 flex items-center justify-center border-b md:border-b-0 md:border-r border-[#D2D2D7]/60 dark:border-white/10">
-                            <div className="relative w-full max-w-[280px] overflow-hidden rounded-3xl bg-white/45 dark:bg-white/[0.03] border border-[#D2D2D7]/60 dark:border-white/10 p-6">
-                                <div className="absolute right-5 top-5 h-12 w-12 rounded-full bg-[#E8EEF9] dark:bg-[#1D2A42]" />
-                                <div className="absolute left-6 bottom-6 h-8 w-8 rounded-full bg-[#D8E3FA] dark:bg-[#233B68]" />
-                                <div className="relative z-10 flex min-h-[260px] flex-col justify-between gap-7">
-                                    <div className="min-w-0">
-                                        <p className="text-[11px] font-semibold tracking-[0.3em] text-[#8AA0C1] dark:text-[#7FA7E8]">
-                                            NEXT EVENT
-                                        </p>
-                                        <p className="mt-2 text-[clamp(22px,7vw,28px)] font-semibold tracking-[-0.03em] leading-tight text-[#0B1B35] dark:text-[#F5F7FB]">
-                                            次回イベント
-                                        </p>
-                                        <div className="mt-4 h-0.5 w-16 bg-[#5A86F7] dark:bg-[#7FA7FF]" />
-                                    </div>
-                                    <div className="relative ml-auto h-[116px] w-[116px] shrink-0 rounded-[28px] border border-[#DCE5F6] dark:border-white/10 bg-white/85 dark:bg-[#151D2C] shadow-[0_14px_35px_rgba(32,73,145,0.12)] dark:shadow-none">
-                                        <div className="h-9 rounded-t-[28px] bg-[#AFC3FA] dark:bg-[#355AAB]" />
-                                        <div className="grid grid-cols-4 gap-2 p-4">
-                                            {Array.from({ length: 12 }).map((_, index) => (
-                                                <span
-                                                    key={index}
-                                                    className={`h-3 rounded-[4px] ${
-                                                        index === 7
-                                                            ? 'bg-[#5D7DF4] dark:bg-[#7FA7FF]'
-                                                            : 'bg-[#E8EEF8] dark:bg-[#26344D]'
-                                                    }`}
-                                                />
-                                            ))}
-                                        </div>
-                                        <div className="absolute -bottom-3 -right-3 flex h-12 w-12 items-center justify-center rounded-full bg-[#5D7DF4] dark:bg-[#7FA7FF] text-white dark:text-[#071225] shadow-[0_10px_22px_rgba(74,105,230,0.34)]">
-                                            <Check className="h-7 w-7 stroke-[3]" />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <CardContent className="flex-1 p-8">
-                            <h3 className="apple-title text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
-                                {nextEvent.title}
-                            </h3>
-                            <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-4">
-                                {nextEvent.description}
-                            </p>
-                            <div className="flex flex-wrap gap-4 text-sm">
-                                <div className="flex items-center gap-2 text-[#0071E3] dark:text-[#66B4FF]">
-                                    <Calendar className="w-4 h-4" />
-                                    {nextEvent.date}
-                                </div>
-                                <div className="flex items-center gap-2 text-[#86868B] dark:text-[rgba(235,235,245,0.3)]">
-                                    📍 {nextEvent.location}
-                                </div>
-                            </div>
-                        </CardContent>
+            <div className="about-band-soft">
+                <section className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-16">
+                    <p className="text-[13px] font-semibold tracking-[0.04em] text-[#0071E3] dark:text-[#5CABFF] mb-3">
+                        次回の取り組み
+                    </p>
+                    <h2 className="text-[24px] sm:text-[28px] font-semibold tracking-[-0.03em] text-[#1D1D1F] dark:text-[#F5F5F7] mb-3 leading-[1.15]">
+                        {nextEvent.title}
+                    </h2>
+                    <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.66)] mb-5 max-w-[36em]">
+                        {nextEvent.description}
+                    </p>
+                    <div className="flex flex-wrap gap-x-5 gap-y-2 text-[14px] text-[#515154] dark:text-[rgba(235,235,245,0.7)]">
+                        <span className="inline-flex items-center gap-2">
+                            <Calendar className="w-4 h-4 text-[#0071E3] dark:text-[#5CABFF]" aria-hidden="true" />
+                            {nextEvent.date}
+                        </span>
+                        <span className="inline-flex items-center gap-2">
+                            <MapPin className="w-4 h-4 text-[#0071E3] dark:text-[#5CABFF]" aria-hidden="true" />
+                            {nextEvent.location}
+                        </span>
                     </div>
-                </Card>
-            </section>
+                </section>
 
-            {/* FAQ */}
-            <section className="about-band-white max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-                <h2 className="apple-section text-[#1D1D1F] dark:text-[#F5F5F7] text-center mb-10">
-                    よくある質問
-                </h2>
-                <div className="space-y-4">
-                    {faqs.map((faq, index) => (
-                        <Card
-                            key={index}
-                            variant="default"
-                            padding="none"
-                            className="overflow-hidden"
-                        >
-                            <button
-                                onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                                className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-[#F5F5F7] dark:hover:bg-[#1C1C1E] transition-colors"
-                            >
-                                <span className="font-medium text-[#1D1D1F] dark:text-[#F5F5F7]">
-                                    {faq.question}
-                                </span>
-                                <ChevronDown
-                                    className={`w-5 h-5 text-[#86868B] dark:text-[rgba(235,235,245,0.3)] transition-transform duration-300 ${openFaq === index ? 'rotate-180' : ''
+                <section className="max-w-[720px] mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-16 border-t border-black/10 dark:border-white/10">
+                    <h2 className="text-[24px] sm:text-[28px] font-semibold tracking-[-0.03em] text-[#1D1D1F] dark:text-[#F5F5F7] text-center mb-8">
+                        よくある質問
+                    </h2>
+                    <div className="divide-y divide-black/10 dark:divide-white/12">
+                        {faqs.map((faq, index) => (
+                            <div key={faq.question}>
+                                <button
+                                    type="button"
+                                    onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                                    className="w-full py-4 flex items-center justify-between gap-4 text-left"
+                                    aria-expanded={openFaq === index}
+                                >
+                                    <span className="font-medium text-[#1D1D1F] dark:text-[#F5F5F7]">
+                                        {faq.question}
+                                    </span>
+                                    <ChevronDown
+                                        className={`w-5 h-5 shrink-0 text-[#86868B] dark:text-[rgba(235,235,245,0.35)] transition-transform duration-300 ${
+                                            openFaq === index ? 'rotate-180' : ''
                                         }`}
-                                />
-                            </button>
-                            <div
-                                className={`overflow-hidden transition-all duration-300 ease-in-out ${openFaq === index ? 'max-h-96' : 'max-h-0'
+                                    />
+                                </button>
+                                <div
+                                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                                        openFaq === index ? 'max-h-96 pb-4' : 'max-h-0'
                                     }`}
-                            >
-                                <p className="px-6 pb-5 pt-1 apple-body text-pretty leading-[1.75] text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
-                                    {faq.answer}
-                                </p>
+                                >
+                                    <p className="apple-body text-pretty leading-[1.75] text-[#6E6E73] dark:text-[rgba(235,235,245,0.66)]">
+                                        {faq.answer}
+                                    </p>
+                                </div>
                             </div>
-                        </Card>
-                    ))}
-                </div>
-            </section>
-
+                        ))}
+                    </div>
+                </section>
+            </div>
         </div>
     );
 }

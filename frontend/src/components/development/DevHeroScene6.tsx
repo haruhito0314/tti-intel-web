@@ -26,7 +26,7 @@ const WorkflowCard = forwardRef<HTMLDivElement, WorkflowCardProps>(function Work
             className={`dev-workflow-card dev-glass-card dev-workflow-card--${index}`}
             style={{
                 ['--layer-accent' as string]: step.accent,
-                ...enterSlideY(reveal, 20),
+                ...enterSlideY(reveal, 26, 0.95),
             }}
         >
             <div className="dev-workflow-card-accent" />
@@ -173,6 +173,7 @@ function ConnectorSegment({ d, gradientId, defaultTip, progress, glowId }: Conne
 
     const { pathLength, tip } = segmentMetrics;
     const clamped = Math.min(1, Math.max(0, progress));
+    const pulseReady = clamped >= 0.98;
 
     return (
         <>
@@ -190,6 +191,19 @@ function ConnectorSegment({ d, gradientId, defaultTip, progress, glowId }: Conne
                 opacity={clamped > 0 ? 1 : 0}
                 filter={clamped > 0 ? `url(#${glowId})` : undefined}
             />
+            {pulseReady && (
+                <path
+                    d={d}
+                    className="dev-workflow-connector-pulse"
+                    fill="none"
+                    stroke="rgba(255, 255, 255, 0.92)"
+                    strokeWidth="3.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeDasharray={`${Math.max(18, pathLength * 0.18)} ${pathLength}`}
+                    pathLength={pathLength}
+                />
+            )}
             {clamped > 0.02 && (
                 <g
                     className="dev-workflow-connector-head"

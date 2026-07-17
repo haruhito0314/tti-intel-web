@@ -242,22 +242,22 @@ describe('createAssistantApi', () => {
         ['4 links', {
             ...response,
             links: [
-                { pageId: 'home', title: 'Home', href: '/' },
+                { pageId: 'home', title: 'ホーム', href: '/' },
                 { pageId: 'about', title: 'About', href: '/about' },
-                { pageId: 'news', title: 'News', href: '/news' },
-                { pageId: 'apps', title: 'Apps', href: '/app' },
+                { pageId: 'news', title: 'お知らせ', href: '/news' },
+                { pageId: 'apps', title: 'アプリ', href: '/app' },
             ],
         }],
         ['duplicate href', {
             ...response,
             links: [
-                { pageId: 'news', title: 'News', href: '/news' },
+                { pageId: 'news', title: 'お知らせ', href: '/news' },
                 { pageId: 'about', title: 'About', href: '/news' },
             ],
         }],
         ['empty pageId', {
             ...response,
-            links: [{ pageId: '   ', title: 'News', href: '/news' }],
+            links: [{ pageId: '   ', title: 'お知らせ', href: '/news' }],
         }],
         ['empty title', {
             ...response,
@@ -282,7 +282,7 @@ describe('createAssistantApi', () => {
         ['extra response property', { ...response, internal: 'secret' }],
         ['extra link property', {
             ...response,
-            links: [{ pageId: 'news', title: 'News', href: '/news', external: true }],
+            links: [{ pageId: 'news', title: 'お知らせ', href: '/news', external: true }],
         }],
     ])('rejects %s', async (_caseName, invalidResponse) => {
         const fetchMock = vi.fn().mockResolvedValue(jsonResponse(invalidResponse));
@@ -306,7 +306,7 @@ describe('createAssistantApi', () => {
                     title: 'Discord',
                     href: 'https://discord.gg/DFWs8GrHxF',
                 },
-                { pageId: 'contact', title: 'Contact', href: '/contact' },
+                { pageId: 'contact', title: 'お問い合わせ', href: '/contact' },
             ],
         }));
         const client = createAssistantApi({
@@ -322,7 +322,7 @@ describe('createAssistantApi', () => {
                     title: 'Discord',
                     href: 'https://discord.gg/DFWs8GrHxF',
                 },
-                { pageId: 'contact', title: 'Contact', href: '/contact' },
+                { pageId: 'contact', title: 'お問い合わせ', href: '/contact' },
             ],
         });
     });
@@ -331,7 +331,7 @@ describe('createAssistantApi', () => {
         const fetchMock = vi.fn().mockResolvedValue(jsonResponse({
             answer: '  固定ページを案内します。  ',
             links: [
-                { pageId: 'home', title: 'Home', href: '/' },
+                { pageId: 'home', title: 'ホーム', href: '/' },
                 { pageId: 'table-tennis', title: 'Table Tennis', href: '/app/table-tennis' },
             ],
         }));
@@ -343,7 +343,7 @@ describe('createAssistantApi', () => {
         await expect(client.send(request)).resolves.toEqual({
             answer: '固定ページを案内します。',
             links: [
-                { pageId: 'home', title: 'Home', href: '/' },
+                { pageId: 'home', title: 'ホーム', href: '/' },
                 { pageId: 'table-tennis', title: 'Table Tennis', href: '/app/table-tennis' },
             ],
         });

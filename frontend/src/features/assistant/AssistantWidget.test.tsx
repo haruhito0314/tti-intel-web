@@ -39,8 +39,8 @@ import type {
 } from './types';
 
 const response: AssistantResponse = {
-    answer: 'About Usで活動内容を確認できます。',
-    links: [{ pageId: 'about', title: 'About Us', href: '/about' }],
+    answer: 'サークルについてで活動内容を確認できます。',
+    links: [{ pageId: 'about', title: 'サークルについて', href: '/about' }],
 };
 const assistantCssSource = readFileSync(
     resolve(cwd(), 'src/features/assistant/assistant.css'),
@@ -845,7 +845,7 @@ describe('AssistantWidget', () => {
             /\.assistant-root\s*\{[^}]*right:\s*max\(20px,\s*env\(safe-area-inset-right,\s*0px\)\);[^}]*bottom:\s*max\(24px,\s*env\(safe-area-inset-bottom,\s*0px\)\);/s,
         );
         expect(assistantCssSource).toMatch(
-            /\.assistant-trigger\s*\{[^}]*width:\s*64px;[^}]*height:\s*64px;/s,
+            /\.assistant-trigger\s*\{[^}]*width:\s*48px;[^}]*height:\s*48px;/s,
         );
         expect(assistantCssSource).toMatch(
             /\.assistant-panel\s*\{[^}]*bottom:\s*10px;[^}]*width:\s*min\(387px,\s*calc\(100vw - 2\.5rem\)\);[^}]*height:\s*min\(594px,\s*calc\(100dvh - 50px\)\);/s,
@@ -854,7 +854,7 @@ describe('AssistantWidget', () => {
             /@media\s*\(max-width:\s*767px\)[\s\S]*\.assistant-root-open\s*\{[^}]*z-index:\s*110;/,
         );
         expect(assistantCssSource).toMatch(
-            /@media\s*\(max-width:\s*767px\)[\s\S]*\.assistant-trigger\s*\{[^}]*right:\s*max\(20px,\s*env\(safe-area-inset-right,\s*0px\)\);[^}]*bottom:\s*max\(24px,\s*env\(safe-area-inset-bottom,\s*0px\)\);[^}]*width:\s*64px;[^}]*height:\s*64px;/,
+            /@media\s*\(max-width:\s*767px\)[\s\S]*\.assistant-trigger\s*\{[^}]*right:\s*max\(20px,\s*env\(safe-area-inset-right,\s*0px\)\);[^}]*bottom:\s*max\(24px,\s*env\(safe-area-inset-bottom,\s*0px\)\);[^}]*width:\s*48px;[^}]*height:\s*48px;/,
         );
         expect(assistantCssSource).toMatch(
             /\.assistant-trigger\[hidden\]\s*\{[^}]*display:\s*none;/s,

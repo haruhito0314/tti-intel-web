@@ -5,8 +5,8 @@ import { DevHeroCopy } from './DevHeroCopy';
 import { chapterShellStyle, enterSlideY, isSectionEnterComplete } from './devEnterStyle';
 import { getChapterLocal, getChapterOpacity } from './devScrollMath';
 import { scene4StepReveal } from './devSceneMotion';
-import { SCENE_RANGES } from './devScrollConfig';
 import { AI_TOOLS } from './sceneUtils';
+import { CHAPTER4_ZOOM_SOURCE_HIDE } from './devZoomTiming';
 import { TechBrandIcon } from './TechBrandIcon';
 import { useDevMobileLayout } from './useDevMobileLayout';
 
@@ -15,7 +15,6 @@ type DevHeroScene4Props =
     | { chapterIndex: number; progress: number; copyIndex?: never; sourceRef?: RefObject<HTMLDivElement | null> };
 
 const CTA_STEP = 9;
-const ZOOM_START = SCENE_RANGES[3][1] - 0.024;
 const DESKTOP_TOOL_GRID_WIDTH = 920;
 const DESKTOP_TOOL_GRID_HEIGHT = 252;
 const TOOL_ACCENTS = [
@@ -46,7 +45,7 @@ export function DevHeroScene4(props: DevHeroScene4Props) {
     const headerReveal = frozen ? 1 : scene4StepReveal(local, 1);
     const copyReveal = frozen ? 1 : scene4StepReveal(local, 2);
     const ctaReveal = frozen ? 1 : scene4StepReveal(local, CTA_STEP);
-    const sourceVisible = !isScroll || mobileLayout || props.progress < ZOOM_START;
+    const sourceVisible = !isScroll || mobileLayout || props.progress < CHAPTER4_ZOOM_SOURCE_HIDE;
     const setSourceShell = useCallback((node: HTMLDivElement | null) => {
         sourceShellRef.current = node;
         if (isScroll && props.sourceRef) {
@@ -110,8 +109,8 @@ export function DevHeroScene4(props: DevHeroScene4Props) {
                                         className="dev-browser-tool-copy"
                                         style={enterSlideY(copyReveal, 10)}
                                     >
-                                        <strong>AI・開発ツール。</strong>
-                                        <span>開発の相棒として、日々使っているツールです。</span>
+                                        <strong>毎日使っている相棒。</strong>
+                                        <span>実装もレビューも、これらのツールと並走しています。</span>
                                     </div>
 
                                     <div

@@ -1,5 +1,5 @@
 /** Contiguous chapter spans — sum = 1, no gap dead zones */
-const CHAPTER_SPANS = [0.13, 0.25, 0.11, 0.10, 0.12, 0.13, 0.16] as const;
+const CHAPTER_SPANS = [0.15, 0.2, 0.13, 0.12, 0.13, 0.15, 0.12] as const;
 
 function buildRanges(): readonly (readonly [number, number])[] {
     const ranges: [number, number][] = [];
@@ -13,23 +13,27 @@ function buildRanges(): readonly (readonly [number, number])[] {
 
 export const SCENE_RANGES = buildRanges();
 
-export const DEV_TRACK_HEIGHT_VH = 1280;
-export const DEV_TRACK_HEIGHT_MOBILE_VH = 1200;
+/**
+ * Track height for the scroll-driven showcase.
+ * Long enough for staggered enters to read, short enough to avoid dead holds.
+ */
+export const DEV_TRACK_HEIGHT_VH = 1160;
+export const DEV_TRACK_HEIGHT_MOBILE_VH = 1080;
 
 /** Short crossfade at chapter edges — sole opacity transition */
-export const CHAPTER_BOUNDARY_FADE = 0.006;
+export const CHAPTER_BOUNDARY_FADE = 0.007;
 
 /** Within a chapter: enter finishes by this local, then hold until chapter end */
-export const CHAPTER_ENTER_END = 0.72;
+export const CHAPTER_ENTER_END = 0.84;
 
-/** Sections 3, 4 — finish enters earlier → more scroll dwell after full reveal */
-export const CHAPTER_ENTER_END_HOLD = 0.58;
+/** Sections 3, 4, 6 — finish enters a bit earlier, ambient motion carries the hold */
+export const CHAPTER_ENTER_END_HOLD = 0.74;
 
-/** Section 6 — slower arrows need a later enter cap, then hold */
-export const CHAPTER_ENTER_END_WORKFLOW = 0.7;
+/** Section 6 — arrows need a later enter cap, then hold */
+export const CHAPTER_ENTER_END_WORKFLOW = 0.82;
 
-/** Final CTA chapter — finish enter early, long scroll hold */
-export const CHAPTER_ENTER_END_FINALE = 0.34;
+/** Final CTA chapter — settle early, then hold with ambient motion */
+export const CHAPTER_ENTER_END_FINALE = 0.42;
 
 const EXTENDED_HOLD_CHAPTERS = new Set([2, 3, 5]);
 

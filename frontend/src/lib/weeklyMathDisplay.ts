@@ -13,15 +13,29 @@ export function getWeeklyMathAccentClasses(index: number): string {
     return WEEKLY_MATH_ACCENT_CLASSES[index % WEEKLY_MATH_ACCENT_CLASSES.length];
 }
 
-export function toWeeklyMathPreviewText(markdown: string): string {
-    return markdown
+const READABLE_CHAR = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}A-Za-z]/u;
+
+/**
+ * List-card preview: keep prose only. Math is stripped entirely so half-rendered
+ * LaTeX (e.g. a_0, \frac remnants) never appears in the list.
+ */
+export function toWeeklyMathPreviewText(markdown: string, maxLength = 120): string {
+    const text = markdown
         .replace(/\$\$[\s\S]*?\$\$/g, ' ')
         .replace(/\$[^$\n]*\$/g, ' ')
         .replace(/\\\[[\s\S]*?\\\]/g, ' ')
-        .replace(/\\\(([\s\S]*?)\\\)/g, '$1')
-        .replace(/\\[a-zA-Z]+/g, ' ')
-        .replace(/[*_`>#-]/g, ' ')
-        .replace(/[{}$\\]/g, ' ')
+        .replace(/\\\([\s\S]*?\\\)/g, ' ')
+        .replace(/\\begin\{[^}]+\}[\s\S]*?\\end\{[^}]+\}/g, ' ')
+        .replace(/\\[a-zA-Z]+\*?/g, ' ')
+        .replace(/[*_`>#~|]/g, ' ')
+        .replace(/[{}$\\_^]/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
+
+    const readableCount = (text.match(new RegExp(READABLE_CHAR.source, 'gu')) || []).length;
+    if (readableCount < 12) return '';
+
+    const chars = Array.from(text);
+    if (chars.length <= maxLength) return text;
+    return `${chars.slice(0, maxLength - 1).join('')}…`;
 }

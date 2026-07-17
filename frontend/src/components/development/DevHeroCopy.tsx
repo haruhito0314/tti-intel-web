@@ -21,53 +21,51 @@ const COPY_BLOCKS = [
                 つくる力は、AIで<span className="dev-gradient-text">加速する</span>。
             </>
         ),
-        subtitle: 'TTI Intelligenceの開発は、最新のAIコーディングツールとの対話から始まります。',
+        subtitle: '最新のAIコーディングツールと対話しながら、アイデアをそのまま形にしています。',
         headingLevel: 'h1' as const,
         large: true,
     },
     {
         title: 'モダンな技術スタック。',
-        subtitle: 'Webからネイティブアプリまで、プロジェクトに合わせて選んでいます。',
+        subtitle: 'Webもアプリも、そのときの最適解を選んで積み上げています。',
         headingLevel: 'h2' as const,
         large: false,
     },
     {
         title: (
             <>
-                <span className="dev-gradient-text">MCP</span>で、AIの手が届く範囲を広げる。
+                <span className="dev-gradient-text">MCP</span>で、AIの手を伸ばす。
             </>
         ),
-        subtitle:
-            'MCP（Model Context Protocol）は、AIとツールをつなぐ共通規格。コードの編集からブラウザ操作まで、AIが開発環境そのものを扱えるようにしています。',
+        subtitle: 'コード編集からブラウザ操作まで。AIが開発環境そのものを扱えるようにしています。',
         headingLevel: 'h2' as const,
         large: false,
     },
     {
-        title: 'このページも、私たちの作品です。',
-        subtitle:
-            'いまスクロールしてきたこの体験も、サークルメンバーがAIとともに設計・実装したもの。次は、あなたのアイデアを形にしませんか。',
+        title: 'このページも、作品です。',
+        subtitle: 'いまのスクロール体験も、メンバーとAIで設計・実装したもの。次はあなたの番です。',
         headingLevel: 'h2' as const,
         large: false,
     },
     {
-        title: 'AI・開発ツール。',
-        subtitle: '開発の相棒として、日々使っているツールです。',
+        title: '毎日使っている相棒。',
+        subtitle: '実装もレビューも、これらのツールと並走しています。',
         headingLevel: 'h2' as const,
         large: false,
     },
     {
         title: (
             <>
-                AIと開発する、私たちの<span className="dev-gradient-text">進め方</span>。
+                AIと進める、私たちの<span className="dev-gradient-text">作法</span>。
             </>
         ),
-        subtitle: '「AIに全部任せる」のではなく、判断と設計は人間が握る。それが私たちのスタイルです。',
+        subtitle: '任せるのは作業。判断と設計は人が握る。それが私たちのスタイルです。',
         headingLevel: 'h2' as const,
         large: false,
     },
     {
         title: '次は、あなたの番。',
-        subtitle: '未経験でも大丈夫。1から全部サポートします。まずは気軽に覗いてみてください。',
+        subtitle: '未経験でも大丈夫。まずは気軽に覗いてみてください。',
         headingLevel: 'h2' as const,
         large: false,
     },
@@ -139,6 +137,7 @@ function DevHeroCopyScroll({
                             opacity,
                             visibility: opacity > 0.04 ? 'visible' : 'hidden',
                             pointerEvents: isActive ? 'auto' : 'none',
+                            transform: `translateY(${((1 - opacity) * 14).toFixed(1)}px)`,
                         }}
                         aria-hidden={!isActive}
                     >

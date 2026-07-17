@@ -12,14 +12,14 @@ import type {
 } from './types.js';
 
 export const KNOWN_PAGE_ROUTES = {
-  home: { title: 'Home', href: '/' },
-  about: { title: 'About Us', href: '/about' },
-  news: { title: 'News', href: '/news' },
-  apps: { title: 'Apps', href: '/app' },
-  development: { title: 'Development', href: '/development' },
-  board: { title: 'Board', href: '/board' },
-  contact: { title: 'Contact', href: '/contact' },
-  'game-community': { title: 'Game Community', href: '/game-community' },
+  home: { title: 'ホーム', href: '/' },
+  about: { title: 'サークルについて', href: '/about' },
+  news: { title: 'お知らせ', href: '/news' },
+  apps: { title: 'アプリ', href: '/app' },
+  development: { title: '開発について', href: '/development' },
+  board: { title: '掲示板', href: '/board' },
+  contact: { title: 'お問い合わせ', href: '/contact' },
+  'game-community': { title: 'ゲームコミュニティ', href: '/game-community' },
   'weekly-math': { title: '今週の数学', href: '/weekly-math' },
   'table-tennis': { title: 'Table Tennis Match Maker', href: '/app/table-tennis' },
   'color-sort': { title: 'Color Sort Puzzle', href: '/app/color-sort' },
@@ -291,7 +291,7 @@ export function createVerifiedLinks(
   options: { includeDiscord?: boolean } = {},
 ): AssistantLink[] {
   const allowedPageIds = new Set<PageId>([
-    ...selected.map(({ entry }) => entry.id),
+    ...selected.flatMap(({ entry }) => [entry.id, ...entry.relatedPageIds]),
     ...selectedContent.map(({ entry }) => entry.parentPageId),
     'contact',
   ]);

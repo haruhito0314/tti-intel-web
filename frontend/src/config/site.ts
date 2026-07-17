@@ -4,6 +4,17 @@
  * Future: Can be migrated to DynamoDB SiteSettings table
  */
 
+export type SiteNavChild = {
+    name: string;
+    href: string;
+};
+
+export type SiteNavItem = {
+    name: string;
+    href: string;
+    children?: readonly SiteNavChild[];
+};
+
 export const siteConfig = {
     name: 'TTI Intelligence',
     shortName: 'TTI Intelligence',
@@ -12,13 +23,22 @@ export const siteConfig = {
 
     // Navigation links
     navigation: [
-        { name: 'Home', href: '/' },
-        { name: 'About Us', href: '/about' },
-        { name: 'News', href: '/news' },
-        { name: 'Apps', href: '/app' },
-        { name: 'Board', href: '/board' },
-        { name: 'Contact', href: '/contact' },
-    ],
+        { name: 'ホーム', href: '/' },
+        { name: 'サークルについて', href: '/about' },
+        {
+            name: '活動',
+            href: '/weekly-math',
+            children: [
+                { name: '今週の数学', href: '/weekly-math' },
+                { name: 'アプリ', href: '/app' },
+                { name: 'ゲームコミュニティ', href: '/game-community' },
+                { name: '開発について', href: '/development' },
+            ],
+        },
+        { name: 'お知らせ', href: '/news' },
+        { name: '掲示板', href: '/board' },
+        { name: 'お問い合わせ', href: '/contact' },
+    ] satisfies readonly SiteNavItem[],
 
     // Social links (can be updated without code changes in future)
     social: {
@@ -46,15 +66,16 @@ export const siteConfig = {
     // Footer links
     footerLinks: {
         menu: [
-            { name: 'Home', href: '/' },
-            { name: 'About Us', href: '/about' },
-            { name: 'Weekly Math', href: '/weekly-math' },
-            { name: 'News', href: '/news' },
-            { name: 'Apps', href: '/app' },
+            { name: 'ホーム', href: '/' },
+            { name: 'サークルについて', href: '/about' },
+            { name: '今週の数学', href: '/weekly-math' },
+            { name: 'アプリ', href: '/app' },
+            { name: 'ゲームコミュニティ', href: '/game-community' },
             { name: '開発について', href: '/development' },
-            { name: 'Board', href: '/board' },
-            { name: 'Contact', href: '/contact' },
-        ],
+            { name: 'お知らせ', href: '/news' },
+            { name: '掲示板', href: '/board' },
+            { name: 'お問い合わせ', href: '/contact' },
+        ] satisfies readonly SiteNavChild[],
     },
 } as const;
 

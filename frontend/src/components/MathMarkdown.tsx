@@ -1,4 +1,4 @@
-import { Component, type ReactNode } from 'react';
+import { Component, useLayoutEffect, useRef, type ReactNode } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -13,19 +13,68 @@ type MathMarkdownProps = {
 
 type MathMarkdownInnerProps = MathMarkdownProps;
 
+function fitKatexDisplays(root: HTMLElement) {
+    const displays = root.querySelectorAll<HTMLElement>('.katex-display');
+
+    displays.forEach((display) => {
+        const katex = display.querySelector<HTMLElement>(':scope > .katex');
+        if (!katex) return;
+
+        katex.style.transform = '';
+        katex.style.transformOrigin = '';
+        display.style.height = '';
+
+        const available = display.clientWidth;
+        const needed = katex.scrollWidth;
+        if (available <= 0 || needed <= available) return;
+
+        const scale = available / needed;
+        katex.style.transform = `scale(${scale})`;
+        katex.style.transformOrigin = 'left top';
+        display.style.height = `${katex.getBoundingClientRect().height}px`;
+    });
+}
+
 function MathMarkdownInner({ children, paragraphClassName }: MathMarkdownInnerProps) {
+    const rootRef = useRef<HTMLDivElement>(null);
+
+    useLayoutEffect(() => {
+        const root = rootRef.current;
+        if (!root) return;
+
+        let cancelled = false;
+        const run = () => {
+            if (!cancelled) fitKatexDisplays(root);
+        };
+        run();
+
+        const resizeObserver = new ResizeObserver(run);
+        resizeObserver.observe(root);
+
+        if ('fonts' in document) {
+            void document.fonts.ready.then(run);
+        }
+
+        return () => {
+            cancelled = true;
+            resizeObserver.disconnect();
+        };
+    }, [children, paragraphClassName]);
+
     return (
-        <ReactMarkdown
-            remarkPlugins={[remarkGfm, remarkMath]}
-            rehypePlugins={[rehypeKatex]}
-            components={{
-                p: ({ children: paragraphChildren }) => (
-                    <p className={paragraphClassName}>{paragraphChildren}</p>
-                ),
-            }}
-        >
-            {normalizeMathDelimiters(children)}
-        </ReactMarkdown>
+        <div ref={rootRef} className="math-markdown">
+            <ReactMarkdown
+                remarkPlugins={[remarkGfm, remarkMath]}
+                rehypePlugins={[rehypeKatex]}
+                components={{
+                    p: ({ children: paragraphChildren }) => (
+                        <p className={paragraphClassName}>{paragraphChildren}</p>
+                    ),
+                }}
+            >
+                {normalizeMathDelimiters(children)}
+            </ReactMarkdown>
+        </div>
     );
 }
 

@@ -347,6 +347,30 @@ describe('deterministic guide search', () => {
     expect(selectRelevantKnowledge('サイトの主なページは？', '/').map(
       ({ entry }) => entry.id,
     )).toContain('home');
+    expect(selectRelevantKnowledge('どんなページがあるの？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('home');
+    expect(selectRelevantKnowledge('どんなページがありますか', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('home');
+    expect(selectRelevantKnowledge('詳しい内容を教えて', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('home');
+    expect(selectRelevantKnowledge('内容教えて', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('home');
+    expect(selectRelevantKnowledge('なんのページがある？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('home');
+    expect(selectRelevantKnowledge('なんか教えてください', '/news/ai-assistant-launched').map(
+      ({ entry }) => entry.id,
+    )).toContain('home');
+    expect(selectRelevantKnowledge('何を教えることができますか？', '/news/ai-assistant-launched').map(
+      ({ entry }) => entry.id,
+    )).toContain('home');
+    expect(selectRelevantKnowledge('別の大学の人でも大丈夫なの？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('about');
   });
 
   it('resolves only known static and dynamic paths', () => {
@@ -399,7 +423,7 @@ describe('verified links', () => {
         title: 'Table Tennis Match Maker',
         href: '/app/table-tennis',
       },
-      { pageId: 'contact', title: 'Contact', href: '/contact' },
+      { pageId: 'contact', title: 'お問い合わせ', href: '/contact' },
     ]);
   });
 
@@ -445,7 +469,7 @@ describe('verified links', () => {
       },
       {
         pageId: 'board',
-        title: 'Board',
+        title: '掲示板',
         href: '/board',
       },
     ]);
@@ -464,7 +488,7 @@ describe('verified links', () => {
         title: 'Discord',
         href: DISCORD_INVITE_URL,
       },
-      { pageId: 'contact', title: 'Contact', href: '/contact' },
+      { pageId: 'contact', title: 'お問い合わせ', href: '/contact' },
     ]);
   });
 });

@@ -142,7 +142,7 @@ export function Board() {
     return (
         <div className="animate-fade-in">
             <PageSeo
-                title="Board | TTI Intelligence"
+                title="掲示板 | TTI Intelligence"
                 description="TTI Intelligenceの掲示板です。質問、相談、活動に関する投稿を確認できます。"
             />
             {/* Header */}

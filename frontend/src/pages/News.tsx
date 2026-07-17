@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Tag, ArrowRight, Pin } from 'lucide-react';
+import { ArrowRight, Pin, Search } from 'lucide-react';
 import { PageSeo } from '@/components/PageSeo';
-import { Card, CardContent, Badge, Input, Button } from '@/components/ui';
+import { Card, Badge, Input, Button } from '@/components/ui';
 
 // Dummy data for MVP
 const posts = [
@@ -41,13 +41,18 @@ const posts = [
     },
 ];
 
-const categories = ['すべて', 'お知らせ', '活動報告', 'イベント', '技術記事'];
-const allTags = [...new Set(posts.flatMap((p) => p.tags))];
-
 export function News() {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('すべて');
     const [selectedTag, setSelectedTag] = useState<string | null>(null);
+
+    const categories = useMemo(
+        () => ['すべて', ...Array.from(new Set(posts.map((post) => post.category)))],
+        [],
+    );
+    const allTags = useMemo(() => [...new Set(posts.flatMap((post) => post.tags))], []);
+    const showCategoryFilters = categories.length > 2;
+    const showTagFilters = allTags.length >= 4;
 
     const filteredPosts = posts.filter((post) => {
         const matchesSearch =
@@ -59,7 +64,6 @@ export function News() {
         return matchesSearch && matchesCategory && matchesTag;
     });
 
-    // Sort: pinned first, then by date
     const sortedPosts = [...filteredPosts].sort((a, b) => {
         if (a.pinned && !b.pinned) return -1;
         if (!a.pinned && b.pinned) return 1;
@@ -72,7 +76,6 @@ export function News() {
                 title="お知らせ・記事 | TTI Intelligence"
                 description="TTI Intelligenceの活動報告、お知らせ、イベント情報、技術記事を掲載しています。"
             />
-            {/* Header */}
             <section className="about-band-hero relative overflow-hidden">
                 <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
                     <div className="text-center">
@@ -87,11 +90,8 @@ export function News() {
             </section>
 
             <section className="about-band-white">
-                <div className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16">
-                <div className="flex flex-col lg:flex-row gap-8">
-                    {/* Main Content */}
-                    <div className="flex-1">
-                        {/* Search */}
+                <div className="max-w-[720px] mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16">
+                    {posts.length > 5 && (
                         <div className="relative mb-6">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#86868B] dark:text-[rgba(235,235,245,0.3)]" />
                             <Input
@@ -102,9 +102,10 @@ export function News() {
                                 className="pl-12"
                             />
                         </div>
+                    )}
 
-                        {/* Category Tabs */}
-                        <div className="flex flex-wrap gap-2 mb-8">
+                    {showCategoryFilters && (
+                        <div className="flex flex-wrap gap-2 mb-6">
                             {categories.map((category) => (
                                 <Button
                                     key={category}
@@ -116,101 +117,78 @@ export function News() {
                                 </Button>
                             ))}
                         </div>
+                    )}
 
-                        {/* Posts List */}
-                        <div className="space-y-6">
-                            {sortedPosts.length === 0 ? (
-                                <Card variant="default" padding="lg" className="text-center">
-                                    <p className="text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
-                                        該当する記事が見つかりませんでした
-                                    </p>
-                                </Card>
-                            ) : (
-                                sortedPosts.map((post, index) => (
-                                    <Link key={post.id} to={`/news/${post.slug}`} className="block group">
-                                        <Card
-                                            variant="elevated"
-                                            className={`${index % 2 === 0 ? 'accent-card-soft' : 'accent-card-cool'} hover:scale-[1.01] transition-transform duration-300`}
-                                        >
-                                            <CardContent className="p-6">
-                                                <div className="flex items-start justify-between gap-4">
-                                                    <div className="flex-1">
-                                                        <div className="flex items-center gap-2 mb-3">
-                                                            <Badge variant="primary">{post.category}</Badge>
-                                                            {post.pinned && (
-                                                                <Badge variant="warning" className="flex items-center gap-1">
-                                                                    <Pin className="w-3 h-3" />
-                                                                    固定
-                                                                </Badge>
-                                                            )}
-                                                        </div>
-                                                        <h2 className="apple-headline text-[#1D1D1F] dark:text-[#F5F5F7] mb-2 group-hover:text-[#0066CC] dark:group-hover:text-[#2997FF] transition-colors">
-                                                            {post.title}
-                                                        </h2>
-                                                        <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-4 line-clamp-2">
-                                                            {post.excerpt}
-                                                        </p>
-                                                        <div className="flex items-center justify-between">
-                                                            <div className="flex flex-wrap gap-2">
-                                                                {post.tags.slice(0, 3).map((tag) => (
-                                                                    <span
-                                                                        key={tag}
-                                                                        className="text-xs text-[#86868B] dark:text-[rgba(235,235,245,0.3)]"
-                                                                    >
-                                                                        #{tag}
-                                                                    </span>
-                                                                ))}
-                                                            </div>
-                                                            <time className="text-sm text-[#86868B] dark:text-[rgba(235,235,245,0.3)]">
-                                                                {post.publishedAt}
-                                                            </time>
-                                                        </div>
-                                                    </div>
-                                                    <ArrowRight className="w-5 h-5 text-[#0071E3] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-1" />
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    </Link>
-                                ))
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Sidebar */}
-                    <aside className="w-full lg:w-72">
-                        <Card variant="default" padding="none" className="accent-card-soft p-4 sm:p-6 lg:sticky lg:top-24">
-                            <h3 className="font-semibold text-[#1D1D1F] dark:text-[#F5F5F7] mb-4 flex items-center gap-2">
-                                <Tag className="w-4 h-4" />
-                                タグ
-                            </h3>
-                            <div className="flex flex-wrap items-start gap-2">
-                                {allTags.map((tag) => (
-                                    <button
-                                        key={tag}
-                                        onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
-                                        className={`
-                      max-w-full px-3 py-1 rounded-full text-sm leading-snug break-words text-left transition-all duration-200
-                      ${selectedTag === tag
-                                                ? 'bg-[#0071E3] text-white'
-                                                : 'bg-[#F5F5F7] dark:bg-[#1C1C1E] text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] hover:bg-[#E8E8ED] dark:hover:bg-[#2C2C2E]'
-                                            }
-                    `}
-                                    >
-                                        #{tag}
-                                    </button>
-                                ))}
-                            </div>
-                            {selectedTag && (
+                    {showTagFilters && (
+                        <div className="flex flex-wrap gap-2 mb-8">
+                            {allTags.map((tag) => (
                                 <button
-                                    onClick={() => setSelectedTag(null)}
-                                    className="mt-4 text-sm text-[#0066CC] dark:text-[#2997FF] hover:underline"
+                                    key={tag}
+                                    type="button"
+                                    onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
+                                    className={`
+                      px-3 py-1 rounded-full text-sm transition-all duration-200
+                      ${selectedTag === tag
+                                            ? 'bg-[#0071E3] text-white'
+                                            : 'bg-[#F5F5F7] dark:bg-[#1C1C1E] text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] hover:bg-[#E8E8ED] dark:hover:bg-[#2C2C2E]'
+                                        }
+                    `}
                                 >
-                                    タグをクリア
+                                    #{tag}
                                 </button>
-                            )}
-                        </Card>
-                    </aside>
-                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    <div className="space-y-0 divide-y divide-black/8 dark:divide-white/10">
+                        {sortedPosts.length === 0 ? (
+                            <Card variant="default" padding="lg" className="text-center">
+                                <p className="text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
+                                    該当する記事が見つかりませんでした
+                                </p>
+                            </Card>
+                        ) : (
+                            sortedPosts.map((post) => (
+                                <Link key={post.id} to={`/news/${post.slug}`} className="block group py-6 first:pt-0">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <Badge variant="primary">{post.category}</Badge>
+                                                {post.pinned && (
+                                                    <Badge variant="warning" className="flex items-center gap-1">
+                                                        <Pin className="w-3 h-3" />
+                                                        固定
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                            <h2 className="apple-headline text-[#1D1D1F] dark:text-[#F5F5F7] mb-2 group-hover:text-[#0066CC] dark:group-hover:text-[#2997FF] transition-colors">
+                                                {post.title}
+                                            </h2>
+                                            <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-3 line-clamp-2">
+                                                {post.excerpt}
+                                            </p>
+                                            <div className="flex items-center justify-between gap-3">
+                                                <div className="flex flex-wrap gap-2">
+                                                    {post.tags.slice(0, 3).map((tag) => (
+                                                        <span
+                                                            key={tag}
+                                                            className="text-xs text-[#86868B] dark:text-[rgba(235,235,245,0.3)]"
+                                                        >
+                                                            #{tag}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                                <time className="text-sm text-[#86868B] dark:text-[rgba(235,235,245,0.3)] shrink-0">
+                                                    {post.publishedAt}
+                                                </time>
+                                            </div>
+                                        </div>
+                                        <ArrowRight className="w-5 h-5 text-[#0071E3] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-1" />
+                                    </div>
+                                </Link>
+                            ))
+                        )}
+                    </div>
                 </div>
             </section>
         </div>

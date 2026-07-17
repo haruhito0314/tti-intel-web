@@ -89,7 +89,7 @@ export function DevStackGridScene({
                 style={{
                     ...(isZoomTargetGrid
                         ? { opacity: zoomTargetReveal, transform: 'translateY(0px)' }
-                        : stackCardMotionStyle(enter, exitProgress, 22)),
+                        : stackCardMotionStyle(enter, exitProgress, 10)),
                     ['--layer-accent' as string]: accents[index],
                 }}
             >

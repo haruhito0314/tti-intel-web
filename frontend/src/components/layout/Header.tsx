@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { siteConfig } from '@/config/site';
 import { ThemeToggle } from './ThemeToggle';
+import { DesktopSiteNav, MobileSiteNav } from './SiteNavItems';
 
 export function Header() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -30,11 +31,11 @@ export function Header() {
                 }`}
             />
 
-            <nav className="site-header-nav relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="relative flex items-center justify-between h-11 shrink-0">
+            <nav className="site-header-nav relative max-w-[1100px] mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="relative flex items-center gap-3 h-11 shrink-0">
                     <Link
                         to="/"
-                        className="flex items-center gap-2 group md:absolute md:left-0 md:top-1/2 md:-translate-y-1/2"
+                        className="flex items-center gap-2 group shrink-0"
                         aria-label={`${siteConfig.name} ホーム`}
                         onClick={() => setIsMobileMenuOpen(false)}
                     >
@@ -45,31 +46,27 @@ export function Header() {
                                 className="h-6 w-6 object-contain transition-opacity duration-300 group-hover:opacity-80"
                             />
                         </span>
-                        <span className="hidden sm:inline lg:hidden xl:inline whitespace-nowrap text-sm font-semibold tracking-[-0.01em] text-[#1D1D1F] dark:text-[#F5F5F7]">
-                            {siteConfig.name}
+                        <span className="hidden 2xl:inline whitespace-nowrap text-sm font-semibold tracking-[-0.01em] text-[#1D1D1F] dark:text-[#F5F5F7]">
+                            {siteConfig.shortName}
                         </span>
                     </Link>
 
-                    <div className="hidden md:flex items-center gap-0 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap">
-                        {siteConfig.navigation.map((link) => (
-                            <NavLink
-                                key={link.href}
-                                to={link.href}
-                                className={({ isActive }) => `
-                  px-3 py-1 apple-nav whitespace-nowrap
+                    <div className="hidden md:flex flex-1 items-center justify-center min-w-0">
+                        <div className="flex items-center gap-0">
+                            <DesktopSiteNav
+                                linkClassName={(isActive) => `
+                  px-2 py-1 apple-nav whitespace-nowrap
                   transition-all duration-300
                   ${isActive
                                         ? 'text-[#1D1D1F] dark:text-[#F5F5F7] font-medium'
                                         : 'text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] hover:text-[#1D1D1F] dark:hover:text-[#F5F5F7]'
                                     }
                 `}
-                            >
-                                {link.name}
-                            </NavLink>
-                        ))}
+                            />
+                        </div>
                     </div>
 
-                    <div className="flex items-center gap-2 md:absolute md:right-0 md:top-1/2 md:-translate-y-1/2">
+                    <div className="flex items-center gap-2 shrink-0 ml-auto md:ml-0">
                         <ThemeToggle />
 
                         <button
@@ -98,18 +95,12 @@ export function Header() {
                         aria-label="サイトメニュー"
                     >
                         <div className="site-header-mobile-links">
-                            {siteConfig.navigation.map((link) => (
-                                <NavLink
-                                    key={link.href}
-                                    to={link.href}
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                    className={({ isActive }) =>
-                                        `site-header-mobile-link ${isActive ? 'site-header-mobile-link--active' : ''}`
-                                    }
-                                >
-                                    {link.name}
-                                </NavLink>
-                            ))}
+                            <MobileSiteNav
+                                onNavigate={() => setIsMobileMenuOpen(false)}
+                                linkClassName={(isActive) =>
+                                    `site-header-mobile-link ${isActive ? 'site-header-mobile-link--active' : ''}`
+                                }
+                            />
                         </div>
                     </div>
                 )}

@@ -41,7 +41,7 @@ describe('DevHeroScene1 float cards', () => {
         render(<DevHeroScene1 copyIndex={0} />);
 
         const codexCard = screen.getByText('> テストを書いて').closest('.dev-float-tool-card');
-        expect(codexCard).toHaveStyle({ bottom: '19%', right: '8%' });
-        expect(codexCard).toHaveStyle({ transform: 'rotate(-2deg)' });
+        expect(codexCard).toHaveStyle({ bottom: '4%' });
+        expect(codexCard).toHaveStyle({ transform: 'scale(1) rotate(-2deg)' });
     });
 });

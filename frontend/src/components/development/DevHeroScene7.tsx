@@ -31,7 +31,7 @@ export function DevHeroScene7(props: DevHeroScene7Props) {
                 <div
                     className="dev-hero-cta-row"
                     style={{
-                        ...enterSlideY(ctaReveal, 16),
+                        ...enterSlideY(ctaReveal, 22, 0.96),
                         pointerEvents: opacity * ctaReveal > 0.5 ? 'auto' : 'none',
                     }}
                 >

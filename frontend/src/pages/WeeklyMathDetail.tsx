@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, ChevronDown, Sigma } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronDown } from 'lucide-react';
 import { PageSeo } from '@/components/PageSeo';
 import { Card, CardContent, Button } from '@/components/ui';
 import { MathMarkdown } from '@/components/MathMarkdown';
@@ -118,33 +118,27 @@ export function WeeklyMathDetail() {
                 title={`${item.title?.trim() || '今週の数学'} | TTI Intelligence`}
                 description="TTI Intelligenceの今週の数学の問題詳細ページです。"
             />
-            <section className="relative overflow-hidden">
-                <div className="absolute inset-0 gradient-bg-subtle opacity-30" />
-                <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <section className="about-band-hero relative overflow-hidden border-b border-[#D2D2D7] dark:border-[rgba(255,255,255,0.16)]">
+                <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-14">
                     <Link
                         to="/weekly-math"
-                        className="inline-flex items-center gap-2 text-[#0066CC] dark:text-[#2997FF] hover:underline mb-6"
+                        className="inline-flex items-center gap-2 text-[14px] text-[#0071E3] dark:text-[#5CABFF] hover:underline underline-offset-4 mb-5"
                     >
                         <ArrowLeft className="w-4 h-4" />
                         問題一覧へ戻る
                     </Link>
-                    <div className="flex items-center gap-3 mb-2">
-                        <Sigma className="w-5 h-5 text-[#0071E3] dark:text-[#2997FF]" />
-                        <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7]">
-                            {item.title?.trim() || '経路の場合の数'}
-                        </h1>
-                    </div>
+                    <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] break-words">
+                        {item.title?.trim() || '経路の場合の数'}
+                    </h1>
                 </div>
             </section>
 
             <section className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-                <Card variant="elevated">
-                    <CardContent className="p-8">
-                        <div className="[&_.katex-display]:my-4">
-                            <MathMarkdown paragraphClassName="apple-body text-[#1D1D1F] dark:text-[#F5F5F7] leading-relaxed mb-4">
-                                {item.problem || ''}
-                            </MathMarkdown>
-                        </div>
+                <Card variant="elevated" className="min-w-0 overflow-hidden">
+                    <CardContent className="p-5 sm:p-8 min-w-0">
+                        <MathMarkdown paragraphClassName="apple-body text-[#1D1D1F] dark:text-[#F5F5F7] leading-relaxed mb-4">
+                            {item.problem || ''}
+                        </MathMarkdown>
                     </CardContent>
                 </Card>
                 <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -178,17 +172,15 @@ export function WeeklyMathDetail() {
                 {item.hint?.trim() && hintOpen ? (
                     <Card
                         id="weekly-math-hint"
-                        className="mt-6 animate-fade-in border-[#0071E3]/25 dark:border-[#2997FF]/30"
+                        className="mt-6 animate-fade-in min-w-0 overflow-hidden border-[#0071E3]/25 dark:border-[#2997FF]/30"
                     >
-                        <CardContent className="p-6 sm:p-8">
+                        <CardContent className="p-5 sm:p-8 min-w-0">
                             <h2 className="apple-section text-[#1D1D1F] dark:text-[#F5F5F7] mb-4">
                                 ヒント
                             </h2>
-                            <div className="[&_.katex-display]:my-4">
-                                <MathMarkdown paragraphClassName="apple-body text-[#1D1D1F] dark:text-[#F5F5F7] leading-relaxed mb-4 last:mb-0">
-                                    {item.hint}
-                                </MathMarkdown>
-                            </div>
+                            <MathMarkdown paragraphClassName="apple-body text-[#1D1D1F] dark:text-[#F5F5F7] leading-relaxed mb-4 last:mb-0">
+                                {item.hint}
+                            </MathMarkdown>
                         </CardContent>
                     </Card>
                 ) : null}

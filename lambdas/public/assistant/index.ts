@@ -93,7 +93,7 @@ type RuntimeEnvironment = Readonly<Record<string, string | undefined>>;
 
 export const CONTACT_FALLBACK: AssistantResponse = {
   answer: '申し訳ないですが、その内容にはお答えできません。このサイトの活動やページについてご質問があれば、お手伝いします。',
-  links: [{ pageId: 'contact', title: 'Contact', href: '/contact' }],
+  links: [{ pageId: 'contact', title: 'お問い合わせ', href: '/contact' }],
 };
 
 export interface AssistantHandlerDependencies {

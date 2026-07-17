@@ -1,6 +1,6 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Users, Sparkles, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, Users, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PageSeo } from '@/components/PageSeo';
 import { Button, Card, CardContent, Badge, Skeleton } from '@/components/ui';
 import {
@@ -91,148 +91,79 @@ const isRecentVideo = (publishedAt: string, now = new Date()) => {
     return ageMs >= 0 && ageMs <= 30 * 24 * 60 * 60 * 1000;
 };
 
-// Floating puzzle piece component
-function FloatingPuzzle({
-    className = '',
-    size = 40,
-    delay = 0,
-    duration = 8,
-    shape = 'square',
-    gradient = false,
-}: {
-    className?: string;
-    size?: number;
-    delay?: number;
-    duration?: number;
-    shape?: 'square' | 'hexagon' | 'triangle' | 'diamond' | 'circle' | 'cross';
-    gradient?: boolean;
-}) {
-    const animationStyle = {
-        animationDelay: `${delay}s`,
-        animationDuration: `${duration}s`,
-    };
+const BRAND_TEXT = 'TTI Intelligence';
 
-    const baseClasses = `absolute pointer-events-none ${className}`;
+function useHomeHeroIntroReady() {
+    const [ready, setReady] = useState(false);
 
-    const gradientBg = gradient
-        ? 'bg-gradient-to-br from-[#0071E3]/20 to-[#00AFBE]/20 dark:from-[#0071E3]/15 dark:to-[#00AFBE]/15'
-        : 'bg-[#0071E3]/[0.06] dark:bg-[#2997FF]/[0.06]';
+    useEffect(() => {
+        let cancelled = false;
+        let observer: MutationObserver | null = null;
+        let fallbackTimer = 0;
 
-    if (shape === 'hexagon') {
-        return (
-            <div
-                className={`${baseClasses} animate-float-slow`}
-                style={{ ...animationStyle, width: size, height: size * 1.15 }}
-            >
-                <svg viewBox="0 0 100 115" className="w-full h-full">
-                    <polygon
-                        points="50,0 100,28.75 100,86.25 50,115 0,86.25 0,28.75"
-                        className={`${gradient ? 'fill-[#0071E3]/20 dark:fill-[#2997FF]/15' : 'fill-[#0071E3]/10 dark:fill-[#2997FF]/10'}`}
-                        stroke="currentColor"
-                        strokeWidth="1"
-                        strokeOpacity="0.2"
-                    />
-                </svg>
-            </div>
-        );
-    }
+        const markReady = () => {
+            if (cancelled) return;
+            setReady(true);
+            observer?.disconnect();
+            observer = null;
+            if (fallbackTimer) window.clearTimeout(fallbackTimer);
+        };
 
-    if (shape === 'triangle') {
-        return (
-            <div
-                className={`${baseClasses} animate-float-diagonal`}
-                style={{ ...animationStyle, width: size, height: size * 0.87 }}
-            >
-                <svg viewBox="0 0 100 87" className="w-full h-full">
-                    <polygon
-                        points="50,0 100,87 0,87"
-                        className={`${gradient ? 'fill-[#00AFBE]/20 dark:fill-[#00AFBE]/15' : 'fill-[#00AFBE]/10 dark:fill-[#00AFBE]/10'}`}
-                        stroke="currentColor"
-                        strokeWidth="1"
-                        strokeOpacity="0.2"
-                    />
-                </svg>
-            </div>
-        );
-    }
+        const canStart = () => {
+            const splash = document.querySelector('.initial-splash');
+            return !splash || splash.classList.contains('is-overlay-out');
+        };
 
-    if (shape === 'diamond') {
-        return (
-            <div
-                className={`${baseClasses} animate-float-orbit`}
-                style={{ ...animationStyle, width: size, height: size }}
-            >
-                <svg viewBox="0 0 100 100" className="w-full h-full">
-                    <polygon
-                        points="50,0 100,50 50,100 0,50"
-                        className={`${gradient ? 'fill-[#0071E3]/25 dark:fill-[#2997FF]/20' : 'fill-[#0071E3]/15 dark:fill-[#2997FF]/15'}`}
-                        stroke="currentColor"
-                        strokeWidth="1"
-                        strokeOpacity="0.2"
-                    />
-                </svg>
-            </div>
-        );
-    }
+        fallbackTimer = window.setTimeout(markReady, 3200);
 
-    if (shape === 'circle') {
-        return (
-            <div
-                className={`${baseClasses} rounded-full animate-pulse-slow ${gradientBg} border border-[#0071E3]/20 dark:border-[#2997FF]/20`}
-                style={{ ...animationStyle, width: size, height: size }}
-            />
-        );
-    }
+        if (canStart()) {
+            const frame = window.requestAnimationFrame(() => markReady());
+            return () => {
+                cancelled = true;
+                window.cancelAnimationFrame(frame);
+                window.clearTimeout(fallbackTimer);
+            };
+        }
 
-    if (shape === 'cross') {
-        return (
-            <div
-                className={`${baseClasses} animate-float-fast`}
-                style={{ ...animationStyle, width: size, height: size }}
-            >
-                <svg viewBox="0 0 100 100" className="w-full h-full">
-                    <path
-                        d="M35,0 L65,0 L65,35 L100,35 L100,65 L65,65 L65,100 L35,100 L35,65 L0,65 L0,35 L35,35 Z"
-                        className={`${gradient ? 'fill-[#00AFBE]/20 dark:fill-[#00AFBE]/15' : 'fill-[#00AFBE]/10 dark:fill-[#00AFBE]/10'}`}
-                        stroke="currentColor"
-                        strokeWidth="1"
-                        strokeOpacity="0.15"
-                    />
-                </svg>
-            </div>
-        );
-    }
+        observer = new MutationObserver(() => {
+            if (canStart()) markReady();
+        });
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['class'],
+        });
 
-    // Default: square with rounded corners
-    return (
-        <div
-            className={`${baseClasses} rounded-lg animate-float-slow ${gradientBg} border border-[#0071E3]/20 dark:border-[#2997FF]/20 backdrop-blur-sm`}
-            style={{ ...animationStyle, width: size, height: size }}
-        />
-    );
+        return () => {
+            cancelled = true;
+            observer?.disconnect();
+            window.clearTimeout(fallbackTimer);
+        };
+    }, []);
+
+    return ready;
 }
 
-// Grid lines for cyberpunk effect
-function GridLines() {
+function HandwrittenBrand({ text }: { text: string }) {
     return (
-        <div className="absolute inset-0 overflow-hidden opacity-20 dark:opacity-10">
-            <div
-                className="absolute inset-0"
-                style={{
-                    backgroundImage: `
-                        linear-gradient(to right, var(--color-primary-500) 1px, transparent 1px),
-                        linear-gradient(to bottom, var(--color-primary-500) 1px, transparent 1px)
-                    `,
-                    backgroundSize: '60px 60px',
-                    maskImage: 'radial-gradient(ellipse at 50% 0%, black 0%, transparent 70%)',
-                    WebkitMaskImage: 'radial-gradient(ellipse at 50% 0%, black 0%, transparent 70%)',
-                }}
-            />
-        </div>
+        <span className="home-hero-brand-text" aria-label={text}>
+            {Array.from(text).map((char, index) => (
+                <span
+                    key={`${char}-${index}`}
+                    className="home-hero-write-char"
+                    style={{ '--write-delay': `${0.06 + index * 0.036}s` } as CSSProperties}
+                    aria-hidden="true"
+                >
+                    {char === ' ' ? '\u00A0' : char}
+                </span>
+            ))}
+        </span>
     );
 }
 
 export function Home() {
+    const introReady = useHomeHeroIntroReady();
     const cachedHomeWeeklyMath = getCachedHomeWeeklyMath();
     const [weeklyMath, setWeeklyMath] = useState<WeeklyMathProblem | null>(cachedHomeWeeklyMath ?? null);
     const [loadingWeeklyMath, setLoadingWeeklyMath] = useState(cachedHomeWeeklyMath === undefined);
@@ -304,123 +235,79 @@ export function Home() {
     };
 
     return (
-        <div className="animate-fade-in home-page">
+        <div className="home-page">
             <PageSeo
                 title="TTI Intelligence 公式Webサイト"
                 description="豊田工業大学の学生を中心に、AI技術、開発、数学、ゲーム、解説動画へ取り組む学生コミュニティです。"
             />
-            {/* Hero Section */}
-            <section className="home-hero relative overflow-hidden min-h-[70vh] sm:min-h-[85vh] flex items-center">
-                {/* Background gradient */}
-                <div className="absolute inset-0 gradient-bg-subtle opacity-50" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(120,119,198,0.15),transparent_50%)]" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(78,179,218,0.15),transparent_50%)]" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_90%_10%,rgba(147,51,234,0.1),transparent_40%)]" />
+            <section
+                className={`home-hero${introReady ? ' home-hero--play' : ''}`}
+                aria-label="TTI Intelligence"
+            >
+                <div className="home-hero-atmosphere" aria-hidden="true" />
 
-                <svg
-                    className="pointer-events-none absolute right-0 top-0 z-0 hidden h-[360px] w-[420px] text-[#0071E3] opacity-[0.09] dark:text-[#66B4FF] dark:opacity-[0.12] sm:block md:h-[420px] md:w-[500px]"
-                    viewBox="0 0 500 420"
-                    fill="none"
-                    aria-hidden="true"
-                >
-                    <g stroke="currentColor" strokeWidth="1" strokeLinecap="round">
-                        <path d="M294 72L358 44L430 86" />
-                        <path d="M358 44L382 128L468 166" />
-                        <path d="M294 72L254 146L322 204" />
-                        <path d="M382 128L322 204L410 260" />
-                        <path d="M254 146L190 220L270 286" />
-                        <path d="M322 204L270 286L350 336" />
-                    </g>
-                    <g fill="currentColor">
-                        <circle cx="294" cy="72" r="4" />
-                        <circle cx="358" cy="44" r="5" />
-                        <circle cx="430" cy="86" r="4" />
-                        <circle cx="382" cy="128" r="4" />
-                        <circle cx="468" cy="166" r="5" />
-                        <circle cx="322" cy="204" r="5" />
-                        <circle cx="254" cy="146" r="4" />
-                        <circle cx="190" cy="220" r="4" />
-                        <circle cx="270" cy="286" r="5" />
-                        <circle cx="410" cy="260" r="4" />
-                        <circle cx="350" cy="336" r="4" />
-                        <rect x="336" y="148" width="12" height="12" rx="3" />
-                        <rect x="226" y="102" width="10" height="10" rx="2" />
-                        <rect x="438" y="214" width="12" height="12" rx="3" />
-                        <rect x="236" y="324" width="10" height="10" rx="2" />
-                    </g>
-                </svg>
-
-                {/* Grid lines */}
-                <GridLines />
-
-                {/* Floating puzzle pieces */}
-                <FloatingPuzzle shape="hexagon" size={80} className="top-[10%] left-[5%]" delay={0} duration={12} gradient />
-                <FloatingPuzzle shape="square" size={50} className="top-[15%] right-[10%]" delay={1} duration={10} />
-                <FloatingPuzzle shape="triangle" size={60} className="top-[25%] left-[15%]" delay={2} duration={14} gradient />
-                <FloatingPuzzle shape="diamond" size={45} className="top-[8%] right-[25%]" delay={0.5} duration={15} />
-                <FloatingPuzzle shape="circle" size={35} className="top-[35%] right-[8%]" delay={3} duration={8} gradient />
-                <FloatingPuzzle shape="cross" size={55} className="top-[20%] left-[40%]" delay={1.5} duration={11} />
-                <FloatingPuzzle shape="hexagon" size={40} className="top-[45%] left-[8%]" delay={2.5} duration={13} />
-                <FloatingPuzzle shape="square" size={70} className="top-[50%] right-[15%]" delay={0} duration={9} gradient />
-                <FloatingPuzzle shape="triangle" size={35} className="top-[60%] left-[20%]" delay={4} duration={12} />
-                <FloatingPuzzle shape="diamond" size={55} className="top-[55%] right-[30%]" delay={1} duration={14} gradient />
-                <FloatingPuzzle shape="circle" size={25} className="top-[70%] left-[35%]" delay={2} duration={7} />
-                <FloatingPuzzle shape="cross" size={40} className="top-[65%] right-[5%]" delay={3.5} duration={10} gradient />
-                <FloatingPuzzle shape="hexagon" size={55} className="top-[75%] left-[5%]" delay={0.5} duration={11} gradient />
-                <FloatingPuzzle shape="square" size={30} className="top-[80%] right-[20%]" delay={2} duration={8} />
-                <FloatingPuzzle shape="diamond" size={65} className="top-[85%] left-[25%]" delay={1.5} duration={13} />
-
-                {/* Additional small particles */}
-                <FloatingPuzzle shape="circle" size={15} className="top-[12%] left-[30%]" delay={0} duration={6} />
-                <FloatingPuzzle shape="circle" size={20} className="top-[40%] right-[40%]" delay={1} duration={5} gradient />
-                <FloatingPuzzle shape="circle" size={12} className="top-[55%] left-[45%]" delay={2} duration={7} />
-                <FloatingPuzzle shape="circle" size={18} className="top-[30%] right-[35%]" delay={1.5} duration={6} gradient />
-                <FloatingPuzzle shape="circle" size={10} className="top-[68%] left-[55%]" delay={0.5} duration={5} />
-
-                <div className="relative max-w-[980px] mx-auto px-6 lg:px-8 py-20 sm:py-24 md:py-32">
-                    <div className="text-center">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-6">
-                            <Sparkles className="w-4 h-4 text-[#0071E3] dark:text-[#2997FF]" />
-                            <span className="text-sm font-medium text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
-                                TTI Intelligence
-                            </span>
-                        </div>
-
-                        <h1 className="apple-hero mb-6">
-                            <span className="gradient-text">AIの未来を</span>
-                            <br />
-                            <span className="text-[#1D1D1F] dark:text-[#F5F5F7]">一緒に創ろう</span>
-                        </h1>
-
-                        <p className="apple-body text-pretty text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] max-w-[34em] mx-auto mb-10 leading-relaxed">
-                            TTI Intelligenceは、最新のAI技術を共に学び、実践的な開発を通じてアイデアを形にする学生コミュニティです。
+                <div className="home-hero-content">
+                    <div className="home-hero-stage">
+                        <p className="home-hero-brand">
+                            <HandwrittenBrand text={BRAND_TEXT} />
                         </p>
+                        <svg
+                            className="home-hero-brand-underline"
+                            viewBox="0 0 260 18"
+                            fill="none"
+                            aria-hidden="true"
+                        >
+                            <path
+                                className="home-hero-brand-underline-path"
+                                d="M6 11 C52 5, 108 15, 152 9 S220 6, 254 12"
+                                stroke="currentColor"
+                                strokeWidth="2.4"
+                                strokeLinecap="round"
+                            />
+                        </svg>
+                    </div>
 
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                            <Link to="/about">
-                                <Button size="lg" className="group">
-                                    <Users className="w-5 h-5" />
-                                    サークルについて
-                                    <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
-                                </Button>
-                            </Link>
-                            <Link to="/contact">
-                                <Button variant="outline" size="lg">
-                                    お問い合わせ
-                                    <ArrowRight className="w-5 h-5" />
-                                </Button>
-                            </Link>
-                        </div>
+                    <h1
+                        className="home-hero-title home-hero-rise"
+                        style={{ '--rise-delay': '0.95s' } as CSSProperties}
+                    >
+                        <span className="home-hero-title-line">AIの未来を</span>
+                        <span className="home-hero-title-line">一緒に創ろう</span>
+                    </h1>
+
+                    <p
+                        className="home-hero-lead home-hero-rise"
+                        style={{ '--rise-delay': '1.1s' } as CSSProperties}
+                    >
+                        TTI Intelligenceは、最新のAI技術を共に学び、実践的な開発を通じてアイデアを形にする学生コミュニティです。
+                    </p>
+
+                    <div
+                        className="home-hero-actions home-hero-rise"
+                        style={{ '--rise-delay': '1.2s' } as CSSProperties}
+                    >
+                        <Link to="/about">
+                            <Button size="lg" className="group">
+                                <Users className="w-5 h-5" />
+                                サークルについて
+                                <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
+                            </Button>
+                        </Link>
+                        <Link to="/contact">
+                            <Button variant="outline" size="lg">
+                                お問い合わせ
+                                <ArrowRight className="w-5 h-5" />
+                            </Button>
+                        </Link>
                     </div>
                 </div>
 
-                {/* Bottom fade */}
-                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[var(--background)] to-transparent" />
+                <div className="home-hero-fade" aria-hidden="true" />
             </section>
 
             <div className="home-main-color-flow bg-[#F5F5F7] dark:bg-[var(--surface-2)]">
                 {/* Explanation Videos */}
-                <section className="home-flow-block bg-[#F5F5F7] dark:bg-[#111113] w-full py-16 lg:py-20 relative z-10 border-y border-black/5 dark:border-white/10">
+                <section className="home-flow-block bg-[#F5F5F7] dark:bg-[#111113] w-full py-14 lg:py-16 relative z-10 border-y border-black/5 dark:border-white/10">
                     <div className="max-w-[1120px] mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex items-end justify-between mb-8 gap-4">
                             <h2 className="text-[24px] sm:text-[34px] font-semibold tracking-[-0.03em] text-[#1D1D1F] dark:text-[#F5F5F7] leading-[1.06]">
@@ -449,46 +336,39 @@ export function Home() {
                                         href={video.url}
                                         target="_blank"
                                         rel="noreferrer"
-                                        className="group snap-start shrink-0 w-[82vw] max-w-[340px] md:w-[340px]"
+                                        className="group snap-start shrink-0 w-[82vw] max-w-[300px] md:w-[300px]"
                                     >
                                         <Card
-                                            variant="elevated"
-                                            className="accent-card-cool h-full min-h-[380px] rounded-[24px] border border-black/5 dark:border-white/10 shadow-[0_6px_18px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_26px_rgba(0,0,0,0.12)] hover:-translate-y-0.5 transition-all duration-300 overflow-hidden bg-white dark:bg-[#1C1C1E]"
+                                            variant="default"
+                                            className="h-full rounded-[20px] border border-black/5 dark:border-white/10 overflow-hidden bg-white/80 dark:bg-[#1C1C1E]/80 shadow-none hover:bg-white dark:hover:bg-[#1C1C1E] transition-colors duration-300"
                                         >
-                                            <CardContent className="p-5 pb-0">
-                                                <div className="mb-2 min-h-[14px]">
-                                                    {isNew && (
-                                                        <p className="text-[10px] font-semibold tracking-[0.04em] text-[#FF5A1F] dark:text-[#FF8A5C]">
-                                                            NEW
-                                                        </p>
-                                                    )}
-                                                </div>
-                                                <h3 className="text-[18px] leading-[1.12] font-semibold tracking-[-0.025em] text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
-                                                    {video.title}
-                                                </h3>
-                                            </CardContent>
-                                            <div className="px-3 pt-2 pb-4 bg-[#FBFBFD] dark:bg-[#0C0C0D]">
+                                            <div className="px-3 pt-3 pb-2 bg-transparent">
                                                 <img
                                                     src={video.thumbnail ?? getYoutubeThumbnailUrl(video.id)}
                                                     alt={video.title}
                                                     width={800}
                                                     height={500}
-                                                    className="w-full aspect-[16/10] object-cover rounded-2xl group-hover:scale-[1.01] transition-transform duration-500"
+                                                    className="w-full aspect-[16/10] object-cover rounded-xl group-hover:scale-[1.01] transition-transform duration-500"
                                                     loading="lazy"
                                                     onError={(event) => {
                                                         event.currentTarget.src = getYoutubeThumbnailUrl(video.id, 'hqdefault');
                                                     }}
                                                 />
                                             </div>
-                                            <CardContent className="px-6 pt-2 pb-6 mt-auto">
-                                                <div className="flex items-center justify-between gap-3">
-                                                    <p className="text-[13px] tracking-[-0.01em] text-[#424245] dark:text-[rgba(235,235,245,0.82)]">
-                                                        YouTubeで視聴
-                                                    </p>
-                                                    <span className="inline-flex items-center rounded-full bg-[#0071E3] hover:bg-[#0077ED] text-white text-[12px] font-semibold px-4 py-2">
-                                                        視聴
-                                                    </span>
+                                            <CardContent className="p-4 pt-2">
+                                                <div className="mb-1.5 min-h-[14px]">
+                                                    {isNew && (
+                                                        <p className="text-[10px] font-semibold tracking-[0.04em] text-[#FF5A1F] dark:text-[#FF8A5C]">
+                                                            NEW
+                                                        </p>
+                                                    )}
                                                 </div>
+                                                <h3 className="text-[16px] leading-[1.25] font-semibold tracking-[-0.02em] text-[#1D1D1F] dark:text-[#F5F5F7] mb-1">
+                                                    {video.title}
+                                                </h3>
+                                                <p className="text-[13px] text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
+                                                    YouTubeで視聴
+                                                </p>
                                             </CardContent>
                                         </Card>
                                     </a>
@@ -546,7 +426,7 @@ export function Home() {
                 </section>
 
                 {/* Weekly Math */}
-                <section className="home-flow-block max-w-[1120px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20 relative z-10">
+                <section className="home-flow-block max-w-[1120px] mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-16 relative z-10">
                     <div className="flex items-center gap-3 mb-8">
                         <div className="flex flex-col sm:flex-row sm:items-end sm:gap-3">
                             <h2 className="text-[24px] sm:text-[34px] font-semibold tracking-[-0.03em] text-[#0071E3] dark:text-[#5CABFF] leading-[1.06]">
@@ -606,7 +486,7 @@ export function Home() {
                 </section>
 
                 {/* Latest Posts */}
-                <section className="home-flow-block home-flow-block-news max-w-[1120px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20 relative z-10">
+                <section className="home-flow-block home-flow-block-news max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-16 relative z-10">
                     <div className="flex items-center justify-between mb-8">
                         <h2 className="text-[24px] sm:text-[34px] font-semibold tracking-[-0.03em] text-[#1D1D1F] dark:text-[#F5F5F7] leading-[1.06]">
                             最新のお知らせ
@@ -620,77 +500,51 @@ export function Home() {
                         </Link>
                     </div>
 
-                    <div className="home-card-shell home-card-shell-news">
-                        <div className="home-card-backdrop home-card-backdrop-news home-card-backdrop-full-bleed" aria-hidden="true" />
-                        <div
-                            className={`grid gap-7 relative z-10 ${
-                                latestPosts.length === 1
-                                    ? 'grid-cols-1'
-                                    : latestPosts.length === 2
-                                        ? 'md:grid-cols-2'
-                                        : 'md:grid-cols-3'
-                            }`}
-                        >
-                            {latestPosts.map((post, index) => (
-                                <Link
-                                    key={post.id}
-                                    to={`/news/${post.slug}`}
-                                    className="group"
-                                    style={{ animationDelay: `${index * 100}ms` }}
-                                >
-                                    <Card
-                                        variant="elevated"
-                                        className={`${index % 2 === 0 ? 'accent-card-soft' : 'accent-card-cool'} h-full rounded-[24px] border border-black/5 dark:border-white/10 shadow-[0_8px_20px_rgba(0,0,0,0.07)] hover:scale-[1.012] transition-transform duration-300`}
-                                    >
-                                        <CardContent className={latestPosts.length === 1 ? 'p-7 sm:p-8 md:flex md:items-end md:justify-between md:gap-8' : 'p-7'}>
-                                            <div className="min-w-0">
-                                            <div className="flex items-center gap-2 mb-3">
-                                                <Badge variant="primary">
-                                                    {post.category}
-                                                </Badge>
-                                                {post.pinned && (
-                                                    <Badge variant="warning">📌 固定</Badge>
-                                                )}
-                                            </div>
-                                            <h3 className="text-[24px] font-semibold tracking-[-0.025em] text-[#1D1D1F] dark:text-[#F5F5F7] mb-2 leading-[1.12]">
-                                                {post.title}
-                                            </h3>
-                                            <p className="text-[16px] text-[#6E6E73] dark:text-[rgba(235,235,245,0.7)] mb-5 line-clamp-2 leading-[1.6] tracking-[-0.005em]">
-                                                {post.excerpt}
-                                            </p>
-                                            </div>
-                                            <div className="flex shrink-0 items-center justify-between gap-4">
-                                                <time className="text-[13px] text-[#86868B] dark:text-[rgba(235,235,245,0.35)]">
-                                                    {post.publishedAt}
-                                                </time>
-                                                <ExternalLink className="w-4 h-4 text-[#0071E3] dark:text-[#2997FF] opacity-0 group-hover:opacity-100 transition-opacity" />
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                </Link>
-                            ))}
-                        </div>
+                    <div className="divide-y divide-black/10 dark:divide-white/12 relative z-10">
+                        {latestPosts.map((post) => (
+                            <Link
+                                key={post.id}
+                                to={`/news/${post.slug}`}
+                                className="group grid gap-2 py-5 first:pt-0 sm:grid-cols-[7.5rem_minmax(0,1fr)] sm:gap-6 sm:items-baseline"
+                            >
+                                <time className="text-[13px] tabular-nums text-[#86868B] dark:text-[rgba(235,235,245,0.4)] sm:pt-1">
+                                    {post.publishedAt}
+                                </time>
+                                <div className="min-w-0">
+                                    <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                                        <Badge variant="primary">{post.category}</Badge>
+                                        {post.pinned && (
+                                            <Badge variant="warning">固定</Badge>
+                                        )}
+                                    </div>
+                                    <h3 className="text-[18px] sm:text-[20px] font-semibold tracking-[-0.025em] text-[#1D1D1F] dark:text-[#F5F5F7] leading-[1.25] group-hover:text-[#0071E3] dark:group-hover:text-[#5CABFF] transition-colors">
+                                        {post.title}
+                                    </h3>
+                                    <p className="mt-1.5 text-[15px] text-[#6E6E73] dark:text-[rgba(235,235,245,0.66)] line-clamp-2 leading-[1.55]">
+                                        {post.excerpt}
+                                    </p>
+                                </div>
+                            </Link>
+                        ))}
                     </div>
                 </section>
 
             </div>
 
             {/* CTA Section */}
-            <section className="home-cta-band max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
-                <Card variant="elevated" padding="md" className="accent-card-soft text-center relative overflow-hidden rounded-[24px] border border-black/5 dark:border-white/10 !bg-white dark:!bg-[#1C1C1E] shadow-[0_8px_22px_rgba(0,0,0,0.07)]">
-                    <h2 className="text-[24px] sm:text-[34px] font-semibold tracking-[-0.03em] text-[#1D1D1F] dark:text-[#F5F5F7] mb-3 relative z-10 leading-[1.06]">
-                        一緒にAIを学びませんか？
-                    </h2>
-                    <p className="text-pretty text-[16px] sm:text-[18px] text-[#515154] dark:text-[rgba(235,235,245,0.72)] max-w-[34em] mx-auto mb-7 relative z-10 leading-[1.7] tracking-[-0.01em]">
-                        経験や専攻は問いません。AIに興味がある方なら誰でも大歓迎です。まずはお気軽にお問い合わせください。
-                    </p>
-                    <Link to="/contact" className="relative z-10">
-                        <Button size="md" className="rounded-full px-7">
-                            入会について問い合わせる
-                            <ArrowRight className="w-5 h-5" />
-                        </Button>
-                    </Link>
-                </Card>
+            <section className="home-cta-band max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20 text-center">
+                <h2 className="text-[24px] sm:text-[34px] font-semibold tracking-[-0.03em] text-[#1D1D1F] dark:text-[#F5F5F7] mb-3 leading-[1.06]">
+                    一緒にAIを学びませんか？
+                </h2>
+                <p className="text-pretty text-[16px] sm:text-[18px] text-[#515154] dark:text-[rgba(235,235,245,0.72)] max-w-[34em] mx-auto mb-7 leading-[1.7] tracking-[-0.01em]">
+                    経験や専攻は問いません。AIに興味がある方なら誰でも大歓迎です。まずはお気軽にお問い合わせください。
+                </p>
+                <Link to="/contact">
+                    <Button size="md" className="rounded-full px-7">
+                        入会について問い合わせる
+                        <ArrowRight className="w-5 h-5" />
+                    </Button>
+                </Link>
             </section>
         </div>
     );

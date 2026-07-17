@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Sigma } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { PageSeo } from '@/components/PageSeo';
 import { Card, CardContent, Button } from '@/components/ui';
 import { MathMarkdown } from '@/components/MathMarkdown';
@@ -136,23 +136,19 @@ export function WeeklyMathSolution() {
                 title={`${item.title?.trim() || '今週の数学'} 解答・解説 | TTI Intelligence`}
                 description="TTI Intelligenceの今週の数学の解答・解説ページです。"
             />
-            <section className="relative overflow-hidden">
-                <div className="absolute inset-0 gradient-bg-subtle opacity-30" />
-                <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <section className="about-band-hero relative overflow-hidden border-b border-[#D2D2D7] dark:border-[rgba(255,255,255,0.16)]">
+                <div className="relative max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-14">
                     <Link
                         to={`/weekly-math/${encodeURIComponent(toPublicWeeklyMathKey(item.weekKey))}`}
-                        className="inline-flex items-center gap-2 text-[#0066CC] dark:text-[#2997FF] hover:underline mb-6"
+                        className="inline-flex items-center gap-2 text-[14px] text-[#0071E3] dark:text-[#5CABFF] hover:underline underline-offset-4 mb-5"
                     >
                         <ArrowLeft className="w-4 h-4" />
                         問題ページへ戻る
                     </Link>
-                    <div className="flex items-center gap-3 mb-2">
-                        <Sigma className="w-5 h-5 text-[#0071E3] dark:text-[#2997FF]" />
-                        <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7]">
-                            {item.title?.trim() || '経路の場合の数'}
-                        </h1>
-                    </div>
-                    <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
+                    <h1 className="apple-hero text-[#1D1D1F] dark:text-[#F5F5F7] break-words mb-2">
+                        {item.title?.trim() || '経路の場合の数'}
+                    </h1>
+                    <p className="text-[15px] text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
                         解答・解説
                     </p>
                 </div>
@@ -160,37 +156,34 @@ export function WeeklyMathSolution() {
 
             <section className="max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
                 {(answerMarkdown || explanationMarkdown) ? (
-                    <Card variant="default">
-                        <CardContent className="p-8">
-                            <h2 className="apple-title text-[#1D1D1F] dark:text-[#F5F5F7] mb-4">
-                                解答・解説
-                            </h2>
+                    <Card variant="default" className="min-w-0 overflow-hidden">
+                        <CardContent className="p-5 sm:p-8 min-w-0 space-y-8">
                             {answerMarkdown ? (
-                                <div className="[&_.katex-display]:my-4 mb-4">
-                                    <h3 className="text-sm font-semibold text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
+                                <div>
+                                    <h2 className="text-[15px] font-semibold tracking-[-0.01em] text-[#1D1D1F] dark:text-[#F5F5F7] mb-3">
                                         解答
-                                    </h3>
+                                    </h2>
                                     <MathMarkdown paragraphClassName="apple-body text-[#1D1D1F] dark:text-[#F5F5F7] leading-relaxed mb-4">
                                         {answerMarkdown}
                                     </MathMarkdown>
                                 </div>
                             ) : (
-                                <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-4">
+                                <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
                                     解答は未入力です。
                                 </p>
                             )}
 
                             {explanationMarkdown ? (
-                                <div className="[&_.katex-display]:my-4">
-                                    <h3 className="text-sm font-semibold text-[#1D1D1F] dark:text-[#F5F5F7] mb-2">
+                                <div className="pt-8 border-t border-black/10 dark:border-white/12">
+                                    <h2 className="text-[15px] font-semibold tracking-[-0.01em] text-[#1D1D1F] dark:text-[#F5F5F7] mb-3">
                                         解説
-                                    </h3>
+                                    </h2>
                                     <MathMarkdown paragraphClassName="apple-body text-[#1D1D1F] dark:text-[#F5F5F7] leading-relaxed mb-4">
                                         {explanationMarkdown}
                                     </MathMarkdown>
                                 </div>
                             ) : (
-                                <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
+                                <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] pt-8 border-t border-black/10 dark:border-white/12">
                                     解説は未入力です。
                                 </p>
                             )}
@@ -198,7 +191,7 @@ export function WeeklyMathSolution() {
                     </Card>
                 ) : (
                     <Card variant="default">
-                        <CardContent className="p-8">
+                        <CardContent className="p-5 sm:p-8">
                             <p className="apple-body text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
                                 解答・解説はまだ登録されていません。
                             </p>

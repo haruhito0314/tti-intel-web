@@ -91,7 +91,7 @@ export function Contact() {
     return (
         <div className="animate-fade-in">
             <PageSeo
-                title="Contact | TTI Intelligence"
+                title="お問い合わせ | TTI Intelligence"
                 description="TTI Intelligenceへのお問い合わせページです。参加相談や活動に関する質問を送信できます。"
             />
             {/* Header */}

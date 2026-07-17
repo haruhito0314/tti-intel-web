@@ -5,12 +5,19 @@ import { getChapterLocal, getChapterOpacity } from './devScrollMath';
 import {
     scene1BadgeReveal,
     scene1FloatReveal,
+    scene1ResponseLineReveal,
     scene1TerminalReveal,
     scene1TypewriterProgress,
 } from './devSceneMotion';
 import { getFloatCardPlacementStyle, getFloatCardTilt } from './floatCardMotion';
 import { useDesktopFloatCards } from './useDesktopFloatCards';
 import { TechBrandIcon } from './TechBrandIcon';
+
+const RESPONSE_LINES = [
+    { width: '72%', label: 'layout drafted' },
+    { width: '58%', label: 'components ready' },
+    { width: '84%', label: 'motion wired' },
+] as const;
 
 type DevHeroScene1Props =
     | { copyIndex: number; chapterIndex?: never; progress?: never }
@@ -40,6 +47,7 @@ export function DevHeroScene1(props: DevHeroScene1Props) {
             <div className="dev-scene-ambient" aria-hidden="true">
                 <div className="dev-orb dev-orb--one" />
                 <div className="dev-orb dev-orb--two" />
+                <div className="dev-orb dev-orb--three" />
                 {showFloatCards &&
                     AI_FLOAT_CARDS.map((card, index) => {
                         const floatReveal = frozen ? 1 : scene1FloatReveal(local, index);
@@ -47,10 +55,12 @@ export function DevHeroScene1(props: DevHeroScene1Props) {
                         return (
                             <div
                                 key={card.name}
-                                className="dev-float-tool-card"
+                                className={`dev-float-tool-card dev-float-tool-card--${index}${
+                                    floatReveal > 0.92 ? ' is-afloat' : ''
+                                }`}
                                 style={{
                                     ...getFloatCardPlacementStyle(index),
-                                    ...enterSlideYWithRotate(floatReveal, 12, tilt, 0.92),
+                                    ...enterSlideYWithRotate(floatReveal, 14, tilt, 0.94, 0.94),
                                     ['--float-accent' as string]: card.accent,
                                 }}
                             >
@@ -75,7 +85,7 @@ export function DevHeroScene1(props: DevHeroScene1Props) {
                 <div className="dev-scene-main">
                     <div
                         className="dev-terminal dev-glass-card"
-                        style={enterSlideY(terminalReveal, 20)}
+                        style={enterSlideY(terminalReveal, 28, 0.97)}
                         aria-hidden="true"
                     >
                         <div className="dev-terminal-chrome">
@@ -94,9 +104,20 @@ export function DevHeroScene1(props: DevHeroScene1Props) {
                                 )}
                             </p>
                             <div className="dev-terminal-lines" aria-hidden="true">
-                                <span style={{ width: '65%' }} />
-                                <span style={{ width: '50%' }} />
-                                <span style={{ width: '63%' }} />
+                                {RESPONSE_LINES.map((line, index) => {
+                                    const lineReveal = frozen ? 1 : scene1ResponseLineReveal(local, index);
+                                    return (
+                                        <span
+                                            key={line.label}
+                                            className="dev-terminal-line"
+                                            style={{
+                                                width: line.width,
+                                                opacity: lineReveal,
+                                                transform: `translateY(${Math.round((1 - lineReveal) * 8)}px) scaleX(${(0.72 + lineReveal * 0.28).toFixed(3)})`,
+                                            }}
+                                        />
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>

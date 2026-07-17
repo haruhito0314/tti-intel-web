@@ -8,14 +8,15 @@ import { DevHeroScene5 } from './DevHeroScene5';
 import { DevHeroScene6 } from './DevHeroScene6';
 import { DevHeroScene7 } from './DevHeroScene7';
 import { clamp01, getChapterIndex } from './devScrollMath';
-import { SCENE_RANGES } from './devScrollConfig';
 import { useDevScrollProgress } from './useDevScrollProgress';
 import { useDevMobileLayout } from './useDevMobileLayout';
 import { AI_TOOLS } from './sceneUtils';
 import { TechBrandIcon } from './TechBrandIcon';
 import {
+    CHAPTER4_ZOOM_BRIDGE_START,
     CHAPTER4_ZOOM_END,
     CHAPTER4_ZOOM_HOLD_END,
+    CHAPTER4_ZOOM_MOTION_START,
     CHAPTER4_ZOOM_SECTION_END,
     ZOOM_CARD_EXIT_DURATION,
     ZOOM_CARD_EXIT_STAGGER,
@@ -75,9 +76,8 @@ function DevChapterZoomBridge({
         width: 920,
         ready: false,
     });
-    const chapter4End = SCENE_RANGES[3][1];
-    const bridgeStart = chapter4End - 0.024;
-    const zoomStart = chapter4End - 0.01;
+    const bridgeStart = CHAPTER4_ZOOM_BRIDGE_START;
+    const zoomStart = CHAPTER4_ZOOM_MOTION_START;
     const zoomEnd = CHAPTER4_ZOOM_END;
     const holdEnd = CHAPTER4_ZOOM_HOLD_END;
     const fadeEnd = holdEnd + (AI_TOOLS.length - 1) * ZOOM_CARD_EXIT_STAGGER + ZOOM_CARD_EXIT_DURATION;
@@ -85,7 +85,10 @@ function DevChapterZoomBridge({
     const active = canZoom && progress >= bridgeStart && progress <= fadeEnd;
 
     useLayoutEffect(() => {
-        if (!active) return;
+        if (!active) {
+            setMetrics((prev) => (prev.ready ? { ...prev, ready: false } : prev));
+            return;
+        }
 
         const source = sourceRef.current;
         const target = targetRef.current;
@@ -215,7 +218,8 @@ export function DevHero() {
                     className={`dev-hero-scroll-hint ${progress > 0.03 ? 'is-hidden' : ''}`}
                     aria-hidden="true"
                 >
-                    Scroll
+                    <span className="dev-hero-scroll-hint-label">Scroll</span>
+                    <span className="dev-hero-scroll-hint-chevron" />
                 </div>
             </div>
         </section>
