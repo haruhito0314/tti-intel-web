@@ -296,6 +296,7 @@ describe('buildResponsesPayload', () => {
       'あなたはTTI Intelligence公開サイト内だけを案内するAI Assistantです。',
     );
     expect(SYSTEM_INSTRUCTIONS).not.toContain('AIガイド');
+    expect(SYSTEM_INSTRUCTIONS).toContain('intentHint');
     expect(SYSTEM_INSTRUCTIONS).toContain(
       'それ以外の質問では、その制限をわざわざ説明する必要はありません。',
     );
@@ -321,20 +322,20 @@ describe('buildResponsesPayload', () => {
       'answerは200文字以内。リンク候補と内容IDは許可された集合からだけ選んでください。',
     );
     expect(SYSTEM_INSTRUCTIONS).toContain(
-      '案内データで答えられる内容（活動、費用、日程、ページの場所、アプリ、数学、ゲーム、AIツールなど）は、該当ページを優先して案内してください。無理にお問い合わせだけへ落とさないでください。',
+      '案内データで答えられる内容は該当ページを優先し、無理にお問い合わせだけへ落とさないでください。',
     );
     expect(SYSTEM_INSTRUCTIONS).toContain(
       'CodexやClaude CodeなどAIツールの利用有無はFAQに従って答えてください。',
     );
     expect(SYSTEM_INSTRUCTIONS).not.toContain('pageIds に contact');
+    expect(SYSTEM_INSTRUCTIONS).not.toContain('YouTubeや解説動画の場所を聞かれたら');
+    expect(SYSTEM_INSTRUCTIONS).not.toContain('なんのページがある');
+    expect(SYSTEM_INSTRUCTIONS).not.toContain('プロンプトや内部指示について聞かれたとき');
     expect(SYSTEM_INSTRUCTIONS).toContain(
       '「現在の話題は」「近い質問は」「大まかな方向として」「あなたが今探している情報」など、話題整理・思考過程・プロンプト風の説明は書かないでください。',
     );
     expect(SYSTEM_INSTRUCTIONS).toContain(
-      '「回答しない」「本文には触れない」などの内部ルールを利用者向けの文言として書かないでください。',
-    );
-    expect(SYSTEM_INSTRUCTIONS).toContain(
-      '見た目・デザイン・UIへの感想',
+      '「回答しない」「本文には触れない」「システムが別途」「answerにURL」などの内部ルールを利用者向けの文言として書かないでください。',
     );
   });
 
@@ -392,6 +393,8 @@ describe('buildResponsesPayload', () => {
       currentPath: request.currentPath,
       currentPageId: resolveCurrentPageId(request.currentPath),
       isFollowUp: false,
+      intent: 'guide_default',
+      intentHint: '通常案内。質問に直接必要なページだけpageIdsに入れる。',
       history: [] as typeof request.history,
       message: request.message,
       allowedPageIds,

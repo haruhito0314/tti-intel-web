@@ -9,17 +9,18 @@ import type {
 } from 'aws-lambda';
 
 import {
+  classifyIntent,
+  intentHintFor,
+  pageIdsFromIntent,
+  resolveAnswerForIntent,
+} from './intent.js';
+import {
   buildFollowUpSearchQuery,
   createVerifiedLinks,
   GUIDE_ENTRIES,
-  isDiscordQuestion,
-  isToyotaTiQuestion,
+  sanitizeAssistantAnswer,
   selectRelevantKnowledge,
   withMentionedPageIds,
-  withoutPageInventoryLinks,
-  withTopGuidePageId,
-  withoutRedundantContactPageId,
-  withoutRedundantHomePageId,
 } from './knowledge.js';
 import {
   selectRelevantContent,
@@ -42,8 +43,6 @@ import {
   type QuotaReservationInput,
 } from './quota.js';
 import {
-  isCasualConversation,
-  shouldOmitAssistantLinks,
   shouldTreatAsFollowUp,
   shouldUseFollowUpHistory,
 } from './smallTalk.js';
@@ -122,6 +121,8 @@ export interface AssistantHandlerDependencies {
     content?: readonly RankedContentEntry[];
     mode?: AssistantOpenAIMode;
     contextualFollowUp?: boolean;
+    intent?: string;
+    intentHint?: string;
   }): Promise<OpenAIResult>;
   recordUnanswered(input: {
     requestId: string;
@@ -303,17 +304,17 @@ export function createAssistantHandler(
       }
       const request = parseAssistantRequest(event.body);
       unansweredRequest = request;
-      // Acknowledgements / look / empathy remarks must not re-enter guide search.
-      const omitLinks = shouldOmitAssistantLinks(request.message);
-      const casual = isCasualConversation(request.message) || omitLinks;
-      let selected = casual
+      const intent = classifyIntent(request.message);
+      const omitLinks = intent.omitLinks;
+      const smallTalk = intent.smallTalk;
+      let selected = smallTalk
         ? []
         : selectRelevantKnowledge(request.message, request.currentPath);
       let content: RankedContentEntry[] = [];
       let deferredContentQuery: string | null = null;
       let usedFollowUpSearch = false;
 
-      if (!casual) {
+      if (!smallTalk) {
         if (selected.length === 0) {
           // Need content hits (or a definitive miss) before Contact / quota.
           content = await dependencies.searchContent(request.message);
@@ -345,7 +346,6 @@ export function createAssistantHandler(
           }
         }
       }
-      const smallTalk = casual;
 
       if (selected.length === 0 && content.length === 0 && !smallTalk) {
         outcome = 'no_relevant_knowledge';
@@ -405,6 +405,8 @@ export function createAssistantHandler(
         content: openAiContent,
         mode: openAiMode,
         contextualFollowUp,
+        intent: intent.kind,
+        intentHint: intentHintFor(intent),
       });
       dependencyStage = 'internal';
 
@@ -417,38 +419,44 @@ export function createAssistantHandler(
 
       outcome = smallTalk ? 'small_talk_success' : 'success';
       statusCode = 200;
-      const mentionedPageIds = withMentionedPageIds(output.answer, [])
+      const answer = resolveAnswerForIntent(
+        intent,
+        request.message,
+        sanitizeAssistantAnswer(output.answer),
+      );
+      const mentionedPageIds = withMentionedPageIds(answer, [])
         .filter((id): id is PageId => (PAGE_IDS as readonly string[]).includes(id));
-      let pageIds = omitLinks
-        ? []
-        : withoutPageInventoryLinks(
-          request.message,
-          withoutRedundantHomePageId(
-            output.answer,
-            withoutRedundantContactPageId(
-              output.answer,
-              withMentionedPageIds(
-                output.answer,
-                withTopGuidePageId(output.answer, output.pageIds, openAiSelected),
-              ),
-            ),
-          ),
-        );
-      // TTI / 大学名の質問では公式サイト(+必要ならサークルについて)で十分。ホームは不要。
-      if (!omitLinks && isToyotaTiQuestion(request.message)) {
-        pageIds = pageIds.filter((id) => id !== 'home');
-      }
+      const pageIds = pageIdsFromIntent(
+        intent,
+        request.message,
+        answer,
+        output.pageIds,
+        openAiSelected,
+      );
+      // Message-derived / intent-forced ids must be linkable even when keyword
+      // search did not rank those guide entries into `selected`.
+      const intentForcedPageIds = (
+        intent.kind === 'capabilities'
+        || intent.kind === 'explanation_video'
+        || intent.followUpPageIds.length >= 1
+      ) ? pageIds : [];
+      const extraAllowedPageIds = [...new Set<PageId>([
+        ...mentionedPageIds,
+        ...intent.followUpPageIds,
+        ...intentForcedPageIds,
+      ])];
       return jsonResponse(statusCode, {
-        answer: output.answer,
+        answer,
         links: createVerifiedLinks(
           pageIds,
           openAiSelected,
           omitLinks ? [] : output.contentIds,
           openAiContent,
           {
-            includeDiscord: !omitLinks && isDiscordQuestion(request.message),
-            includeToyotaTi: !omitLinks && isToyotaTiQuestion(request.message),
-            extraAllowedPageIds: mentionedPageIds,
+            includeDiscord: intent.includeDiscord,
+            includeToyotaTi: intent.includeToyotaTi,
+            includeYoutube: intent.includeYoutube,
+            extraAllowedPageIds,
           },
         ),
       } satisfies AssistantResponse, origin);
@@ -575,6 +583,8 @@ export function createRuntimeDependencies(
       content = [],
       mode = 'guide',
       contextualFollowUp,
+      intent,
+      intentHint,
     }) => (
       requestOpenAI({
         apiKey,
@@ -583,6 +593,8 @@ export function createRuntimeDependencies(
         content,
         mode,
         contextualFollowUp,
+        intent,
+        intentHint,
         model: mode === 'small_talk' ? smallTalkModel : model,
         timeoutMs: OPENAI_TIMEOUT_MS,
       })

@@ -239,13 +239,14 @@ describe('createAssistantApi', () => {
     it.each([
         ['empty answer', { ...response, answer: '   ' }],
         ['201 character answer', { ...response, answer: 'a'.repeat(201) }],
-        ['4 links', {
+        ['5 links', {
             ...response,
             links: [
                 { pageId: 'home', title: 'ホーム', href: '/' },
                 { pageId: 'about', title: 'About', href: '/about' },
                 { pageId: 'news', title: 'お知らせ', href: '/news' },
                 { pageId: 'apps', title: 'アプリ', href: '/app' },
+                { pageId: 'board', title: '掲示板', href: '/board' },
             ],
         }],
         ['duplicate href', {
@@ -295,6 +296,25 @@ describe('createAssistantApi', () => {
             kind: 'invalid-response',
             message: ASSISTANT_ERROR_MESSAGES['invalid-response'],
         });
+    });
+
+    it('accepts up to four links', async () => {
+        const fourLinks = {
+            answer: '各ページへどうぞ。',
+            links: [
+                { pageId: 'contact', title: 'お問い合わせ', href: '/contact' },
+                { pageId: 'news', title: 'お知らせ', href: '/news' },
+                { pageId: 'board', title: '掲示板', href: '/board' },
+                { pageId: 'apps', title: 'アプリ', href: '/app' },
+            ],
+        };
+        const fetchMock = vi.fn().mockResolvedValue(jsonResponse(fourLinks));
+        const client = createAssistantApi({
+            baseUrl: 'https://api.example.com',
+            fetchImpl: injectedFetch(fetchMock),
+        });
+
+        await expect(client.send(request)).resolves.toEqual(fourLinks);
     });
 
     it('accepts allowlisted Discord invite hrefs', async () => {
@@ -351,6 +371,36 @@ describe('createAssistantApi', () => {
                     title: '豊田工業大学',
                     href: 'https://www.toyota-ti.ac.jp/',
                 },
+            ],
+        });
+    });
+
+    it('accepts allowlisted YouTube channel hrefs', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(jsonResponse({
+            answer: '解説動画はYouTubeからどうぞ。',
+            links: [
+                {
+                    pageId: 'youtube',
+                    title: 'YouTube',
+                    href: 'https://www.youtube.com/@ttiintelligence',
+                },
+                { pageId: 'about', title: 'サークルについて', href: '/about' },
+            ],
+        }));
+        const client = createAssistantApi({
+            baseUrl: 'https://api.example.com',
+            fetchImpl: injectedFetch(fetchMock),
+        });
+
+        await expect(client.send(request)).resolves.toEqual({
+            answer: '解説動画はYouTubeからどうぞ。',
+            links: [
+                {
+                    pageId: 'youtube',
+                    title: 'YouTube',
+                    href: 'https://www.youtube.com/@ttiintelligence',
+                },
+                { pageId: 'about', title: 'サークルについて', href: '/about' },
             ],
         });
     });

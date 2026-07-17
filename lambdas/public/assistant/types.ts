@@ -29,7 +29,7 @@ export interface AssistantRequest {
   history: HistoryMessage[];
 }
 
-export type AssistantLinkPageId = PageId | 'discord' | 'toyota-ti';
+export type AssistantLinkPageId = PageId | 'discord' | 'toyota-ti' | 'youtube';
 
 export interface AssistantLink {
   pageId: AssistantLinkPageId;

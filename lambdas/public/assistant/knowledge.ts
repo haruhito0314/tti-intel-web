@@ -32,6 +32,9 @@ export const DISCORD_INVITE_URL = 'https://discord.gg/DFWs8GrHxF';
 /** Toyota Technological Institute (豊田工業大学) official site. */
 export const TOYOTA_TI_URL = 'https://www.toyota-ti.ac.jp/';
 
+/** Circle YouTube channel; keep in sync with frontend About / site config. */
+export const YOUTUBE_CHANNEL_URL = 'https://www.youtube.com/@ttiintelligence';
+
 const PAGE_ID_SET: ReadonlySet<string> = new Set(PAGE_IDS);
 
 function invalidGuide(reason: string): never {
@@ -229,13 +232,33 @@ export function scoreGuideEntry(
   return score;
 }
 
+export function isExplanationVideoQuestion(message: string): boolean {
+  const normalized = normalizeSearchText(message);
+  return /youtube|ユーチューブ|解説動画/.test(normalized);
+}
+
+/**
+ * True when 数学 is a real destination/topic ask — not a denial
+ * like 「数学のページじゃないよね？」.
+ */
+export function isMathDestinationAsk(message: string): boolean {
+  const normalized = normalizeSearchText(message);
+  if (!/数学/.test(normalized)) return false;
+  if (/数学.{0,15}(?:じゃな|ではな|ちゃう|ちがう|違う)/.test(normalized)) {
+    return false;
+  }
+  if (/(?:じゃな|ではな).{0,10}数学/.test(normalized)) return false;
+  return true;
+}
+
 export function selectRelevantKnowledge(
   query: string,
   currentPath: string,
 ): RankedGuideEntry[] {
   const currentPageId = resolveCurrentPageId(currentPath);
+  const normalizedQuery = normalizeSearchText(query);
 
-  return GUIDE_ENTRIES
+  const ranked = GUIDE_ENTRIES
     .map((entry) => ({
       entry,
       score: scoreGuideEntry(query, currentPageId, entry),
@@ -246,6 +269,35 @@ export function selectRelevantKnowledge(
       return a.entry.id < b.entry.id ? -1 : a.entry.id > b.entry.id ? 1 : 0;
     })
     .slice(0, 5);
+
+  // YouTube / 解説動画 asks should not pull in weekly-math context
+  // (including when the user denies math: 数学じゃないよね？).
+  if (isExplanationVideoQuestion(query) && !isMathDestinationAsk(query)) {
+    return ranked.filter(({ entry }) => entry.id !== 'weekly-math');
+  }
+
+  return ranked;
+}
+
+/** Drop stray 今週の数学 sentences from YouTube / 解説動画 answers. */
+export function withoutOffTopicMathMention(
+  message: string,
+  answer: string,
+): string {
+  if (!isExplanationVideoQuestion(message)) return answer;
+  if (isMathDestinationAsk(message)) return answer;
+  if (!/今週の数学/.test(answer)) return answer;
+
+  const cleaned = answer
+    .split(/(?<=[。．！？!?])/)
+    .filter((sentence) => !/今週の数学/.test(sentence))
+    .join('')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  return cleaned.length > 0
+    ? cleaned
+    : '解説動画はサークルについてページからYouTubeへ行けます。';
 }
 
 /**
@@ -305,15 +357,20 @@ export function isToyotaTiQuestion(message: string): boolean {
     return true;
   }
 
-  // 「TTIって何」系（文頭以外でも）。
+  // 「TTIって何／何の略」系（文頭以外でも）。
   return (
-    /(?:^|[^a-z0-9])tti(?: intelligence)?(?:って何|とは|は何|なに|ってなに)/.test(normalized)
+    /(?:^|[^a-z0-9])tti(?: intelligence)?(?:って何|とは|は何|なに|ってなに|何の略|の略)/.test(
+      normalized,
+    )
+    || /tti.{0,8}略|略.{0,8}tti/.test(normalized)
     || normalized.includes('ttiって')
     || normalized.includes('ttiとは')
     || normalized.includes('ttiは何')
     || normalized === 'tti'
   );
 }
+
+const MAX_ASSISTANT_LINKS = 4;
 
 export function createVerifiedLinks(
   modelPageIds: readonly string[],
@@ -323,6 +380,7 @@ export function createVerifiedLinks(
   options: {
     includeDiscord?: boolean;
     includeToyotaTi?: boolean;
+    includeYoutube?: boolean;
     extraAllowedPageIds?: readonly PageId[];
   } = {},
 ): AssistantLink[] {
@@ -339,7 +397,7 @@ export function createVerifiedLinks(
   const links: AssistantLink[] = [];
 
   const pushLink = (link: AssistantLink) => {
-    if (links.length >= 3 || seenHrefs.has(link.href)) return;
+    if (links.length >= MAX_ASSISTANT_LINKS || seenHrefs.has(link.href)) return;
     seenHrefs.add(link.href);
     links.push(link);
   };
@@ -349,6 +407,14 @@ export function createVerifiedLinks(
       pageId: 'discord',
       title: 'Discord',
       href: DISCORD_INVITE_URL,
+    });
+  }
+
+  if (options.includeYoutube) {
+    pushLink({
+      pageId: 'youtube',
+      title: 'YouTube',
+      href: YOUTUBE_CHANNEL_URL,
     });
   }
 
@@ -371,7 +437,12 @@ export function createVerifiedLinks(
     });
   }
 
-  for (const pageId of modelPageIds) {
+  // Prefer contact when present — multi-page asks used to drop it at the 3-link cap.
+  const orderedPageIds = modelPageIds.includes('contact')
+    ? ['contact', ...modelPageIds.filter((id) => id !== 'contact')]
+    : [...modelPageIds];
+
+  for (const pageId of orderedPageIds) {
     if (
       !isPageId(pageId)
       || !allowedPageIds.has(pageId)
@@ -387,6 +458,65 @@ export function createVerifiedLinks(
   }
 
   return links;
+}
+
+/** Prompt / system-instruction disclosure asks. */
+export function isPromptDisclosureQuestion(message: string): boolean {
+  const normalized = normalizeSearchText(message);
+  if (!/プロンプト|システムプロンプト|指示文|内部指示/.test(normalized)) {
+    return false;
+  }
+  return /見せ|教え|なに|何|どんな|内容|開示|くれ|ちょうだい|知りたい|作ってる/.test(
+    normalized,
+  );
+}
+
+export function promptDisclosureAnswer(message: string): string {
+  const normalized = normalizeSearchText(message);
+  if (/使い方|どう使う|どうやって使う/.test(normalized)) {
+    return '内部の指示文やプロンプトは公開していません。使い方は、知りたいことを短く入力して送信するだけです。';
+  }
+  return '内部の指示文やプロンプトは公開していません。サイトの使い方や活動内容なら案内できます。';
+}
+
+/** Strip leaked internal instruction phrases and broken small-talk mashups. */
+export function sanitizeAssistantAnswer(answer: string): string {
+  let text = answer.trim();
+  if (!text) return text;
+
+  // Model sometimes echoes system lines about Discord / URL injection.
+  text = text
+    .replace(/Discord(?:の参加)?リンクはシステムが別途[^。．！!？?]*[。．！!？?]?/g, '')
+    .replace(/参加リンクはシステムが別途[^。．！!？?]*[。．！!？?]?/g, '')
+    .replace(/システムが別途(?:付与|案内)[^。．！!？?]*[。．！!？?]?/g, '')
+    .replace(/answerにURLを?書かないでください[。．！!？?]?/g, '')
+    .replace(/URLはこのチャットでは案内できませんが[、,]?/g, '')
+    .replace(/[（(]URLはここでは表示しません[）)]/g, '')
+    .replace(/URLは(?:ここでは|このチャットでは)?表示しません[。．！!？?]?/g, '')
+    .replace(/公式サイトは下の「お問い合わせ」で案内します[。．！!？?]?/g, '公式サイトは下のリンクからどうぞ。')
+    .replace(/大学公式サイトは「お問い合わせ」から案内します[。．！!？?]?/g, '大学公式サイトは下のリンクからどうぞ。')
+    .replace(/公式サイトは.{0,10}お問い合わせ.{0,8}案内します[。．！!？?]?/g, '公式サイトは下のリンクからどうぞ。')
+    // Meta hedging when links are already attached.
+    .replace(/必要であれば[^。．！!？?]{0,40}リンク[^。．！!？?]*[。．！!？?]?/g, '')
+    .replace(/必要なら[^。．！!？?]{0,40}リンク[^。．！!？?]*[。．！!？?]?/g, '')
+    .replace(/該当ページへのリンクをお伝えします[。．！!？?]?/g, '')
+    .replace(/リンクをお伝えします[。．！!？?]?/g, '')
+    // Parrot lead-ins like 「表示がおかしいとのこと、」
+    .replace(/[^。．！!？?\s]{1,40}とのこと[、,]?/g, '')
+    .replace(/こちらの公式窓口はお問い合わせページへお願いします[。．！!？?]?/g, '');
+
+  // Broken look/empathy mashups like: うん、共感するね。」「難しいね」
+  if (/[」』]/.test(text) && /難しいね|むずかしいね/.test(text)) {
+    text = text.split(/[」』]/)[0]?.replace(/[「『]/g, '').trim() ?? text;
+  }
+
+  text = text
+    .replace(/\s+/g, ' ')
+    .replace(/[。．]{2,}/g, '。')
+    .replace(/^[。．、,\s]+/, '')
+    .trim();
+
+  return text;
 }
 
 /**
@@ -425,40 +555,44 @@ export function withoutRedundantHomePageId(
 /** Page-inventory questions: list names in the answer text; chips are redundant. */
 export function isPageInventoryQuestion(message: string): boolean {
   const normalized = normalizeSearchText(message);
-  return /なんのページ|どんなページ|ページがある|ページ一覧|サイトマップ|主なページ|サイト構成/.test(
-    normalized,
-  );
+  return /なんのページ|どんなページ|ページがある|ページ一覧|サイトマップ|主なページ|サイト構成|ページ[^。．]{0,20}一覧|一覧[^。．]{0,12}ページ/
+    .test(normalized);
 }
 
-/**
- * For pure inventory questions, drop all page chips (names are in the answer).
- * If the same message also asks where a specific page is (あとお問い合わせはどこ？),
- * keep links so mixed multi-asks still work.
- */
-export function withoutPageInventoryLinks(
-  message: string,
-  pageIds: readonly string[],
-): string[] {
-  if (!isPageInventoryQuestion(message)) {
-    return [...pageIds];
+/** Page ids the user explicitly asked for in a follow-up (どこ？ etc.). */
+export function followUpAskedPageIds(normalizedMessage: string): PageId[] {
+  const ids: PageId[] = [];
+  const push = (pageId: PageId) => {
+    if (!ids.includes(pageId)) ids.push(pageId);
+  };
+
+  // Synonyms for site destinations (not eval-specific phrases).
+  if (/お問い合わせ|お問合せ|問い合わせ|問合せ|連絡/.test(normalizedMessage)) {
+    push('contact');
   }
-
-  const normalized = normalizeSearchText(message);
-  const hasFollowUpAsk = /あと|それと|それから|ついでに|ちなみに|加えて|も[！!？?。．]*$|場所も|も見たい|も教えて|もほしい|も欲しい/
-    .test(normalized)
-    || (normalized.match(/[？?]/g) ?? []).length >= 2;
-  const asksSpecificPage = /お問い合わせ|お問合せ|ニュース|お知らせ|掲示板|アプリ|開発|数学|連絡|discord/
-    .test(normalized)
-    && /どこ|場所|ある|教えて|見たい|行きたい|ほしい|欲しい/.test(normalized);
-
-  if (hasFollowUpAsk && asksSpecificPage) {
-    return [...pageIds];
+  if (/ニュース|お知らせ/.test(normalizedMessage)) push('news');
+  // 「板どこ」等。単独の「板」は他語に当たるので案内語と一緒のときだけ。
+  if (/掲示板|板(?=どこ|って|は|も|、|？|\?)/.test(normalizedMessage)) {
+    push('board');
   }
+  if (/アプリ|プロダクト一覧|作品一覧/.test(normalizedMessage)) push('apps');
+  if (/開発/.test(normalizedMessage)) push('development');
+  if (isMathDestinationAsk(normalizedMessage)) push('weekly-math');
+  if (/ゲーム/.test(normalizedMessage)) push('game-community');
+  if (/discord|ディスコ/.test(normalizedMessage)) push('contact');
 
-  return [];
+  return ids;
 }
 
-/** If the answer names a page, ensure that page id is present for linking. */
+/** True when the answer directs the user to a page, not merely lists its name. */
+function isPageDestination(answer: string, pageName: string): boolean {
+  const escaped = pageName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(
+    `(?:詳しくは|ぜひ|こちら[のは]?)${escaped}|${escaped}(?:へ|に|ページ|一覧|をご覧|を確認|からどうぞ|もどうぞ|で確認)`,
+  ).test(answer);
+}
+
+/** If the answer directs to a page, ensure that page id is present for linking. */
 export function withMentionedPageIds(
   answer: string,
   pageIds: readonly string[],
@@ -468,25 +602,25 @@ export function withMentionedPageIds(
     if (!ids.includes(pageId)) ids.push(pageId);
   };
 
+  // Contact is often named lightly ("お問い合わせからどうぞ").
   if (/お問い合わせ|お問合せ/.test(answer)) push('contact');
-  if (/サークルについて/.test(answer)) push('about');
-  if (/今週の数学/.test(answer)) push('weekly-math');
-  if (/ゲームコミュニティ/.test(answer)) push('game-community');
-  if (/掲示板/.test(answer)) push('board');
-  if (/お知らせ/.test(answer)) push('news');
-  if (/開発について/.test(answer)) push('development');
-  if (/「アプリ」|アプリページ|アプリ一覧|アプリから/.test(answer)) push('apps');
-  if (/ホーム/.test(answer)) push('home');
+  // Other pages often appear in inventory lists (「アプリ」「サークルについて」など) —
+  // only link when the answer directs the user there.
+  if (isPageDestination(answer, 'サークルについて')) push('about');
+  if (isPageDestination(answer, '今週の数学')) push('weekly-math');
+  if (isPageDestination(answer, 'ゲームコミュニティ')) push('game-community');
+  if (isPageDestination(answer, '掲示板')) push('board');
+  if (isPageDestination(answer, 'お知らせ')) push('news');
+  if (isPageDestination(answer, '開発について')) push('development');
+  if (
+    /アプリページ|アプリ一覧|アプリから/.test(answer)
+    || isPageDestination(answer, 'アプリ')
+  ) {
+    push('apps');
+  }
+  if (isPageDestination(answer, 'ホーム')) push('home');
 
   return ids;
-}
-
-/** @deprecated use withMentionedPageIds */
-export function withContactPageIdIfMentioned(
-  answer: string,
-  pageIds: readonly string[],
-): string[] {
-  return withMentionedPageIds(answer, pageIds);
 }
 
 /**

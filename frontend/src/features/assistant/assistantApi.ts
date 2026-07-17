@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import {
     MAX_ASSISTANT_ANSWER_LENGTH,
+    MAX_ASSISTANT_LINKS,
     type AssistantApiErrorKind,
     type AssistantClient,
     type AssistantResponse,
@@ -13,9 +14,13 @@ const INTERNAL_HREF_PATTERN = /^(?:\/(?:[A-Za-z0-9._~%-]+(?:\/[A-Za-z0-9._~%-]+)
 const DISCORD_HREF_PATTERN = /^https:\/\/(?:discord\.gg|discord\.com\/invite)\/[A-Za-z0-9-]+$/;
 /** Allowlisted Toyota Technological Institute official site. */
 const TOYOTA_TI_HREF_PATTERN = /^https:\/\/www\.toyota-ti\.ac\.jp\/?$/;
+/** Allowlisted circle YouTube channel; must match server-injected YOUTUBE_CHANNEL_URL. */
+const YOUTUBE_CHANNEL_HREF_PATTERN = /^https:\/\/www\.youtube\.com\/@ttiintelligence\/?$/;
 
 export function isExternalAssistantHref(href: string): boolean {
-    return DISCORD_HREF_PATTERN.test(href) || TOYOTA_TI_HREF_PATTERN.test(href);
+    return DISCORD_HREF_PATTERN.test(href)
+        || TOYOTA_TI_HREF_PATTERN.test(href)
+        || YOUTUBE_CHANNEL_HREF_PATTERN.test(href);
 }
 
 const assistantLinkSchema = z.object({
@@ -26,13 +31,14 @@ const assistantLinkSchema = z.object({
             INTERNAL_HREF_PATTERN.test(value)
             || DISCORD_HREF_PATTERN.test(value)
             || TOYOTA_TI_HREF_PATTERN.test(value)
+            || YOUTUBE_CHANNEL_HREF_PATTERN.test(value)
         ),
     ),
 }).strict();
 
 const assistantResponseSchema = z.object({
     answer: z.string().trim().min(1).max(MAX_ASSISTANT_ANSWER_LENGTH),
-    links: z.array(assistantLinkSchema).max(3).superRefine((links, context) => {
+    links: z.array(assistantLinkSchema).max(MAX_ASSISTANT_LINKS).superRefine((links, context) => {
         const hrefs = new Set<string>();
 
         links.forEach((link, index) => {

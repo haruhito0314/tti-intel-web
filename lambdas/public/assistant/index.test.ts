@@ -858,7 +858,13 @@ describe('createAssistantHandler orchestration', () => {
         usage: successfulOpenAIResult.usage,
       })),
     });
-    const response = await invoke(dependencies);
+    // Avoid destination-forced messages like 「今週の数学はどこ？」.
+    const response = await invoke(dependencies, validPostEvent({
+      body: JSON.stringify({
+        ...validRequest,
+        message: 'ちょっと相談があるんです UNIQUE_CONTACT_ALLOW_1',
+      }),
+    }));
 
     expect(parsedBody(response)).toEqual({
       answer: 'お問い合わせください。',

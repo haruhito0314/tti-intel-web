@@ -1,5 +1,7 @@
 export const MAX_ASSISTANT_QUESTION_LENGTH = 500;
 export const MAX_ASSISTANT_ANSWER_LENGTH = 200;
+/** Keep in sync with lambdas/public/assistant createVerifiedLinks MAX_ASSISTANT_LINKS. */
+export const MAX_ASSISTANT_LINKS = 4;
 
 export type AssistantRole = 'user' | 'assistant';
 
