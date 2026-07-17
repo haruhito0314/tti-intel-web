@@ -238,7 +238,7 @@ describe('createAssistantApi', () => {
 
     it.each([
         ['empty answer', { ...response, answer: '   ' }],
-        ['501 character answer', { ...response, answer: 'a'.repeat(501) }],
+        ['201 character answer', { ...response, answer: 'a'.repeat(201) }],
         ['4 links', {
             ...response,
             links: [

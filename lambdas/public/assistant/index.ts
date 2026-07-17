@@ -34,7 +34,7 @@ import {
   reserveQuota,
   type QuotaReservationInput,
 } from './quota.js';
-import { isCasualConversation, shouldUseFollowUpHistory } from './smallTalk.js';
+import { isCasualConversation, shouldTreatAsFollowUp, shouldUseFollowUpHistory } from './smallTalk.js';
 import type {
   AssistantRequest,
   AssistantResponse,
@@ -51,7 +51,6 @@ import {
   parseAssistantRequest,
   RequestValidationError,
   UnsafeModelOutputError,
-  validateModelGuideResponse,
 } from './validation.js';
 
 const OPENAI_TIMEOUT_MS = 20_000;
@@ -108,6 +107,7 @@ export interface AssistantHandlerDependencies {
     selected: readonly RankedGuideEntry[];
     content?: readonly RankedContentEntry[];
     mode?: AssistantOpenAIMode;
+    contextualFollowUp?: boolean;
   }): Promise<OpenAIResult>;
   recordUnanswered(input: {
     requestId: string;
@@ -294,30 +294,43 @@ export function createAssistantHandler(
       let selected = casual
         ? []
         : selectRelevantKnowledge(request.message, request.currentPath);
-      let content = casual
-        ? []
-        : await dependencies.searchContent(request.message);
-      if (
-        !casual
-        && selected.length === 0
-        && content.length === 0
-        && shouldUseFollowUpHistory(request.message)
-      ) {
-        const followUpQuery = buildFollowUpSearchQuery(
-          request.message,
-          request.history,
-        );
-        if (followUpQuery !== null) {
-          selected = selectRelevantKnowledge(
-            followUpQuery,
-            request.currentPath,
+      let content: RankedContentEntry[] = [];
+      let deferredContentQuery: string | null = null;
+      let usedFollowUpSearch = false;
+
+      if (!casual) {
+        if (selected.length === 0) {
+          // Need content hits (or a definitive miss) before Contact / quota.
+          content = await dependencies.searchContent(request.message);
+        } else {
+          // Guide already matched — fetch content only after quota is reserved.
+          deferredContentQuery = request.message;
+        }
+
+        if (
+          selected.length === 0
+          && content.length === 0
+          && shouldUseFollowUpHistory(request.message)
+        ) {
+          const followUpQuery = buildFollowUpSearchQuery(
+            request.message,
+            request.history,
           );
-          content = await dependencies.searchContent(followUpQuery);
+          if (followUpQuery !== null) {
+            selected = selectRelevantKnowledge(
+              followUpQuery,
+              request.currentPath,
+            );
+            if (selected.length === 0) {
+              content = await dependencies.searchContent(followUpQuery);
+            } else {
+              deferredContentQuery = followUpQuery;
+            }
+            usedFollowUpSearch = selected.length > 0 || content.length > 0;
+          }
         }
       }
-      const smallTalk = selected.length === 0
-        && content.length === 0
-        && casual;
+      const smallTalk = casual;
 
       if (selected.length === 0 && content.length === 0 && !smallTalk) {
         outcome = 'no_relevant_knowledge';
@@ -338,18 +351,23 @@ export function createAssistantHandler(
         return errorResponse(500, origin);
       }
 
-      dependencyStage = 'secret';
-      const apiKey = await dependencies.getApiKey();
-      dependencyStage = 'internal';
-
       const capturedNow = dependencies.now();
       const reservationInput: QuotaReservationInput = {
         sessionId: request.sessionId,
         requestId,
         now: capturedNow,
       };
+      // Reserve quota before Secrets Manager so rate-limited sessions skip the secret fetch.
       dependencyStage = 'quota';
       await dependencies.reserveQuota(reservationInput);
+      dependencyStage = 'internal';
+
+      if (deferredContentQuery !== null) {
+        content = await dependencies.searchContent(deferredContentQuery);
+      }
+
+      dependencyStage = 'secret';
+      const apiKey = await dependencies.getApiKey();
       dependencyStage = 'internal';
 
       const openAiSelected = smallTalk ? SMALL_TALK_SELECTED : selected;
@@ -358,6 +376,12 @@ export function createAssistantHandler(
         ? 'small_talk'
         : 'guide';
 
+      const contextualFollowUp = shouldTreatAsFollowUp(
+        request.message,
+        request.history,
+        usedFollowUpSearch,
+      );
+
       dependencyStage = 'openai';
       const result = await dependencies.requestOpenAI({
         apiKey,
@@ -365,6 +389,7 @@ export function createAssistantHandler(
         selected: openAiSelected,
         content: openAiContent,
         mode: openAiMode,
+        contextualFollowUp,
       });
       dependencyStage = 'internal';
 
@@ -372,7 +397,8 @@ export function createAssistantHandler(
       inputTokens = usage.inputTokens;
       outputTokens = usage.outputTokens;
       totalTokens = usage.totalTokens;
-      const output = validateModelGuideResponse(result.output);
+      // requestOpenAI already validates; trust the DI boundary for typed output.
+      const output = result.output;
 
       outcome = smallTalk ? 'small_talk_success' : 'success';
       statusCode = 200;
@@ -507,6 +533,7 @@ export function createRuntimeDependencies(
       selected,
       content = [],
       mode = 'guide',
+      contextualFollowUp,
     }) => (
       requestOpenAI({
         apiKey,
@@ -514,6 +541,7 @@ export function createRuntimeDependencies(
         selected,
         content,
         mode,
+        contextualFollowUp,
         model: mode === 'small_talk' ? smallTalkModel : model,
         timeoutMs: OPENAI_TIMEOUT_MS,
       })

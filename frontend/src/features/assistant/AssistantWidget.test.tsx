@@ -860,7 +860,7 @@ describe('AssistantWidget', () => {
             /\.assistant-trigger\[hidden\]\s*\{[^}]*display:\s*none;/s,
         );
         expect(assistantCssSource).toMatch(
-            /\.assistant-menu:not\(\[open\]\)\s*>\s*\.assistant-menu-button\s*\{[^}]*display:\s*none;/s,
+            /\.assistant-menu:not\(\[open\]\)\s*>\s*\.assistant-menu-panel\s*\{[^}]*display:\s*none;/s,
         );
         expect(assistantCssSource).not.toMatch(
             /\b(?:animation|transition)\s*:|@keyframes|pulse|bounce/i,

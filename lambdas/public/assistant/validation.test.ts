@@ -13,7 +13,6 @@ const validRequest = {
   sessionId: '11111111-1111-4111-8111-111111111111',
   history: [
     { role: 'user', content: '活動内容を知りたい' },
-    { role: 'assistant', content: 'About Usで確認できます。' },
   ],
 };
 
@@ -55,24 +54,28 @@ describe('parseAssistantRequest', () => {
     ['backslash in path', JSON.stringify({ ...validRequest, currentPath: '/news\\archive' })],
     ['path without leading slash', JSON.stringify({ ...validRequest, currentPath: 'news' })],
     ['257 path code units', JSON.stringify({ ...validRequest, currentPath: `/${'a'.repeat(256)}` })],
-    ['13 history messages', JSON.stringify({
+    ['3 history messages', JSON.stringify({
       ...validRequest,
-      history: Array.from({ length: 13 }, () => ({ role: 'user', content: 'x' })),
+      history: Array.from({ length: 3 }, () => ({ role: 'user', content: 'x' })),
     })],
     ['801 history code units', JSON.stringify({
       ...validRequest,
       history: [{ role: 'user', content: 'x'.repeat(801) }],
     })],
-    ['8,001 total history code units', JSON.stringify({
+    ['1,201 total history code units', JSON.stringify({
       ...validRequest,
       history: [
-        ...Array.from({ length: 10 }, () => ({ role: 'user', content: 'x'.repeat(800) })),
-        { role: 'assistant', content: 'x' },
+        { role: 'user', content: 'x'.repeat(800) },
+        { role: 'user', content: 'x'.repeat(401) },
       ],
     })],
     ['blank history content', JSON.stringify({
       ...validRequest,
       history: [{ role: 'user', content: '   ' }],
+    })],
+    ['assistant history role', JSON.stringify({
+      ...validRequest,
+      history: [{ role: 'assistant', content: 'x' }],
     })],
     ['unknown role', JSON.stringify({
       ...validRequest,
@@ -109,7 +112,7 @@ describe('validateModelGuideResponse', () => {
     ['null output', null],
     ['array output', []],
     ['empty answer', { answer: '   ', pageIds: [], contentIds: [] }],
-    ['501 character answer', { answer: 'a'.repeat(501), pageIds: [], contentIds: [] }],
+    ['201 character answer', { answer: 'a'.repeat(201), pageIds: [], contentIds: [] }],
     ['4 IDs', { answer: 'answer', pageIds: ['home', 'about', 'news', 'apps'], contentIds: [] }],
     ['duplicate ID', { answer: 'answer', pageIds: ['news', 'news'], contentIds: [] }],
     ['non-string ID', { answer: 'answer', pageIds: ['news', 1], contentIds: [] }],

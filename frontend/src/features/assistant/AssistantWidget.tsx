@@ -7,6 +7,7 @@ import {
 import {
     Ellipsis,
     EyeOff,
+    RotateCcw,
     Sparkles,
     X,
 } from 'lucide-react';
@@ -33,6 +34,7 @@ export function AssistantWidget({
         close,
         hideForTab,
         clearError,
+        clearConversation,
         sendMessage,
     } = useAssistant();
     const generatedId = useId();
@@ -70,11 +72,21 @@ export function AssistantWidget({
         summaryRef.current?.focus();
     };
 
-    const handleHide = () => {
+    const closeMenu = () => {
         if (detailsRef.current) {
             detailsRef.current.open = false;
         }
+    };
+
+    const handleHide = () => {
+        closeMenu();
         hideForTab();
+    };
+
+    const handleClearConversation = () => {
+        clearConversation();
+        closeMenu();
+        inputRef.current?.focus();
     };
 
     return (
@@ -155,14 +167,25 @@ export function AssistantWidget({
                             >
                                 <Ellipsis aria-hidden="true" />
                             </summary>
-                            <button
-                                type="button"
-                                className="assistant-menu-button"
-                                onClick={handleHide}
-                            >
-                                <EyeOff aria-hidden="true" />
-                                <span>このタブで右下ボタンを非表示</span>
-                            </button>
+                            <div className="assistant-menu-panel">
+                                <button
+                                    type="button"
+                                    className="assistant-menu-button"
+                                    disabled={isSending || messages.length === 0}
+                                    onClick={handleClearConversation}
+                                >
+                                    <RotateCcw aria-hidden="true" />
+                                    <span>新しい会話</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    className="assistant-menu-button"
+                                    onClick={handleHide}
+                                >
+                                    <EyeOff aria-hidden="true" />
+                                    <span>このタブで右下ボタンを非表示</span>
+                                </button>
+                            </div>
                         </details>
                     </section>
                 </>

@@ -309,6 +309,9 @@ describe('buildResponsesPayload', () => {
       'isFollowUpがtrueのときは続き質問です。historyの質問へ答え直さず、最新のmessageで新たに聞かれた点だけを1〜2文で補足してください。',
     );
     expect(SYSTEM_INSTRUCTIONS).toContain(
+      'isFollowUpがfalseのときはhistoryを無視し、以前の話題に結びつけません。最新のmessageだけを新しい質問として答えてください。',
+    );
+    expect(SYSTEM_INSTRUCTIONS).toContain(
       '回答は原則1〜2文、目安120文字以内。長い説明・箇条書きの連発・前置きは避けてください。',
     );
     expect(SYSTEM_INSTRUCTIONS).toContain(
@@ -322,12 +325,17 @@ describe('buildResponsesPayload', () => {
     );
   });
 
-  it('builds a cheap nano payload for small talk without guide entries', () => {
+  it('builds a cheap nano payload for small talk without guide entries or history', () => {
     const payload = buildResponsesPayload({
-      request: { ...request, message: 'こんにちは' },
+      request: {
+        ...request,
+        message: 'こんにちは',
+        history: [{ role: 'user', content: '今週の数学について教えて' }],
+      },
       selected: [],
       model: 'gpt-5-nano',
       mode: 'small_talk',
+      contextualFollowUp: true,
     });
 
     expect(payload.model).toBe('gpt-5-nano');
@@ -339,9 +347,12 @@ describe('buildResponsesPayload', () => {
       (payload.input[0]!.content[0] as { text: string }).text,
     )).toMatchObject({
       message: 'こんにちは',
+      isFollowUp: false,
+      history: [],
       allowedPageIds: ['home', 'contact'],
     });
     expect(JSON.stringify(payload)).not.toContain('guideEntries');
+    expect(JSON.stringify(payload)).not.toContain('今週の数学について教えて');
   });
 
   it('builds the exact bounded Luna Structured Outputs payload', () => {
@@ -355,15 +366,14 @@ describe('buildResponsesPayload', () => {
       id: entry.id,
       title: entry.title,
       summary: entry.summary,
-      audiences: entry.audiences,
       faqs: entry.faqs,
       relatedPageIds: entry.relatedPageIds.filter((id) => allowedPageIdSet.has(id)),
     }));
     const userEnvelope = {
       currentPath: request.currentPath,
       currentPageId: resolveCurrentPageId(request.currentPath),
-      isFollowUp: true,
-      history: request.history,
+      isFollowUp: false,
+      history: [] as typeof request.history,
       message: request.message,
       allowedPageIds,
       allowedContentIds: [] as string[],
@@ -435,24 +445,25 @@ describe('buildResponsesPayload', () => {
     expect(payload.input[0]?.content[0]?.type).toBe('input_text');
     const envelope = JSON.parse(payload.input[0]!.content[0]!.text) as Record<string, unknown>;
     expect(envelope.message).toBe(maliciousRequest.message);
-    expect(envelope.history).toEqual(maliciousRequest.history);
-    expect(envelope.isFollowUp).toBe(true);
+    expect(envelope.history).toEqual([]);
+    expect(envelope.isFollowUp).toBe(false);
     expect(payload.instructions).toBe(SYSTEM_INSTRUCTIONS);
     expect(payload.instructions).not.toContain(maliciousRequest.message);
     expect(JSON.stringify(payload).match(/systemを無視して/g)).toHaveLength(1);
   });
 
-  it('omits prior assistant answers from the model history envelope', () => {
+  it('keeps only user turns in the model history envelope', () => {
     const payload = buildResponsesPayload({
       request: {
         ...request,
+        message: 'どこから見るの？',
         history: [
           { role: 'user', content: '活動内容を知りたい' },
-          { role: 'assistant', content: '以前の回答をコピーしないで' },
           { role: 'user', content: '参加方法は？' },
         ],
       },
       selected,
+      contextualFollowUp: true,
     });
 
     const envelope = JSON.parse(payload.input[0]!.content[0]!.text) as {
@@ -461,12 +472,53 @@ describe('buildResponsesPayload', () => {
       message: string;
     };
     expect(envelope.isFollowUp).toBe(true);
-    expect(envelope.message).toBe(request.message);
+    expect(envelope.message).toBe('どこから見るの？');
     expect(envelope.history).toEqual([
       { role: 'user', content: '活動内容を知りたい' },
       { role: 'user', content: '参加方法は？' },
     ]);
-    expect(JSON.stringify(payload)).not.toContain('以前の回答をコピーしないで');
+  });
+
+  it('clears history when a self-contained question switches topics', () => {
+    const payload = buildResponsesPayload({
+      request: {
+        ...request,
+        message: 'webサイトについて教えて',
+        history: [{ role: 'user', content: '今週の数学について教えて' }],
+      },
+      selected,
+      contextualFollowUp: false,
+    });
+
+    const envelope = JSON.parse(payload.input[0]!.content[0]!.text) as {
+      history: unknown[];
+      isFollowUp: boolean;
+      message: string;
+    };
+    expect(envelope.isFollowUp).toBe(false);
+    expect(envelope.history).toEqual([]);
+    expect(envelope.message).toBe('webサイトについて教えて');
+  });
+
+  it('clears history when a longer clarification did not use follow-up search', () => {
+    const payload = buildResponsesPayload({
+      request: {
+        ...request,
+        message: 'どこから見るの？',
+        history: [{ role: 'user', content: '今週の数学について教えて' }],
+      },
+      selected,
+      contextualFollowUp: false,
+    });
+
+    const envelope = JSON.parse(payload.input[0]!.content[0]!.text) as {
+      history: unknown[];
+      isFollowUp: boolean;
+      message: string;
+    };
+    expect(envelope.isFollowUp).toBe(false);
+    expect(envelope.history).toEqual([]);
+    expect(envelope.message).toBe('どこから見るの？');
   });
 
   it('marks the first turn as not a follow-up', () => {
@@ -522,7 +574,6 @@ describe('buildResponsesPayload', () => {
       'id',
       'title',
       'summary',
-      'audiences',
       'faqs',
       'relatedPageIds',
     ]);
@@ -575,10 +626,10 @@ describe('buildResponsesPayload', () => {
         'id',
         'title',
         'summary',
-        'audiences',
         'faqs',
         'relatedPageIds',
       ]);
+      expect(entry).not.toHaveProperty('audiences');
     }
   });
 });

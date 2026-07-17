@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isCasualConversation, isShortFollowUpProbe, shouldUseFollowUpHistory } from './smallTalk.js';
+import { isCasualConversation, isShortFollowUpProbe, shouldTreatAsFollowUp, shouldUseFollowUpHistory } from './smallTalk.js';
 
 describe('isCasualConversation', () => {
   it.each([
@@ -56,14 +56,14 @@ describe('isCasualConversation', () => {
 });
 
 describe('isShortFollowUpProbe', () => {
-  it.each(['何が', '何を', '何の', 'なにが', 'どれ', 'なぜ'])(
+  it.each(['何が', '何を', '何の', 'なにが', 'どれ', 'なぜ', 'どこ', 'どこ？', 'もっと詳しく'])(
     'accepts %j',
     (message) => {
       expect(isShortFollowUpProbe(message)).toBe(true);
     },
   );
 
-  it.each(['何がしたい', '会社', 'サイト'])('rejects %j', (message) => {
+  it.each(['何がしたい', 'どこから見るの？', '会社', 'サイト'])('rejects %j', (message) => {
     expect(isShortFollowUpProbe(message)).toBe(false);
   });
 });
@@ -74,6 +74,8 @@ describe('shouldUseFollowUpHistory', () => {
     'もっと詳しく',
     '何が',
     'それってどこ',
+    'どこでAPI見る？',
+    'もっと詳しくCLI',
   ])('allows short clarifications %j', (message) => {
     expect(shouldUseFollowUpHistory(message)).toBe(true);
   });
@@ -83,7 +85,33 @@ describe('shouldUseFollowUpHistory', () => {
     '銀河の年齢を教えてください',
     '天気はどう？',
     '宇宙について教えて',
+    'APIの使い方',
   ])('rejects out-of-scope or new-topic messages %j', (message) => {
     expect(shouldUseFollowUpHistory(message)).toBe(false);
+  });
+});
+
+describe('shouldTreatAsFollowUp', () => {
+  const mathHistory = [{ role: 'user' as const, content: '今週の数学について教えて' }];
+
+  it.each([
+    'webサイトについて教えて',
+    'このサイトは何ですか？',
+    '会社について教えて',
+    'どこから見るの？',
+  ])('treats self-contained or longer clarifications as new topics without search hit: %j', (message) => {
+    expect(shouldTreatAsFollowUp(message, mathHistory, false)).toBe(false);
+  });
+
+  it('treats follow-up search hits as continuations', () => {
+    expect(shouldTreatAsFollowUp('どこから見るの？', mathHistory, true)).toBe(true);
+  });
+
+  it('treats short probes as continuations even without follow-up search', () => {
+    expect(shouldTreatAsFollowUp('どこ？', mathHistory, false)).toBe(true);
+  });
+
+  it('returns false when there is no user history', () => {
+    expect(shouldTreatAsFollowUp('webサイトについて', [], false)).toBe(false);
   });
 });

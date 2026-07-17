@@ -99,4 +99,57 @@ describe('contentSearch', () => {
     }));
     expect(selected).toEqual([]);
   });
+
+  it('does not flood every math item from a bare category word', async () => {
+    const repositories = createRepos({
+      listPublishedMathProblems: vi.fn(async () => [
+        {
+          weekKey: '2026-W28',
+          title: '数列の和',
+          problem: '和を求めよ',
+          problemPublished: true,
+        },
+        {
+          weekKey: '2026-W29',
+          title: '経路の場合の数',
+          problem: '場合の数を求めよ',
+          problemPublished: true,
+        },
+        {
+          weekKey: '2026-W30',
+          title: '確率',
+          problem: '確率を求めよ',
+          problemPublished: true,
+        },
+      ]),
+    });
+
+    expect(await selectRelevantContent('数学', repositories)).toEqual([]);
+    expect(scoreContentCandidate('数学', {
+      title: '経路の場合の数',
+      categoryKeywords: ['数学', '問題', '今週'],
+    })).toBe(0);
+  });
+
+  it('does not flood titles from short reverse query matches', () => {
+    expect(scoreContentCandidate('経路', {
+      title: '経路の場合の数を考える問題',
+    })).toBeLessThan(3);
+    expect(scoreContentCandidate('経路の場合の数', {
+      title: '経路の場合の数を考える問題',
+    })).toBeGreaterThanOrEqual(5);
+  });
+
+  it('still boosts category keywords when the item already matched', () => {
+    const withoutCategory = scoreContentCandidate('経路の場合の数', {
+      title: '経路の場合の数',
+    });
+    const withCategory = scoreContentCandidate('経路の場合の数', {
+      title: '経路の場合の数',
+      categoryKeywords: ['数学', '経路'],
+    });
+    // 「経路」 is in both query and categoryKeywords → +1 on top of title match.
+    expect(withoutCategory).toBeGreaterThanOrEqual(3);
+    expect(withCategory).toBe(withoutCategory + 1);
+  });
 });

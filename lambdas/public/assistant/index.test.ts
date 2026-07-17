@@ -448,8 +448,40 @@ describe('createAssistantHandler CORS and early exits', () => {
     );
     expect(dependencies.requestOpenAI).toHaveBeenCalledWith(expect.objectContaining({
       mode: 'guide',
+      contextualFollowUp: true,
       request: expect.objectContaining({
         message: 'どこから見るの？',
+      }),
+    }));
+  });
+
+  it('does not treat a new site question as a math follow-up', async () => {
+    const dependencies = createDependencies({
+      requestOpenAI: vi.fn(async () => ({
+        output: {
+          answer: 'TTI Intelligenceの紹介サイトです。',
+          pageIds: ['home'],
+          contentIds: [],
+        },
+        usage: { inputTokens: 40, outputTokens: 20, totalTokens: 60 },
+      })),
+    });
+    const response = await invoke(dependencies, validPostEvent({
+      body: JSON.stringify({
+        ...validRequest,
+        message: 'webサイトについて教えて',
+        history: [{ role: 'user', content: '今週の数学について教えて' }],
+      }),
+    }));
+
+    expect(response.statusCode).toBe(200);
+    expect(dependencies.searchContent).toHaveBeenCalledTimes(1);
+    expect(dependencies.searchContent).toHaveBeenCalledWith('webサイトについて教えて');
+    expect(dependencies.requestOpenAI).toHaveBeenCalledWith(expect.objectContaining({
+      mode: 'guide',
+      contextualFollowUp: false,
+      request: expect.objectContaining({
+        message: 'webサイトについて教えて',
       }),
     }));
   });
@@ -484,7 +516,7 @@ describe('createAssistantHandler CORS and early exits', () => {
 });
 
 describe('createAssistantHandler orchestration', () => {
-  it('answers a relevant question in secret -> quota -> OpenAI order', async () => {
+  it('answers a relevant question in quota -> secret -> OpenAI order', async () => {
     const order: string[] = [];
     const dependencies = createDependencies({
       getApiKey: vi.fn(async () => {
@@ -503,7 +535,7 @@ describe('createAssistantHandler orchestration', () => {
     const response = await invoke(dependencies);
 
     expect(response.statusCode).toBe(200);
-    expect(order).toEqual(['secret', 'quota', 'openai']);
+    expect(order).toEqual(['quota', 'secret', 'openai']);
     expect(parsedBody(response)).toEqual({
       answer: '今週の数学から確認できます。',
       links: [{
@@ -664,12 +696,15 @@ describe('createAssistantHandler orchestration', () => {
     },
   );
 
-  it('revalidates an invalid injected model result and uses Contact fallback', async () => {
+  it('rejects an invalid injected model result via UnsafeModelOutputError and uses Contact fallback', async () => {
     const dependencies = createDependencies({
-      requestOpenAI: vi.fn(async () => ({
-        ...successfulOpenAIResult,
-        output: { answer: '', pageIds: [] },
-      })),
+      requestOpenAI: vi.fn(async () => {
+        throw new UnsafeModelOutputError('Unsafe model output', {
+          inputTokens: 10,
+          outputTokens: 0,
+          totalTokens: 10,
+        });
+      }),
     });
     const response = await invoke(dependencies);
 

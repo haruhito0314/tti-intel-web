@@ -11,10 +11,12 @@ import {
 } from 'react';
 import { Send, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import type { AssistantUiMessage } from './types';
+import {
+    MAX_ASSISTANT_QUESTION_LENGTH,
+    type AssistantUiMessage,
+} from './types';
 
-const MAX_QUESTION_LENGTH = 500;
-const TOO_LONG_MESSAGE = '質問は500文字以内で入力してください。';
+const TOO_LONG_MESSAGE = `質問は${MAX_ASSISTANT_QUESTION_LENGTH}文字以内で入力してください。`;
 const GREETING_MESSAGE =
     'こんにちは。私はこのサイトを案内するAIアシスタントです。ページの探し方や公開コンテンツについて、気軽に聞いてください。';
 
@@ -85,7 +87,7 @@ export function AssistantConversation({
         if (trimmedDraft.length === 0) {
             return;
         }
-        if (trimmedDraft.length > MAX_QUESTION_LENGTH) {
+        if (trimmedDraft.length > MAX_ASSISTANT_QUESTION_LENGTH) {
             setLocalError(TOO_LONG_MESSAGE);
             return;
         }
@@ -232,7 +234,7 @@ export function AssistantConversation({
                         id={inputId}
                         value={draft}
                         rows={1}
-                        maxLength={MAX_QUESTION_LENGTH}
+                        maxLength={MAX_ASSISTANT_QUESTION_LENGTH}
                         placeholder="メッセージを入力します"
                         disabled={sending}
                         aria-describedby={`${countId}${displayedError ? ` ${errorId}` : ''}`}
@@ -252,7 +254,7 @@ export function AssistantConversation({
                     </button>
                 </div>
                 <div className="assistant-form-meta">
-                    <span id={countId}>{draft.length} / {MAX_QUESTION_LENGTH}</span>
+                    <span id={countId}>{draft.length} / {MAX_ASSISTANT_QUESTION_LENGTH}</span>
                 </div>
                 {displayedError && (
                     <p id={errorId} role="alert">

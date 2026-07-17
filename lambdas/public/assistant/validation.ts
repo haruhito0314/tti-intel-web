@@ -7,10 +7,12 @@ import type {
 
 const MAX_RAW_BODY_LENGTH = 65_536;
 const MAX_MESSAGE_LENGTH = 500;
+const MAX_MODEL_ANSWER_LENGTH = 200;
 const MAX_CURRENT_PATH_LENGTH = 256;
-const MAX_HISTORY_MESSAGES = 12;
+/** Frontend sends at most 2 prior user turns; match that on the wire. */
+const MAX_HISTORY_MESSAGES = 2;
 const MAX_HISTORY_CONTENT_LENGTH = 800;
-const MAX_HISTORY_TOTAL_LENGTH = 8_000;
+const MAX_HISTORY_TOTAL_LENGTH = 1_200;
 const MAX_MODEL_PAGE_IDS = 3;
 const MAX_MODEL_CONTENT_IDS = 3;
 
@@ -64,7 +66,7 @@ function parseHistory(value: unknown): HistoryMessage[] {
     }
 
     const { role, content } = item;
-    if ((role !== 'user' && role !== 'assistant') || typeof content !== 'string') {
+    if (role !== 'user' || typeof content !== 'string') {
       return invalidRequest();
     }
 
@@ -161,7 +163,7 @@ export function validateModelGuideResponse(
   }
 
   const trimmedAnswer = answer.trim();
-  if (trimmedAnswer.length === 0 || trimmedAnswer.length > MAX_MESSAGE_LENGTH) {
+  if (trimmedAnswer.length === 0 || trimmedAnswer.length > MAX_MODEL_ANSWER_LENGTH) {
     return unsafeModelOutput();
   }
 

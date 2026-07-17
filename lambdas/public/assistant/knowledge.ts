@@ -209,8 +209,15 @@ export function scoreGuideEntry(
   }
   for (const faq of entry.faqs) {
     const question = normalizeSearchText(faq.question);
-    // FAQ matches alone must clear the selection threshold of 3.
-    if (question && query.includes(question)) score += 3;
+    if (!question || query.length < 2) continue;
+    // Full FAQ paste, or a substantial user phrase contained in the FAQ.
+    // Short probes like 「何が」「アプリ」 must not match every FAQ that mentions them.
+    if (
+      query.includes(question)
+      || (query.length >= 6 && question.includes(query))
+    ) {
+      score += 3;
+    }
   }
   if (currentPageId === entry.id) score += 1;
   return score;

@@ -6,7 +6,8 @@ import {
   type TransactWriteCommandInput,
 } from '@aws-sdk/lib-dynamodb';
 
-const JST_OFFSET_MILLISECONDS = 9 * 60 * 60 * 1_000;
+import { jstDateKey } from './dayKey.js';
+
 const DAILY_TTL_SECONDS = 2 * 24 * 60 * 60;
 const SESSION_TTL_SECONDS = 60 * 60;
 
@@ -100,12 +101,6 @@ export function readQuotaConfig(
 
 function sha256(value: string): string {
   return createHash('sha256').update(value).digest('hex');
-}
-
-function jstDateKey(now: Date): string {
-  return new Date(now.getTime() + JST_OFFSET_MILLISECONDS)
-    .toISOString()
-    .slice(0, 10);
 }
 
 export function buildQuotaTransaction(

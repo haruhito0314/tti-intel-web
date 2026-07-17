@@ -1,10 +1,12 @@
 import { z } from 'zod';
-import type {
-    AssistantApiErrorKind,
-    AssistantClient,
-    AssistantResponse,
+import {
+    MAX_ASSISTANT_ANSWER_LENGTH,
+    type AssistantApiErrorKind,
+    type AssistantClient,
+    type AssistantResponse,
 } from './types';
 
+/** Client abort sits above Lambda OpenAI timeout (20s) plus API Gateway slack. */
 const DEFAULT_TIMEOUT_MS = 28_000;
 const INTERNAL_HREF_PATTERN = /^(?:\/(?:[A-Za-z0-9._~%-]+(?:\/[A-Za-z0-9._~%-]+)*)?)$/;
 
@@ -15,7 +17,7 @@ const assistantLinkSchema = z.object({
 }).strict();
 
 const assistantResponseSchema = z.object({
-    answer: z.string().trim().min(1).max(500),
+    answer: z.string().trim().min(1).max(MAX_ASSISTANT_ANSWER_LENGTH),
     links: z.array(assistantLinkSchema).max(3).superRefine((links, context) => {
         const hrefs = new Set<string>();
 

@@ -2,7 +2,6 @@ import { normalizeSearchText } from './knowledge.js';
 import type {
   ContentEntry,
   ContentKind,
-  PageId,
   RankedContentEntry,
 } from './types.js';
 
@@ -58,7 +57,9 @@ function scoreTextMatch(query: string, value: string): number {
   const haystack = normalizeSearchText(value);
   if (!haystack) return 0;
   if (query === haystack) return 8;
-  if (query.includes(haystack) || haystack.includes(query)) return 5;
+  if (query.includes(haystack)) return 5;
+  // Short reverse matches flood many titles; require a substantial query phrase.
+  if (query.length >= 6 && haystack.includes(query)) return 5;
 
   let score = 0;
   const tokens = haystack.split(/[\s/|,_-]+/).filter((token) => token.length >= 2);
@@ -74,7 +75,14 @@ export function scoreContentCandidate(
     title: string;
     excerpt?: string;
     tags?: readonly string[];
+    /** Item-specific terms (title-adjacent); alone can clear the threshold. */
     keywords?: readonly string[];
+    /**
+     * Shared kind labels like 「ニュース」「数学」.
+     * Only boost when the item already matched on title/excerpt/tags/keywords,
+     * so a bare category word does not flood every item of that kind.
+     */
+    categoryKeywords?: readonly string[];
   },
 ): number {
   const normalizedQuery = normalizeSearchText(query);
@@ -82,7 +90,11 @@ export function scoreContentCandidate(
 
   if (candidate.excerpt) {
     const excerpt = normalizeSearchText(candidate.excerpt);
-    if (excerpt && normalizedQuery.length >= 2 && excerpt.includes(normalizedQuery)) {
+    if (
+      excerpt
+      && normalizedQuery.length >= 6
+      && excerpt.includes(normalizedQuery)
+    ) {
       score += 3;
     }
   }
@@ -94,6 +106,15 @@ export function scoreContentCandidate(
   for (const keyword of candidate.keywords ?? []) {
     const normalizedKeyword = normalizeSearchText(keyword);
     if (normalizedKeyword && normalizedQuery.includes(normalizedKeyword)) score += 3;
+  }
+
+  if (score > 0) {
+    for (const keyword of candidate.categoryKeywords ?? []) {
+      const normalizedKeyword = normalizeSearchText(keyword);
+      if (normalizedKeyword && normalizedQuery.includes(normalizedKeyword)) {
+        score += 1;
+      }
+    }
   }
 
   return score;
@@ -155,7 +176,7 @@ export async function selectRelevantContent(
         title: item.title,
         excerpt: item.excerpt,
         tags: item.tags,
-        keywords: ['お知らせ', 'ニュース', '記事'],
+        categoryKeywords: ['お知らせ', 'ニュース', '記事'],
       }),
     }))
     .filter(({ score }) => score >= MIN_CONTENT_SCORE)
@@ -176,7 +197,7 @@ export async function selectRelevantContent(
     const score = scoreContentCandidate(normalizedQuery, {
       title: item.title,
       excerpt: item.body,
-      keywords: ['掲示板', '相談', '投稿'],
+      categoryKeywords: ['掲示板', '相談', '投稿'],
     });
     if (score < MIN_CONTENT_SCORE) continue;
     ranked.push({ entry: toBoardEntry(item), score });
@@ -188,7 +209,8 @@ export async function selectRelevantContent(
     const score = scoreContentCandidate(normalizedQuery, {
       title: item.title,
       excerpt: item.problem,
-      keywords: ['数学', '問題', '今週', item.weekKey],
+      keywords: [item.weekKey],
+      categoryKeywords: ['数学', '問題', '今週'],
     });
     if (score < MIN_CONTENT_SCORE) continue;
     ranked.push({ entry: toMathEntry(item), score });
@@ -200,16 +222,4 @@ export async function selectRelevantContent(
       return a.entry.id < b.entry.id ? -1 : a.entry.id > b.entry.id ? 1 : 0;
     })
     .slice(0, MAX_CONTENT_RESULTS);
-}
-
-export function parentPageIdsFromContent(
-  content: readonly RankedContentEntry[],
-): PageId[] {
-  const pageIds: PageId[] = [];
-  for (const { entry } of content) {
-    if (!pageIds.includes(entry.parentPageId)) {
-      pageIds.push(entry.parentPageId);
-    }
-  }
-  return pageIds;
 }

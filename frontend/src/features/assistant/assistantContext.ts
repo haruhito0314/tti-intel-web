@@ -11,6 +11,7 @@ export interface AssistantContextValue {
     close(): void;
     hideForTab(): void;
     clearError(): void;
+    clearConversation(): void;
     sendMessage(message: string): Promise<boolean>;
 }
 

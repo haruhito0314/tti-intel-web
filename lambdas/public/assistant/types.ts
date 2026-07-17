@@ -15,11 +15,10 @@ export const PAGE_IDS = [
 
 export type PageId = (typeof PAGE_IDS)[number];
 export type Audience = 'visitor' | 'member';
-export type AssistantRole = 'user' | 'assistant';
 export type ContentKind = 'news' | 'board' | 'weekly-math';
 
 export interface HistoryMessage {
-  role: AssistantRole;
+  role: 'user';
   content: string;
 }
 

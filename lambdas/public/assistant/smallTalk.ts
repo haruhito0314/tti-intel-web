@@ -184,6 +184,13 @@ export function isShortFollowUpProbe(message: string): boolean {
     'どうやって',
     'なぜ',
     'どうして',
+    'どこ',
+    'いつ',
+    'それ',
+    'あれ',
+    'もっと',
+    '詳しく',
+    'もっと詳しく',
   ].includes(normalized);
 }
 
@@ -207,8 +214,9 @@ const FOLLOW_UP_PREFIXES = [
 ] as const;
 
 /**
- * Only short clarifications may reuse prior user turns for search.
- * Out-of-scope questions like 「python書いて」 must not drag the previous topic.
+ * Search may reuse history for short clarifiers (broader: prefix like 「どこから」).
+ * The model may reuse history only for bare probes or when that follow-up search hit —
+ * see shouldTreatAsFollowUp. Keep these two gates separate on purpose.
  */
 export function shouldUseFollowUpHistory(message: string): boolean {
   if (isShortFollowUpProbe(message)) {
@@ -224,12 +232,29 @@ export function shouldUseFollowUpHistory(message: string): boolean {
     return false;
   }
 
-  // Latin/code-like messages are almost always a new topic.
-  if (/[a-z0-9]/i.test(normalized)) {
-    return false;
-  }
-
+  // Require a follow-up prefix first so Latin/code clarifiers like 「どこでAPI」
+  // still work, while bare topics like 「python書いて」 stay rejected.
   return FOLLOW_UP_PREFIXES.some((prefix) => (
     normalized === prefix || normalized.startsWith(prefix)
   ));
+}
+
+/**
+ * Whether the model should treat the turn as a continuation of the prior topic.
+ * Stricter than search: only when follow-up search hit, or the message is a
+ * bare probe like 「どこ？」. Longer clarifications (e.g. 「どこから見るの？」)
+ * get history only via usedFollowUpSearch so new topics are not dragged in.
+ */
+export function shouldTreatAsFollowUp(
+  message: string,
+  history: readonly { role: string; content: string }[],
+  usedFollowUpSearch: boolean,
+): boolean {
+  if (history.filter((entry) => entry.role === 'user').length === 0) {
+    return false;
+  }
+  if (usedFollowUpSearch) {
+    return true;
+  }
+  return isShortFollowUpProbe(message);
 }

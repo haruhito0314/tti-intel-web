@@ -86,6 +86,7 @@ function AssistantHarness() {
             <button type="button" onClick={assistant.close}>閉じる</button>
             <button type="button" onClick={assistant.hideForTab}>タブ内で隠す</button>
             <button type="button" onClick={assistant.clearError}>エラーを消す</button>
+            <button type="button" onClick={assistant.clearConversation}>会話をクリア</button>
             <button
                 type="button"
                 onClick={() => navigate('/about?from=assistant#team')}
@@ -320,7 +321,7 @@ describe('AssistantProvider', () => {
         expect(screen.getByTestId('last-result')).toHaveTextContent('true');
     });
 
-    it('sends exactly the previous 12 role/content messages without duplicating the current one', async () => {
+    it('sends at most the previous two user messages without duplicating the current one', async () => {
         const client: AssistantClient = {
             send: vi.fn(async ({ message }) => ({
                 answer: `answer-${message}`,
@@ -350,8 +351,6 @@ describe('AssistantProvider', () => {
             currentPath: '/news',
             sessionId: 'id-1',
             history: [
-                { role: 'user', content: 'question-4' },
-                { role: 'user', content: 'question-5' },
                 { role: 'user', content: 'question-6' },
                 { role: 'user', content: 'question-7' },
             ],
@@ -363,6 +362,39 @@ describe('AssistantProvider', () => {
         expect(requests[7].history.every((entry) => entry.role === 'user')).toBe(
             true,
         );
+    });
+
+    it('clears conversation history while keeping the session id', async () => {
+        const client: AssistantClient = {
+            send: vi.fn()
+                .mockResolvedValueOnce(firstResponse)
+                .mockResolvedValueOnce({
+                    answer: '新しい会話の回答です。',
+                    links: [],
+                }),
+        };
+        renderProvider({ client, createId: createIdFactory() });
+
+        enterQuestion('first question');
+        clickButton('質問を送る');
+        await waitFor(() => expect(readState().messages).toHaveLength(2));
+
+        clickButton('会話をクリア');
+        expect(readState()).toMatchObject({
+            messages: [],
+            errorMessage: null,
+        });
+
+        enterQuestion('after clear');
+        clickButton('質問を送る');
+        await waitFor(() => expect(client.send).toHaveBeenCalledTimes(2));
+
+        expect(vi.mocked(client.send).mock.calls[1][0]).toEqual({
+            message: 'after clear',
+            currentPath: '/news',
+            sessionId: 'id-1',
+            history: [],
+        });
     });
 
     it('suppresses a synchronous duplicate while the first request is pending', async () => {

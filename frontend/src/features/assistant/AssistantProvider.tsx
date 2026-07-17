@@ -15,10 +15,11 @@ import {
     AssistantContext,
     type AssistantContextValue,
 } from './assistantContext';
-import type {
-    AssistantClient,
-    AssistantHistoryMessage,
-    AssistantUiMessage,
+import {
+    MAX_ASSISTANT_QUESTION_LENGTH,
+    type AssistantClient,
+    type AssistantHistoryMessage,
+    type AssistantUiMessage,
 } from './types';
 
 function createUuid() {
@@ -87,11 +88,20 @@ export function AssistantProvider({
         setErrorMessage(null);
     }, []);
 
+    const clearConversation = useCallback(() => {
+        if (sendingRef.current) {
+            return;
+        }
+        messagesRef.current = [];
+        setMessages([]);
+        setErrorMessage(null);
+    }, []);
+
     const sendMessage = useCallback(async (message: string): Promise<boolean> => {
         const trimmedMessage = message.trim();
         if (
             trimmedMessage.length === 0
-            || trimmedMessage.length > 500
+            || trimmedMessage.length > MAX_ASSISTANT_QUESTION_LENGTH
             || hiddenRef.current
             || sendingRef.current
         ) {
@@ -100,9 +110,10 @@ export function AssistantProvider({
 
         // Send recent user turns only. Including prior assistant answers makes
         // small models echo the last reply instead of answering the new message.
+        // Two prior turns match backend follow-up search; more increases topic bleed.
         const history: AssistantHistoryMessage[] = messagesRef.current
             .filter((entry) => entry.role === 'user')
-            .slice(-4)
+            .slice(-2)
             .map(({ role, content }) => ({ role, content }));
         const optimisticId = createId();
         const optimisticMessage: AssistantUiMessage = {
@@ -167,6 +178,7 @@ export function AssistantProvider({
         close,
         hideForTab,
         clearError,
+        clearConversation,
         sendMessage,
     };
 

@@ -144,6 +144,21 @@ describe('deterministic guide search', () => {
     expect(selected[0]?.score).toBeGreaterThanOrEqual(3);
   });
 
+  it('matches when the user phrase appears inside a longer FAQ question', () => {
+    const entry = guideEntry({
+      keywords: [],
+      faqs: [{
+        question: 'Gitやnpmの練習はできますか？',
+        answer: 'できます。',
+      }],
+    });
+
+    expect(scoreGuideEntry('Gitやnpm', null, entry)).toBe(3);
+    expect(selectRelevantKnowledge('Gitやnpmの練習はできますか？', '/unknown').map(
+      ({ entry: selected }) => selected.id,
+    )).toContain('cli-practice');
+  });
+
   it('matches common About paraphrases via synonym keywords', () => {
     expect(selectRelevantKnowledge('お金かかるの？', '/').map(
       ({ entry }) => entry.id,

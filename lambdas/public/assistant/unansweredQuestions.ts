@@ -1,5 +1,7 @@
 import { PutCommand, type DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 
+import { jstDateKey } from './dayKey.js';
+
 export const UNANSWERED_TTL_SECONDS = 90 * 24 * 60 * 60;
 
 export type UnansweredReason =
@@ -29,9 +31,8 @@ export function buildUnansweredQuestionRecord(
   input: UnansweredQuestionInput,
 ): UnansweredQuestionRecord {
   const createdAt = input.now.toISOString();
-  const dayKey = createdAt.slice(0, 10);
   return {
-    pk: `DAY#${dayKey}`,
+    pk: `DAY#${jstDateKey(input.now)}`,
     sk: `TS#${createdAt}#${input.requestId}`,
     message: input.message,
     currentPath: input.currentPath,

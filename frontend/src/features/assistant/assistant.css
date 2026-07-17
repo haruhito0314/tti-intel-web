@@ -235,14 +235,6 @@
   font-size: 0.875rem;
 }
 
-.assistant-menu-button {
-  border: 1px solid var(--line-soft);
-  background: var(--surface-2);
-  color: var(--foreground);
-  font: inherit;
-  cursor: pointer;
-}
-
 .assistant-send {
   display: inline-flex;
   width: 48px;
@@ -352,22 +344,46 @@
   display: none;
 }
 
-.assistant-menu-button {
+.assistant-menu-panel {
   position: absolute;
   top: calc(100% + 0.25rem);
   right: -3rem;
-  display: flex;
+  display: grid;
   width: min(280px, calc(100vw - 2rem));
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  background: var(--surface-2);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+}
+
+.assistant-menu-button {
+  display: flex;
+  width: 100%;
   min-height: 44px;
   align-items: center;
   gap: 0.625rem;
   padding: 0.75rem;
-  border-radius: 12px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--foreground);
+  font: inherit;
   text-align: left;
+  cursor: pointer;
 }
 
-.assistant-menu:not([open]) > .assistant-menu-button {
+.assistant-menu-button:hover:not(:disabled) {
+  background: var(--surface-1);
+}
+
+.assistant-menu-button:disabled {
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.assistant-menu:not([open]) > .assistant-menu-panel {
   display: none;
 }
 
