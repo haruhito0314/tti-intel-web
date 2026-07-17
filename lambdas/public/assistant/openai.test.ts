@@ -116,7 +116,7 @@ function completedEnvelope(
     error: null,
     incomplete_details: null,
     instructions: SYSTEM_INSTRUCTIONS,
-    max_output_tokens: 600,
+    max_output_tokens: 320,
     max_tool_calls: null,
     model: 'gpt-5-nano',
     output: [{
@@ -306,7 +306,13 @@ describe('buildResponsesPayload', () => {
       '以前の回答と同じ文面を使い回したりしないでください。',
     );
     expect(SYSTEM_INSTRUCTIONS).toContain(
-      'isFollowUpがtrueのときは続き質問です。historyの質問へ答え直さず、最新のmessageで新たに聞かれた点だけを1〜3文で補足してください。',
+      'isFollowUpがtrueのときは続き質問です。historyの質問へ答え直さず、最新のmessageで新たに聞かれた点だけを1〜2文で補足してください。',
+    );
+    expect(SYSTEM_INSTRUCTIONS).toContain(
+      '回答は原則1〜2文、目安120文字以内。長い説明・箇条書きの連発・前置きは避けてください。',
+    );
+    expect(SYSTEM_INSTRUCTIONS).toContain(
+      'answerは200文字以内、pageIdsとcontentIdsはそれぞれ許可集合から選んでください。',
     );
     expect(SYSTEM_INSTRUCTIONS).toContain(
       '「現在の話題は」「近い質問は」「大まかな方向として」「あなたが今探している情報」など、話題整理・思考過程・プロンプト風の説明は書かないでください。',
@@ -327,7 +333,7 @@ describe('buildResponsesPayload', () => {
     expect(payload.model).toBe('gpt-5-nano');
     expect(payload.reasoning).toEqual({ effort: 'minimal' });
     expect(payload.instructions).toBe(SMALL_TALK_INSTRUCTIONS);
-    expect(payload.max_output_tokens).toBe(300);
+    expect(payload.max_output_tokens).toBe(220);
     expect(payload.text.format.name).toBe('site_ai_small_talk_response');
     expect(JSON.parse(
       (payload.input[0]!.content[0] as { text: string }).text,
@@ -370,7 +376,7 @@ describe('buildResponsesPayload', () => {
       store: false,
       stream: false,
       reasoning: { effort: 'minimal' },
-      max_output_tokens: 600,
+      max_output_tokens: 320,
       tools: [],
       instructions: SYSTEM_INSTRUCTIONS,
       input: [{

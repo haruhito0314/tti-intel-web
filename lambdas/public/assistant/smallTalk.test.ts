@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isCasualConversation, isShortFollowUpProbe } from './smallTalk.js';
+import { isCasualConversation, isShortFollowUpProbe, shouldUseFollowUpHistory } from './smallTalk.js';
 
 describe('isCasualConversation', () => {
   it.each([
@@ -65,5 +65,25 @@ describe('isShortFollowUpProbe', () => {
 
   it.each(['何がしたい', '会社', 'サイト'])('rejects %j', (message) => {
     expect(isShortFollowUpProbe(message)).toBe(false);
+  });
+});
+
+describe('shouldUseFollowUpHistory', () => {
+  it.each([
+    'どこから見るの？',
+    'もっと詳しく',
+    '何が',
+    'それってどこ',
+  ])('allows short clarifications %j', (message) => {
+    expect(shouldUseFollowUpHistory(message)).toBe(true);
+  });
+
+  it.each([
+    'pythonのコードを書いて',
+    '銀河の年齢を教えてください',
+    '天気はどう？',
+    '宇宙について教えて',
+  ])('rejects out-of-scope or new-topic messages %j', (message) => {
+    expect(shouldUseFollowUpHistory(message)).toBe(false);
   });
 });

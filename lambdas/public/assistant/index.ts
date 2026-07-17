@@ -34,7 +34,7 @@ import {
   reserveQuota,
   type QuotaReservationInput,
 } from './quota.js';
-import { isCasualConversation } from './smallTalk.js';
+import { isCasualConversation, shouldUseFollowUpHistory } from './smallTalk.js';
 import type {
   AssistantRequest,
   AssistantResponse,
@@ -297,7 +297,12 @@ export function createAssistantHandler(
       let content = casual
         ? []
         : await dependencies.searchContent(request.message);
-      if (!casual && selected.length === 0 && content.length === 0) {
+      if (
+        !casual
+        && selected.length === 0
+        && content.length === 0
+        && shouldUseFollowUpHistory(request.message)
+      ) {
         const followUpQuery = buildFollowUpSearchQuery(
           request.message,
           request.history,

@@ -186,3 +186,50 @@ export function isShortFollowUpProbe(message: string): boolean {
     'どうして',
   ].includes(normalized);
 }
+
+const FOLLOW_UP_PREFIXES = [
+  'どこ',
+  'いつ',
+  'なぜ',
+  'どうして',
+  'どうやって',
+  'どういう',
+  'どんな',
+  'どう',
+  'どれ',
+  'どっち',
+  'なに',
+  '何',
+  'それ',
+  'あれ',
+  'もっと',
+  '詳しく',
+] as const;
+
+/**
+ * Only short clarifications may reuse prior user turns for search.
+ * Out-of-scope questions like 「python書いて」 must not drag the previous topic.
+ */
+export function shouldUseFollowUpHistory(message: string): boolean {
+  if (isShortFollowUpProbe(message)) {
+    return true;
+  }
+
+  const normalized = normalizeSearchText(message)
+    .replace(/[!！?？。．、,，〜~…・]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (normalized.length === 0 || normalized.length > 20) {
+    return false;
+  }
+
+  // Latin/code-like messages are almost always a new topic.
+  if (/[a-z0-9]/i.test(normalized)) {
+    return false;
+  }
+
+  return FOLLOW_UP_PREFIXES.some((prefix) => (
+    normalized === prefix || normalized.startsWith(prefix)
+  ));
+}

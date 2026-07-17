@@ -267,7 +267,7 @@ describe('createAssistantHandler CORS and early exits', () => {
 
     expect(response.statusCode).toBe(200);
     expect(parsedBody(response)).toEqual(CONTACT_FALLBACK);
-    expect(dependencies.searchContent).toHaveBeenCalledTimes(2);
+    expect(dependencies.searchContent).toHaveBeenCalledTimes(1);
     expect(dependencies.recordUnanswered).toHaveBeenCalledWith({
       requestId: 'api-gateway-request-1',
       message: '銀河の年齢を教えてください',
@@ -275,6 +275,23 @@ describe('createAssistantHandler CORS and early exits', () => {
       reason: 'no_relevant_knowledge',
       now: quotaNow,
     });
+    expectNoPaidModelCalls(dependencies);
+  });
+
+  it('does not reuse prior topic for out-of-scope messages', async () => {
+    const dependencies = createDependencies();
+    const response = await invoke(dependencies, validPostEvent({
+      body: JSON.stringify({
+        ...validRequest,
+        message: 'pythonのコードを書いて',
+        history: [{ role: 'user', content: '今週の数学について教えて' }],
+      }),
+    }));
+
+    expect(response.statusCode).toBe(200);
+    expect(parsedBody(response)).toEqual(CONTACT_FALLBACK);
+    expect(dependencies.searchContent).toHaveBeenCalledTimes(1);
+    expect(dependencies.searchContent).toHaveBeenCalledWith('pythonのコードを書いて');
     expectNoPaidModelCalls(dependencies);
   });
 

@@ -171,6 +171,48 @@ describe('deterministic guide search', () => {
     )).toContain('about');
   });
 
+  it('matches priority visitor phrasings for join, schedule, place, and assistant help', () => {
+    expect(selectRelevantKnowledge('入りたい', '/').map(
+      ({ entry }) => entry.id,
+    )).toEqual(expect.arrayContaining(['about', 'contact']));
+    expect(selectRelevantKnowledge('会費ある？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('about');
+    expect(selectRelevantKnowledge('いつやってる？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('about');
+    expect(selectRelevantKnowledge('場所はどこ？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('about');
+    expect(selectRelevantKnowledge('TTIって何', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('home');
+    expect(selectRelevantKnowledge('豊田工大', '/').map(
+      ({ entry }) => entry.id,
+    )).toEqual(expect.arrayContaining(['home', 'about']));
+    expect(selectRelevantKnowledge('使い方教えて', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('home');
+    expect(selectRelevantKnowledge('何が聞ける', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('home');
+    expect(selectRelevantKnowledge('取材したい', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('contact');
+  });
+
+  it('matches what-can-you-do phrasings', () => {
+    expect(selectRelevantKnowledge('何ができる？', '/').map(
+      ({ entry }) => entry.id,
+    )).toEqual(expect.arrayContaining(['home', 'about']));
+    expect(selectRelevantKnowledge('なにができるの', '/').map(
+      ({ entry }) => entry.id,
+    )).toEqual(expect.arrayContaining(['home', 'about']));
+    expect(selectRelevantKnowledge('できること教えて', '/').map(
+      ({ entry }) => entry.id,
+    )).toEqual(expect.arrayContaining(['home', 'about']));
+  });
+
   it('matches site, company, and partnership phrasings', () => {
     expect(selectRelevantKnowledge('サイト', '/').map(
       ({ entry }) => entry.id,
