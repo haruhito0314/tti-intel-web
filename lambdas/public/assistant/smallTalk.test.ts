@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isCasualConversation } from './smallTalk.js';
+import { isCasualConversation, isShortFollowUpProbe } from './smallTalk.js';
 
 describe('isCasualConversation', () => {
   it.each([
@@ -22,6 +22,15 @@ describe('isCasualConversation', () => {
     'ありがと',
     'サンキュー',
     'thx',
+    '大丈夫',
+    '大丈夫です',
+    'だいじょうぶ',
+    '了解',
+    'わかった',
+    'わかりました',
+    'サイト わかりました',
+    'なるほど',
+    'ok',
     'Hello',
     'hi',
     'thanks',
@@ -37,8 +46,24 @@ describe('isCasualConversation', () => {
     'Instagramある？',
     'こんにちは、費用はかかりますか？',
     'ありがとう、費用はいくら？',
+    'サイトについて教えて',
+    '会社と提携したい',
+    '何が',
     '',
   ])('rejects %j', (message) => {
     expect(isCasualConversation(message)).toBe(false);
+  });
+});
+
+describe('isShortFollowUpProbe', () => {
+  it.each(['何が', '何を', '何の', 'なにが', 'どれ', 'なぜ'])(
+    'accepts %j',
+    (message) => {
+      expect(isShortFollowUpProbe(message)).toBe(true);
+    },
+  );
+
+  it.each(['何がしたい', '会社', 'サイト'])('rejects %j', (message) => {
+    expect(isShortFollowUpProbe(message)).toBe(false);
   });
 });

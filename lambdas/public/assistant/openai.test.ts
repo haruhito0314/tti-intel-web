@@ -306,7 +306,10 @@ describe('buildResponsesPayload', () => {
       '以前の回答と同じ文面を使い回したりしないでください。',
     );
     expect(SYSTEM_INSTRUCTIONS).toContain(
-      'isFollowUpがtrueのときは続き質問です。historyの質問へもう一度答え直さず、最新のmessageで新たに聞かれた点だけを短く補足してください。',
+      'isFollowUpがtrueのときは続き質問です。historyの質問へ答え直さず、最新のmessageで新たに聞かれた点だけを1〜3文で補足してください。',
+    );
+    expect(SYSTEM_INSTRUCTIONS).toContain(
+      '「現在の話題は」「近い質問は」「大まかな方向として」「あなたが今探している情報」など、話題整理・思考過程・プロンプト風の説明は書かないでください。',
     );
     expect(SYSTEM_INSTRUCTIONS).toContain(
       '「回答しない」「本文には触れない」などの内部ルールを利用者向けの文言として書かないでください。',

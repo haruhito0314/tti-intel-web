@@ -329,7 +329,7 @@ describe('createAssistantHandler CORS and early exits', () => {
     }));
 
     expect(response.statusCode).toBe(200);
-    expect(dependencies.searchContent).toHaveBeenCalledTimes(1);
+    expect(dependencies.searchContent).not.toHaveBeenCalled();
     expect(dependencies.requestOpenAI).toHaveBeenCalledWith(expect.objectContaining({
       mode: 'small_talk',
       request: expect.objectContaining({
@@ -339,6 +339,58 @@ describe('createAssistantHandler CORS and early exits', () => {
     expect(parsedBody(response)).toMatchObject({
       answer: 'どういたしまして！ほかにも知りたいことがあれば聞いてください。',
     });
+  });
+
+  it('routes short acknowledgements through small-talk without follow-up search', async () => {
+    const dependencies = createDependencies({
+      requestOpenAI: vi.fn(async () => ({
+        output: {
+          answer: '了解です！また何かあれば聞いてください。',
+          pageIds: ['home'],
+          contentIds: [],
+        },
+        usage: { inputTokens: 20, outputTokens: 15, totalTokens: 35 },
+      })),
+    });
+    const response = await invoke(dependencies, validPostEvent({
+      body: JSON.stringify({
+        ...validRequest,
+        message: '大丈夫',
+        history: [{ role: 'user', content: '今週の数学が難しいね' }],
+      }),
+    }));
+
+    expect(response.statusCode).toBe(200);
+    expect(dependencies.searchContent).not.toHaveBeenCalled();
+    expect(dependencies.requestOpenAI).toHaveBeenCalledWith(expect.objectContaining({
+      mode: 'small_talk',
+    }));
+  });
+
+  it('routes topic acknowledgements like サイト わかりました through small-talk', async () => {
+    const dependencies = createDependencies({
+      requestOpenAI: vi.fn(async () => ({
+        output: {
+          answer: '了解です！ほかにも聞きたいことがあればどうぞ。',
+          pageIds: ['home'],
+          contentIds: [],
+        },
+        usage: { inputTokens: 20, outputTokens: 12, totalTokens: 32 },
+      })),
+    });
+    const response = await invoke(dependencies, validPostEvent({
+      body: JSON.stringify({
+        ...validRequest,
+        message: 'サイト わかりました',
+        history: [{ role: 'user', content: 'このサイトは何ですか？' }],
+      }),
+    }));
+
+    expect(response.statusCode).toBe(200);
+    expect(dependencies.searchContent).not.toHaveBeenCalled();
+    expect(dependencies.requestOpenAI).toHaveBeenCalledWith(expect.objectContaining({
+      mode: 'small_talk',
+    }));
   });
 
   it('retries knowledge search with recent user history for short follow-ups', async () => {
@@ -407,8 +459,7 @@ describe('createAssistantHandler CORS and early exits', () => {
     }));
 
     expect(response.statusCode).toBe(200);
-    expect(dependencies.searchContent).toHaveBeenCalledTimes(1);
-    expect(dependencies.searchContent).toHaveBeenCalledWith('こんにちは');
+    expect(dependencies.searchContent).not.toHaveBeenCalled();
     expect(dependencies.requestOpenAI).toHaveBeenCalledWith(expect.objectContaining({
       mode: 'small_talk',
     }));

@@ -171,10 +171,24 @@ describe('deterministic guide search', () => {
     )).toContain('about');
   });
 
-  it('does not let short About synonyms steal weekly-math queries', () => {
-    expect(selectRelevantKnowledge('今週の数学はどこ？', '/').map(
+  it('matches site, company, and partnership phrasings', () => {
+    expect(selectRelevantKnowledge('サイト', '/').map(
       ({ entry }) => entry.id,
-    )).toEqual(['weekly-math']);
+    )).toContain('home');
+    expect(selectRelevantKnowledge('会社から連絡したい', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('contact');
+    expect(selectRelevantKnowledge('提携したい', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('contact');
+  });
+
+  it('matches short follow-ups like 何が when recent user history is included', () => {
+    expect(selectRelevantKnowledge('何が', '/')).toEqual([]);
+    expect(selectRelevantKnowledge(
+      '活動内容を知りたい 何が',
+      '/',
+    ).map(({ entry }) => entry.id)).toEqual(expect.arrayContaining(['home', 'about']));
   });
 
   it('builds a follow-up search query from recent user history only', () => {

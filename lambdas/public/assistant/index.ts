@@ -289,26 +289,30 @@ export function createAssistantHandler(
       }
       const request = parseAssistantRequest(event.body);
       unansweredRequest = request;
-      let selected = selectRelevantKnowledge(
-        request.message,
-        request.currentPath,
-      );
-      let content = await dependencies.searchContent(request.message);
-      const followUpQuery = selected.length === 0
-        && content.length === 0
-        && !isCasualConversation(request.message)
-        ? buildFollowUpSearchQuery(request.message, request.history)
-        : null;
-      if (followUpQuery !== null) {
-        selected = selectRelevantKnowledge(
-          followUpQuery,
-          request.currentPath,
+      // Acknowledgements like 「サイト わかりました」 must not re-enter guide search.
+      const casual = isCasualConversation(request.message);
+      let selected = casual
+        ? []
+        : selectRelevantKnowledge(request.message, request.currentPath);
+      let content = casual
+        ? []
+        : await dependencies.searchContent(request.message);
+      if (!casual && selected.length === 0 && content.length === 0) {
+        const followUpQuery = buildFollowUpSearchQuery(
+          request.message,
+          request.history,
         );
-        content = await dependencies.searchContent(followUpQuery);
+        if (followUpQuery !== null) {
+          selected = selectRelevantKnowledge(
+            followUpQuery,
+            request.currentPath,
+          );
+          content = await dependencies.searchContent(followUpQuery);
+        }
       }
       const smallTalk = selected.length === 0
         && content.length === 0
-        && isCasualConversation(request.message);
+        && casual;
 
       if (selected.length === 0 && content.length === 0 && !smallTalk) {
         outcome = 'no_relevant_knowledge';
