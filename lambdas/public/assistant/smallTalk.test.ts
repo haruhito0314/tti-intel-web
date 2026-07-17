@@ -35,6 +35,13 @@ describe('isCasualConversation', () => {
     'hi',
     'thanks',
     'Thank you!',
+    'こんちゃ',
+    'おつ',
+    'りょ',
+    'サンクス',
+    '助かる',
+    '了解っす',
+    'だいじょぶ',
   ])('accepts %j', (message) => {
     expect(isCasualConversation(message)).toBe(true);
   });
@@ -76,6 +83,12 @@ describe('shouldUseFollowUpHistory', () => {
     'それってどこ',
     'どこでAPI見る？',
     'もっと詳しくCLI',
+    'ページは？',
+    'リンクある？',
+    'URLは？',
+    '続きは？',
+    'さっきの',
+    '具体的には？',
   ])('allows short clarifications %j', (message) => {
     expect(shouldUseFollowUpHistory(message)).toBe(true);
   });

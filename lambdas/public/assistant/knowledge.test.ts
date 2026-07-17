@@ -288,7 +288,26 @@ describe('deterministic guide search', () => {
     expect(selectRelevantKnowledge('Discordある？', '/').map(
       ({ entry }) => entry.id,
     )).toContain('contact');
-    expect(selectRelevantKnowledge('Instagramある？', '/')).toEqual([]);
+    expect(selectRelevantKnowledge('Instagramある？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('contact');
+    expect(selectRelevantKnowledge('インスタある？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('contact');
+    expect(selectRelevantKnowledge('答え教えて', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('weekly-math');
+    expect(selectRelevantKnowledge('ヒントくれ', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('weekly-math');
+    expect(selectRelevantKnowledge('なにこれ', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('home');
+    expect(selectRelevantKnowledge('ページは？', '/')).toEqual([]);
+    expect(selectRelevantKnowledge(
+      '今週の数学について教えて ページは？',
+      '/',
+    ).map(({ entry }) => entry.id)).toContain('weekly-math');
     expect(selectRelevantKnowledge('見学だけでもいい？', '/').map(
       ({ entry }) => entry.id,
     )).toContain('about');
