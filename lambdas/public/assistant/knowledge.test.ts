@@ -294,18 +294,8 @@ describe('deterministic guide search', () => {
     expect(selectRelevantKnowledge('インスタある？', '/').map(
       ({ entry }) => entry.id,
     )).toContain('contact');
-    expect(selectRelevantKnowledge('馬渕って誰？', '/').map(
-      ({ entry }) => entry.id,
-    )).toContain('contact');
-    expect(selectRelevantKnowledge('馬淵って誰？', '/').map(
-      ({ entry }) => entry.id,
-    )).toContain('contact');
-    expect(selectRelevantKnowledge('馬渕陽仁って誰？', '/').map(
-      ({ entry }) => entry.id,
-    )).toContain('contact');
-    expect(selectRelevantKnowledge('サークル長は誰？', '/').map(
-      ({ entry }) => entry.id,
-    )).toContain('contact');
+    expect(selectRelevantKnowledge('馬渕って誰？', '/')).toEqual([]);
+    expect(selectRelevantKnowledge('馬淵陽仁', '/')).toEqual([]);
     expect(selectRelevantKnowledge('メンバーを教えて', '/').map(
       ({ entry }) => entry.id,
     )).toContain('contact');

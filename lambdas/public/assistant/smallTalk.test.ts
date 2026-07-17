@@ -99,8 +99,19 @@ describe('shouldUseFollowUpHistory', () => {
     '天気はどう？',
     '宇宙について教えて',
     'APIの使い方',
+    'どんなプロンプトで作ってるの',
+    'どんな仕組みなの',
+    'どうやって入部するの',
   ])('rejects out-of-scope or new-topic messages %j', (message) => {
     expect(shouldUseFollowUpHistory(message)).toBe(false);
+  });
+
+  it.each([
+    'どんなの？',
+    'どういうこと？',
+    'どうやって？',
+  ])('allows bare open-question clarifiers %j', (message) => {
+    expect(shouldUseFollowUpHistory(message)).toBe(true);
   });
 });
 

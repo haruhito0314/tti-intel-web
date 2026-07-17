@@ -245,6 +245,31 @@ const FOLLOW_UP_PREFIXES = [
 ] as const;
 
 /**
+ * These starters also begin full new questions (「どんなプロンプトで…」).
+ * Only treat as follow-up when the remainder is empty or a short particle.
+ */
+const OPEN_QUESTION_PREFIXES = new Set([
+  'どんな',
+  'どういう',
+  'どうやって',
+  'なに',
+  '何',
+  'どう',
+]);
+
+const OPEN_QUESTION_RESTS = new Set([
+  '',
+  'の',
+  'こと',
+  'やつ',
+  '感じ',
+  '意味',
+  '仕組み',
+  'ふう',
+  '風',
+]);
+
+/**
  * Search may reuse history for short clarifiers (broader: prefix like 「どこから」).
  * The model may reuse history only for bare probes or when that follow-up search hit —
  * see shouldTreatAsFollowUp. Keep these two gates separate on purpose.
@@ -263,11 +288,21 @@ export function shouldUseFollowUpHistory(message: string): boolean {
     return false;
   }
 
-  // Require a follow-up prefix first so Latin/code clarifiers like 「どこでAPI」
-  // still work, while bare topics like 「python書いて」 stay rejected.
-  return FOLLOW_UP_PREFIXES.some((prefix) => (
-    normalized === prefix || normalized.startsWith(prefix)
-  ));
+  // Longer prefixes first so 「どうやって」 wins over 「どう」.
+  const prefixes = [...FOLLOW_UP_PREFIXES].sort((a, b) => b.length - a.length);
+  for (const prefix of prefixes) {
+    if (normalized !== prefix && !normalized.startsWith(prefix)) {
+      continue;
+    }
+    const rest = normalized.slice(prefix.length).trim();
+    if (OPEN_QUESTION_PREFIXES.has(prefix) && !OPEN_QUESTION_RESTS.has(rest)) {
+      // Full new question, e.g. 「どんなプロンプトで作ってるの」.
+      return false;
+    }
+    return true;
+  }
+
+  return false;
 }
 
 /**
