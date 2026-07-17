@@ -58,11 +58,16 @@ const CASUAL_EXACT = new Set([
   'うんうん',
   'はい',
   'はーい',
+  'はいはい',
   'そうなんだ',
   'なるほど',
   'なるほどね',
   'そっか',
   'そうか',
+  '難しいね',
+  'むずかしいね',
+  '難しいな',
+  'むずかしいな',
   'いいよ',
   'いいです',
   '問題ない',
@@ -142,6 +147,129 @@ const TOPIC_ACK_SUFFIXES = [
   'なるほどね',
   'なるほど',
 ] as const;
+
+/**
+ * Design / look compliments about the site UI. These must not route through
+ * contact (bug-report) or home tour knowledge just because 「UI」「このサイト」 match.
+ */
+export function isLookOrDesignRemark(message: string): boolean {
+  const normalized = normalizeSearchText(message)
+    .replace(/[!！?？。．、,，〜~…・]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (normalized.length === 0 || normalized.length > 80) {
+    return false;
+  }
+
+  // Bug / fix requests stay on the contact guide path.
+  if (/不具合|バグ|おかしい|崩|重な|見えにく|修正|直して|壊|エラー/.test(normalized)) {
+    return false;
+  }
+
+  const lookTopic = /ui|ユーアイ|デザイン|見た目|雰囲気|画面|レイアウト|フォント|配色|サイト|ページ/;
+  const remarkCue = /っぽい|みたい|感じ|おしゃれ|オシャレ|かっこいい|かわいい|可愛い|きれい|綺麗|素敵|すき|好き|いいね|センス|シンプル|スタイリッシュ|洗練|モダン|ミニマル|apple|アップル|ios/;
+
+  if (!lookTopic.test(normalized) || !remarkCue.test(normalized)) {
+    return false;
+  }
+
+  // Clear how-to / availability questions are not remarks.
+  if (/(教えて|どうすれば|どこから|ありますか|ある\?|できる\?|できますか)/.test(normalized)) {
+    return false;
+  }
+
+  return true;
+}
+
+const BARE_EMPATHY_EXACT = new Set([
+  '難しいね',
+  'むずかしいね',
+  '難しいな',
+  'むずかしいな',
+  '難しい',
+  'むずかしい',
+  'なるほど',
+  'なるほどね',
+  'そっか',
+  'そうか',
+  'そうなんだ',
+  'そだね',
+]);
+
+const GREETING_EXACT = new Set([
+  'こんにちは',
+  'こんばんは',
+  'おはよう',
+  'おはようございます',
+  'はじめまして',
+  'よろしく',
+  'よろしくお願いします',
+  'よろしくお願いいたします',
+  'ハロー',
+  'hello',
+  'hi',
+  'hey',
+  'やあ',
+  'ども',
+  'こんちゃ',
+  'こんちは',
+  'ちわーす',
+  'どもです',
+]);
+
+const GREETING_PREFIXES = [
+  'こんにちは',
+  'こんばんは',
+  'おはよう',
+  'はじめまして',
+  'よろしく',
+  'hello',
+  'hi ',
+  'hey ',
+] as const;
+
+/**
+ * Short empathy / acknowledgement only — reply warmly, no page links or
+ * activity CTA (ホームへ誘導すると違和感が出る).
+ */
+export function isBareEmpathyRemark(message: string): boolean {
+  const normalized = normalizeSearchText(message)
+    .replace(/[!！?？。．、,，〜~…・]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  return BARE_EMPATHY_EXACT.has(normalized);
+}
+
+export function isGreetingMessage(message: string): boolean {
+  const normalized = normalizeSearchText(message)
+    .replace(/[!！?？。．、,，〜~…・]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (GREETING_EXACT.has(normalized)) {
+    return true;
+  }
+
+  return GREETING_PREFIXES.some((prefix) => {
+    if (!normalized.startsWith(prefix)) return false;
+    const rest = normalized.slice(prefix.length).trim();
+    return CASUAL_PREFIX_RESTS.has(rest);
+  });
+}
+
+/**
+ * Remarks / thanks / acks that should get a short reply with no verified links.
+ * Greetings may still offer a soft follow-up, but ありがとう・了解・OK に
+ * ホームを付けると不自然なので除外する.
+ */
+export function shouldOmitAssistantLinks(message: string): boolean {
+  if (isLookOrDesignRemark(message) || isBareEmpathyRemark(message)) {
+    return true;
+  }
+  return isCasualConversation(message) && !isGreetingMessage(message);
+}
 
 /**
  * Detect short greetings / thanks / acknowledgements that should get a warm

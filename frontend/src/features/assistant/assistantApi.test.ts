@@ -327,6 +327,34 @@ describe('createAssistantApi', () => {
         });
     });
 
+    it('accepts allowlisted Toyota TI official hrefs', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(jsonResponse({
+            answer: 'TTIは豊田工業大学の略です。',
+            links: [
+                {
+                    pageId: 'toyota-ti',
+                    title: '豊田工業大学',
+                    href: 'https://www.toyota-ti.ac.jp/',
+                },
+            ],
+        }));
+        const client = createAssistantApi({
+            baseUrl: 'https://api.example.com',
+            fetchImpl: injectedFetch(fetchMock),
+        });
+
+        await expect(client.send(request)).resolves.toEqual({
+            answer: 'TTIは豊田工業大学の略です。',
+            links: [
+                {
+                    pageId: 'toyota-ti',
+                    title: '豊田工業大学',
+                    href: 'https://www.toyota-ti.ac.jp/',
+                },
+            ],
+        });
+    });
+
     it('accepts root and fixed nested internal hrefs', async () => {
         const fetchMock = vi.fn().mockResolvedValue(jsonResponse({
             answer: '  固定ページを案内します。  ',

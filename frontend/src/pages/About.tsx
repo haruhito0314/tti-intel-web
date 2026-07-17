@@ -33,13 +33,13 @@ const activityShowcases = [
         imageAlt: 'コードエディタを表示したノートPC',
         actions: [
             {
-                label: 'アプリケーション',
-                href: '/app',
+                label: '開発について',
+                href: '/development',
                 external: false,
             },
             {
-                label: '開発について',
-                href: '/development',
+                label: 'アプリケーション',
+                href: '/app',
                 external: false,
             },
         ],
@@ -150,7 +150,11 @@ export function About() {
                                 <h3>{item.title}</h3>
                                 <p>{item.description}</p>
                                 <div className="activity-actions">
-                                    {item.actions.map((action) => {
+                                    {item.actions.map((action, actionIndex) => {
+                                        const buttonClass = actionIndex === 0
+                                            ? 'activity-button primary'
+                                            : 'activity-button secondary';
+
                                         if (!('href' in action) || !action.href) {
                                             return (
                                                 <span key={action.label} className="activity-button disabled" aria-disabled="true">
@@ -166,7 +170,7 @@ export function About() {
                                                     href={action.href}
                                                     target="_blank"
                                                     rel="noreferrer"
-                                                    className="activity-button primary"
+                                                    className={buttonClass}
                                                 >
                                                     {action.label}
                                                 </a>
@@ -174,7 +178,7 @@ export function About() {
                                         }
 
                                         return (
-                                            <Link key={action.label} to={action.href} className="activity-button primary">
+                                            <Link key={action.label} to={action.href} className={buttonClass}>
                                                 {action.label}
                                             </Link>
                                         );

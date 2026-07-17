@@ -29,6 +29,9 @@ export const KNOWN_PAGE_ROUTES = {
 /** Official invite; keep in sync with frontend/src/config/site.ts socialLinks.discord.url */
 export const DISCORD_INVITE_URL = 'https://discord.gg/DFWs8GrHxF';
 
+/** Toyota Technological Institute (豊田工業大学) official site. */
+export const TOYOTA_TI_URL = 'https://www.toyota-ti.ac.jp/';
+
 const PAGE_ID_SET: ReadonlySet<string> = new Set(PAGE_IDS);
 
 function invalidGuide(reason: string): never {
@@ -283,17 +286,51 @@ export function isDiscordQuestion(message: string): boolean {
   );
 }
 
+/** TTI / 豊田工業大学の正式名称・公式サイトを聞かれたとき. */
+export function isToyotaTiQuestion(message: string): boolean {
+  const normalized = normalizeSearchText(message)
+    .replace(/[!！?？。．、,，〜~…・]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (
+    normalized.includes('豊田工業大学')
+    || normalized.includes('豊田工大')
+    || normalized.includes('豊工大')
+    || normalized.includes('豊工')
+    || normalized.includes('toyota technological')
+    || normalized.includes('toyota-ti')
+    || normalized.includes('toyotati')
+  ) {
+    return true;
+  }
+
+  // 「TTIって何」系（文頭以外でも）。
+  return (
+    /(?:^|[^a-z0-9])tti(?: intelligence)?(?:って何|とは|は何|なに|ってなに)/.test(normalized)
+    || normalized.includes('ttiって')
+    || normalized.includes('ttiとは')
+    || normalized.includes('ttiは何')
+    || normalized === 'tti'
+  );
+}
+
 export function createVerifiedLinks(
   modelPageIds: readonly string[],
   selected: readonly RankedGuideEntry[],
   modelContentIds: readonly string[] = [],
   selectedContent: readonly RankedContentEntry[] = [],
-  options: { includeDiscord?: boolean } = {},
+  options: {
+    includeDiscord?: boolean;
+    includeToyotaTi?: boolean;
+    extraAllowedPageIds?: readonly PageId[];
+  } = {},
 ): AssistantLink[] {
   const allowedPageIds = new Set<PageId>([
-    ...selected.flatMap(({ entry }) => [entry.id, ...entry.relatedPageIds]),
+    ...selected.map(({ entry }) => entry.id),
     ...selectedContent.map(({ entry }) => entry.parentPageId),
     'contact',
+    ...(options.extraAllowedPageIds ?? []),
   ]);
   const contentById = new Map(
     selectedContent.map(({ entry }) => [entry.id, entry] as const),
@@ -312,6 +349,14 @@ export function createVerifiedLinks(
       pageId: 'discord',
       title: 'Discord',
       href: DISCORD_INVITE_URL,
+    });
+  }
+
+  if (options.includeToyotaTi) {
+    pushLink({
+      pageId: 'toyota-ti',
+      title: '豊田工業大学',
+      href: TOYOTA_TI_URL,
     });
   }
 
@@ -342,6 +387,183 @@ export function createVerifiedLinks(
   }
 
   return links;
+}
+
+/**
+ * Drop a redundant home link when another page is already linked,
+ * unless the answer clearly points to the home/top page.
+ * home+contact alone: keep contact when the answer mentions お問い合わせ,
+ * otherwise keep home (e.g. greetings that also listed contact).
+ */
+export function withoutRedundantHomePageId(
+  answer: string,
+  pageIds: readonly string[],
+): string[] {
+  if (!pageIds.includes('home')) {
+    return [...pageIds];
+  }
+
+  if (/ホーム|トップページ|サイトのトップ|このサイト全体|主なページ/.test(answer)) {
+    return [...pageIds];
+  }
+
+  const others = pageIds.filter((id) => id !== 'home');
+  if (others.length === 0) {
+    return [...pageIds];
+  }
+
+  if (others.length === 1 && others[0] === 'contact') {
+    if (/お問い合わせ|お問合せ/.test(answer)) {
+      return pageIds.filter((id) => id !== 'home');
+    }
+    return pageIds.filter((id) => id !== 'contact');
+  }
+
+  return pageIds.filter((id) => id !== 'home');
+}
+
+/** Page-inventory questions: list names in the answer text; chips are redundant. */
+export function isPageInventoryQuestion(message: string): boolean {
+  const normalized = normalizeSearchText(message);
+  return /なんのページ|どんなページ|ページがある|ページ一覧|サイトマップ|主なページ|サイト構成/.test(
+    normalized,
+  );
+}
+
+/**
+ * For pure inventory questions, drop all page chips (names are in the answer).
+ * If the same message also asks where a specific page is (あとお問い合わせはどこ？),
+ * keep links so mixed multi-asks still work.
+ */
+export function withoutPageInventoryLinks(
+  message: string,
+  pageIds: readonly string[],
+): string[] {
+  if (!isPageInventoryQuestion(message)) {
+    return [...pageIds];
+  }
+
+  const normalized = normalizeSearchText(message);
+  const hasFollowUpAsk = /あと|それと|それから|ついでに|ちなみに|加えて|も[！!？?。．]*$|場所も|も見たい|も教えて|もほしい|も欲しい/
+    .test(normalized)
+    || (normalized.match(/[？?]/g) ?? []).length >= 2;
+  const asksSpecificPage = /お問い合わせ|お問合せ|ニュース|お知らせ|掲示板|アプリ|開発|数学|連絡|discord/
+    .test(normalized)
+    && /どこ|場所|ある|教えて|見たい|行きたい|ほしい|欲しい/.test(normalized);
+
+  if (hasFollowUpAsk && asksSpecificPage) {
+    return [...pageIds];
+  }
+
+  return [];
+}
+
+/** If the answer names a page, ensure that page id is present for linking. */
+export function withMentionedPageIds(
+  answer: string,
+  pageIds: readonly string[],
+): string[] {
+  const ids = [...pageIds];
+  const push = (pageId: PageId) => {
+    if (!ids.includes(pageId)) ids.push(pageId);
+  };
+
+  if (/お問い合わせ|お問合せ/.test(answer)) push('contact');
+  if (/サークルについて/.test(answer)) push('about');
+  if (/今週の数学/.test(answer)) push('weekly-math');
+  if (/ゲームコミュニティ/.test(answer)) push('game-community');
+  if (/掲示板/.test(answer)) push('board');
+  if (/お知らせ/.test(answer)) push('news');
+  if (/開発について/.test(answer)) push('development');
+  if (/「アプリ」|アプリページ|アプリ一覧|アプリから/.test(answer)) push('apps');
+  if (/ホーム/.test(answer)) push('home');
+
+  return ids;
+}
+
+/** @deprecated use withMentionedPageIds */
+export function withContactPageIdIfMentioned(
+  answer: string,
+  pageIds: readonly string[],
+): string[] {
+  return withMentionedPageIds(answer, pageIds);
+}
+
+/**
+ * Drop contact when the answer never mentions it and a more specific page
+ * is already linked (model often pads contact from the always-allowed set).
+ */
+export function withoutRedundantContactPageId(
+  answer: string,
+  pageIds: readonly string[],
+): string[] {
+  if (!pageIds.includes('contact')) {
+    return [...pageIds];
+  }
+  if (/お問い合わせ|お問合せ/.test(answer)) {
+    return [...pageIds];
+  }
+  const hasSpecific = pageIds.some((id) => id !== 'contact' && id !== 'home');
+  if (!hasSpecific) {
+    return [...pageIds];
+  }
+  return pageIds.filter((id) => id !== 'contact');
+}
+
+/**
+ * When the model over-routes to contact-only despite a strong guide match,
+ * keep the top matched page in front of contact.
+ */
+export function withTopGuidePageId(
+  answer: string,
+  pageIds: readonly string[],
+  selected: readonly RankedGuideEntry[],
+): string[] {
+  const top = selected[0]?.entry;
+  if (!top || top.id === 'contact') {
+    return [...pageIds];
+  }
+
+  const contactOnlyIntent = /不具合|表示が|重なって|見えにく|修正依頼|参加希望|参加方法|入りたい|名簿|何人|メンバー|取材|提携|連携/
+    .test(answer)
+    && !/サークルについて|今週の数学|ゲームコミュニティ|お知らせ|掲示板|アプリ|開発について|ホーム/
+      .test(answer);
+
+  const hasGuideFact = /無料|土日|他大学|歓迎|YouTube|VALORANT|APEX|Minecraft|一覧|確認できます|公開情報/
+    .test(answer);
+
+  const pureContactAnswer = /お問い合わせ|お問合せ/.test(answer)
+    && !hasGuideFact
+    && !/サークルについて|今週の数学|ゲームコミュニティ|お知らせ|掲示板|アプリ|開発について|ホーム|Discord/
+      .test(answer);
+
+  if ((contactOnlyIntent || pureContactAnswer) && !hasGuideFact) {
+    return [...pageIds];
+  }
+
+  const ids = [...pageIds];
+  if (ids.includes(top.id)) {
+    return ids;
+  }
+
+  // Only repair empty / contact-only / home-only selections.
+  // Home-only is often a lazy fallback when a more specific page matched.
+  if (ids.length === 0) {
+    return [top.id];
+  }
+  if (ids.length === 1 && ids[0] === 'contact') {
+    return [top.id, 'contact'];
+  }
+  if (
+    ids.length === 1
+    && ids[0] === 'home'
+    && top.id !== 'home'
+    && !/ホーム|トップページ|サイトのトップ|主なページ/.test(answer)
+  ) {
+    return [top.id];
+  }
+
+  return ids;
 }
 
 function isSafeDynamicHref(href: string, kind: ContentKind): boolean {

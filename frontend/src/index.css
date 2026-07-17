@@ -1141,13 +1141,19 @@
   top: 34px;
   left: 34px;
   right: auto;
-  width: min(48%, 340px);
+  width: min(38%, 300px);
   text-align: left;
 }
 
 .activity-copy--top-left::after {
   opacity: 1;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.76) 0%, rgba(255, 255, 255, 0.28) 42%, transparent 62%);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.94) 0%,
+    rgba(255, 255, 255, 0.82) 28%,
+    rgba(255, 255, 255, 0.42) 52%,
+    transparent 72%
+  );
 }
 
 .activity-copy h3 {
@@ -1157,14 +1163,20 @@
   font-weight: 700;
   letter-spacing: -0.045em;
   line-height: 1.08;
+  text-wrap: balance;
 }
 
 .activity-copy p {
   max-width: 520px;
-  margin: 10px auto 0;
+  margin: 10px 0 0;
   color: #424245;
   font-size: clamp(15px, 1.2vw, 17px);
   line-height: 1.5;
+  text-wrap: pretty;
+}
+
+.activity-copy--top-left .activity-copy p {
+  max-width: none;
 }
 
 .dark .activity-copy h3 {
@@ -1205,6 +1217,19 @@
   background: #0077ed;
 }
 
+.activity-button.secondary {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.72);
+  color: #0071e3;
+  backdrop-filter: blur(16px);
+  transition: background-color 180ms ease, border-color 180ms ease;
+}
+
+.activity-button.secondary:hover {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.18);
+}
+
 .activity-button.disabled {
   border: 1px solid rgba(0, 0, 0, 0.08);
   background: rgba(255, 255, 255, 0.68);
@@ -1222,6 +1247,17 @@
   background: #2997ff;
 }
 
+.dark .activity-button.secondary {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.12);
+  color: #5cabff;
+}
+
+.dark .activity-button.secondary:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
 .dark .activity-button.disabled {
   border-color: rgba(255, 255, 255, 0.16);
   background: rgba(255, 255, 255, 0.14);
@@ -1236,7 +1272,8 @@
   height: 100%;
   max-width: none;
   object-fit: cover;
-  object-position: center;
+  /* Keep the left copy-safe area; do not bias crop toward the hardware on the right. */
+  object-position: left center;
   pointer-events: none;
   user-select: none;
 }
@@ -1300,7 +1337,13 @@
 /* These follow the card-specific dark treatments so the copy-safe gradients win. */
 .dark .activity-copy--top-left::after {
   opacity: 1;
-  background: linear-gradient(90deg, rgba(9, 20, 38, 0.62) 0%, rgba(9, 20, 38, 0.22) 42%, transparent 62%);
+  background: linear-gradient(
+    90deg,
+    rgba(9, 20, 38, 0.88) 0%,
+    rgba(9, 20, 38, 0.62) 30%,
+    rgba(9, 20, 38, 0.28) 54%,
+    transparent 74%
+  );
 }
 
 .activity-card--video .activity-visual {
@@ -1347,21 +1390,50 @@
   }
 
   .activity-copy {
-    left: 28px;
-    right: 28px;
+    left: 24px;
+    right: 24px;
   }
 
   .activity-copy--top-left .activity-copy {
-    right: 24px;
+    top: 24px;
     left: 24px;
-    width: auto;
+    right: auto;
+    width: min(48%, 280px);
+    max-width: none;
     text-align: left;
   }
 
-  .activity-copy--top-left .activity-copy {
-    top: 28px;
+  .activity-copy--top-left::after {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.96) 0%,
+      rgba(255, 255, 255, 0.78) 36%,
+      rgba(255, 255, 255, 0.28) 62%,
+      transparent 82%
+    );
   }
 
+  .dark .activity-copy--top-left::after {
+    background: linear-gradient(
+      90deg,
+      rgba(9, 20, 38, 0.9) 0%,
+      rgba(9, 20, 38, 0.68) 36%,
+      rgba(9, 20, 38, 0.24) 62%,
+      transparent 82%
+    );
+  }
+
+  .activity-copy h3 {
+    font-size: 24px;
+  }
+
+  .activity-copy p {
+    font-size: 15px;
+  }
+
+  .activity-actions {
+    margin-top: 14px;
+  }
 }
 
 .home-main-color-flow::before {

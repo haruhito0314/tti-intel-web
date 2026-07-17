@@ -318,7 +318,6 @@ describe('createAssistantHandler CORS and early exits', () => {
       answer: 'こんにちは！活動内容や参加方法など、気軽に聞いてください。',
       links: [
         { pageId: 'home', title: 'ホーム', href: '/' },
-        { pageId: 'contact', title: 'お問い合わせ', href: '/contact' },
       ],
     });
     expect(dependencies.requestOpenAI).toHaveBeenCalledWith(expect.objectContaining({
@@ -408,6 +407,90 @@ describe('createAssistantHandler CORS and early exits', () => {
     expect(dependencies.requestOpenAI).toHaveBeenCalledWith(expect.objectContaining({
       mode: 'small_talk',
     }));
+  });
+
+  it('treats UI look remarks as small-talk and strips links', async () => {
+    const dependencies = createDependencies({
+      requestOpenAI: vi.fn(async () => ({
+        output: {
+          answer: 'そう言ってもらえて嬉しいです。',
+          pageIds: ['home', 'contact'],
+          contentIds: [],
+        },
+        usage: { inputTokens: 20, outputTokens: 12, totalTokens: 32 },
+      })),
+    });
+    const response = await invoke(dependencies, validPostEvent({
+      body: JSON.stringify({
+        ...validRequest,
+        message: 'このサイトのUIがなんかappleっぽいね',
+      }),
+    }));
+
+    expect(response.statusCode).toBe(200);
+    expect(dependencies.requestOpenAI).toHaveBeenCalledWith(expect.objectContaining({
+      mode: 'small_talk',
+    }));
+    const body = JSON.parse(response.body as string) as {
+      answer: string;
+      links: unknown[];
+    };
+    expect(body.answer).toContain('嬉しい');
+    expect(body.links).toEqual([]);
+  });
+
+  it('strips links for bare empathy like 難しいね', async () => {
+    const dependencies = createDependencies({
+      requestOpenAI: vi.fn(async () => ({
+        output: {
+          answer: '難しいよね。一歩ずつで大丈夫です。',
+          pageIds: ['home'],
+          contentIds: [],
+        },
+        usage: { inputTokens: 20, outputTokens: 12, totalTokens: 32 },
+      })),
+    });
+    const response = await invoke(dependencies, validPostEvent({
+      body: JSON.stringify({
+        ...validRequest,
+        message: '難しいね',
+        currentPath: '/weekly-math',
+      }),
+    }));
+
+    expect(response.statusCode).toBe(200);
+    expect(dependencies.requestOpenAI).toHaveBeenCalledWith(expect.objectContaining({
+      mode: 'small_talk',
+    }));
+    const body = JSON.parse(response.body as string) as {
+      links: unknown[];
+    };
+    expect(body.links).toEqual([]);
+  });
+
+  it('strips links for thanks like ありがとう', async () => {
+    const dependencies = createDependencies({
+      requestOpenAI: vi.fn(async () => ({
+        output: {
+          answer: 'どういたしまして！',
+          pageIds: ['home'],
+          contentIds: [],
+        },
+        usage: { inputTokens: 20, outputTokens: 12, totalTokens: 32 },
+      })),
+    });
+    const response = await invoke(dependencies, validPostEvent({
+      body: JSON.stringify({
+        ...validRequest,
+        message: 'ありがとう',
+      }),
+    }));
+
+    expect(response.statusCode).toBe(200);
+    const body = JSON.parse(response.body as string) as {
+      links: unknown[];
+    };
+    expect(body.links).toEqual([]);
   });
 
   it('retries knowledge search with recent user history for short follow-ups', async () => {
@@ -811,6 +894,37 @@ describe('createAssistantHandler orchestration', () => {
         },
         { pageId: 'contact', title: 'お問い合わせ', href: '/contact' },
       ],
+    });
+  });
+
+  it('injects the Toyota TI official site when TTI meaning is asked', async () => {
+    const dependencies = createDependencies({
+      requestOpenAI: vi.fn(async () => ({
+        output: {
+          answer: 'TTIはToyota Technological Instituteの略で、豊田工業大学のことです。',
+          pageIds: ['about'],
+          contentIds: [],
+        },
+        usage: successfulOpenAIResult.usage,
+      })),
+    });
+    const response = await invoke(dependencies, validPostEvent({
+      body: JSON.stringify({
+        ...validRequest,
+        message: 'TTIって何？',
+      }),
+    }));
+
+    expect(response.statusCode).toBe(200);
+    const body = parsedBody(response) as {
+      answer: string;
+      links: Array<{ pageId: string; href: string; title: string }>;
+    };
+    expect(body.answer).toContain('Toyota Technological Institute');
+    expect(body.links[0]).toEqual({
+      pageId: 'toyota-ti',
+      title: '豊田工業大学',
+      href: 'https://www.toyota-ti.ac.jp/',
     });
   });
 

@@ -1,0 +1,934 @@
+{
+  "summary": {
+    "total": 51,
+    "ok": 50,
+    "bad": 1,
+    "errors": 0,
+    "issueCounts": {
+      "missing_any_href": 1,
+      "contact_mentioned_without_link": 1
+    },
+    "generatedAt": "2026-07-17T20:05:27.303Z"
+  },
+  "results": [
+    {
+      "i": 1,
+      "q": "マジでありがとう！！ちなみにお問合せとかどこにあるんだっけ？それとニュースも！",
+      "path": "/",
+      "note": "thanks + contact + news",
+      "status": 200,
+      "ms": 3304,
+      "answer": "お問い合わせは contact ページから、ニュースは News（お知らせ）一覧で確認できます。お知らせにはイベント情報や技術記事も載っています。",
+      "links": [
+        {
+          "pageId": "news",
+          "title": "お知らせ",
+          "href": "/news"
+        },
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 2,
+      "q": "了解〜 掲示板どこだっけ？あとアプリも教えて",
+      "path": "/",
+      "note": "ack + board + apps",
+      "status": 200,
+      "ms": 1755,
+      "answer": "掲示板は「掲示板」ページからアクセスできます。アプリは「アプリ」ページで公開中の作品を確認できます。必要なら個別の質問はお問い合わせからどうぞ。",
+      "links": [
+        {
+          "pageId": "board",
+          "title": "掲示板",
+          "href": "/board"
+        },
+        {
+          "pageId": "apps",
+          "title": "アプリ",
+          "href": "/app"
+        },
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 3,
+      "q": "なるほど！費用っていくらかかる？参加方法も知りたい",
+      "path": "/",
+      "note": "ack + fee + join",
+      "status": 200,
+      "ms": 1434,
+      "answer": "費用は参加無料です。初回相談や見学はお問い合わせ経由で日時を調整してください。",
+      "links": [
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        },
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 4,
+      "q": "サンキュー。TTIって何？豊工の公式サイトある？",
+      "path": "/",
+      "note": "thanks + TTI + official",
+      "status": 200,
+      "ms": 1518,
+      "answer": "TTIはToyota Technological Instituteの略で、豊田工業大学のことです。このサイトのTTI Intelligenceはその学生サークルの紹介です。公式サイトへのリンクは案内ページで確認できます。",
+      "links": [
+        {
+          "pageId": "toyota-ti",
+          "title": "豊田工業大学",
+          "href": "https://www.toyota-ti.ac.jp/"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 5,
+      "q": "おっす！今週の数学どこ？答え見たいんだけど",
+      "path": "/",
+      "status": 200,
+      "ms": 1460,
+      "answer": "今週の数学は「今週の数学」ページで一覧を確認できます。解答は各問題ページにありますので、まず一覧をご覧ください。",
+      "links": [
+        {
+          "pageId": "weekly-math",
+          "title": "今週の数学",
+          "href": "/weekly-math"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 6,
+      "q": "ちょっと聞きたいんだけどさ、Discordある？あとインスタは？",
+      "path": "/",
+      "status": 200,
+      "ms": 1604,
+      "answer": "Discordはあります。Discordリンクは下のページで案内しています。Instagramは公式アカウントではなく、公式の連絡はお問い合わせをご利用ください。",
+      "links": [
+        {
+          "pageId": "discord",
+          "title": "Discord",
+          "href": "https://discord.gg/DFWs8GrHxF"
+        },
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 7,
+      "q": "うぇい ゲームコミュニティってVALORANTやってる？Minecraftもある？",
+      "path": "/",
+      "status": 200,
+      "ms": 1473,
+      "answer": "はい。VALORANTとMinecraftを含め、気軽に楽しむゲームコミュニティとして活動しています。詳細はゲームコミュニティ頁をご確認ください。",
+      "links": [
+        {
+          "pageId": "game-community",
+          "title": "ゲームコミュニティ",
+          "href": "/game-community"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 8,
+      "q": "あ、そういえば開発について知りたいのとCodex使ってるかも教えて",
+      "path": "/",
+      "status": 200,
+      "ms": 1920,
+      "answer": "Codexは使っています。OpenAI CodexなどのAIコーディングツールを活用しており、詳しくはサークルについてへ。",
+      "links": [
+        {
+          "pageId": "development",
+          "title": "開発について",
+          "href": "/development"
+        },
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 9,
+      "q": "ごめんもう一回、お知らせどこだっけ？ホームにもどりたいわけじゃなくてニュース見たい",
+      "path": "/",
+      "status": 200,
+      "ms": 1539,
+      "answer": "ニュース（お知らせ）の一覧は「お知らせ」ページで見られます。イベント情報も同ページ内で確認できます。",
+      "links": [
+        {
+          "pageId": "news",
+          "title": "お知らせ",
+          "href": "/news"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 10,
+      "q": "ありがとね。匿名で掲示板書ける？それと見学だけでもいい？",
+      "path": "/",
+      "status": 200,
+      "ms": 1586,
+      "answer": "匿名で掲示板を使えます。見学・体験も可能なので、お問い合わせからご相談ください。",
+      "links": [
+        {
+          "pageId": "board",
+          "title": "掲示板",
+          "href": "/board"
+        },
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 11,
+      "q": "サークルについて教えて。費用は？いつやってる？",
+      "path": "/",
+      "status": 200,
+      "ms": 2022,
+      "answer": "費用は参加無料です。活動は主に土日に行い、豊田工業大学を中心に開催しています。初回の相談はお問い合わせからどうぞ。",
+      "links": [
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        },
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 12,
+      "q": "なんのページがある？あとお問い合わせはどこ？",
+      "path": "/",
+      "note": "inventory + contact",
+      "status": 200,
+      "ms": 1823,
+      "answer": "このサイトの主なページは、サークルについて・お知らせ・アプリ・開発について・掲示板・今週の数学・お問い合わせなどです。詳しく知りたいページ名をどうぞ。では、お問い合わせは「お問い合わせ」ページからお願いします。",
+      "links": [],
+      "issues": [
+        "missing_any_href:/contact",
+        "contact_mentioned_without_link"
+      ]
+    },
+    {
+      "i": 13,
+      "q": "何ができるの？入りたいんだけどどうすればいい？",
+      "path": "/",
+      "status": 200,
+      "ms": 1629,
+      "answer": "サークルでは開発・解説動画・ゲーム・今週の数学などに取り組めます。入りたい場合はお問い合わせページから参加連絡をしてください。",
+      "links": [
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        },
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        },
+        {
+          "pageId": "weekly-math",
+          "title": "今週の数学",
+          "href": "/weekly-math"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 14,
+      "q": "卓球アプリある？カラーソートは？CLI Practiceは？",
+      "path": "/app",
+      "status": 200,
+      "ms": 1853,
+      "answer": "カラーソートは Color Sort Puzzle、卓球の組み合わせ表は Table Tennis Match Maker、CLI練習は CLI Practice で確認できます。該当ページへは apps からアクセス可能です。",
+      "links": [
+        {
+          "pageId": "apps",
+          "title": "アプリ",
+          "href": "/app"
+        },
+        {
+          "pageId": "color-sort",
+          "title": "Color Sort Puzzle",
+          "href": "/app/color-sort"
+        },
+        {
+          "pageId": "table-tennis",
+          "title": "Table Tennis Match Maker",
+          "href": "/app/table-tennis"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 15,
+      "q": "豊工って何？TTI Intelligenceとは別？",
+      "path": "/",
+      "status": 200,
+      "ms": 1622,
+      "answer": "TTIはToyota Technological Instituteの略で、豊田工業大学のことです。このサイトのTTI Intelligenceは、同大学の学生を中心としたAIサークルの紹介です。詳しくはサークルについてへ。",
+      "links": [
+        {
+          "pageId": "toyota-ti",
+          "title": "豊田工業大学",
+          "href": "https://www.toyota-ti.ac.jp/"
+        },
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 16,
+      "q": "表示おかしいんだけど、修整できる？どこに連絡すればいい？",
+      "path": "/",
+      "status": 200,
+      "ms": 1957,
+      "answer": "表示の不具合はお問い合わせフォームから詳しくご連絡ください。Discordの参加案内もそちらで案内します。",
+      "links": [
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 17,
+      "q": "メンバー何人？誰がいる？",
+      "path": "/",
+      "status": 200,
+      "ms": 1777,
+      "answer": "メンバーの正確な人数や個別の名前は公開していません。参加や相談はお問い合わせフォームからどうぞ。",
+      "links": [
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 18,
+      "q": "他大学でも大丈夫？会費ある？",
+      "path": "/",
+      "status": 200,
+      "ms": 1999,
+      "answer": "他大学の方も歓迎しています。会費は無料で、個人で使うAIツールの費用は各自負担です。詳細はサークルについてへ。",
+      "links": [
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 19,
+      "q": "YouTubeどこ？解説動画見たい",
+      "path": "/",
+      "status": 200,
+      "ms": 2548,
+      "answer": "解説動画は「解説動画やYouTubeはどこですか？」の回答で案内されている「サークルについて」ページから見られます。詳しくはサークルについてへ。",
+      "links": [
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 20,
+      "q": "提携したい。取材も相談できる？",
+      "path": "/",
+      "status": 200,
+      "ms": 1947,
+      "answer": "提携・取材の相談はお問い合わせページから受け付けています。まずはお問い合わせから意図を伝えてください。Discordは交流用、公式連絡はお問い合わせをご利用ください。",
+      "links": [
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 21,
+      "q": "！！！お問い合わせどこー？？",
+      "path": "/",
+      "status": 200,
+      "ms": 1640,
+      "answer": "お問い合わせは「お問い合わせ」ページからどうぞ。参加方法や不具合報告などもこちらで受け付けています。Discordの参加案内も同ページの案内をご確認ください。",
+      "links": [
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 22,
+      "q": "えっと…今週の数学…どこだっけな〜",
+      "path": "/",
+      "status": 200,
+      "ms": 1516,
+      "answer": "今週の数学は「今週の数学」ページで一覧を開いてください。解答は各問題ページにあります。ヒントは該当ページで確認できます。",
+      "links": [
+        {
+          "pageId": "weekly-math",
+          "title": "今週の数学",
+          "href": "/weekly-math"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 23,
+      "q": "わからん アプリってどこから入れるの",
+      "path": "/",
+      "status": 200,
+      "ms": 2053,
+      "answer": "アプリは「アプリ」ページで公開中です。入手方法や一覧はそのページで確認してください。必要ならお問い合わせもどうぞ。",
+      "links": [
+        {
+          "pageId": "apps",
+          "title": "アプリ",
+          "href": "/app"
+        },
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 24,
+      "q": "てかさ掲示板って何ができるの？投稿ないっぽいけど",
+      "path": "/",
+      "status": 200,
+      "ms": 2114,
+      "answer": "掲示板では質問・相談の投稿・確認ができます。匿名で投稿することも可能です。詳しくは掲示板ページをご覧ください。",
+      "links": [
+        {
+          "pageId": "board",
+          "title": "掲示板",
+          "href": "/board"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 25,
+      "q": "OK thanks 開発ページある？",
+      "path": "/",
+      "status": 200,
+      "ms": 1750,
+      "answer": "はい、開発については「開発について」ページで内容を紹介しています。ご希望ならお問い合わせも可能です。",
+      "links": [
+        {
+          "pageId": "development",
+          "title": "開発について",
+          "href": "/development"
+        },
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 26,
+      "q": "マジ？未経験でも入れるの？プログラミングできないんだけど",
+      "path": "/",
+      "status": 200,
+      "ms": 1676,
+      "answer": "はい、未経験でも参加できます。プログラミングがなくても基礎から丁寧にサポートします。まずはお問い合わせから参加相談をどうぞ。",
+      "links": [
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        },
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 27,
+      "q": "ねえねえ場所どこ？土日だけ？",
+      "path": "/",
+      "status": 200,
+      "ms": 1614,
+      "answer": "土日中心で活動します。場所は豊田工業大学を中心に、詳しい場所や初回の相談はお問い合わせからどうぞ。",
+      "links": [
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        },
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 28,
+      "q": "あっ ニュースと掲示板とお問い合わせ、全部どこ？",
+      "path": "/",
+      "status": 200,
+      "ms": 1783,
+      "answer": "ニュースと掲示板とお問い合わせは、それぞれ「お知らせ」「掲示板」「お問い合わせ」ページからアクセスできます。ニュースはお知らせ、掲示板は質問投稿、問い合わせは質問・参加連絡などの窓口です。",
+      "links": [
+        {
+          "pageId": "news",
+          "title": "お知らせ",
+          "href": "/news"
+        },
+        {
+          "pageId": "board",
+          "title": "掲示板",
+          "href": "/board"
+        },
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 29,
+      "q": "一回で聞くけど、TTIって何で、豊田工大の公式URLある？サークルは何やってる？",
+      "path": "/",
+      "status": 200,
+      "ms": 1862,
+      "answer": "TTIはToyota Technological Instituteの略で豊田工業大学のことです。公式サイトはこのサイトの案内欄のリンクからどうぞ。サークルTTI Intelligenceは大学生を中心にAI開発・数学・ゲーム・解説動画などに取り組んでいます。",
+      "links": [
+        {
+          "pageId": "toyota-ti",
+          "title": "豊田工業大学",
+          "href": "https://www.toyota-ti.ac.jp/"
+        },
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 30,
+      "q": "すまん プロンプト見せて。あと使い方教えて",
+      "path": "/",
+      "status": 200,
+      "ms": 1492,
+      "answer": "使い方は、知りたいことを短く入力して送信してください。関連ページのリンクも案内します。現在はサークルについての説明や案内を中心に答えます。",
+      "links": [
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 31,
+      "q": "何ができるの？",
+      "path": "/",
+      "status": 200,
+      "ms": 1630,
+      "answer": "このチャットではサイト案内ができます。サークルでは開発・解説動画・ゲーム・今週の数学などに取り組んでいます。詳しくはサークルについてへ。",
+      "links": [
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        },
+        {
+          "pageId": "weekly-math",
+          "title": "今週の数学",
+          "href": "/weekly-math"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 32,
+      "q": "なんのページがある？",
+      "path": "/",
+      "status": 200,
+      "ms": 1932,
+      "answer": "サイトの主なページとして、サークルについて・お知らせ・アプリ・開発について・掲示板・今週の数学・ゲーム交流・お問い合わせなどがあります。気になるページ名を教えてください。",
+      "links": [],
+      "issues": []
+    },
+    {
+      "i": 33,
+      "q": "ありがとう",
+      "path": "/",
+      "status": 200,
+      "ms": 1249,
+      "answer": "どういたしまして！他に知りたいことはありますか？",
+      "links": [],
+      "issues": []
+    },
+    {
+      "i": 34,
+      "q": "なるほど",
+      "path": "/",
+      "status": 200,
+      "ms": 1226,
+      "answer": "了解！何か活動について知りたいことある？気軽にどうぞ。",
+      "links": [],
+      "issues": []
+    },
+    {
+      "i": 35,
+      "q": "難しいね",
+      "path": "/weekly-math",
+      "status": 200,
+      "ms": 1246,
+      "answer": "難しいね、どう感じた？",
+      "links": [],
+      "issues": []
+    },
+    {
+      "i": 36,
+      "q": "このサイトのUIがなんかappleっぽいね",
+      "path": "/",
+      "status": 200,
+      "ms": 1193,
+      "answer": "ありがとうございます。そう感じるのは嬉しいです。興味がある活動について、やさしく教えてください。",
+      "links": [],
+      "issues": []
+    },
+    {
+      "i": 37,
+      "q": "入りたい",
+      "path": "/",
+      "status": 200,
+      "ms": 1557,
+      "answer": "入りたいとのことですね。入学前提ではなく、参加はお問い合わせフォームからご連絡ください。",
+      "links": [
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 38,
+      "q": "Codex使ってる？",
+      "path": "/",
+      "status": 200,
+      "ms": 1676,
+      "answer": "Codexは使っています。OpenAI CodexなどのAIコーディングツールを活用しています。詳しくはサークルについてへ。",
+      "links": [
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 39,
+      "q": "豊工って何？",
+      "path": "/",
+      "status": 200,
+      "ms": 1764,
+      "answer": "豊工は豊田工業大学の略称です。 TT I Intelligenceはその大学の学生サークルを指します。公式情報はサイト内の「サークルについて」をご確認ください。",
+      "links": [
+        {
+          "pageId": "toyota-ti",
+          "title": "豊田工業大学",
+          "href": "https://www.toyota-ti.ac.jp/"
+        },
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 40,
+      "q": "TTIって何？",
+      "path": "/",
+      "status": 200,
+      "ms": 1591,
+      "answer": "TTIはToyota Technological Instituteの略で、豊田工業大学のことです。このサイトのTTI Intelligenceは、その大学の学生を中心にしたAIサークルです。詳しくはサークルについてへ。",
+      "links": [
+        {
+          "pageId": "toyota-ti",
+          "title": "豊田工業大学",
+          "href": "https://www.toyota-ti.ac.jp/"
+        },
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 41,
+      "q": "今週の数学はどこ？",
+      "path": "/",
+      "status": 200,
+      "ms": 1927,
+      "answer": "今週の数学は「今週の数学」ページで一覧を確認できます。解説は各問題ページにあります。詳しくはその一覧ページを開いてください。",
+      "links": [
+        {
+          "pageId": "weekly-math",
+          "title": "今週の数学",
+          "href": "/weekly-math"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 42,
+      "q": "お知らせはどこ",
+      "path": "/",
+      "status": 200,
+      "ms": 1631,
+      "answer": "お知らせは「お知らせ」ページで確認できます。イベント情報もここに含まれます。",
+      "links": [
+        {
+          "pageId": "news",
+          "title": "お知らせ",
+          "href": "/news"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 43,
+      "q": "Discordある？",
+      "path": "/",
+      "status": 200,
+      "ms": 2785,
+      "answer": "Discordの参加は公式のDiscordリンクからできます。詳しい参加方法はお問い合わせページをご利用ください。",
+      "links": [
+        {
+          "pageId": "discord",
+          "title": "Discord",
+          "href": "https://discord.gg/DFWs8GrHxF"
+        },
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 44,
+      "q": "表示がおかしい",
+      "path": "/",
+      "status": 200,
+      "ms": 1426,
+      "answer": "表示がおかしいとのこと、まずはお問い合わせフォームから不具合を詳しく教えてください。Discord参加は公式案内、公式連絡はお問い合わせをご利用ください。",
+      "links": [
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 45,
+      "q": "費用はかかる？",
+      "path": "/",
+      "status": 200,
+      "ms": 1591,
+      "answer": "費用は参加費無料です。個人で使うAIツールの費用は各自ご負担ください。詳しくはサークルについてへ。",
+      "links": [
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 46,
+      "q": "こんにちは",
+      "path": "/",
+      "note": "greeting may have link",
+      "status": 200,
+      "ms": 1324,
+      "answer": "こんにちは！どうされましたか？活動や参加のこと、気になることを教えてください。",
+      "links": [
+        {
+          "pageId": "home",
+          "title": "ホーム",
+          "href": "/"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 47,
+      "q": "活動内容なにやってる",
+      "path": "/",
+      "status": 200,
+      "ms": 1639,
+      "answer": "活動内容としては、AI開発・解説動画制作・ゲーム交流・今週の数学の学習などを行っています。詳しくは「サークルについて」をご確認ください。",
+      "links": [
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        },
+        {
+          "pageId": "weekly-math",
+          "title": "今週の数学",
+          "href": "/weekly-math"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 48,
+      "q": "匿名で書ける？",
+      "path": "/",
+      "status": 200,
+      "ms": 2157,
+      "answer": "はい、掲示板で表示名を空欄にすれば匿名で投稿できます。詳しくは掲示板のページをご確認ください。",
+      "links": [
+        {
+          "pageId": "board",
+          "title": "掲示板",
+          "href": "/board"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 49,
+      "q": "今日の天気は？",
+      "path": "/",
+      "status": 200,
+      "ms": 344,
+      "answer": "申し訳ないですが、その内容にはお答えできません。このサイトの活動やページについてご質問があれば、お手伝いします。",
+      "links": [
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 50,
+      "q": "見学だけでもいい？",
+      "path": "/",
+      "status": 200,
+      "ms": 1327,
+      "answer": "見学・体験は可能です。詳細はお問い合わせからご相談ください。",
+      "links": [
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 51,
+      "q": "えーほんと？じゃあお問い合わせとサークルについてのページどっち見ればいい？参加希望なんだが",
+      "path": "/",
+      "status": 200,
+      "ms": 1908,
+      "answer": "参加希望とのことなので、まずはお問い合わせページのお問い合わせフォームから「参加希望」とご連絡ください。サークルについてはサークルについてを併せてご覧ください。",
+      "links": [
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        },
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        }
+      ],
+      "issues": []
+    }
+  ]
+}

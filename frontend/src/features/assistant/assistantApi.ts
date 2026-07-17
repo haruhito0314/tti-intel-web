@@ -11,16 +11,22 @@ const DEFAULT_TIMEOUT_MS = 28_000;
 const INTERNAL_HREF_PATTERN = /^(?:\/(?:[A-Za-z0-9._~%-]+(?:\/[A-Za-z0-9._~%-]+)*)?)$/;
 /** Allowlisted Discord invite only; must match server-injected DISCORD_INVITE_URL shape. */
 const DISCORD_HREF_PATTERN = /^https:\/\/(?:discord\.gg|discord\.com\/invite)\/[A-Za-z0-9-]+$/;
+/** Allowlisted Toyota Technological Institute official site. */
+const TOYOTA_TI_HREF_PATTERN = /^https:\/\/www\.toyota-ti\.ac\.jp\/?$/;
 
 export function isExternalAssistantHref(href: string): boolean {
-    return DISCORD_HREF_PATTERN.test(href);
+    return DISCORD_HREF_PATTERN.test(href) || TOYOTA_TI_HREF_PATTERN.test(href);
 }
 
 const assistantLinkSchema = z.object({
     pageId: z.string().trim().min(1),
     title: z.string().trim().min(1),
     href: z.string().refine(
-        (value) => INTERNAL_HREF_PATTERN.test(value) || DISCORD_HREF_PATTERN.test(value),
+        (value) => (
+            INTERNAL_HREF_PATTERN.test(value)
+            || DISCORD_HREF_PATTERN.test(value)
+            || TOYOTA_TI_HREF_PATTERN.test(value)
+        ),
     ),
 }).strict();
 

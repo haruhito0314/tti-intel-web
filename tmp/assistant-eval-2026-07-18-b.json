@@ -1,0 +1,903 @@
+{
+  "summary": {
+    "total": 51,
+    "ok": 50,
+    "bad": 1,
+    "errors": 0,
+    "issueCounts": {
+      "missing_any_href": 1
+    },
+    "generatedAt": "2026-07-17T19:43:39.755Z"
+  },
+  "results": [
+    {
+      "i": 1,
+      "q": "何ができるの？",
+      "path": "/",
+      "note": "capability",
+      "status": 200,
+      "ms": 2383,
+      "answer": "このチャットではサイト案内ができます。サークルは開発・数学・ゲーム・解説動画などに取り組んでいます。詳しくはサークルについてへ。",
+      "links": [
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 2,
+      "q": "どんなことができるの？",
+      "path": "/",
+      "status": 200,
+      "ms": 1659,
+      "answer": "このサイトではサークルについての案内（活動内容・費用・場所・参加条件など）をご案内します。詳しくはサークルについてのページをご確認ください。",
+      "links": [
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 3,
+      "q": "このサイトのUIがなんかappleっぽいね",
+      "path": "/",
+      "status": 200,
+      "ms": 1924,
+      "answer": "見た目の洗練さ、共感します！ UIのApple風は直感的でいいですよね。",
+      "links": [],
+      "issues": []
+    },
+    {
+      "i": 4,
+      "q": "デザインおしゃれ",
+      "path": "/",
+      "status": 200,
+      "ms": 1279,
+      "answer": "デザインいいね！ありがとうございます。何か知りたい情報はありますか？",
+      "links": [],
+      "issues": []
+    },
+    {
+      "i": 5,
+      "q": "活動内容が面白そうだと思ったんだけどどうやって参加できる？",
+      "path": "/",
+      "status": 200,
+      "ms": 1510,
+      "answer": "参加方法はお問い合わせフォームから連絡してください。サークルについての詳細ページも案内します。",
+      "links": [
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        },
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 6,
+      "q": "入りたい",
+      "path": "/",
+      "status": 200,
+      "ms": 1711,
+      "answer": "参加や活動について詳しく知るには「お問い合わせ」ページをご利用ください。初回の相談はそこからお願いします。",
+      "links": [
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 7,
+      "q": "掲示板とかは何ができる？全然投稿ないけど",
+      "path": "/",
+      "status": 200,
+      "ms": 1840,
+      "answer": "掲示板では質問・相談の投稿や確認ができます。まだ投稿が少ない場合は、見学や体験のお問い合わせから活動を知るのがおすすめです。詳しくは「掲示板」または「サークルについて」の案内ページをご覧ください。",
+      "links": [
+        {
+          "pageId": "board",
+          "title": "掲示板",
+          "href": "/board"
+        },
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        },
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 8,
+      "q": "難しいね",
+      "path": "/weekly-math",
+      "note": "empathy not refuse",
+      "status": 200,
+      "ms": 1281,
+      "answer": "難しいね。何か手伝える範囲で、活動や参加について教えてください！",
+      "links": [
+        {
+          "pageId": "home",
+          "title": "ホーム",
+          "href": "/"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 9,
+      "q": "今週の数学はどこ？",
+      "path": "/",
+      "status": 200,
+      "ms": 1617,
+      "answer": "今週の数学は「今週の数学」ページからご覧ください。解答は各問題ページにあります。一覧ページへはこのリンクを使ってください。",
+      "links": [
+        {
+          "pageId": "weekly-math",
+          "title": "今週の数学",
+          "href": "/weekly-math"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 10,
+      "q": "お知らせはどこ",
+      "path": "/",
+      "status": 200,
+      "ms": 3440,
+      "answer": "お知らせはニュースページで確認できます。お知らせ一覧とイベント情報はニュース内にまとまっています。",
+      "links": [
+        {
+          "pageId": "news",
+          "title": "お知らせ",
+          "href": "/news"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 11,
+      "q": "掲示板はどこ",
+      "path": "/",
+      "status": 200,
+      "ms": 1465,
+      "answer": "掲示板は「掲示板」ページからアクセスできます。投稿や確認はそちらでどうぞ。必要ならお問い合わせ linkも案内します。",
+      "links": [
+        {
+          "pageId": "board",
+          "title": "掲示板",
+          "href": "/board"
+        },
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 12,
+      "q": "アプリはどこ",
+      "path": "/",
+      "status": 200,
+      "ms": 2009,
+      "answer": "アプリの情報を探している場合は「アプリ」ページをご案内します。公開中のアプリ一覧や具体的なアプリはそのページから確認できます。",
+      "links": [
+        {
+          "pageId": "apps",
+          "title": "アプリ",
+          "href": "/app"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 13,
+      "q": "開発について知りたい",
+      "path": "/",
+      "status": 200,
+      "ms": 2001,
+      "answer": "開発については「開発について」ページで、AIコーディングツールとMCPを活用したWeb・アプリ開発の様子を紹介しています。作品はアプリでも確認できます。必要ならお問い合わせへどうぞ。",
+      "links": [
+        {
+          "pageId": "development",
+          "title": "開発について",
+          "href": "/development"
+        },
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 14,
+      "q": "ゲームコミュニティは？",
+      "path": "/",
+      "status": 200,
+      "ms": 1680,
+      "answer": "ゲームコミュニティはVALORANT、APEX、Minecraftなどを気軽に楽しめます。初心者歓迎の案内は各ページで確認してください。",
+      "links": [
+        {
+          "pageId": "game-community",
+          "title": "ゲームコミュニティ",
+          "href": "/game-community"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 15,
+      "q": "サークルについて教えて",
+      "path": "/",
+      "status": 200,
+      "ms": 1462,
+      "answer": "サークルについての概要とFAQを確認できます。参加は無料で、土日に中心に活動、未経験者歓迎です。詳しくは「サークルについて」ページを確認してください。",
+      "links": [
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 16,
+      "q": "お問い合わせはどこ",
+      "path": "/",
+      "status": 200,
+      "ms": 6992,
+      "answer": "お問い合わせはお問い合わせページから受け付けています。参加方法や提携、Discord・Instagram関連の質問も同ページで案内しています。リンク先を開いてください。",
+      "links": [
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 17,
+      "q": "なんのページがある？",
+      "path": "/",
+      "status": 200,
+      "ms": 1800,
+      "answer": "サークルについて・今週の数学・お問い合わせなどのページがあります。詳しくはホーム内の案内を確認してください。",
+      "links": [
+        {
+          "pageId": "home",
+          "title": "ホーム",
+          "href": "/"
+        },
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        },
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 18,
+      "q": "ホームに戻りたい",
+      "path": "/about",
+      "status": 200,
+      "ms": 1982,
+      "answer": "ホームへ戻りたいとのことですね。まずは「ホーム」ページへアクセスしてください。必要ならお問い合わせで案内します。",
+      "links": [
+        {
+          "pageId": "home",
+          "title": "ホーム",
+          "href": "/"
+        },
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 19,
+      "q": "プログラミング未経験でも大丈夫？",
+      "path": "/",
+      "status": 200,
+      "ms": 1648,
+      "answer": "未経験でも大丈夫です。サークルでは基礎から丁寧にサポートします。参加方法や詳しい内容は「サークルについて」をご確認ください。",
+      "links": [
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 20,
+      "q": "費用はかかる？",
+      "path": "/",
+      "status": 200,
+      "ms": 1790,
+      "answer": "費用は参加費無料です。個人で使うAIツールの費用は別途ご負担ください。詳しくはサークルについての費用ページをご確認ください。",
+      "links": [
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 21,
+      "q": "いつやってる？",
+      "path": "/",
+      "status": 200,
+      "ms": 1410,
+      "answer": "活動は主に土日で行われています。詳しい日程や場所はサークルについてへお問い合わせください。",
+      "links": [
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        },
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 22,
+      "q": "会費ある？",
+      "path": "/",
+      "status": 200,
+      "ms": 1346,
+      "answer": "はい、サークルの参加費は無料です。個人で使うAIツールの費用は各自負担となります。詳しくはサークルについてをご確認ください。",
+      "links": [
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 23,
+      "q": "別の大学の人でも大丈夫なの？",
+      "path": "/",
+      "status": 200,
+      "ms": 1358,
+      "answer": "はい、他大学の学生も歓迎しています。参加の希望や相談はお問い合わせからどうぞ。",
+      "links": [
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        },
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 24,
+      "q": "活動内容なにやってる",
+      "path": "/",
+      "status": 200,
+      "ms": 2052,
+      "answer": "私たちは主に土日を中心に活動する、豊田工業大学の学生AIサークルです。開発・今週の数学・ゲーム交流・解説動画制作などを行っています。詳しくは「サークルについて」をご覧ください。",
+      "links": [
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        },
+        {
+          "pageId": "weekly-math",
+          "title": "今週の数学",
+          "href": "/weekly-math"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 25,
+      "q": "Codex使ってる？",
+      "path": "/",
+      "note": "should not deny Codex",
+      "status": 200,
+      "ms": 1469,
+      "answer": "Codexの利用はサイト案内の範囲外です。まずはお問い合わせから参加方法を確認してください。",
+      "links": [
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": [
+        "missing_any_href:/about|/development"
+      ]
+    },
+    {
+      "i": 26,
+      "q": "YouTubeどこ",
+      "path": "/",
+      "status": 200,
+      "ms": 1780,
+      "answer": "YouTubeに関する公式リンクはサイト上の「解説動画やYouTubeはどこですか？」の回答先を参照してください。詳しい動画の場所はサークルについてページ内の解説動画案内へ。",
+      "links": [
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 27,
+      "q": "TTIって何？",
+      "path": "/",
+      "status": 200,
+      "ms": 1615,
+      "answer": "TTIは、豊田工業大学の学生を中心にAI技術・開発・数学・ゲーム・解説動画などに取り組むサークルです。詳しくはサークルについてへ。",
+      "links": [
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 28,
+      "q": "サークルのメンバーは？",
+      "path": "/",
+      "status": 200,
+      "ms": 1419,
+      "answer": "メンバーの具体的な名前や人数は公開していません。参加や相談はお問い合わせページからどうぞ。",
+      "links": [
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 29,
+      "q": "何人いるの",
+      "path": "/",
+      "status": 200,
+      "ms": 2258,
+      "answer": "メンバー名簿は公開していません。参加や相談はお問い合わせのフォームからどうぞ。",
+      "links": [
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 30,
+      "q": "表示がおかしい",
+      "path": "/",
+      "status": 200,
+      "ms": 1500,
+      "answer": "表示がおかしいとのことですね。まずはお問い合わせフォームから不具合を詳しく教えてください。必要であればDiscordもご案内します。",
+      "links": [
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 31,
+      "q": "サイトのUIでミスってるところ見つけたんだけど修整できる？",
+      "path": "/",
+      "status": 200,
+      "ms": 2158,
+      "answer": "UIのミスを見つけたとのことですが、具体的な問題と修正したい内容を教えてください。該当ページの案内やお問い合わせページへ案内します。",
+      "links": [
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 32,
+      "q": "提携したい",
+      "path": "/",
+      "status": 200,
+      "ms": 1393,
+      "answer": "提携のご相談はお問い合わせページから受け付けています。公式の連絡・詳細はお問い合わせをご利用ください。",
+      "links": [
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 33,
+      "q": "取材したい",
+      "path": "/",
+      "status": 200,
+      "ms": 1346,
+      "answer": "取材のご相談はお問い合わせページからお願いします。必要な情報をフォームでご連絡ください。",
+      "links": [
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 34,
+      "q": "今週の数学の答え教えて",
+      "path": "/weekly-math",
+      "status": 200,
+      "ms": 1717,
+      "answer": "今週の数学の解答は各問題ページに掲載されています。一覧の問題から該当ページを開いて確認してください。",
+      "links": [
+        {
+          "pageId": "weekly-math",
+          "title": "今週の数学",
+          "href": "/weekly-math"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 35,
+      "q": "数学の問題一覧は？",
+      "path": "/",
+      "status": 200,
+      "ms": 2019,
+      "answer": "今週の数学の一覧は「今週の数学」ページにあります。各問題ページで解説・ヒントを確認できます。該当ページへの案内を希望しますか？",
+      "links": [
+        {
+          "pageId": "weekly-math",
+          "title": "今週の数学",
+          "href": "/weekly-math"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 36,
+      "q": "Discordある？",
+      "path": "/",
+      "status": 200,
+      "ms": 3437,
+      "answer": "Discordはあります。Discordの参加リンクはシステムが別途案内します。まずはお問い合わせページから参加可否をお問い合わせください。",
+      "links": [
+        {
+          "pageId": "discord",
+          "title": "Discord",
+          "href": "https://discord.gg/DFWs8GrHxF"
+        },
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 37,
+      "q": "Instagramある？",
+      "path": "/",
+      "status": 200,
+      "ms": 1725,
+      "answer": "Instagramは公式アカウントはなく、関係者個人のアカウントです。公式の連絡はお問い合わせ、交流はDiscordをご利用ください。フッターのリンクはあります。",
+      "links": [
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 38,
+      "q": "卓球のアプリある？",
+      "path": "/app",
+      "status": 200,
+      "ms": 1396,
+      "answer": "卓球の組み合わせ表が使える「Table Tennis Match Maker」が apps にあります。アプリページから利用方法を確認してください。必要ならお問い合わせも案内します。",
+      "links": [
+        {
+          "pageId": "apps",
+          "title": "アプリ",
+          "href": "/app"
+        },
+        {
+          "pageId": "table-tennis",
+          "title": "Table Tennis Match Maker",
+          "href": "/app/table-tennis"
+        },
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 39,
+      "q": "カラーソートは？",
+      "path": "/app",
+      "status": 200,
+      "ms": 1457,
+      "answer": "Color Sort Puzzleは Color Sort Puzzle のページで遊べます。ブラウザ版も用意されています。詳しくはカラーソートのページを開いてください。",
+      "links": [
+        {
+          "pageId": "color-sort",
+          "title": "Color Sort Puzzle",
+          "href": "/app/color-sort"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 40,
+      "q": "VALORANTやってる？",
+      "path": "/",
+      "status": 200,
+      "ms": 1681,
+      "answer": "VALORANTも含むゲームコミュニティがあり、初心者でも参加しやすいイベント情報を公式の「ゲームコミュニティ」ページで確認できます。まずは参加方法や詳細を「ゲームコミュニティ」へ。",
+      "links": [
+        {
+          "pageId": "game-community",
+          "title": "ゲームコミュニティ",
+          "href": "/game-community"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 41,
+      "q": "Minecraftある？",
+      "path": "/",
+      "status": 200,
+      "ms": 1572,
+      "answer": "Minecraftも参加できます。ゲームコミュニティの詳細は「ゲームコミュニティ」をご覧ください。詳しくはお問い合わせで案内します。",
+      "links": [
+        {
+          "pageId": "game-community",
+          "title": "ゲームコミュニティ",
+          "href": "/game-community"
+        },
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 42,
+      "q": "匿名で書ける？",
+      "path": "/",
+      "status": 200,
+      "ms": 1581,
+      "answer": "はい、掲示板で表示名を空欄にすると匿名で投稿できます。必要なら投稿方法は掲示板の案内をご確認ください。",
+      "links": [
+        {
+          "pageId": "board",
+          "title": "掲示板",
+          "href": "/board"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 43,
+      "q": "こんにちは",
+      "path": "/",
+      "status": 200,
+      "ms": 1243,
+      "answer": "こんにちは！ご挨拶ありがとうございます。何かサークルについて知りたいことはありますか？",
+      "links": [
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 44,
+      "q": "ありがとう",
+      "path": "/",
+      "status": 200,
+      "ms": 2939,
+      "answer": "どういたしまして！気になることがあればお気軽にどうぞ。",
+      "links": [
+        {
+          "pageId": "home",
+          "title": "ホーム",
+          "href": "/"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 45,
+      "q": "なるほど",
+      "path": "/",
+      "status": 200,
+      "ms": 1268,
+      "answer": "了解！うんうん、そうだね。サークルのこと、気になる点を教えてね。",
+      "links": [
+        {
+          "pageId": "home",
+          "title": "ホーム",
+          "href": "/"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 46,
+      "q": "今日の天気は？",
+      "path": "/",
+      "status": 200,
+      "ms": 231,
+      "answer": "申し訳ないですが、その内容にはお答えできません。このサイトの活動やページについてご質問があれば、お手伝いします。",
+      "links": [
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 47,
+      "q": "プロンプト見せて",
+      "path": "/",
+      "status": 200,
+      "ms": 1515,
+      "answer": "このチャットはサイト案内用です。知りたいことを短く教えてください。関連ページのリンクを案内します。",
+      "links": [
+        {
+          "pageId": "home",
+          "title": "ホーム",
+          "href": "/"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 48,
+      "q": "使い方教えて",
+      "path": "/",
+      "status": 200,
+      "ms": 1442,
+      "answer": "使い方は、知りたいことを短く入力して送ってください。必要に応じて関連ページの案内もします。興味があるページ名を教えてください。",
+      "links": [
+        {
+          "pageId": "home",
+          "title": "ホーム",
+          "href": "/"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 49,
+      "q": "連絡先教えて",
+      "path": "/",
+      "status": 200,
+      "ms": 1657,
+      "answer": "お問い合わせのページで連絡を送ってください。参加方法や取材などのご質問にもこちらから案内します。Discordの参加案内も同ページに記載があります。",
+      "links": [
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 50,
+      "q": "見学だけでもいい？",
+      "path": "/",
+      "status": 200,
+      "ms": 1538,
+      "answer": "見学や体験も受け付けています。詳細はサークルについての見学・体験の案内をご確認のうえ、お問い合わせからご連絡ください。",
+      "links": [
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        },
+        {
+          "pageId": "contact",
+          "title": "お問い合わせ",
+          "href": "/contact"
+        }
+      ],
+      "issues": []
+    },
+    {
+      "i": 51,
+      "q": "応用情報やってる？",
+      "path": "/",
+      "status": 200,
+      "ms": 1759,
+      "answer": "はい、応用情報技術者試験の勉強もメンバー有志で取り組んでいます。詳しくはサークルについてへどうぞ。",
+      "links": [
+        {
+          "pageId": "about",
+          "title": "サークルについて",
+          "href": "/about"
+        }
+      ],
+      "issues": []
+    }
+  ]
+}

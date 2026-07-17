@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isCasualConversation, isShortFollowUpProbe, shouldTreatAsFollowUp, shouldUseFollowUpHistory } from './smallTalk.js';
+import { isCasualConversation, isBareEmpathyRemark, isGreetingMessage, isLookOrDesignRemark, isShortFollowUpProbe, shouldOmitAssistantLinks, shouldTreatAsFollowUp, shouldUseFollowUpHistory } from './smallTalk.js';
 
 describe('isCasualConversation', () => {
   it.each([
@@ -42,6 +42,9 @@ describe('isCasualConversation', () => {
     '助かる',
     '了解っす',
     'だいじょぶ',
+    '難しいね',
+    'むずかしいな',
+    'はいはい',
   ])('accepts %j', (message) => {
     expect(isCasualConversation(message)).toBe(true);
   });
@@ -59,6 +62,60 @@ describe('isCasualConversation', () => {
     '',
   ])('rejects %j', (message) => {
     expect(isCasualConversation(message)).toBe(false);
+  });
+});
+
+describe('isLookOrDesignRemark', () => {
+  it.each([
+    'このサイトのUIがなんかappleっぽいね',
+    'デザインおしゃれ',
+    '見た目かわいい',
+    '雰囲気がシンプルでいいね',
+    'AppleっぽいUIだね',
+  ])('accepts %j', (message) => {
+    expect(isLookOrDesignRemark(message)).toBe(true);
+  });
+
+  it.each([
+    'UIの修正依頼',
+    'UIがおかしい',
+    '表示がおかしい',
+    'UIバグ直して',
+    'デザインどこで確認できる？',
+    '費用はかかる？',
+    'こんにちは',
+  ])('rejects %j', (message) => {
+    expect(isLookOrDesignRemark(message)).toBe(false);
+  });
+});
+
+describe('isBareEmpathyRemark', () => {
+  it.each(['難しいね', 'むずかしいな', 'なるほど', 'そっか'])(
+    'accepts %j',
+    (message) => {
+      expect(isBareEmpathyRemark(message)).toBe(true);
+      expect(shouldOmitAssistantLinks(message)).toBe(true);
+    },
+  );
+
+  it.each(['こんにちは', '入りたい', '費用はかかる？'])('rejects %j', (message) => {
+    expect(isBareEmpathyRemark(message)).toBe(false);
+  });
+});
+
+describe('shouldOmitAssistantLinks for thanks and acks', () => {
+  it.each(['ありがとう', 'ありがとうございます', '了解', 'OK', 'ok', 'わかった'])(
+    'omits links for %j',
+    (message) => {
+      expect(isCasualConversation(message)).toBe(true);
+      expect(isGreetingMessage(message)).toBe(false);
+      expect(shouldOmitAssistantLinks(message)).toBe(true);
+    },
+  );
+
+  it('keeps greetings eligible for optional links', () => {
+    expect(isGreetingMessage('こんにちは')).toBe(true);
+    expect(shouldOmitAssistantLinks('こんにちは')).toBe(false);
   });
 });
 

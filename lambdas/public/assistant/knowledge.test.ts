@@ -8,11 +8,19 @@ import {
   DISCORD_INVITE_URL,
   GUIDE_ENTRIES,
   isDiscordQuestion,
+  isToyotaTiQuestion,
   KNOWN_PAGE_ROUTES,
   normalizeSearchText,
   resolveCurrentPageId,
   scoreGuideEntry,
   selectRelevantKnowledge,
+  TOYOTA_TI_URL,
+  withContactPageIdIfMentioned,
+  withMentionedPageIds,
+  withoutPageInventoryLinks,
+  withTopGuidePageId,
+  withoutRedundantContactPageId,
+  withoutRedundantHomePageId,
 } from './knowledge.js';
 import { PAGE_IDS, type GuideEntry, type PageId } from './types.js';
 
@@ -44,6 +52,141 @@ function guideEntry(overrides: Partial<GuideEntry> = {}): GuideEntry {
     ...overrides,
   };
 }
+
+describe('withContactPageIdIfMentioned', () => {
+  it('appends contact when the answer mentions お問い合わせ but pageIds omit it', () => {
+    expect(withContactPageIdIfMentioned(
+      '表示の不具合はお問い合わせから詳しく教えてください。',
+      ['about'],
+    )).toEqual(['about', 'contact']);
+  });
+
+  it('keeps pageIds unchanged when contact is already present or unmentioned', () => {
+    expect(withContactPageIdIfMentioned(
+      'お問い合わせのフォームからどうぞ。',
+      ['contact'],
+    )).toEqual(['contact']);
+    expect(withContactPageIdIfMentioned(
+      '掲示板で確認できます。',
+      ['board'],
+    )).toEqual(['board']);
+  });
+});
+
+describe('withMentionedPageIds', () => {
+  it('adds about when the answer points to サークルについて', () => {
+    expect(withMentionedPageIds(
+      '詳しくは「サークルについて」をご覧ください。',
+      ['home'],
+    )).toEqual(['home', 'about']);
+  });
+});
+
+describe('withoutPageInventoryLinks', () => {
+  it('clears chips for pure inventory questions', () => {
+    expect(withoutPageInventoryLinks(
+      'なんのページがある？',
+      ['home', 'about', 'contact'],
+    )).toEqual([]);
+  });
+
+  it('keeps links when inventory is mixed with a where-is follow-up', () => {
+    expect(withoutPageInventoryLinks(
+      'なんのページがある？あとお問い合わせはどこ？',
+      ['home', 'contact'],
+    )).toEqual(['home', 'contact']);
+  });
+
+  it('leaves unrelated questions unchanged', () => {
+    expect(withoutPageInventoryLinks(
+      '費用はかかる？',
+      ['about', 'contact'],
+    )).toEqual(['about', 'contact']);
+  });
+});
+
+describe('withoutRedundantContactPageId', () => {
+  it('drops unused contact when a specific page is already linked', () => {
+    expect(withoutRedundantContactPageId(
+      '今週の数学ページで確認できます。',
+      ['weekly-math', 'contact'],
+    )).toEqual(['weekly-math']);
+  });
+
+  it('keeps contact when the answer mentions お問い合わせ', () => {
+    expect(withoutRedundantContactPageId(
+      '参加はお問い合わせからどうぞ。',
+      ['about', 'contact'],
+    )).toEqual(['about', 'contact']);
+  });
+});
+
+describe('withTopGuidePageId', () => {
+  it('prepends the top guide page when the model returns contact-only', () => {
+    const selected = selectRelevantKnowledge('費用はかかる？', '/');
+    expect(withTopGuidePageId(
+      '費用は無料です。詳しくはお問い合わせください。',
+      ['contact'],
+      selected,
+    )[0]).toBe('about');
+  });
+
+  it('keeps contact-only for bug reports', () => {
+    const selected = selectRelevantKnowledge('表示がおかしい', '/');
+    expect(withTopGuidePageId(
+      '表示の不具合はお問い合わせから詳しく教えてください。',
+      ['contact'],
+      selected,
+    )).toEqual(['contact']);
+  });
+});
+
+describe('UI look remarks vs bug reports', () => {
+  it('does not route design compliments to contact via bare UI keyword', () => {
+    expect(selectRelevantKnowledge('このサイトのUIがなんかappleっぽいね', '/').map(
+      ({ entry }) => entry.id,
+    )).not.toContain('contact');
+  });
+
+  it('still routes UI bug phrases to contact', () => {
+    expect(selectRelevantKnowledge('UIの修正お願い', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('contact');
+    expect(selectRelevantKnowledge('UIがおかしい', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('contact');
+  });
+});
+
+describe('withoutRedundantHomePageId', () => {
+  it('drops home when a more specific page is already linked', () => {
+    expect(withoutRedundantHomePageId(
+      '掲示板では質問や相談を投稿・確認できます。',
+      ['board', 'home'],
+    )).toEqual(['board']);
+  });
+
+  it('drops home when contact is the real destination', () => {
+    expect(withoutRedundantHomePageId(
+      '参加方法はお問い合わせから相談してください。',
+      ['home', 'contact'],
+    )).toEqual(['contact']);
+  });
+
+  it('keeps home for greetings that also listed contact', () => {
+    expect(withoutRedundantHomePageId(
+      '活動内容や参加方法など、気軽に聞いてください。',
+      ['home', 'contact'],
+    )).toEqual(['home']);
+  });
+
+  it('keeps home when the answer clearly points to the top page', () => {
+    expect(withoutRedundantHomePageId(
+      'ホームから主なページを探せます。',
+      ['home', 'about'],
+    )).toEqual(['home', 'about']);
+  });
+});
 
 describe('guide catalog', () => {
   it('contains the 12 unique known page ids with canonical routes and relationships', () => {
@@ -221,13 +364,25 @@ describe('deterministic guide search', () => {
   it('matches what-can-you-do phrasings', () => {
     expect(selectRelevantKnowledge('何ができる？', '/').map(
       ({ entry }) => entry.id,
-    )).toEqual(expect.arrayContaining(['home', 'about']));
+    )[0]).toBe('about');
+    expect(selectRelevantKnowledge('何ができるの？', '/').map(
+      ({ entry }) => entry.id,
+    )[0]).toBe('about');
     expect(selectRelevantKnowledge('なにができるの', '/').map(
       ({ entry }) => entry.id,
-    )).toEqual(expect.arrayContaining(['home', 'about']));
+    )).toEqual(expect.arrayContaining(['about']));
     expect(selectRelevantKnowledge('できること教えて', '/').map(
       ({ entry }) => entry.id,
-    )).toEqual(expect.arrayContaining(['home', 'about']));
+    )).toEqual(expect.arrayContaining(['about']));
+  });
+
+  it('replaces home-only with the top specific guide page', () => {
+    const selected = selectRelevantKnowledge('何ができるの？', '/');
+    expect(withTopGuidePageId(
+      '開発や数学などに取り組んでいます。詳しくはサークルについてへ。',
+      ['home'],
+      selected,
+    )).toEqual(['about']);
   });
 
   it('matches site, company, and partnership phrasings', () => {
@@ -491,6 +646,20 @@ describe('verified links', () => {
       { pageId: 'contact', title: 'お問い合わせ', href: '/contact' },
     ]);
   });
+
+  it('injects the Toyota TI official site when includeToyotaTi is set', () => {
+    expect(createVerifiedLinks(
+      ['about'],
+      selectRelevantKnowledge('TTIって何？', '/'),
+      [],
+      [],
+      { includeToyotaTi: true },
+    )[0]).toEqual({
+      pageId: 'toyota-ti',
+      title: '豊田工業大学',
+      href: TOYOTA_TI_URL,
+    });
+  });
 });
 
 describe('isDiscordQuestion', () => {
@@ -503,5 +672,28 @@ describe('isDiscordQuestion', () => {
 
   it.each(['Contactはどこ', 'Instagramある？'])('rejects %j', (message) => {
     expect(isDiscordQuestion(message)).toBe(false);
+  });
+});
+
+describe('isToyotaTiQuestion', () => {
+  it.each([
+    'TTIって何？',
+    'TTIとは',
+    'こんにちは！TTIって何？あとお問い合わせどこ？',
+    '豊田工業大学って何',
+    '豊田工業大学について教えて',
+    '豊田工大は？',
+    '豊工って何？',
+    '豊工大について',
+    'toyota-ti',
+  ])(
+    'detects %j',
+    (message) => {
+      expect(isToyotaTiQuestion(message)).toBe(true);
+    },
+  );
+
+  it.each(['費用はかかる？', 'Discordある？', 'アプリはどこ'])('rejects %j', (message) => {
+    expect(isToyotaTiQuestion(message)).toBe(false);
   });
 });

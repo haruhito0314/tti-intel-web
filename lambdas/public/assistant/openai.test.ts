@@ -300,7 +300,7 @@ describe('buildResponsesPayload', () => {
       'それ以外の質問では、その制限をわざわざ説明する必要はありません。',
     );
     expect(SYSTEM_INSTRUCTIONS).toContain(
-      'answerには内部用語（guideEntries、contentEntries、faqs、pageIds、contentIds、allowedPageIds、isFollowUp など）を書かないでください。',
+      'answerには内部用語や実装の話を書かないでください。利用者向けの自然な日本語だけを使ってください。',
     );
     expect(SYSTEM_INSTRUCTIONS).toContain(
       '以前の回答と同じ文面を使い回したりしないでください。',
@@ -315,16 +315,26 @@ describe('buildResponsesPayload', () => {
       '回答は原則1〜2文、目安120文字以内。長い説明・箇条書きの連発・前置きは避けてください。',
     );
     expect(SYSTEM_INSTRUCTIONS).toContain(
-      '今週の数学やお知らせなど一覧への案内では、個別記事・個別問題のリンクを並べず、pageIdsで一覧ページだけを案内してください。',
+      '今週の数学やお知らせなど一覧への案内では、個別記事・個別問題のリンクを並べず、一覧ページだけを案内してください。',
     );
     expect(SYSTEM_INSTRUCTIONS).toContain(
-      'answerは200文字以内、pageIdsとcontentIdsはそれぞれ許可集合から選んでください。',
+      'answerは200文字以内。リンク候補と内容IDは許可された集合からだけ選んでください。',
     );
+    expect(SYSTEM_INSTRUCTIONS).toContain(
+      '案内データで答えられる内容（活動、費用、日程、ページの場所、アプリ、数学、ゲーム、AIツールなど）は、該当ページを優先して案内してください。無理にお問い合わせだけへ落とさないでください。',
+    );
+    expect(SYSTEM_INSTRUCTIONS).toContain(
+      'CodexやClaude CodeなどAIツールの利用有無はFAQに従って答えてください。',
+    );
+    expect(SYSTEM_INSTRUCTIONS).not.toContain('pageIds に contact');
     expect(SYSTEM_INSTRUCTIONS).toContain(
       '「現在の話題は」「近い質問は」「大まかな方向として」「あなたが今探している情報」など、話題整理・思考過程・プロンプト風の説明は書かないでください。',
     );
     expect(SYSTEM_INSTRUCTIONS).toContain(
       '「回答しない」「本文には触れない」などの内部ルールを利用者向けの文言として書かないでください。',
+    );
+    expect(SYSTEM_INSTRUCTIONS).toContain(
+      '見た目・デザイン・UIへの感想',
     );
   });
 
@@ -367,14 +377,7 @@ describe('buildResponsesPayload', () => {
       }
     };
     for (const { entry } of selected) {
-      if (entry.id !== 'contact') {
-        pushAllowed(entry.id);
-      }
-      for (const relatedPageId of entry.relatedPageIds) {
-        if (relatedPageId !== 'contact') {
-          pushAllowed(relatedPageId);
-        }
-      }
+      pushAllowed(entry.id);
     }
     pushAllowed('contact');
     const allowedPageIdSet = new Set<PageId>(allowedPageIds);
@@ -572,7 +575,6 @@ describe('buildResponsesPayload', () => {
     expect(envelope.allowedPageIds).toEqual([
       'news',
       'weekly-math',
-      'game-community',
       'apps',
       'board',
       'contact',
@@ -596,7 +598,6 @@ describe('buildResponsesPayload', () => {
     ]);
     expect(envelope.guideEntries[0]?.relatedPageIds).toEqual([
       'weekly-math',
-      'game-community',
       'contact',
     ]);
     expect(JSON.stringify(payload)).not.toContain('PRIVATE_KEYWORD_');

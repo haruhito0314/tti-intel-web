@@ -5,7 +5,7 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import { About } from './About';
 
 const activityImages = [
-    ['動画編集用のモニター、マイク、キーボード、トラックパッド', 'activity-video'],
+    ['動画編集用のモニター、マイク、キーボード', 'activity-video'],
     ['コードエディタを表示したノートPC', 'activity-development'],
     ['ゲームコントローラーとヘッドセット', 'activity-game'],
     ['数学の図形が表示されたタブレットとペン', 'activity-math'],

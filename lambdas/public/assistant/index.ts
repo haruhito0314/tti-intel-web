@@ -13,7 +13,13 @@ import {
   createVerifiedLinks,
   GUIDE_ENTRIES,
   isDiscordQuestion,
+  isToyotaTiQuestion,
   selectRelevantKnowledge,
+  withMentionedPageIds,
+  withoutPageInventoryLinks,
+  withTopGuidePageId,
+  withoutRedundantContactPageId,
+  withoutRedundantHomePageId,
 } from './knowledge.js';
 import {
   selectRelevantContent,
@@ -35,15 +41,22 @@ import {
   reserveQuota,
   type QuotaReservationInput,
 } from './quota.js';
-import { isCasualConversation, shouldTreatAsFollowUp, shouldUseFollowUpHistory } from './smallTalk.js';
+import {
+  isCasualConversation,
+  shouldOmitAssistantLinks,
+  shouldTreatAsFollowUp,
+  shouldUseFollowUpHistory,
+} from './smallTalk.js';
 import type {
   AssistantRequest,
   AssistantResponse,
   OpenAIResult,
   OpenAIUsage,
+  PageId,
   RankedContentEntry,
   RankedGuideEntry,
 } from './types.js';
+import { PAGE_IDS } from './types.js';
 import {
   recordUnansweredQuestion,
   type UnansweredReason,
@@ -290,8 +303,9 @@ export function createAssistantHandler(
       }
       const request = parseAssistantRequest(event.body);
       unansweredRequest = request;
-      // Acknowledgements like 「サイト わかりました」 must not re-enter guide search.
-      const casual = isCasualConversation(request.message);
+      // Acknowledgements / look / empathy remarks must not re-enter guide search.
+      const omitLinks = shouldOmitAssistantLinks(request.message);
+      const casual = isCasualConversation(request.message) || omitLinks;
       let selected = casual
         ? []
         : selectRelevantKnowledge(request.message, request.currentPath);
@@ -403,14 +417,39 @@ export function createAssistantHandler(
 
       outcome = smallTalk ? 'small_talk_success' : 'success';
       statusCode = 200;
+      const mentionedPageIds = withMentionedPageIds(output.answer, [])
+        .filter((id): id is PageId => (PAGE_IDS as readonly string[]).includes(id));
+      let pageIds = omitLinks
+        ? []
+        : withoutPageInventoryLinks(
+          request.message,
+          withoutRedundantHomePageId(
+            output.answer,
+            withoutRedundantContactPageId(
+              output.answer,
+              withMentionedPageIds(
+                output.answer,
+                withTopGuidePageId(output.answer, output.pageIds, openAiSelected),
+              ),
+            ),
+          ),
+        );
+      // TTI / 大学名の質問では公式サイト(+必要ならサークルについて)で十分。ホームは不要。
+      if (!omitLinks && isToyotaTiQuestion(request.message)) {
+        pageIds = pageIds.filter((id) => id !== 'home');
+      }
       return jsonResponse(statusCode, {
         answer: output.answer,
         links: createVerifiedLinks(
-          output.pageIds,
+          pageIds,
           openAiSelected,
-          output.contentIds,
+          omitLinks ? [] : output.contentIds,
           openAiContent,
-          { includeDiscord: isDiscordQuestion(request.message) },
+          {
+            includeDiscord: !omitLinks && isDiscordQuestion(request.message),
+            includeToyotaTi: !omitLinks && isToyotaTiQuestion(request.message),
+            extraAllowedPageIds: mentionedPageIds,
+          },
         ),
       } satisfies AssistantResponse, origin);
     } catch (error) {
