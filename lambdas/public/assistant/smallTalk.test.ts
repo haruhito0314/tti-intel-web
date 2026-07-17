@@ -113,9 +113,9 @@ describe('shouldOmitAssistantLinks for thanks and acks', () => {
     },
   );
 
-  it('keeps greetings eligible for optional links', () => {
+  it('omits links on bare greetings', () => {
     expect(isGreetingMessage('こんにちは')).toBe(true);
-    expect(shouldOmitAssistantLinks('こんにちは')).toBe(false);
+    expect(shouldOmitAssistantLinks('こんにちは')).toBe(true);
   });
 });
 

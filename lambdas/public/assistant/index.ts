@@ -13,6 +13,8 @@ import {
   intentHintFor,
   pageIdsFromIntent,
   resolveAnswerForIntent,
+  seedGuideForIntent,
+  shouldBypassKnowledgeMiss,
 } from './intent.js';
 import {
   buildFollowUpSearchQuery,
@@ -347,7 +349,14 @@ export function createAssistantHandler(
         }
       }
 
-      if (selected.length === 0 && content.length === 0 && !smallTalk) {
+      selected = seedGuideForIntent(intent, selected);
+
+      if (
+        selected.length === 0
+        && content.length === 0
+        && !smallTalk
+        && !shouldBypassKnowledgeMiss(intent)
+      ) {
         outcome = 'no_relevant_knowledge';
         statusCode = 200;
         await captureUnanswered(dependencies, {

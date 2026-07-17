@@ -449,6 +449,13 @@ describe('deterministic guide search', () => {
     ).map(({ entry }) => entry.id)).toContain('weekly-math');
   });
 
+  it('treats 動画コンテンツ as an explanation-video ask', () => {
+    expect(isExplanationVideoQuestion('動画コンテンツありますか？')).toBe(true);
+    expect(selectRelevantKnowledge('動画コンテンツありますか？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('about');
+  });
+
   it('treats denied math as non-destination for youtube asks', () => {
     const q = '解説動画どこ？数学のページじゃないよね？';
     expect(isExplanationVideoQuestion(q)).toBe(true);

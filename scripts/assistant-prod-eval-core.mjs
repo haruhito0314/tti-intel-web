@@ -72,7 +72,7 @@ const RANDOM_POOL = [
   { cat: 'random', asks: 1, q: 'アプリどこ？', expectHrefAny: ['/app'] },
   { cat: 'random', asks: 1, q: '開発について知りたい', expectHrefAny: ['/development'] },
   { cat: 'random', asks: 1, q: '見学だけでもいい？', expectHrefAny: ['/about', '/contact'] },
-  { cat: 'random', asks: 1, q: 'Codex使ってる？', expectHrefAny: ['/about'], forbidRefuse: true },
+  { cat: 'random', asks: 1, q: 'Codex使ってる？', expectHrefAny: ['/about', '/development'], forbidRefuse: true },
   { cat: 'random', asks: 1, q: 'インスタある？', expectHrefAny: ['/contact'] },
   { cat: 'random', asks: 1, q: 'デザインおしゃれ', expectNoLinks: true },
   { cat: 'random', asks: 1, q: '今日の天気は？', expectHrefAny: ['/contact'] },

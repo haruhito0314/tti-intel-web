@@ -316,13 +316,37 @@ describe('createAssistantHandler CORS and early exits', () => {
     expect(response.statusCode).toBe(200);
     expect(parsedBody(response)).toEqual({
       answer: 'こんにちは！活動内容や参加方法など、気軽に聞いてください。',
-      links: [
-        { pageId: 'home', title: 'ホーム', href: '/' },
-      ],
+      links: [],
     });
     expect(dependencies.requestOpenAI).toHaveBeenCalledWith(expect.objectContaining({
       mode: 'small_talk',
     }));
+  });
+
+  it('answers capabilities chat asks without Contact fallback when search misses', async () => {
+    const dependencies = createDependencies({
+      requestOpenAI: vi.fn(async () => ({
+        output: {
+          answer: '申し訳ないですが、その内容にはお答えできません。',
+          pageIds: ['contact'],
+          contentIds: [],
+        },
+        usage: successfulOpenAIResult.usage,
+      })),
+    });
+    const response = await invoke(dependencies, validPostEvent({
+      body: JSON.stringify({
+        ...validRequest,
+        message: 'このチャットでは何を聞けますか',
+      }),
+    }));
+
+    expect(response.statusCode).toBe(200);
+    expect(parsedBody(response)).toEqual({
+      answer: 'このチャットでは、サークルの活動内容と各ページの場所を短く案内できます。',
+      links: [{ pageId: 'about', title: 'サークルについて', href: '/about' }],
+    });
+    expect(dependencies.requestOpenAI).toHaveBeenCalled();
   });
 
   it('routes thanks through OpenAI small-talk instead of Contact fallback', async () => {

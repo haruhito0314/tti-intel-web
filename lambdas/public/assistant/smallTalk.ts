@@ -267,15 +267,14 @@ export function isGreetingMessage(message: string): boolean {
 }
 
 /**
- * Remarks / thanks / acks that should get a short reply with no verified links.
- * Greetings may still offer a soft follow-up, but ありがとう・了解・OK に
- * ホームを付けると不自然なので除外する.
+ * Remarks / thanks / acks / greetings that should get a short reply with no
+ * verified links. Soft verbal follow-up is fine; home chips on こんにちは are not.
  */
 export function shouldOmitAssistantLinks(message: string): boolean {
   if (isLookOrDesignRemark(message) || isBareEmpathyRemark(message)) {
     return true;
   }
-  return isCasualConversation(message) && !isGreetingMessage(message);
+  return isCasualConversation(message);
 }
 
 /**

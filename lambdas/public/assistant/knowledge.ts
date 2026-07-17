@@ -234,7 +234,9 @@ export function scoreGuideEntry(
 
 export function isExplanationVideoQuestion(message: string): boolean {
   const normalized = normalizeSearchText(message);
-  return /youtube|ユーチューブ|解説動画/.test(normalized);
+  // Circle video / channel asks — not generic “動画” in activity lists alone.
+  return /youtube|ユーチューブ|解説動画|動画コンテンツ|動画(?:が|は|も|を)?(?:ある|あり|見)/
+    .test(normalized);
 }
 
 /**

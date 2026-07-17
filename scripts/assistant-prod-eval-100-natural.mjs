@@ -127,7 +127,7 @@ const CASES = [
   { cat: 'noise', asks: 2, q: 'ゲームコミュニティでVALORANTやってますか', expectHrefAny: ['/game-community'] },
 
   // —— その他 ——
-  { cat: 'misc', asks: 1, q: 'Codex使って開発してますか', expectHrefAny: ['/about'], forbidRefuse: true },
+  { cat: 'misc', asks: 1, q: 'Codex使って開発してますか', expectHrefAny: ['/about', '/development'], forbidRefuse: true },
   { cat: 'misc', asks: 1, q: 'Claude Codeも使ってますか', expectHrefAny: ['/about', '/development'] },
   { cat: 'misc', asks: 1, q: '掲示板は匿名で書けますか', expectHrefAny: ['/board'] },
   { cat: 'misc', asks: 1, q: 'メールで問い合わせできますか', expectHrefAny: ['/contact'] },

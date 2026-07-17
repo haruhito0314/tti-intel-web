@@ -1,5 +1,6 @@
 import {
   followUpAskedPageIds,
+  GUIDE_ENTRIES,
   isDiscordQuestion,
   isExplanationVideoQuestion,
   isMathDestinationAsk,
@@ -110,8 +111,14 @@ function buildInventoryAnswer(followUpPageIds: readonly PageId[]): string {
 
 function isCapabilitiesQuestion(message: string): boolean {
   const normalized = normalizeSearchText(message);
-  return /何ができる|なにができる|できること|何が出来る|どんなことができる|何の案内|何案内|どんな案内|何が聞ける|何を案内|何聞ける/
+  return /何ができる|なにができる|できること|何が出来る|どんなことができる|何の案内|何案内|どんな案内|何が聞ける|何を聞け|何が聞け|何を案内|何聞ける|このチャットで何|チャットで何/
     .test(normalized);
+}
+
+/** Activity timing / schedule (not a bare “どんな活動” inventory). */
+function isActivityScheduleQuestion(normalized: string): boolean {
+  if (!/活動/.test(normalized)) return false;
+  return /いつ|日程|曜日|週末|平日|何時|頻度|スケジュール|開催/.test(normalized);
 }
 
 function asksJoinAlongside(normalized: string): boolean {
@@ -157,7 +164,7 @@ export function intentHintFor(intent: AssistantIntent): string {
     case 'small_talk':
       return '相づち・感想。短く返す。pageIdsは空。長い再説明や勧誘はしない。';
     case 'greeting':
-      return '挨拶。短く返し、活動・参加・ページ案内の質問を促してよい。';
+      return '挨拶。短く返し、活動・参加・ページ案内の質問を促してよい。pageIdsは空。';
     case 'page_inventory': {
       const names = inventoryNameListText();
       return intent.followUpPageIds.length > 0
@@ -289,6 +296,15 @@ export function classifyIntent(message: string): AssistantIntent {
     return { ...base, kind: 'join_or_contact' };
   }
 
+  // 活動はいつ？ → about (schedule facts live on サークルについて).
+  if (isActivityScheduleQuestion(normalized)) {
+    return {
+      ...base,
+      kind: 'guide_default',
+      followUpPageIds: ['about'],
+    };
+  }
+
   // Single named destination (アプリどこ / プロダクト一覧見たい).
   const askedOne = followUpAskedPageIds(normalized);
   if (
@@ -320,6 +336,43 @@ export function classifyIntent(message: string): AssistantIntent {
 
 function asPageIds(ids: readonly string[]): PageId[] {
   return ids.filter((id): id is PageId => (PAGE_IDS as readonly string[]).includes(id));
+}
+
+/**
+ * Intent kinds with structural pageIds / answers should not fall through to
+ * Contact fallback just because keyword search scored 0.
+ * Keep narrow: only intents we seed or fully resolve without guide hits.
+ */
+export function shouldBypassKnowledgeMiss(intent: AssistantIntent): boolean {
+  switch (intent.kind) {
+    case 'capabilities':
+    case 'explanation_video':
+    case 'prompt_disclosure':
+    case 'page_inventory':
+      return true;
+    case 'guide_default':
+      return intent.followUpPageIds.length > 0;
+    default:
+      return false;
+  }
+}
+
+/** Seed about when search missed but intent still needs guide context for the model. */
+export function seedGuideForIntent(
+  intent: AssistantIntent,
+  selected: readonly RankedGuideEntry[],
+): RankedGuideEntry[] {
+  if (selected.length > 0) {
+    return [...selected];
+  }
+  const needsAbout = intent.kind === 'capabilities'
+    || intent.kind === 'explanation_video'
+    || (intent.kind === 'guide_default' && intent.followUpPageIds.includes('about'));
+  if (!needsAbout) {
+    return [];
+  }
+  const about = GUIDE_ENTRIES.find((entry) => entry.id === 'about');
+  return about ? [{ entry: about, score: 1 }] : [];
 }
 
 function applySafetyNets(
@@ -395,7 +448,8 @@ export function pageIdsFromIntent(
       return ids;
     }
     case 'greeting':
-      return applySafetyNets(answer, modelPageIds, selected);
+      // Soft prompt is fine; home/contact chips on a bare hello feel spammy.
+      return [];
     case 'guide_default':
     default:
       if (intent.followUpPageIds.length >= 1) {
@@ -427,6 +481,15 @@ export function resolveAnswerForIntent(
 
   if (intent.kind === 'explanation_video') {
     return withoutOffTopicMathMention(message, answer);
+  }
+
+  if (intent.kind === 'capabilities') {
+    if (!answer || /お答えできません|答えられません|案内できません/.test(answer)) {
+      return intent.withJoin
+        ? 'このチャットでは活動内容やページの場所を案内できます。参加はお問い合わせからどうぞ。'
+        : 'このチャットでは、サークルの活動内容と各ページの場所を短く案内できます。';
+    }
+    return answer;
   }
 
   // Structural repair only: too few canonical page names → rebuild from fact list.

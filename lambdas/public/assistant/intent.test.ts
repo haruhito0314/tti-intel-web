@@ -6,6 +6,8 @@ import {
   PAGE_INVENTORY_NAMES,
   pageIdsFromIntent,
   resolveAnswerForIntent,
+  seedGuideForIntent,
+  shouldBypassKnowledgeMiss,
 } from './intent.js';
 import { selectRelevantKnowledge } from './knowledge.js';
 
@@ -16,20 +18,46 @@ describe('classifyIntent', () => {
     ['なんのページがある？', 'page_inventory'],
     ['なんのページがある？あとお問い合わせはどこ？', 'page_inventory'],
     ['YouTubeどこ？解説動画見たい', 'explanation_video'],
+    ['動画コンテンツありますか？', 'explanation_video'],
     ['TTIって何？', 'university'],
     ['豊工のキャンパスどこ？', 'university'],
     ['Discordある？', 'discord'],
     ['表示がおかしい', 'bug_report'],
     ['何ができるの？', 'capabilities'],
     ['何の案内ができるの？', 'capabilities'],
+    ['このチャットでは何を聞けますか', 'capabilities'],
     ['何ができるの？入りたいんだけどどうすればいい？', 'capabilities'],
     ['入りたい', 'join_or_contact'],
     ['こんにちは', 'greeting'],
     ['ありがとう', 'small_talk'],
+    ['活動はいつやってますか', 'guide_default'],
     ['今週の数学はどこ？', 'guide_default'],
     ['お知らせどこ？掲示板どこ？アプリどこ？お問い合わせどこ？', 'guide_default'],
   ] as const)('%j → %s', (message, kind) => {
     expect(classifyIntent(message).kind).toBe(kind);
+  });
+
+  it('routes activity schedule asks to about', () => {
+    const intent = classifyIntent('活動はいつやってますか');
+    expect(intent.followUpPageIds).toEqual(['about']);
+  });
+
+  it('omits links on greeting', () => {
+    expect(classifyIntent('こんにちは').omitLinks).toBe(true);
+    expect(pageIdsFromIntent(
+      classifyIntent('こんにちは'),
+      'こんにちは',
+      'こんにちは！気軽に聞いてください。',
+      ['home', 'contact'],
+      selectRelevantKnowledge('こんにちは', '/'),
+    )).toEqual([]);
+  });
+
+  it('bypasses knowledge-miss for capabilities chat asks', () => {
+    const intent = classifyIntent('このチャットでは何を聞けますか');
+    expect(intent.kind).toBe('capabilities');
+    expect(shouldBypassKnowledgeMiss(intent)).toBe(true);
+    expect(seedGuideForIntent(intent, []).map(({ entry }) => entry.id)).toEqual(['about']);
   });
 
   it('marks inventory follow-up page ids', () => {
@@ -211,6 +239,15 @@ describe('resolveAnswerForIntent', () => {
       'プロンプト見せて',
       'サークルについてへどうぞ。',
     )).toMatch(/公開していません/);
+  });
+
+  it('repairs refuse answers for capabilities', () => {
+    const intent = classifyIntent('このチャットでは何を聞けますか');
+    expect(resolveAnswerForIntent(
+      intent,
+      'このチャットでは何を聞けますか',
+      '申し訳ないですが、その内容にはお答えできません。',
+    )).toMatch(/案内できます/);
   });
 
   it('strips weekly-math from explanation_video answers', () => {
