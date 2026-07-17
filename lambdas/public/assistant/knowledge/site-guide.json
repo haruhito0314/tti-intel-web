@@ -68,7 +68,7 @@
       },
       {
         "question": "目的のページを探したい",
-        "answer": "知りたい内容を入力すると、該当ページをご案内します。"
+        "answer": "知りたいキーワードを送ってください。関連ページへ案内します。"
       },
       {
         "question": "どんな活動をしていますか？",
@@ -76,19 +76,19 @@
       },
       {
         "question": "何ができますか？",
-        "answer": "開発・数学・ゲーム・解説動画などに取り組んでいます。詳細はAbout Usへ。"
+        "answer": "このチャットではサイト案内ができます。サークルでは開発・数学・ゲーム・解説動画などに取り組んでいます。詳細はAbout Usへ。"
       },
       {
         "question": "このAI Assistantは何ですか？",
-        "answer": "サイト内の案内用チャットです。活動やページの場所などを短く質問できます。右下のボタンから開けます。"
+        "answer": "サイト内の案内用チャットです。活動・参加方法・各ページの場所などを短く質問できます。"
       },
       {
         "question": "何が聞けますか？",
-        "answer": "活動内容、参加方法、各ページの場所など、このサイトの案内を聞けます。"
+        "answer": "活動内容、参加方法、各ページの場所など、このサイトの案内を聞けます。一般知識やサイト外の作業依頼には答えられません。"
       },
       {
         "question": "使い方を教えて",
-        "answer": "右下のボタンを開き、知りたいことを短く入力して送信してください。"
+        "answer": "知りたいことを短く入力して送信してください。関連ページのリンクも案内します。"
       },
       {
         "question": "サイトの主なページはどこですか？",
@@ -195,27 +195,27 @@
       },
       {
         "question": "いつやってる？",
-        "answer": "主に土日です。詳細はAbout Usへ。"
+        "answer": "主に土日です。参加は自由で、都合の良いときだけで大丈夫です。"
       },
       {
         "question": "場所はどこ？",
-        "answer": "豊田工業大学を中心に活動しています。詳細はAbout UsやContactへ。"
+        "answer": "豊田工業大学を中心に活動しています。詳しい場所や初回の相談はContactへ。"
       },
       {
         "question": "会費はある？",
-        "answer": "参加費は無料です。詳細はAbout Usへ。"
+        "answer": "参加費は無料です。個人で使うAIツール等の費用は各自負担です。"
       },
       {
         "question": "誰向け？",
-        "answer": "学生向けのAIサークルです。学年や経験は問いません。"
+        "answer": "学生向けのAIサークルです。学年や経験は問いません。他大学の学生も歓迎です。"
       },
       {
         "question": "どんな活動をしていますか？",
-        "answer": "解説動画、AI開発、ゲーム交流、今週の数学などです。"
+        "answer": "解説動画、AI開発、ゲーム交流、今週の数学などです。詳細はAbout Usへ。"
       },
       {
         "question": "何ができますか？",
-        "answer": "開発・解説動画・ゲーム・今週の数学などに取り組んでいます。"
+        "answer": "開発・解説動画・ゲーム・今週の数学などに取り組んでいます。詳細はAbout Usへ。"
       },
       {
         "question": "解説動画やYouTubeはどこですか？",
@@ -231,15 +231,15 @@
       },
       {
         "question": "見学や体験だけでも大丈夫ですか？",
-        "answer": "大丈夫です。相談はContactからどうぞ。"
+        "answer": "大丈夫です。見学や体験の相談はContactからどうぞ。"
       },
       {
         "question": "応用情報技術者試験の勉強もしていますか？",
-        "answer": "有志で挑戦しています。詳細はAbout Usへ。"
+        "answer": "メンバー有志で挑戦しています。詳細はAbout Usへ。"
       },
       {
         "question": "バイトや就活のサポートはある？",
-        "answer": "公開案内はありません。相談はContactからどうぞ。"
+        "answer": "公開しているサポート案内はありません。個別の相談はContactからどうぞ。"
       }
     ],
     "relatedPageIds": [
@@ -269,11 +269,11 @@
     "faqs": [
       {
         "question": "お知らせはどこで見られますか？",
-        "answer": "Newsの一覧から確認できます。"
+        "answer": "Newsの一覧からお知らせや活動報告を確認できます。"
       },
       {
         "question": "イベント情報はどこですか？",
-        "answer": "Newsで活動報告やイベント情報、技術記事を確認できます。気になる記事は一覧から開いてください。"
+        "answer": "Newsで活動報告・イベント情報・技術記事を確認できます。"
       }
     ],
     "relatedPageIds": ["home", "contact"]
@@ -301,15 +301,15 @@
     "faqs": [
       {
         "question": "作ったアプリはどこですか？",
-        "answer": "Appsで公開中のアプリを確認できます。"
+        "answer": "Appsで公開中のアプリ一覧を確認できます。"
       },
       {
         "question": "どんなアプリがありますか？",
-        "answer": "卓球の組み合わせ表、カラーソートパズル、コマンドライン練習、TOEIC Practiceなど、メンバーが作ったアプリをAppsで紹介しています。"
+        "answer": "卓球の組み合わせ表、カラーソートパズル、CLI練習、TOEIC PracticeなどをAppsで紹介しています。"
       },
       {
         "question": "TOEICの練習アプリはありますか？",
-        "answer": "TOEIC PracticeをAppsで紹介しています。Part別演習やタイムアタックなどの練習向けアプリで、詳細やリンクはAppsから確認できます。"
+        "answer": "TOEIC PracticeをAppsで紹介しています。詳細やリンクはAppsから確認できます。"
       }
     ],
     "relatedPageIds": [
@@ -339,11 +339,11 @@
     "faqs": [
       {
         "question": "開発活動について知りたい",
-        "answer": "Developmentで開発活動を確認できます。"
+        "answer": "AIコーディングツールやMCPを使った開発の様子はDevelopmentで紹介しています。"
       },
       {
         "question": "どんな開発をしていますか？",
-        "answer": "最新のAIコーディングツールとMCPを活用したWeb・アプリ開発に取り組んでいます。詳細はDevelopment、公開中の作品はAppsで確認できます。"
+        "answer": "最新のAIコーディングツールとMCPを活用したWeb・アプリ開発です。詳細はDevelopment、作品はAppsで確認できます。"
       }
     ],
     "relatedPageIds": ["apps", "contact", "about"]
@@ -367,11 +367,11 @@
     "faqs": [
       {
         "question": "相談や質問はどこに投稿できますか？",
-        "answer": "Boardから投稿や相談を確認できます。"
+        "answer": "Boardの掲示板から質問や相談を投稿・確認できます。"
       },
       {
         "question": "掲示板は匿名で使えますか？",
-        "answer": "Boardでは質問や相談の投稿を確認・作成できます。各投稿の詳細は掲示板一覧から開いてください。"
+        "answer": "はい。表示名を空欄にすると「匿名」で投稿できます。"
       }
     ],
     "relatedPageIds": ["contact", "home"]
@@ -395,6 +395,8 @@
       "メンバー",
       "人数",
       "何人",
+      "名簿",
+      "誰がいる",
       "入り方",
       "フォーム",
       "メール",
@@ -408,6 +410,18 @@
       "Instagram",
       "インスタ",
       "インスタグラム",
+      "馬渕",
+      "馬淵",
+      "まぶち",
+      "馬渕陽仁",
+      "馬淵陽仁",
+      "まぶちはるひと",
+      "陽仁",
+      "はるひと",
+      "Haruhito",
+      "Mabuchi",
+      "サークル長",
+      "代表",
       "入部",
       "加入",
       "会社",
@@ -423,35 +437,51 @@
     "faqs": [
       {
         "question": "参加方法を知りたい",
-        "answer": "Contactから参加や活動について問い合わせてください。"
+        "answer": "Contactのフォームから参加や活動について問い合わせてください。"
       },
       {
         "question": "入りたい",
-        "answer": "参加希望はContactから連絡してください。"
+        "answer": "参加希望はContactのフォームから連絡してください。"
       },
       {
         "question": "会社や企業からの提携相談はできますか？",
-        "answer": "提携・連携の相談はContactからどうぞ。"
+        "answer": "提携・連携の相談はContactのフォームからどうぞ。"
       },
       {
         "question": "提携したい",
-        "answer": "提携・連携の相談はContactからどうぞ。"
+        "answer": "提携・連携の相談はContactのフォームからどうぞ。"
       },
       {
         "question": "取材したい",
-        "answer": "取材のご相談はContactからどうぞ。"
+        "answer": "取材のご相談はContactのフォームからどうぞ。"
       },
       {
         "question": "Discordはありますか？",
-        "answer": "Discordなどのリンクはサイト内で確認できます。連絡はContactからどうぞ。"
+        "answer": "はい。フッターや各ページのDiscordリンクから参加できます。参加相談はContactからもどうぞ。"
       },
       {
         "question": "Instagramはありますか？",
-        "answer": "フッターにInstagramリンクはありますが、サークル公式ではなく関係者個人のアカウントです。公式の連絡や参加相談はContactから、交流はDiscordをご利用ください。"
+        "answer": "フッターにリンクはありますが、サークル公式ではなく関係者個人のアカウントです。公式の連絡はContact、交流はDiscordをご利用ください。"
       },
       {
         "question": "インスタある？",
-        "answer": "フッターのInstagramは関係者個人のアカウントです。公式の連絡はContact、交流はDiscordをご利用ください。"
+        "answer": "フッターにリンクはありますが、サークル公式ではなく関係者個人のアカウントです。公式の連絡はContact、交流はDiscordをご利用ください。"
+      },
+      {
+        "question": "馬渕って誰？",
+        "answer": "馬渕さんはTTI Intelligenceのサークル長です。用件や相談があればContactのフォームからどうぞ。"
+      },
+      {
+        "question": "馬淵って誰？",
+        "answer": "馬渕さんはTTI Intelligenceのサークル長です。用件や相談があればContactのフォームからどうぞ。"
+      },
+      {
+        "question": "馬渕陽仁って誰？",
+        "answer": "馬渕さんはTTI Intelligenceのサークル長です。用件や相談があればContactのフォームからどうぞ。"
+      },
+      {
+        "question": "サークル長は誰？",
+        "answer": "サークル長は馬渕さんです。用件や相談があればContactのフォームからどうぞ。"
       },
       {
         "question": "LINEやXはありますか？",
@@ -463,11 +493,23 @@
       },
       {
         "question": "メンバーは何人いますか？",
-        "answer": "正確な人数は公開していないため、Contactから問い合わせてください。"
+        "answer": "メンバー名簿や正確な人数は公開していません。参加や相談はContactのフォームからどうぞ。"
       },
       {
         "question": "メンバーは何人ですか？",
-        "answer": "正確な人数は公開していないため、Contactから問い合わせてください。"
+        "answer": "メンバー名簿や正確な人数は公開していません。参加や相談はContactのフォームからどうぞ。"
+      },
+      {
+        "question": "メンバーを教えて",
+        "answer": "メンバー名簿は公開していません。参加や相談はContactのフォームからどうぞ。"
+      },
+      {
+        "question": "メンバーは誰？",
+        "answer": "メンバー名簿は公開していません。参加や相談はContactのフォームからどうぞ。"
+      },
+      {
+        "question": "誰がいる？",
+        "answer": "メンバー名簿は公開していません。参加や相談はContactのフォームからどうぞ。"
       }
     ],
     "relatedPageIds": ["about", "home"]
@@ -525,19 +567,19 @@
     "faqs": [
       {
         "question": "数学の問題はどこですか？",
-        "answer": "今週の数学の一覧から選べます。"
+        "answer": "今週の数学の一覧から問題を選べます。"
       },
       {
         "question": "解答や解説はありますか？",
-        "answer": "今週の数学の一覧から各問題を開くと、問題文と解答・解説を確認できます。"
+        "answer": "各問題ページに問題文と、公開されている解答・解説があります。ここでは解答そのものは書きません。"
       },
       {
         "question": "答え教えて",
-        "answer": "解答そのものはここでは書きません。今週の数学の各問題ページから確認してください。"
+        "answer": "ここでは解答を書きません。今週の数学の各問題ページから確認してください。"
       },
       {
         "question": "ヒントくれ",
-        "answer": "ヒントがある問題は、今週の数学の各問題ページで確認できます。"
+        "answer": "ヒントがある問題は、今週の数学の各問題ページで確認できます。ここではヒント本文も書きません。"
       }
     ],
     "relatedPageIds": ["home", "contact"]
@@ -559,11 +601,11 @@
     "faqs": [
       {
         "question": "卓球の組み合わせを作りたい",
-        "answer": "Table Tennis Match Makerを利用できます。"
+        "answer": "人数と試合数から対戦表を作る Table Tennis Match Maker を使えます。"
       },
       {
         "question": "卓球の対戦表アプリはどこですか？",
-        "answer": "人数とクール数から組み合わせ表を自動生成するTable Tennis Match MakerをAppsから利用できます。"
+        "answer": "Table Tennis Match Maker です。Appsから利用できます。"
       }
     ],
     "relatedPageIds": ["apps"]
@@ -586,11 +628,11 @@
     "faqs": [
       {
         "question": "色をそろえるパズルはどこですか？",
-        "answer": "Color Sort Puzzleを利用できます。"
+        "answer": "Color Sort Puzzle です。Appsから遊べます。"
       },
       {
         "question": "暇つぶしできるゲームアプリはある？",
-        "answer": "ボトルの色をそろえるColor Sort Puzzleをブラウザで遊べます。"
+        "answer": "ボトルの色をそろえる Color Sort Puzzle をブラウザで遊べます。"
       }
     ],
     "relatedPageIds": ["apps"]
@@ -616,11 +658,11 @@
     "faqs": [
       {
         "question": "コマンド操作を練習したい",
-        "answer": "CLI Practiceで練習できます。"
+        "answer": "CLI Practice で、ブラウザ上の仮想ターミナルから練習できます。"
       },
       {
         "question": "Gitやnpmの練習はできますか？",
-        "answer": "CLI Practiceでは、ブラウザ内でgit・npm・デプロイの流れを安全に体験できます。"
+        "answer": "はい。CLI Practice では git・npm・デプロイの流れを安全に体験できます。"
       }
     ],
     "relatedPageIds": ["apps", "development"]

@@ -315,6 +315,9 @@ describe('buildResponsesPayload', () => {
       '回答は原則1〜2文、目安120文字以内。長い説明・箇条書きの連発・前置きは避けてください。',
     );
     expect(SYSTEM_INSTRUCTIONS).toContain(
+      '今週の数学やNewsなど一覧への案内では、個別記事・個別問題のリンクを並べず、pageIdsで一覧ページだけを案内してください。',
+    );
+    expect(SYSTEM_INSTRUCTIONS).toContain(
       'answerは200文字以内、pageIdsとcontentIdsはそれぞれ許可集合から選んでください。',
     );
     expect(SYSTEM_INSTRUCTIONS).toContain(

@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import {
   contentIdFor,
+  isWeeklyMathListingQuery,
   scoreContentCandidate,
   selectRelevantContent,
   truncateExcerpt,
@@ -98,6 +99,40 @@ describe('contentSearch', () => {
       }]),
     }));
     expect(selected).toEqual([]);
+  });
+
+  it('does not attach individual math problems for listing-style questions', async () => {
+    const repositories = createRepos({
+      listPublishedMathProblems: vi.fn(async () => [
+        {
+          weekKey: '2026-W28',
+          title: '数列の和',
+          problem: '和を求めよ',
+          problemPublished: true,
+        },
+        {
+          weekKey: '2026-W29',
+          title: '経路の場合の数',
+          problem: '場合の数を求めよ',
+          problemPublished: true,
+        },
+        {
+          weekKey: '2026-W30',
+          title: '確率',
+          problem: '確率を求めよ',
+          problemPublished: true,
+        },
+      ]),
+    });
+
+    expect(isWeeklyMathListingQuery('今週の数学について教えて')).toBe(true);
+    expect(await selectRelevantContent('今週の数学について教えて', repositories)).toEqual([]);
+    expect(await selectRelevantContent('答え教えて', repositories)).toEqual([]);
+    expect(await selectRelevantContent('数学', repositories)).toEqual([]);
+
+    const specific = await selectRelevantContent('経路の場合の数', repositories);
+    expect(specific).toHaveLength(1);
+    expect(specific[0]?.entry.id).toBe(contentIdFor('weekly-math', '2026-W29'));
   });
 
   it('does not flood every math item from a bare category word', async () => {

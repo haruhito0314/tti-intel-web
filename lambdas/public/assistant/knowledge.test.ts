@@ -294,6 +294,29 @@ describe('deterministic guide search', () => {
     expect(selectRelevantKnowledge('インスタある？', '/').map(
       ({ entry }) => entry.id,
     )).toContain('contact');
+    expect(selectRelevantKnowledge('馬渕って誰？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('contact');
+    expect(selectRelevantKnowledge('馬淵って誰？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('contact');
+    expect(selectRelevantKnowledge('馬渕陽仁って誰？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('contact');
+    expect(selectRelevantKnowledge('サークル長は誰？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('contact');
+    expect(selectRelevantKnowledge('メンバーを教えて', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('contact');
+    expect(selectRelevantKnowledge('誰がいる？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('contact');
+    const memberFaqs = selectRelevantKnowledge('メンバーは何人', '/')
+      .find(({ entry }) => entry.id === 'contact')
+      ?.entry.faqs
+      .filter(({ question }) => question.includes('メンバー') || question.includes('誰がいる'));
+    expect(memberFaqs?.every(({ answer }) => !answer.includes('馬渕'))).toBe(true);
     expect(selectRelevantKnowledge('答え教えて', '/').map(
       ({ entry }) => entry.id,
     )).toContain('weekly-math');

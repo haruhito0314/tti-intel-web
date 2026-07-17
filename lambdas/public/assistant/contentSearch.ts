@@ -69,6 +69,34 @@ function scoreTextMatch(query: string, value: string): number {
   return score;
 }
 
+/**
+ * Section-level asks should link to /weekly-math, not a handful of arbitrary problems.
+ * Specific title / weekKey queries still return individual problem links.
+ */
+export function isWeeklyMathListingQuery(query: string): boolean {
+  const normalized = normalizeSearchText(query)
+    .replace(/[!！?？。．、,，〜~…・]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (normalized.length === 0) return false;
+
+  return (
+    normalized.includes('今週の数学')
+    || normalized.includes('数学の問題')
+    || normalized.includes('数学どこ')
+    || normalized.includes('数学について')
+    || normalized.includes('数学を教えて')
+    || normalized.includes('答え教えて')
+    || normalized.includes('ヒントくれ')
+    || normalized.includes('ヒントください')
+    || normalized.includes('解答')
+    || normalized.includes('解説お願い')
+    || normalized === '数学'
+    || normalized === '問題'
+    || normalized === '今週'
+  );
+}
+
 export function scoreContentCandidate(
   query: string,
   candidate: {
@@ -204,16 +232,18 @@ export async function selectRelevantContent(
   }
 
   const mathProblems = await repositories.listPublishedMathProblems();
-  for (const item of mathProblems) {
-    if (item.problemPublished === false) continue;
-    const score = scoreContentCandidate(normalizedQuery, {
-      title: item.title,
-      excerpt: item.problem,
-      keywords: [item.weekKey],
-      categoryKeywords: ['数学', '問題', '今週'],
-    });
-    if (score < MIN_CONTENT_SCORE) continue;
-    ranked.push({ entry: toMathEntry(item), score });
+  // Listing asks → guide page only. Individual links only for specific titles/weekKeys.
+  if (!isWeeklyMathListingQuery(normalizedQuery)) {
+    for (const item of mathProblems) {
+      if (item.problemPublished === false) continue;
+      // Title / weekKey only — do not score problem body (avoids weak floods and answer leakage).
+      const score = scoreContentCandidate(normalizedQuery, {
+        title: item.title,
+        keywords: [item.weekKey],
+      });
+      if (score < MIN_CONTENT_SCORE) continue;
+      ranked.push({ entry: toMathEntry(item), score });
+    }
   }
 
   return ranked
