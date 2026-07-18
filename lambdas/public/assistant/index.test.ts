@@ -329,6 +329,27 @@ describe('createAssistantHandler planning paths', () => {
     });
   });
 
+  it('answers university-wide club questions with the scope boundary after quota', async () => {
+    const dependencies = createDependencies();
+    const response = await invoke(dependencies, eventForRequest({
+      message: '豊田工業大学のサークルは？',
+      history: [],
+    }));
+
+    expect(response.statusCode).toBe(200);
+    expect(parsedBody(response)).toEqual({
+      answer: 'このサイトではTTI Intelligenceの活動を案内しています。豊田工業大学のサークル全般については、大学公式サイトをご確認ください。',
+      links: [{
+        pageId: 'toyota-ti',
+        title: '豊田工業大学',
+        href: 'https://www.toyota-ti.ac.jp/',
+      }],
+    });
+    expect(dependencies.reserveQuota).toHaveBeenCalledTimes(1);
+    expect(dependencies.searchContent).not.toHaveBeenCalled();
+    expectNoPlannerCalls(dependencies);
+  });
+
   it('handles small-talk deterministically without a model-generated answer', async () => {
     const dependencies = createDependencies();
     const response = await invoke(dependencies, eventForRequest({
