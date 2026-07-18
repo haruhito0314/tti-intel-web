@@ -17,19 +17,20 @@ aws configure get region
 
 デプロイ直前に、次のOpenAI公式ページを確認します。
 
-- [GPT-5.6 model guidance](https://developers.openai.com/api/docs/guides/latest-model)
-- [GPT-5.6 Luna model page](https://developers.openai.com/api/docs/models/gpt-5.6-luna)
+- [OpenAI model guidance](https://developers.openai.com/api/docs/guides/latest-model)
+- [GPT-5.4 nano model page](https://developers.openai.com/api/docs/models/gpt-5.4-nano)
 - [OpenAI model catalog](https://developers.openai.com/api/docs/models)
 - [Responses API reference](https://platform.openai.com/docs/api-reference/responses)
 - [Structured Outputs guide](https://developers.openai.com/api/docs/guides/structured-outputs)
 
 確認項目は次のとおりです。
 
-1. CDK設定と一致するモデルID `gpt-5.6-luna`を対象OpenAI project/accountで利用できる。
+1. CDK設定と一致するモデルID `gpt-5.4-nano-2026-03-17`を対象OpenAI project/accountで利用できる。
 2. Responses API `POST /v1/responses`を利用できる。
 3. Structured Outputsを利用できる。
-4. `gpt-5.6-luna`で `reasoning.effort: "low"`を利用できる。
-5. デプロイ時点の公式料金とproject予算を確認する。変わりやすい料金をこのrunbookの固定値として扱わない。
+4. `gpt-5.4-nano-2026-03-17`で `reasoning.effort: "medium"`を利用できる。
+5. fact plannerの`max_output_tokens`が、評価済みの512に設定されている。
+6. デプロイ時点の公式料金とproject予算を確認する。変わりやすい料金をこのrunbookの固定値として扱わない。
 
 OpenAIは回答文を作りません。ローカル判定で確定できない質問に限り、最大4件のfact IDを選ぶ分類器として使い、利用者へ返す文章とリンクはレビュー済みfactから決定論的に生成します。モデル、API、Structured Outputs、reasoning設定、価格のいずれかが変更されている、または対象accountで利用できない場合は停止します。モデルを無断で差し替えたり、予算上限を変更したりせず、モデルと予算の再承認を得てください。
 

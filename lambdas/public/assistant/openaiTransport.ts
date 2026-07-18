@@ -126,7 +126,8 @@ export function createApiKeyProvider(
 /** Use the measured semantic-selection baseline for each configured model family. */
 export function reasoningEffortForModel(
   model: string,
-): 'none' | 'minimal' | 'low' {
+): 'none' | 'minimal' | 'low' | 'medium' {
+  if (/^gpt-5\.4-nano(?:-|$)/i.test(model)) return 'medium';
   if (/gpt-5\.6/i.test(model)) return 'low';
   return /nano|mini/i.test(model) ? 'minimal' : 'none';
 }

@@ -15,7 +15,7 @@ import type {
   OpenAIUsage,
 } from './types.js';
 
-const DEFAULT_MODEL = 'gpt-5.6-luna';
+const DEFAULT_MODEL = 'gpt-5.4-nano-2026-03-17';
 
 export const FACT_PLANNER_INSTRUCTIONS = [
   'あなたは公開サイト案内のfact selectorです。回答文は作らず、必要なfact IDだけを選んでください。',
@@ -69,7 +69,7 @@ export function buildFactPlannerPayload(
     store: false,
     stream: false,
     reasoning: { effort: reasoningEffortForModel(model) },
-    max_output_tokens: 180,
+    max_output_tokens: 512,
     tools: [],
     instructions: FACT_PLANNER_INSTRUCTIONS,
     input: [{

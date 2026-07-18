@@ -294,7 +294,9 @@ describe('createApiKeyProvider', () => {
 });
 
 describe('reasoningEffortForModel', () => {
-  it('uses low for GPT-5.6, minimal for legacy nano/mini, and none otherwise', () => {
+  it('uses medium for GPT-5.4 nano while preserving other model families', () => {
+    expect(reasoningEffortForModel('gpt-5.4-nano')).toBe('medium');
+    expect(reasoningEffortForModel('gpt-5.4-nano-2026-03-17')).toBe('medium');
     expect(reasoningEffortForModel('gpt-5-nano')).toBe('minimal');
     expect(reasoningEffortForModel('gpt-5-mini')).toBe('minimal');
     expect(reasoningEffortForModel('gpt-5.6-luna')).toBe('low');
@@ -315,10 +317,7 @@ describe('buildFactPlannerPayload', () => {
       }],
     } as AssistantRequest & { dynamicContent: unknown[] };
 
-    const payload = buildFactPlannerPayload(
-      requestWithIgnoredDynamicContent,
-      'gpt-5-nano',
-    );
+    const payload = buildFactPlannerPayload(requestWithIgnoredDynamicContent);
     const envelope = JSON.parse(payload.input[0]!.content[0]!.text) as {
       message: string;
       history: Array<{ role: string; content: string }>;
@@ -326,11 +325,11 @@ describe('buildFactPlannerPayload', () => {
     };
 
     expect(payload).toMatchObject({
-      model: 'gpt-5-nano',
+      model: 'gpt-5.4-nano-2026-03-17',
       store: false,
       stream: false,
-      reasoning: { effort: 'minimal' },
-      max_output_tokens: 180,
+      reasoning: { effort: 'medium' },
+      max_output_tokens: 512,
       tools: [],
       instructions: FACT_PLANNER_INSTRUCTIONS,
       text: {

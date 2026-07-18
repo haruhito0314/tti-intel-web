@@ -203,7 +203,7 @@ export class TtiAiStack extends cdk.Stack {
             environment: {
                 ASSISTANT_USAGE_TABLE: assistantUsageTable.tableName,
                 OPENAI_SECRET_ID: openAiSecret.secretName,
-                ASSISTANT_MODEL: 'gpt-5.6-luna',
+                ASSISTANT_MODEL: 'gpt-5.4-nano-2026-03-17',
                 ASSISTANT_DAILY_LIMIT: '200',
                 ASSISTANT_SESSION_LIMIT: '20',
                 ASSISTANT_SESSION_WINDOW_SECONDS: '600',
