@@ -87,6 +87,58 @@ function includesAny(value: string, aliases: readonly string[]): boolean {
   return aliases.some((alias) => value.includes(normalizeAssistantQuery(alias)));
 }
 
+const CIRCLE_ALIASES = [
+  'TTI Intelligence',
+  'TTIインテリジェンス',
+] as const;
+
+const UNIVERSITY_ALIASES = [
+  '豊田工業大学',
+  '豊田工大',
+  '豊工大',
+  '豊工',
+  'Toyota Technological Institute',
+] as const;
+
+function splitAssistantTopics(message: string): string[] {
+  const withProtectedTti = message
+    .normalize('NFKC')
+    .replace(/t\s*\.\s*t\s*\.\s*i\s*\.?/gi, 'TTI');
+
+  return withProtectedTti
+    .split(/(?:[、,，。．.!！?？:：;；]+|それから|加えて|および|ならびに)/)
+    .map(normalizeAssistantQuery)
+    .filter(Boolean);
+}
+
+function detectIdentityEntities(value: string): {
+  circlePhrase: boolean;
+  circleCorrection: boolean;
+  circleNamed: boolean;
+  bareTti: boolean;
+  universityNamed: boolean;
+  genericUniversityNamed: boolean;
+} {
+  const circlePhrase = includesAny(value, CIRCLE_ALIASES);
+  const circleCorrection = /intelligence(?:の)?(?:ほう|方)/.test(value);
+  const circleNamed = circlePhrase || circleCorrection || /サークル|学生コミュニティ/.test(value);
+  const withoutCirclePhrase = value
+    .replaceAll('ttiintelligence', '')
+    .replaceAll('ttiインテリジェンス', '');
+  const bareTti = withoutCirclePhrase.includes('tti');
+  const universityNamed = includesAny(value, UNIVERSITY_ALIASES) || /大学(?:の|名の?)tti/.test(value);
+  const genericUniversityNamed = /大学|豊工/.test(value);
+
+  return {
+    circlePhrase,
+    circleCorrection,
+    circleNamed,
+    bareTti,
+    universityNamed,
+    genericUniversityNamed,
+  };
+}
+
 function addUnique<T>(target: T[], value: T): void {
   if (!target.includes(value)) target.push(value);
 }
@@ -261,25 +313,19 @@ function detectExclusions(value: string, state: MutablePlanState): void {
   state.linksRejected = /(?:リンク|url)(?:は|が)?(?:いらない|要らない|不要|なし|抜き|結構|付けない|つけない|貼らない|載せない|付けず|つけず|貼らず|載せず)|リンクなし|リンク不要/.test(value);
 }
 
-function detectIdentityFacts(value: string, state: MutablePlanState): boolean {
-  const circlePhrase = includesAny(value, [
-    'TTI Intelligence',
-    'TTIインテリジェンス',
-  ]);
-  const circleCorrection = /intelligence(?:の)?(?:ほう|方)/.test(value);
-  const circleNamed = circlePhrase || circleCorrection || /サークル|学生コミュニティ/.test(value);
-  const withoutCirclePhrase = value
-    .replaceAll('ttiintelligence', '')
-    .replaceAll('ttiインテリジェンス', '');
-  const bareTti = withoutCirclePhrase.includes('tti');
-  const universityNamed = includesAny(value, [
-    '豊田工業大学',
-    '豊田工大',
-    '豊工大',
-    '豊工',
-    'Toyota Technological Institute',
-  ]) || /大学(?:の|名の?)tti/.test(value);
-  const genericUniversityNamed = /大学|豊工/.test(value);
+function detectIdentityFacts(
+  value: string,
+  topics: readonly string[],
+  state: MutablePlanState,
+): boolean {
+  const {
+    circlePhrase,
+    circleCorrection,
+    circleNamed,
+    bareTti,
+    universityNamed,
+    genericUniversityNamed,
+  } = detectIdentityEntities(value);
   const comparisonCue = /違|同じ|関係|比較|区別|別名|そのもの/.test(value);
   const ttiCount = countOccurrences(value, 'tti');
   const identityComparison = (
@@ -287,22 +333,20 @@ function detectIdentityFacts(value: string, state: MutablePlanState): boolean {
     && (universityNamed || genericUniversityNamed || bareTti || ttiCount >= 2)
     && comparisonCue
   );
-  const universityClubScopeClause = value
-    .split(/それから|加えて|および|ならびに/)
-    .some((clause) => {
-      const clauseNamesUniversity = includesAny(clause, [
-        '豊田工業大学',
-        '豊田工大',
-        '豊工大',
-        '豊工',
-        'Toyota Technological Institute',
-      ]) || /大学(?:の|名の?)tti/.test(clause) || /大学|豊工/.test(clause) || clause.includes('tti');
+  const universityClubScopeClause = topics.some((topic) => {
+    const topicEntities = detectIdentityEntities(topic);
+    const topicNamesUniversity = (
+      topicEntities.universityNamed
+      || topicEntities.genericUniversityNamed
+      || topicEntities.bareTti
+    );
 
-      return clauseNamesUniversity && /サークル|部活|クラブ/.test(clause);
-    });
+    return topicNamesUniversity && /サークル|部活|クラブ/.test(topic);
+  });
   const universityClubScope = (
     universityClubScopeClause
     && !circlePhrase
+    && !circleCorrection
     && !identityComparison
   );
 
@@ -674,6 +718,7 @@ export function planAssistantRequest(
   history: readonly HistoryMessage[],
 ): AssistantQueryPlan {
   const value = normalizeAssistantQuery(message);
+  const topics = splitAssistantTopics(message);
   const state: MutablePlanState = {
     facts: [],
     excludedFacts: [],
@@ -697,7 +742,7 @@ export function planAssistantRequest(
     return finalizePlan(state, false);
   }
 
-  if (detectIdentityFacts(value, state)) {
+  if (detectIdentityFacts(value, topics, state)) {
     return finalizePlan(state, false);
   }
   detectMembershipAndActivityFacts(value, state);

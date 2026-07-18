@@ -119,6 +119,7 @@ describe('planAssistantRequest identity', () => {
     '豊田工業大学にはどんなサークルがありますか',
     '豊工のクラブについて教えて',
     'TTIの部活は？',
+    'T.T.I.の部活は？',
     '大学のサークルに参加できますか',
   ])('routes university-wide club questions to the scope boundary: %j', (message) => {
     const plan = planAssistantRequest(message, []);
@@ -143,6 +144,15 @@ describe('planAssistantRequest identity', () => {
     const plan = planAssistantRequest(message, []);
 
     expectExactMembers(plan.factIds, ['circle.identity']);
+  });
+
+  it('does not mistake an Intelligence correction for university-wide club scope', () => {
+    const plan = planAssistantRequest(
+      'TTIじゃなくてIntelligenceの方のサークルは？',
+      [],
+    );
+
+    expect(plan.factIds).not.toContain('university.clubs-scope');
   });
 
   it.each([
@@ -318,11 +328,11 @@ describe('planAssistantRequest aliases and multi-topic questions', () => {
     expectExactMembers(plan.pageIds, ['about', 'contact']);
   });
 
-  it('keeps university abbreviation, location, and joining as separate facts', () => {
-    const plan = planAssistantRequest(
-      'TTIの正式名称と場所、それからサークルへの参加方法を教えて',
-      [],
-    );
+  it.each([
+    'TTIの正式名称と場所、それからサークルへの参加方法を教えて',
+    'TTIの正式名称と場所、サークルへの参加方法を教えて',
+  ])('keeps university abbreviation, location, and joining as separate facts: %j', (message) => {
+    const plan = planAssistantRequest(message, []);
 
     expectExactMembers(plan.factIds, [
       'university.abbreviation',
