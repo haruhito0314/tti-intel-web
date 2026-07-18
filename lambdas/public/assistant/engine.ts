@@ -83,6 +83,17 @@ export function normalizeAssistantQuery(value: string): string {
     .replace(/[\s\u3000!！?？。．.、,，〜~…・:：;；/／\\()[\]{}「」『』【】"'`´]/g, '');
 }
 
+function normalizeAssistantQueryClauses(value: string): string[] {
+  const protectedValue = value
+    .normalize('NFKC')
+    .replace(/T\s*\.\s*T\s*\.\s*I\s*\.?/gi, 'TTI');
+
+  return protectedValue
+    .split(/[。.!！?？:：;；\r\n]+/)
+    .map(normalizeAssistantQuery)
+    .filter((clause) => clause.length > 0);
+}
+
 function includesAny(value: string, aliases: readonly string[]): boolean {
   return aliases.some((alias) => value.includes(normalizeAssistantQuery(alias)));
 }
@@ -108,29 +119,37 @@ const UNIVERSITY_CLUB_SCOPE_ENTITIES = [
 
 const UNIVERSITY_CLUB_SCOPE_WORDS = ['サークル', '部活', 'クラブ'] as const;
 
-function asksAboutUniversityClubs(value: string): boolean {
-  if (/他大学|他大|別の大学|他校/.test(value)) return false;
+function asksAboutUniversityClubs(
+  normalizedClauses: readonly string[],
+): boolean {
+  for (const value of normalizedClauses) {
+    for (const entity of UNIVERSITY_CLUB_SCOPE_ENTITIES) {
+      let entityIndex = value.indexOf(entity);
 
-  for (const entity of UNIVERSITY_CLUB_SCOPE_ENTITIES) {
-    let entityIndex = value.indexOf(entity);
+      while (entityIndex !== -1) {
+        const entityPrefix = value.slice(Math.max(0, entityIndex - 2), entityIndex);
+        const genericUniversityInOtherUniversity = entity === '大学' && (
+          /(?:他|他の|別|別の)$/.test(entityPrefix)
+        );
+        const gapStart = entityIndex + entity.length;
 
-    while (entityIndex !== -1) {
-      const gapStart = entityIndex + entity.length;
+        if (!genericUniversityInOtherUniversity) {
+          for (const clubWord of UNIVERSITY_CLUB_SCOPE_WORDS) {
+            const clubIndex = value.indexOf(clubWord, gapStart);
+            if (clubIndex === -1) continue;
 
-      for (const clubWord of UNIVERSITY_CLUB_SCOPE_WORDS) {
-        const clubIndex = value.indexOf(clubWord, gapStart);
-        if (clubIndex === -1) continue;
-
-        const gap = value.slice(gapStart, clubIndex);
-        if (
-          gap.length <= 24
-          && !/学生|生徒|所属|出身|正式名称|英語名|略称|場所|住所|所在地|アクセス|それから|加えて|および|ならびに/.test(gap)
-        ) {
-          return true;
+            const gap = value.slice(gapStart, clubIndex);
+            if (
+              gap.length <= 24
+              && !/所属|出身|正式名称|英語名|略称|場所|住所|所在地|アクセス|それから|加えて|および|ならびに/.test(gap)
+            ) {
+              return true;
+            }
+          }
         }
-      }
 
-      entityIndex = value.indexOf(entity, entityIndex + entity.length);
+        entityIndex = value.indexOf(entity, entityIndex + entity.length);
+      }
     }
   }
 
@@ -341,6 +360,7 @@ function detectExclusions(value: string, state: MutablePlanState): void {
 
 function detectIdentityFacts(
   value: string,
+  normalizedClauses: readonly string[],
   state: MutablePlanState,
 ): boolean {
   const {
@@ -359,7 +379,7 @@ function detectIdentityFacts(
     && comparisonCue
   );
   const universityClubScope = (
-    asksAboutUniversityClubs(value)
+    asksAboutUniversityClubs(normalizedClauses)
     && !circlePhrase
     && !circleCorrection
     && !identityComparison
@@ -430,7 +450,7 @@ function detectMembershipAndActivityFacts(
   ) {
     addFact(state, 'membership.beginner');
   }
-  const participationEligibility = /他大学|他大|他校|別の大学|学校が違|学部|学年|文系|理系|誰(?:が|でも)?参加/.test(value)
+  const participationEligibility = /他(?:の)?大学|他大|他校|別(?:の)?大学|学校が違|学部|学年|文系|理系|誰(?:が|でも)?参加/.test(value)
     || /学生だけ.{0,8}(?:参加|入れる|対象)|(?:参加|入れる|対象).{0,8}学生だけ/.test(value);
   if (participationEligibility) {
     addFact(state, 'membership.eligibility');
@@ -737,6 +757,7 @@ export function planAssistantRequest(
   history: readonly HistoryMessage[],
 ): AssistantQueryPlan {
   const value = normalizeAssistantQuery(message);
+  const normalizedClauses = normalizeAssistantQueryClauses(message);
   const state: MutablePlanState = {
     facts: [],
     excludedFacts: [],
@@ -760,7 +781,7 @@ export function planAssistantRequest(
     return finalizePlan(state, false);
   }
 
-  if (detectIdentityFacts(value, state)) {
+  if (detectIdentityFacts(value, normalizedClauses, state)) {
     return finalizePlan(state, false);
   }
   detectMembershipAndActivityFacts(value, state);

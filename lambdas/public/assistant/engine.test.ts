@@ -139,6 +139,39 @@ describe('planAssistantRequest identity', () => {
     ]);
   });
 
+  it('does not join a TTI definition ask to a club ask across sentence boundaries', () => {
+    const plan = planAssistantRequest(
+      'TTIは何の略？サークルへの参加方法は？',
+      [],
+    );
+
+    expectExactMembers(plan.factIds, [
+      'university.abbreviation',
+      'contact.form',
+    ]);
+  });
+
+  it('keeps an explicit Toyota Tech comparison in university club scope', () => {
+    const plan = planAssistantRequest(
+      '他大学ではなく豊田工業大学のサークル一覧を教えて',
+      [],
+    );
+
+    expectExactMembers(plan.factIds, ['university.clubs-scope']);
+    expect(plan.confidence).toBe('high');
+    expect(plan.externalLinks).toContain('toyota-ti');
+  });
+
+  it('recognizes Toyota Tech students as university club scope', () => {
+    const plan = planAssistantRequest(
+      '豊田工業大学の学生が参加できるサークルを教えて',
+      [],
+    );
+
+    expectExactMembers(plan.factIds, ['university.clubs-scope']);
+    expect(plan.confidence).toBe('high');
+  });
+
   it.each([
     'TTI Intelligenceはどんなサークル？',
     'TTIインテリジェンスについて教えて',
@@ -346,11 +379,12 @@ describe('planAssistantRequest aliases and multi-topic questions', () => {
     expect(plan.externalLinks).toContain('toyota-ti');
   });
 
-  it('keeps other-university participation questions on membership eligibility', () => {
-    const plan = planAssistantRequest(
-      '他大学の学生でもサークルに参加できますか',
-      [],
-    );
+  it.each([
+    '他大学の学生でもサークルに参加できますか',
+    '他の大学の学生でもサークルに参加できますか',
+    '別大学の人でも部活に入れますか',
+  ])('keeps other-university participation questions on membership eligibility: %j', (message) => {
+    const plan = planAssistantRequest(message, []);
 
     expectExactMembers(plan.factIds, ['membership.eligibility']);
     expect(plan.confidence).toBe('high');
