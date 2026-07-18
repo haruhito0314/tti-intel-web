@@ -83,11 +83,15 @@
       },
       {
         "question": "TTIって何？",
-        "answer": "TTIはToyota Technological Instituteの略で、豊田工業大学のことです。このサイトのTTI Intelligenceは、その学生を中心にしたAIサークルです。大学の公式サイトは下のリンクからどうぞ。"
+        "answer": "TTIはToyota Technological Instituteの略で、豊田工業大学のことです。サークル名のTTI Intelligenceとは別です。大学の公式サイトは下のリンクからどうぞ。"
       },
       {
         "question": "豊田工業大学って何？",
-        "answer": "豊田工業大学（Toyota Technological Institute）です。大学の公式サイトは下のリンクからどうぞ。このサイトはそこの学生サークルTTI Intelligenceの紹介です。"
+        "answer": "豊田工業大学（Toyota Technological Institute、略称TTI）です。大学の公式サイトは下のリンクからどうぞ。"
+      },
+      {
+        "question": "豊田工業大学について教えて",
+        "answer": "豊田工業大学は愛知の理工系大学で、英語名はToyota Technological Institute、略称はTTIです。公式サイトは下のリンクからどうぞ。"
       },
       {
         "question": "豊田工業大学の場所はどこ？",
@@ -747,15 +751,16 @@
     ],
     "keywords": [
       "CLI",
+      "CLI Practice",
+      "CLI練習",
       "コマンドライン",
       "コマンド操作",
+      "コマンド練習",
       "ターミナル",
+      "ターミナル練習",
       "Git",
       "npm",
-      "デプロイ",
-      "練習",
-      "初めて",
-      "安全"
+      "デプロイ"
     ],
     "faqs": [
       {

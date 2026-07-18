@@ -449,6 +449,26 @@ describe('deterministic guide search', () => {
     ).map(({ entry }) => entry.id)).toContain('weekly-math');
   });
 
+  it('does not attach cli-practice to vague site or beginner asks', () => {
+    for (const q of [
+      'なんか教えて',
+      'このサイトについて教えて',
+      '初めてなんだけど入れる？',
+    ]) {
+      expect(selectRelevantKnowledge(q, '/').map(({ entry }) => entry.id))
+        .not.toContain('cli-practice');
+    }
+  });
+
+  it('still selects cli-practice for command-practice asks', () => {
+    expect(selectRelevantKnowledge('コマンド練習できるアプリある？', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('cli-practice');
+    expect(selectRelevantKnowledge('CLI Practiceどこ', '/').map(
+      ({ entry }) => entry.id,
+    )).toContain('cli-practice');
+  });
+
   it('treats 動画コンテンツ as an explanation-video ask', () => {
     expect(isExplanationVideoQuestion('動画コンテンツありますか？')).toBe(true);
     expect(selectRelevantKnowledge('動画コンテンツありますか？', '/').map(

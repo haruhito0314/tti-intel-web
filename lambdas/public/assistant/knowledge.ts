@@ -253,6 +253,28 @@ export function isMathDestinationAsk(message: string): boolean {
   return true;
 }
 
+/** App detail pages — only surface when the user clearly asks about that app. */
+const APP_DEEP_PAGE_IDS: ReadonlySet<PageId> = new Set([
+  'cli-practice',
+  'table-tennis',
+  'color-sort',
+]);
+
+function isAppDeepPageAsk(message: string, pageId: PageId): boolean {
+  const normalized = normalizeSearchText(message);
+  switch (pageId) {
+    case 'cli-practice':
+      return /cli|コマンド|ターミナル|(?:^|[^a-z])git(?:$|[^a-z])|npm|デプロイ/
+        .test(normalized);
+    case 'table-tennis':
+      return /卓球|マッチメイク|対戦表|組み合わせ表/.test(normalized);
+    case 'color-sort':
+      return /カラーソート|色そろ|色並|ボトル.*パズル|パズル.*ボトル/.test(normalized);
+    default:
+      return true;
+  }
+}
+
 export function selectRelevantKnowledge(
   query: string,
   currentPath: string,
@@ -266,6 +288,11 @@ export function selectRelevantKnowledge(
       score: scoreGuideEntry(query, currentPageId, entry),
     }))
     .filter(({ score }) => score >= 3)
+    .filter(({ entry }) => (
+      !APP_DEEP_PAGE_IDS.has(entry.id)
+      || isAppDeepPageAsk(query, entry.id)
+      || currentPageId === entry.id
+    ))
     .sort((a, b) => {
       if (a.score !== b.score) return b.score - a.score;
       return a.entry.id < b.entry.id ? -1 : a.entry.id > b.entry.id ? 1 : 0;

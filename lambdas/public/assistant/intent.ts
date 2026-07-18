@@ -74,6 +74,8 @@ export interface AssistantIntent {
   includeYoutube: boolean;
   /** University ask that also asks campus / address location. */
   askCampusLocation: boolean;
+  /** 「TTIって何／何の略」— university name asks leave this false. */
+  askTtiAbbreviation: boolean;
   /** capabilities ask that also includes join/how-to. */
   withJoin: boolean;
   smallTalk: boolean;
@@ -81,6 +83,19 @@ export interface AssistantIntent {
 
 function asksCampusLocation(normalized: string): boolean {
   return /場所|どこ|住所|キャンパス|所在地|アクセス|天白|名古屋/.test(normalized);
+}
+
+function asksTtiAbbreviation(normalized: string): boolean {
+  return (
+    /(?:^|[^a-z0-9])tti(?: intelligence)?(?:って何|とは|は何|なに|ってなに|何の略|の略)/.test(
+      normalized,
+    )
+    || /tti.{0,8}略|略.{0,8}tti/.test(normalized)
+    || normalized.includes('ttiって')
+    || normalized.includes('ttiとは')
+    || normalized.includes('ttiは何')
+    || normalized === 'tti'
+  );
 }
 
 function inventoryNameListText(): string {
@@ -174,9 +189,13 @@ export function intentHintFor(intent: AssistantIntent): string {
     case 'explanation_video':
       return 'YouTube/解説動画。サークルについてとYouTubeへ案内。pageIdsはabout。YouTubeは下のリンクからどうぞと伝え、URLはanswerに書かない。今週の数学へ誘導しない。';
     case 'university':
-      return intent.askCampusLocation
-        ? 'TTI/豊田工業大学。略称とサークルの関係を伝え、大学公式は下のリンク。所在地は名古屋市天白区（豊田市ではない）。お問い合わせへ誘導しない。URLはanswerに書かない。'
-        : 'TTI/豊田工業大学。略称とサークルの関係と公式リンクだけ伝える。所在地・住所・キャンパスには触れない。お問い合わせへ誘導しない。URLはanswerに書かない。「URLは表示しません」などの内部説明も書かない。';
+      if (intent.askCampusLocation) {
+        return '豊田工業大学の所在地は名古屋市天白区（豊田市ではない）。大学公式は下のリンクだけ案内。サークル名・母体・サイト内ページ誘導・存在しない「大学について」ページは禁止。URLはanswerに書かない。pageIdsは空。';
+      }
+      if (intent.askTtiAbbreviation) {
+        return 'TTIはToyota Technological Institute＝豊田工業大学の略。サークル名のTTI Intelligenceとは別だと1文で区別してよい。それ以上のサークル紹介・母体・サイト内ページ誘導は禁止。大学公式は下のリンク。URLはanswerに書かない。pageIdsは空。';
+      }
+      return '豊田工業大学（Toyota Technological Institute、略称TTI）について1〜2文だけ。大学公式は下のリンク。サークル名・TTI Intelligence・母体・このサイト紹介・サークルについて／架空の大学ページへの誘導・所在地（聞かれたとき以外）は禁止。URLはanswerに書かない。pageIdsは空。';
     case 'discord':
       return 'Discord。下のリンクから参加できると伝え、URLはanswerに書かない。「システムが別途」等の内部説明は書かない。';
     case 'join_or_contact':
@@ -216,6 +235,7 @@ export function classifyIntent(message: string): AssistantIntent {
     includeToyotaTi: false,
     includeYoutube: false,
     askCampusLocation: false,
+    askTtiAbbreviation: false,
     withJoin: false,
     smallTalk: false,
   };
@@ -255,6 +275,7 @@ export function classifyIntent(message: string): AssistantIntent {
       kind: 'university',
       includeToyotaTi: true,
       askCampusLocation: asksCampusLocation(normalized),
+      askTtiAbbreviation: asksTtiAbbreviation(normalized),
       withJoin: asksJoinAlongside(normalized),
       includeDiscord: isDiscordQuestion(message),
     };
@@ -430,15 +451,8 @@ export function pageIdsFromIntent(
       return ['about'];
     }
     case 'university': {
-      const ids = applySafetyNets(answer, modelPageIds, selected)
-        .filter((id) => id !== 'home');
-      if (intent.withJoin && !ids.includes('contact')) {
-        ids.unshift('contact');
-      }
-      if (intent.askCampusLocation && !ids.includes('about') && ids.length === 0) {
-        ids.push('about');
-      }
-      return ids;
+      // Official uni link is injected separately; do not pad サークルについて.
+      return intent.withJoin ? ['contact'] : [];
     }
     case 'discord': {
       const ids = applySafetyNets(answer, modelPageIds, selected);

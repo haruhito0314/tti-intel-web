@@ -951,11 +951,11 @@ describe('createAssistantHandler orchestration', () => {
       links: Array<{ pageId: string; href: string; title: string }>;
     };
     expect(body.answer).toContain('Toyota Technological Institute');
-    expect(body.links[0]).toEqual({
+    expect(body.links).toEqual([{
       pageId: 'toyota-ti',
       title: '豊田工業大学',
       href: 'https://www.toyota-ti.ac.jp/',
-    });
+    }]);
   });
 
   it('emits verified dynamic content links ahead of page links', async () => {

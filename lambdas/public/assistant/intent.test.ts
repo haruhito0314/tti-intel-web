@@ -94,6 +94,12 @@ describe('classifyIntent', () => {
     expect(classifyIntent('豊田工業大学の場所はどこ？').askCampusLocation).toBe(true);
   });
 
+  it('marks TTI abbreviation asks separately from university-name asks', () => {
+    expect(classifyIntent('TTIって何？').askTtiAbbreviation).toBe(true);
+    expect(classifyIntent('豊田工業大学について教えて').askTtiAbbreviation).toBe(false);
+    expect(classifyIntent('豊田工業大学とは？').askTtiAbbreviation).toBe(false);
+  });
+
   it('includes youtube for explanation_video', () => {
     expect(classifyIntent('YouTubeどこ').includeYoutube).toBe(true);
   });
@@ -130,7 +136,8 @@ describe('classifyIntent', () => {
 describe('intentHintFor', () => {
   it('returns short policy lines per intent', () => {
     expect(intentHintFor(classifyIntent('YouTubeどこ'))).toMatch(/YouTube/);
-    expect(intentHintFor(classifyIntent('TTIって何？'))).toMatch(/所在地・住所・キャンパスには触れない/);
+    expect(intentHintFor(classifyIntent('TTIって何？'))).toMatch(/別物|区別/);
+    expect(intentHintFor(classifyIntent('豊田工業大学について教えて'))).toMatch(/サークル名/);
     expect(intentHintFor(classifyIntent('豊田工業大学の場所はどこ？'))).toMatch(/名古屋市天白区/);
     expect(intentHintFor(classifyIntent('なんのページがある？'))).toMatch(/pageIdsは空/);
     expect(intentHintFor(classifyIntent('なんのページがある？'))).toContain(
@@ -218,16 +225,27 @@ describe('pageIdsFromIntent', () => {
     )).toEqual([]);
   });
 
-  it('university drops home', () => {
-    const intent = classifyIntent('TTIって何？');
-    const uniSelected = selectRelevantKnowledge('TTIって何？', '/');
+  it('university uses official link only (no about/home chips)', () => {
+    const intent = classifyIntent('豊田工業大学について教えて');
+    const uniSelected = selectRelevantKnowledge('豊田工業大学について教えて', '/');
     expect(pageIdsFromIntent(
       intent,
-      'TTIって何？',
-      'TTIは豊田工業大学です。詳しくはサークルについてへ。',
-      ['home', 'about'],
+      '豊田工業大学について教えて',
+      '豊田工業大学（Toyota Technological Institute）です。',
+      ['home', 'about', 'contact'],
       uniSelected,
-    )).not.toContain('home');
+    )).toEqual([]);
+  });
+
+  it('university + join keeps contact only', () => {
+    const intent = classifyIntent('TTI何の略？場所どこ？参加どうする？');
+    expect(pageIdsFromIntent(
+      intent,
+      'TTI何の略？場所どこ？参加どうする？',
+      'TTIは豊田工業大学の略です。参加はお問い合わせへ。',
+      ['about', 'contact'],
+      selectRelevantKnowledge('TTI何の略？場所どこ？参加どうする？', '/'),
+    )).toEqual(['contact']);
   });
 });
 
