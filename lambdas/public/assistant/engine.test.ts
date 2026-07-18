@@ -113,6 +113,38 @@ describe('planAssistantRequest identity', () => {
   });
 
   it.each([
+    '豊田工業大学のサークルは？',
+    '豊工大にはどんな部活がある？',
+    '大学のサークル一覧を教えて',
+    '豊田工業大学にはどんなサークルがありますか',
+    '豊工のクラブについて教えて',
+    'TTIの部活は？',
+  ])('routes university-wide club questions to the scope boundary: %j', (message) => {
+    const plan = planAssistantRequest(message, []);
+    const response = answerFromPlan(plan);
+
+    expectExactMembers(plan.factIds, ['university.clubs-scope']);
+    expect(plan.confidence).toBe('high');
+    expect(response.answer).toBe('このサイトではTTI Intelligenceの活動を案内しています。豊田工業大学のサークル全般については、大学公式サイトをご確認ください。');
+    expect(response.links).toEqual([
+      {
+        pageId: 'toyota-ti',
+        title: '豊田工業大学',
+        href: 'https://www.toyota-ti.ac.jp/',
+      },
+    ]);
+  });
+
+  it.each([
+    'TTI Intelligenceはどんなサークル？',
+    'TTIインテリジェンスについて教えて',
+  ])('keeps explicitly named TTI Intelligence questions scoped to the circle: %j', (message) => {
+    const plan = planAssistantRequest(message, []);
+
+    expectExactMembers(plan.factIds, ['circle.identity']);
+  });
+
+  it.each([
     'TTI IntelligenceのTTIと大学のTTIは同じ意味？',
     'TTIとTTI Intelligenceって何が違う？',
   ])('uses the explicit comparison fact when both identities are asked: %j', (message) => {

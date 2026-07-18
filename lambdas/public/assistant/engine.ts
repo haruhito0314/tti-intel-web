@@ -261,7 +261,7 @@ function detectExclusions(value: string, state: MutablePlanState): void {
   state.linksRejected = /(?:リンク|url)(?:は|が)?(?:いらない|要らない|不要|なし|抜き|結構|付けない|つけない|貼らない|載せない|付けず|つけず|貼らず|載せず)|リンクなし|リンク不要/.test(value);
 }
 
-function detectIdentityFacts(value: string, state: MutablePlanState): void {
+function detectIdentityFacts(value: string, state: MutablePlanState): boolean {
   const circlePhrase = includesAny(value, [
     'TTI Intelligence',
     'TTIインテリジェンス',
@@ -287,6 +287,19 @@ function detectIdentityFacts(value: string, state: MutablePlanState): void {
     && (universityNamed || genericUniversityNamed || bareTti || ttiCount >= 2)
     && comparisonCue
   );
+  const circleParticipation = /サークル.{0,8}(?:参加|入会|入部)|(?:参加|入会|入部).{0,8}サークル/.test(value);
+  const universityClubScope = (
+    (universityNamed || genericUniversityNamed || bareTti)
+    && /サークル|部活|クラブ/.test(value)
+    && !circlePhrase
+    && !identityComparison
+    && !circleParticipation
+  );
+
+  if (universityClubScope) {
+    state.facts = ['university.clubs-scope'];
+    return true;
+  }
 
   if (identityComparison) {
     addFact(state, 'identity.tti-difference');
@@ -313,6 +326,8 @@ function detectIdentityFacts(value: string, state: MutablePlanState): void {
       addFact(state, 'activity.location');
     }
   }
+
+  return false;
 }
 
 function detectMembershipAndActivityFacts(
@@ -672,7 +687,9 @@ export function planAssistantRequest(
     return finalizePlan(state, false);
   }
 
-  detectIdentityFacts(value, state);
+  if (detectIdentityFacts(value, state)) {
+    return finalizePlan(state, false);
+  }
   detectMembershipAndActivityFacts(value, state);
   detectContactAndSocialFacts(value, state);
   detectVideoAndMathFacts(value, state);

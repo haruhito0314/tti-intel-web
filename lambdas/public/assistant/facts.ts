@@ -39,6 +39,13 @@ export const ASSISTANT_FACTS = {
     pageIds: [],
     externalLinks: ['toyota-ti'],
   },
+  'university.clubs-scope': {
+    description: '豊田工業大学のサークル・部活全般と、このサイトで案内するTTI Intelligenceの範囲',
+    answer: 'このサイトではTTI Intelligenceの活動を案内しています。豊田工業大学のサークル全般については、大学公式サイトをご確認ください。',
+    compactAnswer: 'このサイトはTTI Intelligenceを案内しています。大学のサークル全般は公式サイトをご確認ください。',
+    pageIds: [],
+    externalLinks: ['toyota-ti'],
+  },
   'identity.tti-difference': {
     description: 'TTIとTTI Intelligenceの違い・関係',
     answer: 'TTIはToyota Technological Institute、つまり豊田工業大学の略です。TTI Intelligenceは、その学生を中心に活動する学生コミュニティの名称です。',
