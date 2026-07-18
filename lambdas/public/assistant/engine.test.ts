@@ -121,6 +121,7 @@ describe('planAssistantRequest identity', () => {
     'TTIの部活は？',
     'T.T.I.の部活は？',
     '豊田工業大学、サークルについて教えて',
+    '豊田工業大学：サークル一覧は？',
     'T.T.I.、部活は？',
     '大学のサークルに参加できますか',
   ])('routes university-wide club questions to the scope boundary: %j', (message) => {
@@ -160,6 +161,16 @@ describe('planAssistantRequest identity', () => {
     expectExactMembers(plan.factIds, ['university.clubs-scope']);
     expect(plan.confidence).toBe('high');
     expect(plan.externalLinks).toContain('toyota-ti');
+  });
+
+  it.each([
+    '豊田工業大学ではなく他の大学のサークル一覧を教えて',
+    '豊田工業大学以外の大学のサークルを知りたい',
+  ])('does not bind a rejected Toyota Tech target to another university club ask: %j', (message) => {
+    const plan = planAssistantRequest(message, []);
+
+    expect(plan.factIds).not.toContain('university.clubs-scope');
+    expect(plan.confidence).toBe('low');
   });
 
   it('recognizes Toyota Tech students as university club scope', () => {
@@ -301,6 +312,16 @@ describe('planAssistantRequest aliases and multi-topic questions', () => {
 
     expectExactMembers(plan.factIds, ['membership.cost']);
     expectExactMembers(plan.pageIds, ['about']);
+  });
+
+  it.each([
+    '別大学のサークル一覧を見たい',
+    '他の大学との違いを教えて',
+  ])('does not infer participation eligibility from another-university wording alone: %j', (message) => {
+    const plan = planAssistantRequest(message, []);
+
+    expect(plan.factIds).not.toContain('membership.eligibility');
+    expect(plan.confidence).toBe('low');
   });
 
   it.each([
