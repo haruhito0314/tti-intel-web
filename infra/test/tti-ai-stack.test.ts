@@ -132,10 +132,8 @@ describe('TtiAiStack site assistant infrastructure', () => {
             Environment: {
                 Variables: Match.objectLike({
                     ASSISTANT_USAGE_TABLE: Match.anyValue(),
-                    ASSISTANT_UNANSWERED_TABLE: Match.anyValue(),
                     OPENAI_SECRET_ID: 'tti-ai/openai-api-key',
-                    ASSISTANT_MODEL: 'gpt-5-nano',
-                    ASSISTANT_SMALL_TALK_MODEL: 'gpt-5-nano',
+                    ASSISTANT_MODEL: 'gpt-5.6-luna',
                     ASSISTANT_DAILY_LIMIT: '200',
                     ASSISTANT_SESSION_LIMIT: '20',
                     ASSISTANT_SESSION_WINDOW_SECONDS: '600',
@@ -151,9 +149,6 @@ describe('TtiAiStack site assistant infrastructure', () => {
         const usageTable = resourcesOfType('AWS::DynamoDB::Table').find(([, resource]) => {
             return resource.Properties?.TableName === 'tti-ai-assistant-usage';
         });
-        const unansweredTable = resourcesOfType('AWS::DynamoDB::Table').find(([, resource]) => {
-            return resource.Properties?.TableName === 'tti-ai-assistant-unanswered';
-        });
         const postsTable = resourcesOfType('AWS::DynamoDB::Table').find(([, resource]) => {
             return resource.Properties?.TableName === 'tti-ai-posts';
         });
@@ -165,7 +160,6 @@ describe('TtiAiStack site assistant infrastructure', () => {
         });
 
         expect(usageTable).toBeDefined();
-        expect(unansweredTable).toBeDefined();
         expect(postsTable).toBeDefined();
         expect(boardTable).toBeDefined();
         expect(assistantLambda).toBeDefined();
@@ -179,8 +173,6 @@ describe('TtiAiStack site assistant infrastructure', () => {
             'ASSISTANT_MODEL',
             'ASSISTANT_SESSION_LIMIT',
             'ASSISTANT_SESSION_WINDOW_SECONDS',
-            'ASSISTANT_SMALL_TALK_MODEL',
-            'ASSISTANT_UNANSWERED_TABLE',
             'ASSISTANT_USAGE_TABLE',
             'BOARD_TABLE',
             'FIREBASE_API_KEY',
@@ -189,7 +181,6 @@ describe('TtiAiStack site assistant infrastructure', () => {
             'POSTS_TABLE',
         ]);
         expect(variables?.ASSISTANT_USAGE_TABLE).toEqual({ Ref: usageTable?.[0] });
-        expect(variables?.ASSISTANT_UNANSWERED_TABLE).toEqual({ Ref: unansweredTable?.[0] });
         expect(variables?.POSTS_TABLE).toEqual({ Ref: postsTable?.[0] });
         expect(variables?.BOARD_TABLE).toEqual({ Ref: boardTable?.[0] });
     });
@@ -220,8 +211,8 @@ describe('TtiAiStack site assistant infrastructure', () => {
             'dynamodb:UpdateItem',
             'dynamodb:GetItem',
             'dynamodb:Query',
-            'dynamodb:PutItem',
         ]));
+        expect(dynamoActions).not.toContain('dynamodb:PutItem');
 
         const secretStatements = statements.filter((statement) => {
             return actions(statement).some((action) => action.startsWith('secretsmanager:'));

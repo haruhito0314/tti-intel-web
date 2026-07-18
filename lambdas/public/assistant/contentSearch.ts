@@ -1,4 +1,4 @@
-import { normalizeSearchText } from './knowledge.js';
+import { normalizeSearchText } from './runtimeCatalog.js';
 import type {
   ContentEntry,
   ContentKind,

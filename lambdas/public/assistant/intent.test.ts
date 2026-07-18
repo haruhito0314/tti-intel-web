@@ -136,7 +136,8 @@ describe('classifyIntent', () => {
 describe('intentHintFor', () => {
   it('returns short policy lines per intent', () => {
     expect(intentHintFor(classifyIntent('YouTubeどこ'))).toMatch(/YouTube/);
-    expect(intentHintFor(classifyIntent('TTIって何？'))).toMatch(/別物|区別/);
+    expect(intentHintFor(classifyIntent('TTIって何？'))).toMatch(/とだけ答える/);
+    expect(intentHintFor(classifyIntent('TTIって何？'))).toMatch(/禁止/);
     expect(intentHintFor(classifyIntent('豊田工業大学について教えて'))).toMatch(/サークル名/);
     expect(intentHintFor(classifyIntent('豊田工業大学の場所はどこ？'))).toMatch(/名古屋市天白区/);
     expect(intentHintFor(classifyIntent('なんのページがある？'))).toMatch(/pageIdsは空/);
@@ -266,6 +267,20 @@ describe('resolveAnswerForIntent', () => {
       'このチャットでは何を聞けますか',
       '申し訳ないですが、その内容にはお答えできません。',
     )).toMatch(/案内できます/);
+  });
+
+  it('keeps pure TTI abbrev answers free of circle disclaimers', () => {
+    const intent = classifyIntent('ttiとは？');
+    expect(resolveAnswerForIntent(
+      intent,
+      'ttiとは？',
+      'TTIは豊田工業大学の略です。サークル名のTTI Intelligenceとは別です。',
+    )).toBe('TTIはToyota Technological Instituteの略で、豊田工業大学のことです。大学の公式サイトは下のリンクからどうぞ。');
+    expect(resolveAnswerForIntent(
+      intent,
+      'ttiとは？',
+      'TTIはToyota Technological Instituteの略で、豊田工業大学のことです。',
+    )).toBe('TTIはToyota Technological Instituteの略で、豊田工業大学のことです。');
   });
 
   it('strips weekly-math from explanation_video answers', () => {

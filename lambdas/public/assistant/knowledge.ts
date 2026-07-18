@@ -1,9 +1,17 @@
 import rawGuideEntries from './knowledge/site-guide.json' with { type: 'json' };
 import { PAGE_IDS } from './types.js';
+import {
+  DISCORD_INVITE_URL,
+  isSafeDynamicHref,
+  KNOWN_PAGE_ROUTES,
+  normalizeSearchText,
+  resolveCurrentPageId,
+  TOYOTA_TI_URL,
+  YOUTUBE_CHANNEL_URL,
+} from './runtimeCatalog.js';
 import type {
   AssistantLink,
   Audience,
-  ContentKind,
   GuideEntry,
   GuideFaq,
   PageId,
@@ -11,29 +19,14 @@ import type {
   RankedGuideEntry,
 } from './types.js';
 
-export const KNOWN_PAGE_ROUTES = {
-  home: { title: 'ホーム', href: '/' },
-  about: { title: 'サークルについて', href: '/about' },
-  news: { title: 'お知らせ', href: '/news' },
-  apps: { title: 'アプリ', href: '/app' },
-  development: { title: '開発について', href: '/development' },
-  board: { title: '掲示板', href: '/board' },
-  contact: { title: 'お問い合わせ', href: '/contact' },
-  'game-community': { title: 'ゲームコミュニティ', href: '/game-community' },
-  'weekly-math': { title: '今週の数学', href: '/weekly-math' },
-  'table-tennis': { title: 'Table Tennis Match Maker', href: '/app/table-tennis' },
-  'color-sort': { title: 'Color Sort Puzzle', href: '/app/color-sort' },
-  'cli-practice': { title: 'CLI Practice', href: '/app/cli-practice' },
-} as const satisfies Record<PageId, { title: string; href: string }>;
-
-/** Official invite; keep in sync with frontend/src/config/site.ts socialLinks.discord.url */
-export const DISCORD_INVITE_URL = 'https://discord.gg/DFWs8GrHxF';
-
-/** Toyota Technological Institute (豊田工業大学) official site. */
-export const TOYOTA_TI_URL = 'https://www.toyota-ti.ac.jp/';
-
-/** Circle YouTube channel; keep in sync with frontend About / site config. */
-export const YOUTUBE_CHANNEL_URL = 'https://www.youtube.com/@ttiintelligence';
+export {
+  DISCORD_INVITE_URL,
+  KNOWN_PAGE_ROUTES,
+  normalizeSearchText,
+  resolveCurrentPageId,
+  TOYOTA_TI_URL,
+  YOUTUBE_CHANNEL_URL,
+} from './runtimeCatalog.js';
 
 const PAGE_ID_SET: ReadonlySet<string> = new Set(PAGE_IDS);
 
@@ -177,32 +170,6 @@ function parseGuideEntries(value: unknown): readonly GuideEntry[] {
 
 export const GUIDE_ENTRIES = parseGuideEntries(rawGuideEntries);
 
-const DYNAMIC_PAGE_PATTERNS: readonly [RegExp, PageId][] = [
-  [/^\/news\/[^/]+$/, 'news'],
-  [/^\/weekly-math\/[^/]+$/, 'weekly-math'],
-  [/^\/weekly-math\/[^/]+\/solution$/, 'weekly-math'],
-  [/^\/board\/[^/]+$/, 'board'],
-];
-
-export function normalizeSearchText(value: string): string {
-  return value.normalize('NFKC').toLocaleLowerCase('ja-JP').trim().replace(/\s+/g, ' ');
-}
-
-export function resolveCurrentPageId(currentPath: string): PageId | null {
-  for (const pageId of PAGE_IDS) {
-    if (KNOWN_PAGE_ROUTES[pageId].href === currentPath) {
-      return pageId;
-    }
-  }
-
-  for (const [pattern, pageId] of DYNAMIC_PAGE_PATTERNS) {
-    if (pattern.test(currentPath)) {
-      return pageId;
-    }
-  }
-
-  return null;
-}
 
 export function scoreGuideEntry(
   normalizedQuery: string,
@@ -727,21 +694,4 @@ export function withTopGuidePageId(
   }
 
   return ids;
-}
-
-function isSafeDynamicHref(href: string, kind: ContentKind): boolean {
-  if (!href.startsWith('/') || href.startsWith('//') || href.includes('?') || href.includes('#')) {
-    return false;
-  }
-
-  if (kind === 'news') {
-    return /^\/news\/[^/]+$/.test(href);
-  }
-  if (kind === 'board') {
-    return /^\/board\/[^/]+$/.test(href);
-  }
-  if (kind === 'weekly-math') {
-    return /^\/weekly-math\/[^/]+$/.test(href);
-  }
-  return false;
 }

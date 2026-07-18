@@ -8,35 +8,28 @@ import type {
   Context,
 } from 'aws-lambda';
 
-import {
-  classifyIntent,
-  intentHintFor,
-  pageIdsFromIntent,
-  resolveAnswerForIntent,
-  seedGuideForIntent,
-  shouldBypassKnowledgeMiss,
-} from './intent.js';
-import {
-  buildFollowUpSearchQuery,
-  createVerifiedLinks,
-  GUIDE_ENTRIES,
-  sanitizeAssistantAnswer,
-  selectRelevantKnowledge,
-  withMentionedPageIds,
-} from './knowledge.js';
+import { createVerifiedContentLinks } from './runtimeCatalog.js';
 import {
   selectRelevantContent,
   type ContentRepositories,
 } from './contentSearch.js';
 import { createContentRepositories } from './contentRepos.js';
 import {
+  answerFromPlan,
+  planAssistantRequest,
+  planFromFactSelection,
+  type AssistantQueryPlan,
+} from './engine.js';
+import {
+  requestOpenAIPlan as callOpenAIPlan,
+  type OpenAIPlanResult,
+} from './factPlanner.js';
+import {
   createApiKeyProvider,
   OpenAiTimeoutError,
   OpenAiUpstreamError,
-  requestOpenAI,
   SecretUnavailableError,
-  type AssistantOpenAIMode,
-} from './openai.js';
+} from './openaiTransport.js';
 import {
   QuotaExceededError,
   QuotaInfrastructureError,
@@ -44,24 +37,12 @@ import {
   reserveQuota,
   type QuotaReservationInput,
 } from './quota.js';
-import {
-  shouldTreatAsFollowUp,
-  shouldUseFollowUpHistory,
-} from './smallTalk.js';
 import type {
   AssistantRequest,
   AssistantResponse,
-  OpenAIResult,
   OpenAIUsage,
-  PageId,
   RankedContentEntry,
-  RankedGuideEntry,
 } from './types.js';
-import { PAGE_IDS } from './types.js';
-import {
-  recordUnansweredQuestion,
-  type UnansweredReason,
-} from './unansweredQuestions.js';
 import {
   parseAssistantRequest,
   RequestValidationError,
@@ -69,10 +50,6 @@ import {
 } from './validation.js';
 
 const OPENAI_TIMEOUT_MS = 20_000;
-
-const SMALL_TALK_SELECTED: RankedGuideEntry[] = GUIDE_ENTRIES
-  .filter(({ id }) => id === 'home')
-  .map((entry) => ({ entry, score: 3 }));
 
 const ERROR_RESPONSES = {
   400: {
@@ -102,7 +79,7 @@ const ERROR_RESPONSES = {
 } as const;
 
 type ErrorStatusCode = keyof typeof ERROR_RESPONSES;
-type DependencyStage = 'internal' | 'secret' | 'quota' | 'openai';
+type DependencyStage = 'internal' | 'content' | 'secret' | 'quota' | 'openai';
 type RuntimeEnvironment = Readonly<Record<string, string | undefined>>;
 
 export const CONTACT_FALLBACK: AssistantResponse = {
@@ -110,29 +87,29 @@ export const CONTACT_FALLBACK: AssistantResponse = {
   links: [{ pageId: 'contact', title: 'お問い合わせ', href: '/contact' }],
 };
 
+function fallbackResponseFor(plan: AssistantQueryPlan): AssistantResponse {
+  if (
+    plan.suppressLinks
+    || plan.excludedPageIds.includes('contact')
+    || plan.excludedFactIds.includes('contact.form')
+  ) {
+    return { answer: CONTACT_FALLBACK.answer, links: [] };
+  }
+  return CONTACT_FALLBACK;
+}
+
+const CONTENT_MATCH_ANSWER = '関連する公開コンテンツが見つかりました。下のリンクから確認できます。';
+
 export interface AssistantHandlerDependencies {
   allowedOrigins: ReadonlySet<string>;
   now(): Date;
   getApiKey(): Promise<string>;
   reserveQuota(input: QuotaReservationInput): Promise<void>;
   searchContent(message: string): Promise<RankedContentEntry[]>;
-  requestOpenAI(input: {
+  requestOpenAIPlan(input: {
     apiKey: string;
     request: AssistantRequest;
-    selected: readonly RankedGuideEntry[];
-    content?: readonly RankedContentEntry[];
-    mode?: AssistantOpenAIMode;
-    contextualFollowUp?: boolean;
-    intent?: string;
-    intentHint?: string;
-  }): Promise<OpenAIResult>;
-  recordUnanswered(input: {
-    requestId: string;
-    message: string;
-    currentPath: string;
-    reason: UnansweredReason;
-    now: Date;
-  }): Promise<void>;
+  }): Promise<OpenAIPlanResult>;
   log(record: Record<string, string | number>): void;
 }
 
@@ -240,21 +217,23 @@ function safeUsage(usage: Readonly<OpenAIUsage>): OpenAIUsage {
   };
 }
 
-async function captureUnanswered(
-  dependencies: AssistantHandlerDependencies,
-  input: {
-    requestId: string;
-    message: string;
-    currentPath: string;
-    reason: UnansweredReason;
-    now: Date;
-  },
-): Promise<void> {
-  try {
-    await dependencies.recordUnanswered(input);
-  } catch {
-    // Persistence must never change the client response.
-  }
+function contentResponseFor(
+  content: readonly RankedContentEntry[],
+  plan: AssistantQueryPlan,
+): AssistantResponse {
+  const allowedContent = content.filter(({ entry }) => (
+    !plan.excludedPageIds.includes(entry.parentPageId)
+  ));
+  const links = plan.suppressLinks
+    ? []
+    : createVerifiedContentLinks(allowedContent);
+
+  return {
+    answer: links.length > 0
+      ? CONTENT_MATCH_ANSWER
+      : '関連する公開コンテンツが見つかりました。',
+    links,
+  };
 }
 
 export function createAssistantHandler(
@@ -270,7 +249,7 @@ export function createAssistantHandler(
     let inputTokens = 0;
     let outputTokens = 0;
     let totalTokens = 0;
-    let unansweredRequest: AssistantRequest | undefined;
+    let fallbackPlan: AssistantQueryPlan | undefined;
 
     try {
       const requestedOrigin = readOrigin(event);
@@ -305,68 +284,14 @@ export function createAssistantHandler(
         throw new RequestValidationError('Invalid assistant request');
       }
       const request = parseAssistantRequest(event.body);
-      unansweredRequest = request;
-      const intent = classifyIntent(request.message);
-      const omitLinks = intent.omitLinks;
-      const smallTalk = intent.smallTalk;
-      let selected = smallTalk
-        ? []
-        : selectRelevantKnowledge(request.message, request.currentPath);
-      let content: RankedContentEntry[] = [];
-      let deferredContentQuery: string | null = null;
-      let usedFollowUpSearch = false;
+      const initialPlan = planAssistantRequest(request.message, request.history);
+      fallbackPlan = initialPlan;
 
-      if (!smallTalk) {
-        if (selected.length === 0) {
-          // Need content hits (or a definitive miss) before Contact / quota.
-          content = await dependencies.searchContent(request.message);
-        } else {
-          // Guide already matched — fetch content only after quota is reserved.
-          deferredContentQuery = request.message;
-        }
-
-        if (
-          selected.length === 0
-          && content.length === 0
-          && shouldUseFollowUpHistory(request.message)
-        ) {
-          const followUpQuery = buildFollowUpSearchQuery(
-            request.message,
-            request.history,
-          );
-          if (followUpQuery !== null) {
-            selected = selectRelevantKnowledge(
-              followUpQuery,
-              request.currentPath,
-            );
-            if (selected.length === 0) {
-              content = await dependencies.searchContent(followUpQuery);
-            } else {
-              deferredContentQuery = followUpQuery;
-            }
-            usedFollowUpSearch = selected.length > 0 || content.length > 0;
-          }
-        }
-      }
-
-      selected = seedGuideForIntent(intent, selected);
-
-      if (
-        selected.length === 0
-        && content.length === 0
-        && !smallTalk
-        && !shouldBypassKnowledgeMiss(intent)
-      ) {
+      // Clearly out-of-scope requests do not consume quota or reach external systems.
+      if (initialPlan.confidence === 'none') {
         outcome = 'no_relevant_knowledge';
         statusCode = 200;
-        await captureUnanswered(dependencies, {
-          requestId,
-          message: request.message,
-          currentPath: request.currentPath,
-          reason: 'no_relevant_knowledge',
-          now: dependencies.now(),
-        });
-        return jsonResponse(statusCode, CONTACT_FALLBACK, origin);
+        return jsonResponse(statusCode, fallbackResponseFor(initialPlan), origin);
       }
 
       if (requestId.length === 0) {
@@ -386,89 +311,64 @@ export function createAssistantHandler(
       await dependencies.reserveQuota(reservationInput);
       dependencyStage = 'internal';
 
-      if (deferredContentQuery !== null) {
-        content = await dependencies.searchContent(deferredContentQuery);
+      let content: RankedContentEntry[] = [];
+      if (initialPlan.confidence === 'low') {
+        // Quota protects every repository read. Dynamic content stays local.
+        dependencyStage = 'content';
+        content = await dependencies.searchContent(request.message);
+        dependencyStage = 'internal';
       }
 
-      dependencyStage = 'secret';
-      const apiKey = await dependencies.getApiKey();
-      dependencyStage = 'internal';
+      const allowedContent = content.filter(({ entry }) => (
+        !initialPlan.excludedPageIds.includes(entry.parentPageId)
+      ));
+      if (allowedContent.length > 0) {
+        outcome = 'content_success';
+        statusCode = 200;
+        return jsonResponse(
+          statusCode,
+          contentResponseFor(allowedContent, initialPlan),
+          origin,
+        );
+      }
 
-      const openAiSelected = smallTalk ? SMALL_TALK_SELECTED : selected;
-      const openAiContent = smallTalk ? [] : content;
-      const openAiMode: AssistantOpenAIMode = smallTalk
-        ? 'small_talk'
-        : 'guide';
+      let finalPlan = initialPlan;
+      if (initialPlan.confidence === 'low') {
+        dependencyStage = 'secret';
+        const apiKey = await dependencies.getApiKey();
+        dependencyStage = 'internal';
 
-      const contextualFollowUp = shouldTreatAsFollowUp(
-        request.message,
-        request.history,
-        usedFollowUpSearch,
-      );
+        dependencyStage = 'openai';
+        const plannerRequest = initialPlan.requiresHistory
+          ? request
+          : { ...request, history: [] };
+        const result = await dependencies.requestOpenAIPlan({
+          apiKey,
+          request: plannerRequest,
+        });
+        dependencyStage = 'internal';
 
-      dependencyStage = 'openai';
-      const result = await dependencies.requestOpenAI({
-        apiKey,
-        request,
-        selected: openAiSelected,
-        content: openAiContent,
-        mode: openAiMode,
-        contextualFollowUp,
-        intent: intent.kind,
-        intentHint: intentHintFor(intent),
-      });
-      dependencyStage = 'internal';
+        const usage = safeUsage(result.usage);
+        inputTokens = usage.inputTokens;
+        outputTokens = usage.outputTokens;
+        totalTokens = usage.totalTokens;
 
-      const usage = safeUsage(result.usage);
-      inputTokens = usage.inputTokens;
-      outputTokens = usage.outputTokens;
-      totalTokens = usage.totalTokens;
-      // requestOpenAI already validates; trust the DI boundary for typed output.
-      const output = result.output;
+        if (result.output.unsupported) {
+          outcome = 'no_relevant_knowledge';
+          statusCode = 200;
+          return jsonResponse(statusCode, fallbackResponseFor(initialPlan), origin);
+        }
 
-      outcome = smallTalk ? 'small_talk_success' : 'success';
+        finalPlan = planFromFactSelection(result.output.factIds, initialPlan);
+        outcome = 'planner_success';
+      } else {
+        outcome = finalPlan.mode === 'small-talk'
+          ? 'small_talk_success'
+          : 'direct_success';
+      }
+
       statusCode = 200;
-      const answer = resolveAnswerForIntent(
-        intent,
-        request.message,
-        sanitizeAssistantAnswer(output.answer),
-      );
-      const mentionedPageIds = withMentionedPageIds(answer, [])
-        .filter((id): id is PageId => (PAGE_IDS as readonly string[]).includes(id));
-      const pageIds = pageIdsFromIntent(
-        intent,
-        request.message,
-        answer,
-        output.pageIds,
-        openAiSelected,
-      );
-      // Message-derived / intent-forced ids must be linkable even when keyword
-      // search did not rank those guide entries into `selected`.
-      const intentForcedPageIds = (
-        intent.kind === 'capabilities'
-        || intent.kind === 'explanation_video'
-        || intent.followUpPageIds.length >= 1
-      ) ? pageIds : [];
-      const extraAllowedPageIds = [...new Set<PageId>([
-        ...mentionedPageIds,
-        ...intent.followUpPageIds,
-        ...intentForcedPageIds,
-      ])];
-      return jsonResponse(statusCode, {
-        answer,
-        links: createVerifiedLinks(
-          pageIds,
-          openAiSelected,
-          omitLinks ? [] : output.contentIds,
-          openAiContent,
-          {
-            includeDiscord: intent.includeDiscord,
-            includeToyotaTi: intent.includeToyotaTi,
-            includeYoutube: intent.includeYoutube,
-            extraAllowedPageIds,
-          },
-        ),
-      } satisfies AssistantResponse, origin);
+      return jsonResponse(statusCode, answerFromPlan(finalPlan), origin);
     } catch (error) {
       if (error instanceof RequestValidationError) {
         outcome = 'invalid_request';
@@ -485,16 +385,13 @@ export function createAssistantHandler(
         }
         outcome = 'unsafe_model_output';
         statusCode = 200;
-        if (unansweredRequest !== undefined) {
-          await captureUnanswered(dependencies, {
-            requestId,
-            message: unansweredRequest.message,
-            currentPath: unansweredRequest.currentPath,
-            reason: 'unsafe_model_output',
-            now: dependencies.now(),
-          });
-        }
-        return jsonResponse(statusCode, CONTACT_FALLBACK, origin);
+        return jsonResponse(
+          statusCode,
+          fallbackPlan === undefined
+            ? CONTACT_FALLBACK
+            : fallbackResponseFor(fallbackPlan),
+          origin,
+        );
       }
 
       if (error instanceof QuotaExceededError) {
@@ -546,16 +443,8 @@ export function createRuntimeDependencies(
 ): AssistantHandlerDependencies {
   const secretId = requireEnvironmentValue(environment, 'OPENAI_SECRET_ID');
   const model = requireEnvironmentValue(environment, 'ASSISTANT_MODEL');
-  const smallTalkModel = requireEnvironmentValue(
-    environment,
-    'ASSISTANT_SMALL_TALK_MODEL',
-  );
   const postsTable = requireEnvironmentValue(environment, 'POSTS_TABLE');
   const boardTable = requireEnvironmentValue(environment, 'BOARD_TABLE');
-  const unansweredTable = requireEnvironmentValue(
-    environment,
-    'ASSISTANT_UNANSWERED_TABLE',
-  );
   const firebaseApiKey = requireEnvironmentValue(environment, 'FIREBASE_API_KEY');
   const firebaseProjectId = requireEnvironmentValue(
     environment,
@@ -585,33 +474,13 @@ export function createRuntimeDependencies(
       input,
     ),
     searchContent: (message) => selectRelevantContent(message, contentRepositories),
-    requestOpenAI: ({
-      apiKey,
-      request,
-      selected,
-      content = [],
-      mode = 'guide',
-      contextualFollowUp,
-      intent,
-      intentHint,
-    }) => (
-      requestOpenAI({
+    requestOpenAIPlan: ({ apiKey, request }) => (
+      callOpenAIPlan({
         apiKey,
         request,
-        selected,
-        content,
-        mode,
-        contextualFollowUp,
-        intent,
-        intentHint,
-        model: mode === 'small_talk' ? smallTalkModel : model,
+        model,
         timeoutMs: OPENAI_TIMEOUT_MS,
       })
-    ),
-    recordUnanswered: (input) => recordUnansweredQuestion(
-      documentClient,
-      unansweredTable,
-      input,
     ),
     log: (record) => {
       console.info(JSON.stringify(record));

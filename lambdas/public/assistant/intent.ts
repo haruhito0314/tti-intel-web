@@ -193,7 +193,7 @@ export function intentHintFor(intent: AssistantIntent): string {
         return '豊田工業大学の所在地は名古屋市天白区（豊田市ではない）。大学公式は下のリンクだけ案内。サークル名・母体・サイト内ページ誘導・存在しない「大学について」ページは禁止。URLはanswerに書かない。pageIdsは空。';
       }
       if (intent.askTtiAbbreviation) {
-        return 'TTIはToyota Technological Institute＝豊田工業大学の略。サークル名のTTI Intelligenceとは別だと1文で区別してよい。それ以上のサークル紹介・母体・サイト内ページ誘導は禁止。大学公式は下のリンク。URLはanswerに書かない。pageIdsは空。';
+        return 'TTIはToyota Technological Institute＝豊田工業大学の略、とだけ答える。TTI Intelligence・サークル・「とは別」注釈・母体・サイト紹介は禁止（利用者がIntelligenceやサークルに触れたときだけ区別可）。大学公式は下のリンク。URLはanswerに書かない。pageIdsは空。';
       }
       return '豊田工業大学（Toyota Technological Institute、略称TTI）について1〜2文だけ。大学公式は下のリンク。サークル名・TTI Intelligence・母体・このサイト紹介・サークルについて／架空の大学ページへの誘導・所在地（聞かれたとき以外）は禁止。URLはanswerに書かない。pageIdsは空。';
     case 'discord':
@@ -495,6 +495,22 @@ export function resolveAnswerForIntent(
 
   if (intent.kind === 'explanation_video') {
     return withoutOffTopicMathMention(message, answer);
+  }
+
+  if (intent.kind === 'university' && intent.askTtiAbbreviation) {
+    const normalizedMessage = normalizeSearchText(message);
+    const userMentionedCircle = /intelligence|サークル/.test(normalizedMessage);
+    if (!userMentionedCircle) {
+      // Pure “TTIとは？” — keep university abbrev only; drop unsolicited circle notes.
+      if (
+        !answer
+        || /TTI Intelligence|サークル名|とは別|母体/.test(answer)
+        || !/Toyota Technological Institute|豊田工業大学/.test(answer)
+      ) {
+        return 'TTIはToyota Technological Instituteの略で、豊田工業大学のことです。大学の公式サイトは下のリンクからどうぞ。';
+      }
+    }
+    return answer;
   }
 
   if (intent.kind === 'capabilities') {

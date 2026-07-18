@@ -202,10 +202,8 @@ export class TtiAiStack extends cdk.Stack {
             timeout: cdk.Duration.seconds(25),
             environment: {
                 ASSISTANT_USAGE_TABLE: assistantUsageTable.tableName,
-                ASSISTANT_UNANSWERED_TABLE: assistantUnansweredTable.tableName,
                 OPENAI_SECRET_ID: openAiSecret.secretName,
-                ASSISTANT_MODEL: 'gpt-5-nano',
-                ASSISTANT_SMALL_TALK_MODEL: 'gpt-5-nano',
+                ASSISTANT_MODEL: 'gpt-5.6-luna',
                 ASSISTANT_DAILY_LIMIT: '200',
                 ASSISTANT_SESSION_LIMIT: '20',
                 ASSISTANT_SESSION_WINDOW_SECONDS: '600',
@@ -235,7 +233,6 @@ export class TtiAiStack extends cdk.Stack {
 
         postsTable.grantReadData(assistantLambda);
         boardTable.grantReadData(assistantLambda);
-        assistantUnansweredTable.grantWriteData(assistantLambda);
 
         assistantLambda.addToRolePolicy(new iam.PolicyStatement({
             actions: ['secretsmanager:GetSecretValue'],

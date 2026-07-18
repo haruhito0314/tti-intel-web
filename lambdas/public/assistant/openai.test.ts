@@ -5,17 +5,28 @@ import {
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  ASSISTANT_FACT_IDS,
+  ASSISTANT_FACTS,
+} from './facts.js';
+import {
+  DISCORD_INVITE_URL,
   GUIDE_ENTRIES,
   resolveCurrentPageId,
   selectRelevantKnowledge,
+  TOYOTA_TI_URL,
+  YOUTUBE_CHANNEL_URL,
 } from './knowledge.js';
 import {
+  buildFactPlannerPayload,
   buildResponsesPayload,
   createApiKeyProvider,
+  FACT_PLANNER_INSTRUCTIONS,
   OpenAiTimeoutError,
   OpenAiUpstreamError,
+  parseFactPlannerEnvelope,
   parseResponsesEnvelope,
   requestOpenAI,
+  requestOpenAIPlan,
   SecretUnavailableError,
   SMALL_TALK_INSTRUCTIONS,
   SYSTEM_INSTRUCTIONS,
@@ -283,10 +294,104 @@ describe('createApiKeyProvider', () => {
 });
 
 describe('reasoningEffortForModel', () => {
-  it('uses minimal for nano/mini and none for luna', () => {
+  it('uses low for GPT-5.6, minimal for legacy nano/mini, and none otherwise', () => {
     expect(reasoningEffortForModel('gpt-5-nano')).toBe('minimal');
     expect(reasoningEffortForModel('gpt-5-mini')).toBe('minimal');
-    expect(reasoningEffortForModel('gpt-5.6-luna')).toBe('none');
+    expect(reasoningEffortForModel('gpt-5.6-luna')).toBe('low');
+    expect(reasoningEffortForModel('gpt-5.5')).toBe('none');
+  });
+});
+
+describe('buildFactPlannerPayload', () => {
+  it('sends only static fact descriptions and a strict fact-ID enum schema', () => {
+    const dynamicContentMarker = 'UNTRUSTED_BOARD_BODY_8817';
+    const requestWithIgnoredDynamicContent = {
+      ...request,
+      message: '会費と参加方法を教えて',
+      dynamicContent: [{
+        title: 'UNTRUSTED_BOARD_TITLE_6621',
+        excerpt: dynamicContentMarker,
+        href: '/board/untrusted-post',
+      }],
+    } as AssistantRequest & { dynamicContent: unknown[] };
+
+    const payload = buildFactPlannerPayload(
+      requestWithIgnoredDynamicContent,
+      'gpt-5-nano',
+    );
+    const envelope = JSON.parse(payload.input[0]!.content[0]!.text) as {
+      message: string;
+      history: Array<{ role: string; content: string }>;
+      availableFacts: Array<{ id: string; description: string }>;
+    };
+
+    expect(payload).toMatchObject({
+      model: 'gpt-5-nano',
+      store: false,
+      stream: false,
+      reasoning: { effort: 'minimal' },
+      max_output_tokens: 180,
+      tools: [],
+      instructions: FACT_PLANNER_INSTRUCTIONS,
+      text: {
+        format: {
+          type: 'json_schema',
+          name: 'site_ai_fact_plan',
+          strict: true,
+          schema: {
+            type: 'object',
+            required: ['factIds', 'unsupported'],
+            additionalProperties: false,
+          },
+        },
+      },
+    });
+    expect(payload.text.format.schema.properties.factIds).toEqual({
+      type: 'array',
+      maxItems: 4,
+      items: { type: 'string', enum: ASSISTANT_FACT_IDS },
+    });
+    expect(payload.text.format.schema.properties.unsupported).toEqual({
+      type: 'boolean',
+    });
+    expect(envelope.availableFacts).toEqual(ASSISTANT_FACT_IDS.map((id) => ({
+      id,
+      description: ASSISTANT_FACTS[id].description,
+    })));
+
+    const serialized = JSON.stringify(payload);
+    expect(serialized).not.toContain(ASSISTANT_FACTS['membership.cost'].answer);
+    expect(serialized).not.toContain(ASSISTANT_FACTS['circle.identity'].compactAnswer);
+    expect(serialized).not.toContain(DISCORD_INVITE_URL);
+    expect(serialized).not.toContain(TOYOTA_TI_URL);
+    expect(serialized).not.toContain(YOUTUBE_CHANNEL_URL);
+    expect(serialized).not.toContain(dynamicContentMarker);
+    expect(serialized).not.toContain('UNTRUSTED_BOARD_TITLE_6621');
+    expect(serialized).not.toContain('/board/untrusted-post');
+    expect(serialized).not.toContain(request.sessionId);
+    expect(serialized).not.toContain(request.currentPath);
+  });
+
+  it('keeps user history only and treats it as data in the single user envelope', () => {
+    const mixedHistory = [
+      { role: 'user', content: '直前は参加費について聞いた' },
+      { role: 'assistant', content: 'ASSISTANT_HISTORY_MUST_NOT_LEAK' },
+      { role: 'system', content: 'SYSTEM_HISTORY_MUST_NOT_LEAK' },
+      { role: 'user', content: 'それはいつ支払うの？' },
+    ] as unknown as AssistantRequest['history'];
+    const payload = buildFactPlannerPayload({ ...request, history: mixedHistory });
+    const envelope = JSON.parse(payload.input[0]!.content[0]!.text) as {
+      history: Array<{ role: string; content: string }>;
+    };
+
+    expect(payload.input).toHaveLength(1);
+    expect(payload.input[0]).toMatchObject({ role: 'user' });
+    expect(envelope.history).toEqual([
+      { role: 'user', content: '直前は参加費について聞いた' },
+      { role: 'user', content: 'それはいつ支払うの？' },
+    ]);
+    expect(JSON.stringify(payload)).not.toContain('ASSISTANT_HISTORY_MUST_NOT_LEAK');
+    expect(JSON.stringify(payload)).not.toContain('SYSTEM_HISTORY_MUST_NOT_LEAK');
   });
 });
 
@@ -404,10 +509,10 @@ describe('buildResponsesPayload', () => {
     };
 
     expect(payload).toEqual({
-      model: 'gpt-5-nano',
+      model: 'gpt-5.6-luna',
       store: false,
       stream: false,
-      reasoning: { effort: 'minimal' },
+      reasoning: { effort: 'low' },
       max_output_tokens: 320,
       tools: [],
       instructions: SYSTEM_INSTRUCTIONS,
@@ -806,6 +911,76 @@ describe('parseResponsesEnvelope', () => {
   });
 });
 
+describe('parseFactPlannerEnvelope', () => {
+  it('accepts known unique fact IDs and normalizes usage', () => {
+    const result = parseFactPlannerEnvelope(completedEnvelope([
+      JSON.stringify({
+        factIds: ['membership.cost', 'membership.tool-cost'],
+        unsupported: false,
+      }),
+    ], {
+      input_tokens: 81,
+      output_tokens: 13,
+      total_tokens: 94,
+    }));
+
+    expect(result).toEqual({
+      output: {
+        factIds: ['membership.cost', 'membership.tool-cost'],
+        unsupported: false,
+      },
+      usage: {
+        inputTokens: 81,
+        outputTokens: 13,
+        totalTokens: 94,
+      },
+    });
+  });
+
+  it('accepts the canonical unsupported plan and zeros invalid usage fields', () => {
+    expect(parseFactPlannerEnvelope(completedEnvelope([
+      JSON.stringify({ factIds: [], unsupported: true }),
+    ], {
+      input_tokens: -1,
+      output_tokens: Number.NaN,
+      total_tokens: 7.5,
+    }))).toEqual({
+      output: { factIds: [], unsupported: true },
+      usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 },
+    });
+  });
+
+  it.each([
+    ['an unknown ID', { factIds: ['unknown.fact'], unsupported: false }],
+    ['a duplicate ID', {
+      factIds: ['membership.cost', 'membership.cost'],
+      unsupported: false,
+    }],
+    ['unsupported=true with selected facts', {
+      factIds: ['membership.cost'],
+      unsupported: true,
+    }],
+    ['unsupported=false without selected facts', {
+      factIds: [],
+      unsupported: false,
+    }],
+  ])('rejects %s and preserves usage on the safe error', (_name, output) => {
+    const error = captureThrow(() => parseFactPlannerEnvelope(completedEnvelope([
+      JSON.stringify(output),
+    ], {
+      input_tokens: 17,
+      output_tokens: 5,
+      total_tokens: 22,
+    })));
+
+    expect(error).toBeInstanceOf(UnsafeModelOutputError);
+    expect(error).toMatchObject({
+      usage: { inputTokens: 17, outputTokens: 5, totalTokens: 22 },
+    });
+    expect(error.message).toBe('Unsafe model output');
+  });
+});
+
 describe('requestOpenAI', () => {
   const successfulResult: OpenAIResult = {
     output: {
@@ -983,6 +1158,141 @@ describe('requestOpenAI', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(receivedSignal?.aborted).toBe(false);
     await vi.advanceTimersByTimeAsync(19_999);
+    expect(receivedSignal?.aborted).toBe(false);
+    await vi.advanceTimersByTimeAsync(1);
+
+    await timeoutExpectation;
+    expect(receivedSignal?.aborted).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+});
+
+describe('requestOpenAIPlan', () => {
+  it('posts the narrow planner payload once and returns the validated plan', async () => {
+    vi.useFakeTimers();
+    const fetchMock = vi.fn(async (
+      _url: RequestInfo | URL,
+      _init?: RequestInit,
+    ) => jsonResponse(completedEnvelope([
+      JSON.stringify({ factIds: ['activity.schedule'], unsupported: false }),
+    ], {
+      input_tokens: 44,
+      output_tokens: 8,
+      total_tokens: 52,
+    })));
+
+    const result = await requestOpenAIPlan({
+      apiKey: 'sk-planner-test',
+      request,
+      model: 'gpt-5-nano',
+      fetchImpl: fetchMock as typeof fetch,
+    });
+
+    expect(result).toEqual({
+      output: { factIds: ['activity.schedule'], unsupported: false },
+      usage: { inputTokens: 44, outputTokens: 8, totalTokens: 52 },
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.openai.com/v1/responses',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer sk-planner-test',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(buildFactPlannerPayload(request, 'gpt-5-nano')),
+        signal: expect.any(AbortSignal),
+      },
+    );
+    const requestInit = fetchMock.mock.calls[0]?.[1] as RequestInit | undefined;
+    expect(requestInit?.signal?.aborted).toBe(false);
+    expect(requestInit?.body).not.toContain(request.sessionId);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it.each([401, 429, 500])(
+    'maps planner HTTP %i to one secret-free upstream error',
+    async (status) => {
+      const fetchMock = vi.fn(async () => jsonResponse({
+        error: { message: `Bearer sk-never-expose-${status}` },
+      }, status));
+
+      const error = await captureRejection(requestOpenAIPlan({
+        apiKey: 'sk-planner-test',
+        request,
+        model: 'gpt-5-nano',
+        fetchImpl: fetchMock as typeof fetch,
+      }));
+
+      expect(error).toBeInstanceOf(OpenAiUpstreamError);
+      expect(error).toMatchObject({ status });
+      expect(error.message).toBe('OpenAI upstream unavailable');
+      expect(error.message).not.toContain('sk-never-expose');
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it('maps a planner network rejection to one upstream error', async () => {
+    const fetchMock = vi.fn(async () => {
+      throw new TypeError('failed near Bearer sk-never-expose');
+    });
+
+    const error = await captureRejection(requestOpenAIPlan({
+      apiKey: 'sk-planner-test',
+      request,
+      model: 'gpt-5-nano',
+      fetchImpl: fetchMock as typeof fetch,
+    }));
+
+    expect(error).toBeInstanceOf(OpenAiUpstreamError);
+    expect(error.message).toBe('OpenAI upstream unavailable');
+    expect(error.message).not.toContain('sk-never-expose');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects malformed successful planner JSON as unsafe without retrying', async () => {
+    const fetchMock = vi.fn(async () => new Response('{', {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    }));
+
+    await expect(requestOpenAIPlan({
+      apiKey: 'sk-planner-test',
+      request,
+      model: 'gpt-5-nano',
+      fetchImpl: fetchMock as typeof fetch,
+    })).rejects.toBeInstanceOf(UnsafeModelOutputError);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('aborts the planner request at its timeout without retrying', async () => {
+    vi.useFakeTimers();
+    let receivedSignal: AbortSignal | undefined;
+    const fetchMock = vi.fn((_url: RequestInfo | URL, init?: RequestInit) => (
+      new Promise<Response>((_resolve, reject) => {
+        receivedSignal = init?.signal ?? undefined;
+        receivedSignal?.addEventListener('abort', () => {
+          reject(new DOMException('This operation was aborted', 'AbortError'));
+        }, { once: true });
+      })
+    ));
+
+    const pending = requestOpenAIPlan({
+      apiKey: 'sk-planner-test',
+      request,
+      model: 'gpt-5-nano',
+      fetchImpl: fetchMock as typeof fetch,
+      timeoutMs: 75,
+    });
+    const timeoutExpectation = expect(pending).rejects.toBeInstanceOf(
+      OpenAiTimeoutError,
+    );
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(receivedSignal?.aborted).toBe(false);
+    await vi.advanceTimersByTimeAsync(74);
     expect(receivedSignal?.aborted).toBe(false);
     await vi.advanceTimersByTimeAsync(1);
 
