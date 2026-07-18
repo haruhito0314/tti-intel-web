@@ -166,11 +166,22 @@ describe('planAssistantRequest identity', () => {
   it.each([
     '豊田工業大学ではなく他の大学のサークル一覧を教えて',
     '豊田工業大学以外の大学のサークルを知りたい',
+    '豊田工業大学ではなく東京大学のサークル一覧を教えて',
   ])('does not bind a rejected Toyota Tech target to another university club ask: %j', (message) => {
     const plan = planAssistantRequest(message, []);
 
     expect(plan.factIds).not.toContain('university.clubs-scope');
     expect(plan.confidence).toBe('low');
+  });
+
+  it.each([
+    '豊田工業大学の授業ではなくサークル一覧を教えて',
+    '豊田工業大学の授業以外の部活を教えて',
+  ])('keeps a topic correction within Toyota Tech university club scope: %j', (message) => {
+    const plan = planAssistantRequest(message, []);
+
+    expectExactMembers(plan.factIds, ['university.clubs-scope']);
+    expect(plan.confidence).toBe('high');
   });
 
   it('recognizes Toyota Tech students as university club scope', () => {
@@ -289,6 +300,13 @@ describe('planAssistantRequest negation', () => {
     expect(plan.factIds).toEqual([]);
     expect(plan.excludedFactIds).toContain('contact.form');
     expect(plan.confidence).toBe('low');
+  });
+
+  it('treats another-university participation cost as cost, not eligibility', () => {
+    const plan = planAssistantRequest('別大学の参加費を知りたい', []);
+
+    expectExactMembers(plan.factIds, ['membership.cost']);
+    expect(plan.factIds).not.toContain('membership.eligibility');
   });
 
   it('treats 以外 as an exclusion and keeps the requested alternative', () => {

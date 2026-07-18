@@ -130,6 +130,7 @@ function asksAboutUniversityClubs(
         const entityPrefix = value.slice(Math.max(0, entityIndex - 8), entityIndex);
         const genericUniversityInOtherUniversity = entity === '大学' && (
           /(?:他|他の|別|別の|以外の|ではない|じゃない)$/.test(entityPrefix)
+          || /\p{Script=Han}$/u.test(entityPrefix)
         );
         const gapStart = entityIndex + entity.length;
 
@@ -139,9 +140,11 @@ function asksAboutUniversityClubs(
             if (clubIndex === -1) continue;
 
             const gap = value.slice(gapStart, clubIndex);
+            const pointsToAnotherUniversity = /(?:ではなく|じゃなくて?|以外の).{0,12}(?:大学|豊工|tti)/.test(gap);
             if (
               gap.length <= 24
-              && !/所属|出身|正式名称|英語名|略称|場所|住所|所在地|アクセス|それから|加えて|および|ならびに|ではなく|じゃなく|以外/.test(gap)
+              && !pointsToAnotherUniversity
+              && !/所属|出身|正式名称|英語名|略称|場所|住所|所在地|アクセス|それから|加えて|および|ならびに/.test(gap)
             ) {
               return true;
             }
@@ -451,7 +454,7 @@ function detectMembershipAndActivityFacts(
     addFact(state, 'membership.beginner');
   }
   const anotherSchool = /他(?:の)?大学|他大|他校|別(?:の)?大学|学校が違/.test(value);
-  const eligibilityCue = /参加|入会|入部|入れる|対象|歓迎|大丈夫|(?:学生|生徒|人)(?:も|でも)/.test(value);
+  const eligibilityCue = /参加(?!費)|入会|入部|入れる|対象|歓迎|大丈夫|(?:学生|生徒|人)(?:も|でも)/.test(value);
   const participationEligibility = (anotherSchool && eligibilityCue)
     || /学部|学年|文系|理系|誰(?:が|でも)?参加/.test(value)
     || /学生だけ.{0,8}(?:参加|入れる|対象)|(?:参加|入れる|対象).{0,8}学生だけ/.test(value);
