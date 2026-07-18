@@ -120,6 +120,8 @@ describe('planAssistantRequest identity', () => {
     '豊工のクラブについて教えて',
     'TTIの部活は？',
     'T.T.I.の部活は？',
+    '豊田工業大学、サークルについて教えて',
+    'T.T.I.、部活は？',
     '大学のサークルに参加できますか',
   ])('routes university-wide club questions to the scope boundary: %j', (message) => {
     const plan = planAssistantRequest(message, []);
@@ -152,7 +154,7 @@ describe('planAssistantRequest identity', () => {
       [],
     );
 
-    expect(plan.factIds).not.toContain('university.clubs-scope');
+    expectExactMembers(plan.factIds, ['circle.identity']);
   });
 
   it.each([

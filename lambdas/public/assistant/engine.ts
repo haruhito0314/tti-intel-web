@@ -104,11 +104,35 @@ function splitAssistantTopics(message: string): string[] {
   const withProtectedTti = message
     .normalize('NFKC')
     .replace(/t\s*\.\s*t\s*\.\s*i\s*\.?/gi, 'TTI');
+  const strongTopics = withProtectedTti
+    .split(/(?:[。．.!！?？:：;；]+|それから|加えて|および|ならびに)/);
+  const topics: string[] = [];
 
-  return withProtectedTti
-    .split(/(?:[、,，。．.!！?？:：;；]+|それから|加えて|および|ならびに)/)
-    .map(normalizeAssistantQuery)
-    .filter(Boolean);
+  for (const strongTopic of strongTopics) {
+    const commaParts = strongTopic.split(/[、,，]+/);
+    let current = commaParts.shift() ?? '';
+
+    for (const next of commaParts) {
+      const currentValue = normalizeAssistantQuery(current);
+      const nextValue = normalizeAssistantQuery(next);
+      const separatesUniversityAspect = (
+        /正式名称|英語名|略称|場所|住所|所在地|アクセス/.test(currentValue)
+        && /サークル|部活|クラブ/.test(nextValue)
+      );
+
+      if (separatesUniversityAspect) {
+        if (currentValue) topics.push(currentValue);
+        current = next;
+      } else {
+        current += next;
+      }
+    }
+
+    const normalized = normalizeAssistantQuery(current);
+    if (normalized) topics.push(normalized);
+  }
+
+  return topics;
 }
 
 function detectIdentityEntities(value: string): {
@@ -358,14 +382,18 @@ function detectIdentityFacts(
   if (identityComparison) {
     addFact(state, 'identity.tti-difference');
   } else {
-    if ((circlePhrase || circleCorrection) && !bareTti && !universityNamed) {
+    if (circleCorrection) {
       addFact(state, 'circle.identity');
-    }
+    } else {
+      if (circlePhrase && !bareTti && !universityNamed) {
+        addFact(state, 'circle.identity');
+      }
 
-    if (bareTti) {
-      addFact(state, 'university.abbreviation');
-    } else if (universityNamed && asksForDefinition(value)) {
-      addFact(state, 'university.identity');
+      if (bareTti) {
+        addFact(state, 'university.abbreviation');
+      } else if (universityNamed && asksForDefinition(value)) {
+        addFact(state, 'university.identity');
+      }
     }
   }
 
