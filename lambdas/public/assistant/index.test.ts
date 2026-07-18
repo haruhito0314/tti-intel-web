@@ -350,6 +350,28 @@ describe('createAssistantHandler planning paths', () => {
     expectNoPlannerCalls(dependencies);
   });
 
+  it('answers other-university eligibility after quota without content, secret, or planner calls', async () => {
+    const dependencies = createDependencies();
+    const response = await invoke(dependencies, eventForRequest({
+      message: '他大学の学生でもサークルに参加できますか',
+      history: [],
+    }));
+
+    expect(response.statusCode).toBe(200);
+    expect(parsedBody(response)).toEqual({
+      answer: '学部や学年に制限はなく、他大学の学生も参加できます。',
+      links: [{
+        pageId: 'about',
+        title: 'サークルについて',
+        href: '/about',
+      }],
+    });
+    expect(dependencies.reserveQuota).toHaveBeenCalledTimes(1);
+    expect(dependencies.searchContent).not.toHaveBeenCalled();
+    expect(dependencies.getApiKey).not.toHaveBeenCalled();
+    expect(dependencies.requestOpenAIPlan).not.toHaveBeenCalled();
+  });
+
   it('handles small-talk deterministically without a model-generated answer', async () => {
     const dependencies = createDependencies();
     const response = await invoke(dependencies, eventForRequest({

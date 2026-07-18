@@ -148,11 +148,11 @@ describe('planAssistantRequest identity', () => {
     expectExactMembers(plan.factIds, ['circle.identity']);
   });
 
-  it('does not mistake an Intelligence correction for university-wide club scope', () => {
-    const plan = planAssistantRequest(
-      'TTIじゃなくてIntelligenceの方のサークルは？',
-      [],
-    );
+  it.each([
+    'TTIじゃなくてIntelligenceの方のサークルは？',
+    'TTIじゃなくてインテリジェンスの方のサークルは？',
+  ])('does not mistake an Intelligence correction for university-wide club scope: %j', (message) => {
+    const plan = planAssistantRequest(message, []);
 
     expectExactMembers(plan.factIds, ['circle.identity']);
   });
@@ -333,6 +333,7 @@ describe('planAssistantRequest aliases and multi-topic questions', () => {
   it.each([
     'TTIの正式名称と場所、それからサークルへの参加方法を教えて',
     'TTIの正式名称と場所、サークルへの参加方法を教えて',
+    'サークルへの参加方法と、TTIの正式名称と場所を教えて',
   ])('keeps university abbreviation, location, and joining as separate facts: %j', (message) => {
     const plan = planAssistantRequest(message, []);
 
@@ -343,6 +344,17 @@ describe('planAssistantRequest aliases and multi-topic questions', () => {
     ]);
     expectExactMembers(plan.pageIds, ['contact']);
     expect(plan.externalLinks).toContain('toyota-ti');
+  });
+
+  it('keeps other-university participation questions on membership eligibility', () => {
+    const plan = planAssistantRequest(
+      '他大学の学生でもサークルに参加できますか',
+      [],
+    );
+
+    expectExactMembers(plan.factIds, ['membership.eligibility']);
+    expect(plan.confidence).toBe('high');
+    expectExactMembers(plan.pageIds, ['about']);
   });
 
   it('keeps both membership cost facts instead of routing tool cost to Apps', () => {

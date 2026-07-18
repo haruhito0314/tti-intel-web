@@ -100,39 +100,41 @@ const UNIVERSITY_ALIASES = [
   'Toyota Technological Institute',
 ] as const;
 
-function splitAssistantTopics(message: string): string[] {
-  const withProtectedTti = message
-    .normalize('NFKC')
-    .replace(/t\s*\.\s*t\s*\.\s*i\s*\.?/gi, 'TTI');
-  const strongTopics = withProtectedTti
-    .split(/(?:[。．.!！?？:：;；]+|それから|加えて|および|ならびに)/);
-  const topics: string[] = [];
+const UNIVERSITY_CLUB_SCOPE_ENTITIES = [
+  ...UNIVERSITY_ALIASES.map(normalizeAssistantQuery),
+  '大学',
+  'tti',
+] as const;
 
-  for (const strongTopic of strongTopics) {
-    const commaParts = strongTopic.split(/[、,，]+/);
-    let current = commaParts.shift() ?? '';
+const UNIVERSITY_CLUB_SCOPE_WORDS = ['サークル', '部活', 'クラブ'] as const;
 
-    for (const next of commaParts) {
-      const currentValue = normalizeAssistantQuery(current);
-      const nextValue = normalizeAssistantQuery(next);
-      const separatesUniversityAspect = (
-        /正式名称|英語名|略称|場所|住所|所在地|アクセス/.test(currentValue)
-        && /サークル|部活|クラブ/.test(nextValue)
-      );
+function asksAboutUniversityClubs(value: string): boolean {
+  if (/他大学|他大|別の大学|他校/.test(value)) return false;
 
-      if (separatesUniversityAspect) {
-        if (currentValue) topics.push(currentValue);
-        current = next;
-      } else {
-        current += next;
+  for (const entity of UNIVERSITY_CLUB_SCOPE_ENTITIES) {
+    let entityIndex = value.indexOf(entity);
+
+    while (entityIndex !== -1) {
+      const gapStart = entityIndex + entity.length;
+
+      for (const clubWord of UNIVERSITY_CLUB_SCOPE_WORDS) {
+        const clubIndex = value.indexOf(clubWord, gapStart);
+        if (clubIndex === -1) continue;
+
+        const gap = value.slice(gapStart, clubIndex);
+        if (
+          gap.length <= 24
+          && !/学生|生徒|所属|出身|正式名称|英語名|略称|場所|住所|所在地|アクセス|それから|加えて|および|ならびに/.test(gap)
+        ) {
+          return true;
+        }
       }
-    }
 
-    const normalized = normalizeAssistantQuery(current);
-    if (normalized) topics.push(normalized);
+      entityIndex = value.indexOf(entity, entityIndex + entity.length);
+    }
   }
 
-  return topics;
+  return false;
 }
 
 function detectIdentityEntities(value: string): {
@@ -144,7 +146,7 @@ function detectIdentityEntities(value: string): {
   genericUniversityNamed: boolean;
 } {
   const circlePhrase = includesAny(value, CIRCLE_ALIASES);
-  const circleCorrection = /intelligence(?:の)?(?:ほう|方)/.test(value);
+  const circleCorrection = /(?:intelligence|インテリジェンス)(?:の)?(?:ほう|方)/.test(value);
   const circleNamed = circlePhrase || circleCorrection || /サークル|学生コミュニティ/.test(value);
   const withoutCirclePhrase = value
     .replaceAll('ttiintelligence', '')
@@ -339,7 +341,6 @@ function detectExclusions(value: string, state: MutablePlanState): void {
 
 function detectIdentityFacts(
   value: string,
-  topics: readonly string[],
   state: MutablePlanState,
 ): boolean {
   const {
@@ -357,18 +358,8 @@ function detectIdentityFacts(
     && (universityNamed || genericUniversityNamed || bareTti || ttiCount >= 2)
     && comparisonCue
   );
-  const universityClubScopeClause = topics.some((topic) => {
-    const topicEntities = detectIdentityEntities(topic);
-    const topicNamesUniversity = (
-      topicEntities.universityNamed
-      || topicEntities.genericUniversityNamed
-      || topicEntities.bareTti
-    );
-
-    return topicNamesUniversity && /サークル|部活|クラブ/.test(topic);
-  });
   const universityClubScope = (
-    universityClubScopeClause
+    asksAboutUniversityClubs(value)
     && !circlePhrase
     && !circleCorrection
     && !identityComparison
@@ -746,7 +737,6 @@ export function planAssistantRequest(
   history: readonly HistoryMessage[],
 ): AssistantQueryPlan {
   const value = normalizeAssistantQuery(message);
-  const topics = splitAssistantTopics(message);
   const state: MutablePlanState = {
     facts: [],
     excludedFacts: [],
@@ -770,7 +760,7 @@ export function planAssistantRequest(
     return finalizePlan(state, false);
   }
 
-  if (detectIdentityFacts(value, topics, state)) {
+  if (detectIdentityFacts(value, state)) {
     return finalizePlan(state, false);
   }
   detectMembershipAndActivityFacts(value, state);
