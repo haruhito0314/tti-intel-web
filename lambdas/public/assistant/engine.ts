@@ -287,13 +287,23 @@ function detectIdentityFacts(value: string, state: MutablePlanState): boolean {
     && (universityNamed || genericUniversityNamed || bareTti || ttiCount >= 2)
     && comparisonCue
   );
-  const circleParticipation = /サークル.{0,8}(?:参加|入会|入部)|(?:参加|入会|入部).{0,8}サークル/.test(value);
+  const universityClubScopeClause = value
+    .split(/それから|加えて|および|ならびに/)
+    .some((clause) => {
+      const clauseNamesUniversity = includesAny(clause, [
+        '豊田工業大学',
+        '豊田工大',
+        '豊工大',
+        '豊工',
+        'Toyota Technological Institute',
+      ]) || /大学(?:の|名の?)tti/.test(clause) || /大学|豊工/.test(clause) || clause.includes('tti');
+
+      return clauseNamesUniversity && /サークル|部活|クラブ/.test(clause);
+    });
   const universityClubScope = (
-    (universityNamed || genericUniversityNamed || bareTti)
-    && /サークル|部活|クラブ/.test(value)
+    universityClubScopeClause
     && !circlePhrase
     && !identityComparison
-    && !circleParticipation
   );
 
   if (universityClubScope) {

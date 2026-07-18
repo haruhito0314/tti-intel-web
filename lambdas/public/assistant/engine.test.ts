@@ -119,6 +119,7 @@ describe('planAssistantRequest identity', () => {
     '豊田工業大学にはどんなサークルがありますか',
     '豊工のクラブについて教えて',
     'TTIの部活は？',
+    '大学のサークルに参加できますか',
   ])('routes university-wide club questions to the scope boundary: %j', (message) => {
     const plan = planAssistantRequest(message, []);
     const response = answerFromPlan(plan);
