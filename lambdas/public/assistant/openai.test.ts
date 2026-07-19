@@ -325,11 +325,11 @@ describe('buildFactPlannerPayload', () => {
     };
 
     expect(payload).toMatchObject({
-      model: 'gpt-5.4-nano-2026-03-17',
+      model: 'gpt-5.6-luna',
       store: false,
       stream: false,
-      reasoning: { effort: 'medium' },
-      max_output_tokens: 512,
+      reasoning: { effort: 'low' },
+      max_output_tokens: 180,
       tools: [],
       instructions: FACT_PLANNER_INSTRUCTIONS,
       text: {

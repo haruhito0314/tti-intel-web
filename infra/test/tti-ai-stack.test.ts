@@ -133,7 +133,7 @@ describe('TtiAiStack site assistant infrastructure', () => {
                 Variables: Match.objectLike({
                     ASSISTANT_USAGE_TABLE: Match.anyValue(),
                     OPENAI_SECRET_ID: 'tti-ai/openai-api-key',
-                    ASSISTANT_MODEL: 'gpt-5.4-nano-2026-03-17',
+                    ASSISTANT_MODEL: 'gpt-5.6-luna',
                     ASSISTANT_DAILY_LIMIT: '200',
                     ASSISTANT_SESSION_LIMIT: '20',
                     ASSISTANT_SESSION_WINDOW_SECONDS: '600',
