@@ -8,5 +8,5 @@
     "noEmit": true,
     "types": ["node", "aws-lambda", "vitest/globals"]
   },
-  "include": ["public/assistant/**/*.ts", "vitest.config.ts"]
+  "include": ["public/assistant/**/*.ts", "eval/**/*.ts", "vitest.config.ts"]
 }

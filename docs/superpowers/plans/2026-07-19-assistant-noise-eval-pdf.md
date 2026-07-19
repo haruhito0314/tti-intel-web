@@ -29,7 +29,7 @@
 
 **Files:**
 - Create: `scripts/fixtures/assistant-noise-eval-100.json`
-- Create: `scripts/fixtures/assistant-noise-eval-dry-run.json`
+- Create: `lambdas/eval/fixtures/assistant-noise-eval-dry-run.json`
 - Create: `output/evals/assistant-noise-eval-2026-07-19/dataset.json`
 
 1. Audit all proposed cases before any engine or model execution: exactly 100 unique IDs, unique messages, expected distributions, valid history, and valid fact/mode/link labels.
@@ -41,9 +41,9 @@
 ## Task 3: Build the bounded evaluation runner with tests first
 
 **Files:**
-- Create: `scripts/assistant-local-noise-eval.ts`
-- Create: `scripts/assistant-local-noise-eval.test.ts`
-- Modify only if export access is required: `lambdas/public/assistant/openai.ts`
+- Create: `lambdas/eval/assistant-local-noise-eval.ts`
+- Create: `lambdas/eval/assistant-local-noise-eval.test.ts`
+- Modify: `lambdas/tsconfig.json`
 
 1. Write tests for dataset validation, unordered fact/link scoring, precision/recall/F1, grouped summaries, percentile calculation, safety guards, sanitized errors, price calculation, and manifest hash checks.
 2. Run the new tests and confirm they fail because the runner functions do not yet exist.
@@ -52,12 +52,12 @@
 5. Enforce model `gpt-5.4-nano-2026-03-17`, reasoning `medium`, concurrency 1 by default, maximum 100 cases/calls, zero retries, 20-second timeout, and `contentSearch: stub-empty`.
 6. Fetch `tti-ai/openai-api-key` only after all local validation passes and only when a real low-confidence call is required. Never serialize or log the key, authorization header, raw response body, or raw provider error.
 7. Write `results.json`, `results.csv`, `summary.json`, and `manifest.json` atomically without overwriting a non-empty run directory.
-8. Bundle with the repository esbuild and run unit tests, Lambda typecheck, and `git diff --check`.
+8. Bundle with the repository esbuild using the documented Node ESM `createRequire` banner, execute the bundled dry-run, and run unit tests, Lambda typecheck, and `git diff --check`.
 
 ## Task 4: Prove the no-network dry-run path
 
 **Files:**
-- Verify: `scripts/fixtures/assistant-noise-eval-dry-run.json`
+- Verify: `lambdas/eval/fixtures/assistant-noise-eval-dry-run.json`
 - Output only to: `/tmp/assistant-noise-eval-dry-run-*`
 
 1. Inject completed OpenAI response fixtures for one deterministic, one planner, malformed-output, and unsafe-output scenario.

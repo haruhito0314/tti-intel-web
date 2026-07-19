@@ -36,7 +36,7 @@ Each case contains a unique ID, category, noise level, ask count, message, optio
 
 ## Runner and Security
 
-Add a standalone TypeScript runner under `scripts/`. Bundle it to `/tmp` with the repository's existing `esbuild`; do not add a runtime dependency.
+Add a standalone TypeScript runner under `lambdas/eval/`, beside the production Assistant imports it exercises. Bundle it to `/tmp` with the repository's existing `esbuild` and documented Node ESM `createRequire` banner; do not add a runtime dependency.
 
 Before any external call, validate the complete dataset and run a no-network fixture. The paid run is bounded to 100 cases, concurrency 1 by default, and zero retries per case. High-confidence and explicit unsupported cases do not call OpenAI.
 

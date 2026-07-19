@@ -1,0 +1,145 @@
+{
+  "metadata": {
+    "count": 4,
+    "blind": false,
+    "baseFamily": "dry-run",
+    "purpose": "No-network high, planner, malformed, and unsafe-output verification"
+  },
+  "cases": [
+    {
+      "id": "D001",
+      "category": "dry-run/high",
+      "noiseLevel": "clean",
+      "askCount": 1,
+      "message": "参加費はかかりますか？",
+      "currentPath": "/",
+      "history": [],
+      "expectedFactIds": ["membership.cost"],
+      "expectedMode": "answer",
+      "expectedLinks": ["/about"],
+      "expectedUnsupported": false
+    },
+    {
+      "id": "D002",
+      "category": "dry-run/planner",
+      "noiseLevel": "medium",
+      "askCount": 2,
+      "message": "会費と活動日はいつですか？",
+      "currentPath": "/",
+      "history": [],
+      "expectedFactIds": ["membership.cost", "activity.schedule"],
+      "expectedMode": "answer",
+      "expectedLinks": ["/about"],
+      "expectedUnsupported": false
+    },
+    {
+      "id": "D003",
+      "category": "dry-run/malformed",
+      "noiseLevel": "medium",
+      "askCount": 2,
+      "message": "活動日と参加費をまとめて教えて",
+      "currentPath": "/",
+      "history": [],
+      "expectedFactIds": ["activity.schedule", "membership.cost"],
+      "expectedMode": "answer",
+      "expectedLinks": ["/about"],
+      "expectedUnsupported": false,
+      "expectedErrorCode": "unsafe_model_output"
+    },
+    {
+      "id": "D004",
+      "category": "dry-run/unsafe",
+      "noiseLevel": "heavy",
+      "askCount": 2,
+      "message": "活動場所と見学について教えて",
+      "currentPath": "/",
+      "history": [],
+      "expectedFactIds": ["activity.location", "membership.visit"],
+      "expectedMode": "answer",
+      "expectedLinks": ["/contact", "/about"],
+      "expectedUnsupported": false,
+      "expectedErrorCode": "unsafe_model_output"
+    }
+  ],
+  "responses": [
+    {
+      "caseId": "D002",
+      "kind": "envelope",
+      "envelope": {
+        "id": "resp_dry_valid",
+        "status": "completed",
+        "model": "gpt-5.4-nano-2026-03-17",
+        "output": [
+          {
+            "type": "message",
+            "status": "completed",
+            "content": [
+              {
+                "type": "output_text",
+                "text": "{\"factIds\":[\"membership.cost\",\"activity.schedule\"],\"unsupported\":false}"
+              }
+            ]
+          }
+        ],
+        "usage": {
+          "input_tokens": 100,
+          "input_tokens_details": { "cached_tokens": 40 },
+          "output_tokens": 20,
+          "output_tokens_details": { "reasoning_tokens": 12 },
+          "total_tokens": 120
+        }
+      }
+    },
+    {
+      "caseId": "D003",
+      "kind": "envelope",
+      "envelope": {
+        "id": "resp_dry_malformed",
+        "status": "completed",
+        "model": "gpt-5.4-nano-2026-03-17",
+        "output": [
+          {
+            "type": "message",
+            "status": "completed",
+            "content": []
+          }
+        ],
+        "usage": {
+          "input_tokens": 95,
+          "input_tokens_details": { "cached_tokens": 0 },
+          "output_tokens": 4,
+          "output_tokens_details": { "reasoning_tokens": 2 },
+          "total_tokens": 99
+        }
+      }
+    },
+    {
+      "caseId": "D004",
+      "kind": "envelope",
+      "envelope": {
+        "id": "resp_dry_unsafe",
+        "status": "completed",
+        "model": "gpt-5.4-nano-2026-03-17",
+        "output": [
+          {
+            "type": "message",
+            "status": "completed",
+            "content": [
+              {
+                "type": "output_text",
+                "text": "{\"factIds\":[\"unknown.fact\"],\"unsupported\":false}"
+              }
+            ]
+          }
+        ],
+        "usage": {
+          "input_tokens": 90,
+          "input_tokens_details": { "cached_tokens": 0 },
+          "output_tokens": 8,
+          "output_tokens_details": { "reasoning_tokens": 5 },
+          "total_tokens": 98
+        }
+      }
+    }
+  ]
+}
