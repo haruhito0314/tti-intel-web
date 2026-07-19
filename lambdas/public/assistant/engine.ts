@@ -34,6 +34,7 @@ export interface AssistantQueryPlan {
   confidence: AssistantPlanConfidence;
   requiresHistory: boolean;
   factIds: AssistantFactId[];
+  requiredFactIds: AssistantFactId[];
   excludedFactIds: AssistantFactId[];
   pageIds: PageId[];
   excludedPageIds: PageId[];
@@ -44,6 +45,7 @@ export interface AssistantQueryPlan {
 
 interface MutablePlanState {
   facts: AssistantFactId[];
+  requiredFacts: AssistantFactId[];
   excludedFacts: AssistantFactId[];
   excludedPages: PageId[];
   excludedExternal: ExternalLinkId[];
@@ -103,6 +105,11 @@ const CIRCLE_ALIASES = [
   'TTIインテリジェンス',
 ] as const;
 
+const CIRCLE_CORRECTION_ALIASES = [
+  'Intelligenceの方',
+  'インテリジェンスの方',
+] as const;
+
 const UNIVERSITY_ALIASES = [
   '豊田工業大学',
   '豊田工大',
@@ -111,52 +118,307 @@ const UNIVERSITY_ALIASES = [
   'Toyota Technological Institute',
 ] as const;
 
-const UNIVERSITY_CLUB_SCOPE_ENTITIES = [
-  ...UNIVERSITY_ALIASES.map(normalizeAssistantQuery),
-  '大学',
-  'tti',
+const UNIVERSITY_CLUB_SCOPE_WORDS = [
+  'サークル',
+  '部活',
+  'クラブ',
+  '同好会',
+  '学生団体',
+  '運動部',
+  '文化部',
+  '部活動',
 ] as const;
 
-const UNIVERSITY_CLUB_SCOPE_WORDS = ['サークル', '部活', 'クラブ'] as const;
+type UniversityClubTargetKind = 'toyota' | 'generic' | 'other';
+type UniversityClubRelationKind = UniversityClubTargetKind | 'rejected';
+
+interface UniversityClubTarget {
+  start: number;
+  end: number;
+  kind: UniversityClubTargetKind;
+}
+
+const GENERIC_UNIVERSITY_MODIFIERS = [
+  '所属',
+  '所属先の',
+  '在籍',
+  '在学',
+  '在籍中の',
+  'この',
+  'その',
+  'あの',
+  'ここの',
+  'そこの',
+  '自分の',
+  '私の',
+  'わたしの',
+  '私たちの',
+  'わたしたちの',
+  '我々の',
+  'うちの',
+] as const;
+
+const COMPACT_UNIVERSITY_NAME_CHARACTER = /[\p{Script=Han}\p{Script=Katakana}A-Za-z0-9]/u;
+
+function classifyGenericUniversityTarget(
+  value: string,
+  universityIndex: number,
+): UniversityClubTargetKind {
+  const fullPrefix = value.slice(0, universityIndex);
+  const prefix = value.slice(Math.max(0, universityIndex - 12), universityIndex);
+
+  if (/(?:他(?:の)?|別(?:の)?|以外の?|ではない|じゃない|じゃなくて?|ではなく)$/.test(prefix)) {
+    return 'other';
+  }
+
+  if (/(?:ttiintelligence|ttiインテリジェンス).{0,24}(?:ではなく|ではない|じゃなくて?|じゃない|以外|除く|除いて|除外(?:して)?|抜き|なし|いらない|要らない|不要)(?:で|ので|として)?[、,]?$/.test(fullPrefix)) {
+    return 'generic';
+  }
+
+  if (GENERIC_UNIVERSITY_MODIFIERS.some((modifier) => prefix.endsWith(modifier))) {
+    return 'generic';
+  }
+
+  if (/[本当]$/.test(prefix)) {
+    const preceding = prefix.at(-2);
+    if (preceding === undefined || !COMPACT_UNIVERSITY_NAME_CHARACTER.test(preceding)) {
+      return 'generic';
+    }
+  }
+
+  return universityIndex === 0 ? 'generic' : 'other';
+}
+
+const DEICTIC_ORGANIZATION_REFERENCES = new Set([
+  'ここ', 'そこ', 'あそこ', 'こちら', 'そちら', 'あちら',
+  'うち', '私', 'わたし', '我々', '自分',
+]);
+
+const DESCRIPTIVE_ORGANIZATION_REFERENCES = new Set([
+  'ai', '学生', '大学生', '開発', 'ゲーム', 'プログラミング', '技術', '数学',
+]);
+
+const DIRECT_UNIVERSITY_REFERENCES = new Set([
+  '早稲田', '慶應', '上智', '明治', '法政', '立教', '同志社', '立命館',
+  'mit', 'icu', 'sfc', 'ucla', 'nyu', 'utokyo', 'harvard', 'oxford', 'cambridge',
+  'ハーバード', 'オックスフォード', 'ケンブリッジ',
+]);
+
+function isDescriptiveOrganizationReference(value: string): boolean {
+  return (
+    DESCRIPTIVE_ORGANIZATION_REFERENCES.has(value)
+    || /^(?:この|その|あの)?(?:ai|学生|大学生|開発|ゲーム|プログラミング|技術|数学)$/.test(value)
+  );
+}
+
+function isDirectUniversityReference(value: string): boolean {
+  return /\p{Script=Han}{1,8}大$/u.test(value)
+    || DIRECT_UNIVERSITY_REFERENCES.has(value);
+}
+
+function findUniversityClubTargets(
+  value: string,
+  clubIndex: number,
+): UniversityClubTarget[] {
+  const targets: UniversityClubTarget[] = [];
+
+  for (const alias of [...UNIVERSITY_ALIASES.map(normalizeAssistantQuery), 'tti']) {
+    let start = value.indexOf(alias);
+    while (start !== -1 && start < clubIndex) {
+      const end = start + alias.length;
+      const ttiInsideCircleName = (
+        alias === 'tti'
+        && (
+          value.startsWith('ttiintelligence', start)
+          || value.startsWith('ttiインテリジェンス', start)
+        )
+      );
+      if (end <= clubIndex && !ttiInsideCircleName) {
+        targets.push({ start, end, kind: 'toyota' });
+      }
+      start = value.indexOf(alias, start + alias.length);
+    }
+  }
+
+  let universityIndex = value.indexOf('大学');
+  while (universityIndex !== -1 && universityIndex < clubIndex) {
+    const end = universityIndex + '大学'.length;
+    if (value.at(end) !== '生') {
+      targets.push({
+        start: universityIndex,
+        end,
+        kind: classifyGenericUniversityTarget(value, universityIndex),
+      });
+    }
+    universityIndex = value.indexOf('大学', end);
+  }
+
+  if (targets.length === 0) {
+    const prefix = value.slice(0, clubIndex);
+    const possessiveCandidate = prefix.match(/([\p{L}\p{N}]{2,12})の$/u)?.[1];
+    const directCandidate = prefix.match(/([\p{Script=Han}\p{Script=Katakana}]{2,12}|[a-z0-9]{2,12})$/u)?.[1];
+    const possessiveOrganization = (
+      possessiveCandidate
+      && !DEICTIC_ORGANIZATION_REFERENCES.has(possessiveCandidate)
+      && !isDescriptiveOrganizationReference(possessiveCandidate)
+    ) ? possessiveCandidate : undefined;
+    const directOrganization = (
+      directCandidate && isDirectUniversityReference(directCandidate)
+    ) ? directCandidate : undefined;
+    const namedOrganization = possessiveOrganization ?? directOrganization;
+    const circleNamed = CIRCLE_ALIASES.some((alias) => (
+      prefix.endsWith(normalizeAssistantQuery(alias))
+      || prefix.endsWith(`${normalizeAssistantQuery(alias)}の`)
+    ));
+    if (
+      namedOrganization
+      && !circleNamed
+    ) {
+      const end = possessiveOrganization === undefined ? clubIndex : clubIndex - 1;
+      targets.push({
+        start: Math.max(0, end - namedOrganization.length),
+        end,
+        kind: 'other',
+      });
+    }
+  }
+
+  const sorted = targets.sort((left, right) => (
+    right.end - left.end
+    || (right.kind === 'toyota' ? 1 : 0) - (left.kind === 'toyota' ? 1 : 0)
+    || right.start - left.start
+  ));
+  const toyotaEnds = new Set(
+    sorted.filter(({ kind }) => kind === 'toyota').map(({ end }) => end),
+  );
+  return sorted.filter(({ kind, end }) => kind === 'toyota' || !toyotaEnds.has(end));
+}
+
+function postposedUniversityClubTargetKinds(
+  value: string,
+  organizationEnd: number,
+): Set<UniversityClubTargetKind> {
+  const kinds = new Set<UniversityClubTargetKind>();
+  const conditionFollows = (end: number): boolean => (
+    /^(?:の)?(?:場合|ならば?|だと|では)/.test(value.slice(end))
+  );
+  const normalizedAliases = [...UNIVERSITY_ALIASES.map(normalizeAssistantQuery), 'tti'];
+
+  for (const alias of normalizedAliases) {
+    let start = value.indexOf(alias, organizationEnd);
+    while (start !== -1) {
+      const end = start + alias.length;
+      const ttiInsideCircleName = (
+        alias === 'tti'
+        && (
+          value.startsWith('ttiintelligence', start)
+          || value.startsWith('ttiインテリジェンス', start)
+        )
+      );
+      if (!ttiInsideCircleName && conditionFollows(end)) kinds.add('toyota');
+      start = value.indexOf(alias, start + alias.length);
+    }
+  }
+
+  let universityIndex = value.indexOf('大学', organizationEnd);
+  while (universityIndex !== -1) {
+    const end = universityIndex + '大学'.length;
+    const coveredByToyotaAlias = normalizedAliases.some((alias) => {
+      if (alias === 'tti') return false;
+      const start = value.lastIndexOf(alias, universityIndex);
+      return start !== -1 && start + alias.length === end;
+    });
+    if (
+      value.at(end) !== '生'
+      && conditionFollows(end)
+      && !coveredByToyotaAlias
+    ) {
+      kinds.add(classifyGenericUniversityTarget(value, universityIndex));
+    }
+    universityIndex = value.indexOf('大学', end);
+  }
+
+  for (const reference of DIRECT_UNIVERSITY_REFERENCES) {
+    let start = value.indexOf(reference, organizationEnd);
+    while (start !== -1) {
+      if (conditionFollows(start + reference.length)) kinds.add('other');
+      start = value.indexOf(reference, start + reference.length);
+    }
+  }
+  const suffix = value.slice(organizationEnd);
+  for (const match of suffix.matchAll(/(\p{Script=Han}{1,8}大)(?=の場合|ならば?|だと|では)/gu)) {
+    if (isDirectUniversityReference(match[1])) kinds.add('other');
+  }
+
+  return kinds;
+}
+
+function universityClubTargetKinds(value: string): Set<UniversityClubRelationKind> {
+  const kinds = new Set<UniversityClubRelationKind>();
+  for (const clubWord of UNIVERSITY_CLUB_SCOPE_WORDS) {
+    let clubIndex = value.indexOf(clubWord);
+
+    while (clubIndex !== -1) {
+      const targets = findUniversityClubTargets(value, clubIndex);
+      for (const target of targets) {
+        const gap = value.slice(target.end, clubIndex);
+        const clubSuffix = value.slice(clubIndex + clubWord.length);
+        const rejectsTarget = /^(?:(?:の)?(?:ではない|じゃない|じゃなくて?|ではなく|以外(?:の|で)?)|(?:の)?(?:に)?所属(?:していない|していません|してない|してません|しない|ではない|じゃない|じゃなくて?|ではなく)|を(?:除く|除いて|除外(?:して)?))/.test(gap);
+        const rejectsClub = /^(?:(?:について(?:の話)?|の話|のこと|は|を)?(?:ではない|じゃない|じゃなくて?|ではなく|以外(?:の|で)?)|(?:は|を)?(?:除く|除いて|除外(?:して)?))/.test(clubSuffix);
+        const crossesEarlierClub = UNIVERSITY_CLUB_SCOPE_WORDS.some((word) => (
+          gap.includes(word)
+        ));
+        const targetContext = value.slice(Math.max(0, target.start - 4), target.end);
+        const genericOtherOrigin = /(?:他(?:の)?|別(?:の)?)大学|他大|他校/.test(targetContext);
+        const explicitCircleDestination = (
+          /この(?:サークル|部活|クラブ)/.test(value)
+          || includesAny(value, CIRCLE_ALIASES)
+        );
+        const studentModifiesOrganization = /学生(?:向け)?$/.test(gap);
+        const participationIntentValue = value.replace(
+          /(?:参加|入会|入部)(?:費|料金|料|代|金)/g,
+          '',
+        );
+        const participantOrigin = (
+          target.kind === 'other'
+          && /学生|生徒|人|から/.test(gap)
+          && !studentModifiesOrganization
+          && /参加|入(?:れる|れます|部|会)|歓迎|対象|可能|大丈夫|ok/.test(participationIntentValue)
+          && (genericOtherOrigin || explicitCircleDestination)
+        );
+        if (crossesEarlierClub) continue;
+        if (rejectsTarget || rejectsClub) {
+          kinds.add('rejected');
+          continue;
+        }
+        if (
+          !participantOrigin
+          && !/出身|正式名称|英語名|略称|場所|住所|所在地|アクセス|それから|加えて|および|ならびに/.test(gap)
+        ) {
+          kinds.add(target.kind);
+        }
+      }
+
+      for (const kind of postposedUniversityClubTargetKinds(
+        value,
+        clubIndex + clubWord.length,
+      )) {
+        kinds.add(kind);
+      }
+
+      clubIndex = value.indexOf(clubWord, clubIndex + clubWord.length);
+    }
+  }
+  return kinds;
+}
 
 function asksAboutUniversityClubs(
   normalizedClauses: readonly string[],
 ): boolean {
-  for (const value of normalizedClauses) {
-    for (const entity of UNIVERSITY_CLUB_SCOPE_ENTITIES) {
-      let entityIndex = value.indexOf(entity);
-
-      while (entityIndex !== -1) {
-        const entityPrefix = value.slice(Math.max(0, entityIndex - 8), entityIndex);
-        const genericUniversityInOtherUniversity = entity === '大学' && (
-          /(?:他|他の|別|別の|以外の|ではない|じゃない)$/.test(entityPrefix)
-          || /\p{Script=Han}$/u.test(entityPrefix)
-        );
-        const gapStart = entityIndex + entity.length;
-
-        if (!genericUniversityInOtherUniversity) {
-          for (const clubWord of UNIVERSITY_CLUB_SCOPE_WORDS) {
-            const clubIndex = value.indexOf(clubWord, gapStart);
-            if (clubIndex === -1) continue;
-
-            const gap = value.slice(gapStart, clubIndex);
-            const pointsToAnotherUniversity = /(?:ではなく|じゃなくて?|以外の).{0,12}(?:大学|豊工|tti)/.test(gap);
-            if (
-              gap.length <= 24
-              && !pointsToAnotherUniversity
-              && !/所属|出身|正式名称|英語名|略称|場所|住所|所在地|アクセス|それから|加えて|および|ならびに/.test(gap)
-            ) {
-              return true;
-            }
-          }
-        }
-
-        entityIndex = value.indexOf(entity, entityIndex + entity.length);
-      }
-    }
-  }
-
-  return false;
+  return normalizedClauses.some((value) => {
+    const kinds = universityClubTargetKinds(value);
+    return kinds.has('toyota') || kinds.has('generic');
+  });
 }
 
 function detectIdentityEntities(value: string): {
@@ -187,6 +449,30 @@ function detectIdentityEntities(value: string): {
   };
 }
 
+function rejectsCirclePhrase(value: string): boolean {
+  return /(?:ttiintelligence|ttiインテリジェンス).{0,16}(?:ではなく|ではない|じゃなくて?|じゃない|以外|除く|除いて|除外(?:して)?|抜き|なし|いらない|要らない|不要)/.test(value);
+}
+
+function isUniversityClubScopeClause(value: string): boolean {
+  const {
+    circlePhrase,
+    circleCorrection,
+    bareTti,
+    universityNamed,
+    genericUniversityNamed,
+  } = detectIdentityEntities(value);
+  const identityComparison = (
+    (circlePhrase || circleCorrection)
+    && (universityNamed || genericUniversityNamed || bareTti || countOccurrences(value, 'tti') >= 2)
+    && /違|同じ|関係|比較|区別|別名|そのもの/.test(value)
+  );
+
+  return (
+    asksAboutUniversityClubs([value])
+    && !identityComparison
+  );
+}
+
 function addUnique<T>(target: T[], value: T): void {
   if (!target.includes(value)) target.push(value);
 }
@@ -195,12 +481,37 @@ function addFact(state: MutablePlanState, factId: AssistantFactId): void {
   addUnique(state.facts, factId);
 }
 
+function addRequiredFact(state: MutablePlanState, factId: AssistantFactId): void {
+  addFact(state, factId);
+  addUnique(state.requiredFacts, factId);
+}
+
 function excludeFact(state: MutablePlanState, factId: AssistantFactId): void {
   addUnique(state.excludedFacts, factId);
 }
 
 function excludePage(state: MutablePlanState, pageId: PageId): void {
   addUnique(state.excludedPages, pageId);
+}
+
+function isCircleSpecificFact(factId: AssistantFactId): boolean {
+  return (
+    factId === 'circle.identity'
+    || factId === 'identity.tti-difference'
+    || factId === 'game.beginner'
+    || /^(?:activity|membership|contact|video)\./.test(factId)
+  );
+}
+
+function excludeCircleSpecificFacts(
+  state: MutablePlanState,
+  allowedFacts: ReadonlySet<AssistantFactId> = new Set(),
+): void {
+  for (const factId of Object.keys(ASSISTANT_FACTS) as AssistantFactId[]) {
+    if (isCircleSpecificFact(factId) && !allowedFacts.has(factId)) {
+      excludeFact(state, factId);
+    }
+  }
 }
 
 function excludeExternal(
@@ -363,13 +674,11 @@ function detectExclusions(value: string, state: MutablePlanState): void {
 
 function detectIdentityFacts(
   value: string,
-  normalizedClauses: readonly string[],
   state: MutablePlanState,
-): boolean {
+): void {
   const {
     circlePhrase,
     circleCorrection,
-    circleNamed,
     bareTti,
     universityNamed,
     genericUniversityNamed,
@@ -377,22 +686,10 @@ function detectIdentityFacts(
   const comparisonCue = /違|同じ|関係|比較|区別|別名|そのもの/.test(value);
   const ttiCount = countOccurrences(value, 'tti');
   const identityComparison = (
-    circleNamed
+    (circlePhrase || circleCorrection)
     && (universityNamed || genericUniversityNamed || bareTti || ttiCount >= 2)
     && comparisonCue
   );
-  const universityClubScope = (
-    asksAboutUniversityClubs(normalizedClauses)
-    && !circlePhrase
-    && !circleCorrection
-    && !identityComparison
-  );
-
-  if (universityClubScope) {
-    state.facts = ['university.clubs-scope'];
-    return true;
-  }
-
   if (identityComparison) {
     addFact(state, 'identity.tti-difference');
   } else {
@@ -422,8 +719,6 @@ function detectIdentityFacts(
       addFact(state, 'activity.location');
     }
   }
-
-  return false;
 }
 
 function detectMembershipAndActivityFacts(
@@ -432,7 +727,7 @@ function detectMembershipAndActivityFacts(
 ): void {
   const toolCost = /(?:ai)?ツール(?:の)?(?:代|料金|費用|月額)|サブスク(?:の)?(?:代|料金|費用|月額)|(?:aiサービス|生成ai).{0,8}(?:代|料金|費用|月額|自己負担|自分持ち)|ツール.*(?:各自負担|自己負担|自分持ち)/.test(value);
   const membershipContext = /サークル|参加|入会|入部|活動日|初心者|未経験/.test(value);
-  const membershipCost = /会費|参加費|入会費|入会.{0,8}(?:料金|無料|お金|費用)|参加.{0,8}(?:料金|無料|お金|費用)|サークル.{0,8}(?:料金|無料|お金|費用)|入る.{0,8}(?:料金|無料|お金|費用)|お金.{0,8}(?:必要|かかる)/.test(value)
+  const membershipCost = /会費|(?:参加|入会|入部)(?:費|料金|料|代|金)|(?:参加|入会|入部).{0,10}(?:料金|無料|有料|お金|費用|いくら|金額)|サークル.{0,8}(?:料金|無料|お金|費用)|入る.{0,8}(?:料金|無料|お金|費用)|お金.{0,8}(?:必要|かかる)/.test(value)
     || (membershipContext && !toolCost && /(?:費用|料金)(?:は|が|も|って|について|いくら|かかる|必要)/.test(value));
 
   if (membershipCost) addFact(state, 'membership.cost');
@@ -454,9 +749,15 @@ function detectMembershipAndActivityFacts(
     addFact(state, 'membership.beginner');
   }
   const anotherSchool = /他(?:の)?大学|他大|他校|別(?:の)?大学|学校が違/.test(value);
-  const eligibilityCue = /参加(?!費)|入会|入部|入れる|対象|歓迎|大丈夫|(?:学生|生徒|人)(?:も|でも)/.test(value);
+  const participationPriceContext = /(?:参加|入会|入部).{0,10}(?:費|料金|料|代|金|無料|有料|費用|お金|いくら|金額)/.test(value);
+  const explicitParticipationEligibility = /(?:参加|入会|入部)(?:でき|可能|しても|したい|希望|条件|ok)|参加条件/.test(value);
+  const explicitEligibilityCue = explicitParticipationEligibility
+    || /入れる|対象|歓迎|大丈夫|(?:学生|生徒|人)(?:も|でも)/.test(value);
+  const eligibilityCue = explicitEligibilityCue
+    || (!participationPriceContext && /参加|入会|入部/.test(value));
   const participationEligibility = (anotherSchool && eligibilityCue)
     || /学部|学年|文系|理系|誰(?:が|でも)?参加/.test(value)
+    || /大学生(?:も|でも).{0,12}(?:参加|入れる|可能)|(?:参加|入れる).{0,12}大学生(?:も|でも)/.test(value)
     || /学生だけ.{0,8}(?:参加|入れる|対象)|(?:参加|入れる|対象).{0,8}学生だけ/.test(value);
   if (participationEligibility) {
     addFact(state, 'membership.eligibility');
@@ -514,7 +815,7 @@ function detectContactAndSocialFacts(value: string, state: MutablePlanState): vo
     addFact(state, 'contact.other-social');
   }
 
-  const contactAsked = /お問い合わせ|お問合せ|問い合わせ|問合せ|問い合わせフォーム|連絡フォーム|連絡先|連絡方法|メール|(?:^|連絡|問い合わせ)フォーム|フォーム.{0,8}(?:連絡|問い合わせ|送信)|参加(?:の)?(?:方法|手順)|参加希望|入りたい|入り方|入会(?:方法|手順)|どうやって入(?:る|会)|入部|加入|提携|協業|コラボ|取材|スポンサー/.test(value);
+  const contactAsked = /お問い合わせ|お問合せ|問い合わせ|問合せ|問い合わせフォーム|連絡フォーム|連絡先|連絡方法|メール|(?:^|連絡|問い合わせ)フォーム|フォーム.{0,8}(?:連絡|問い合わせ|送信)|参加(?:の)?(?:方法|手順)|参加希望|入りたい|入り方|入会(?:方法|手順)|どうやって入(?:る|会)|入部(?:したい|希望|方法|手順|でき|するには)|加入|提携|協業|コラボ|取材|スポンサー/.test(value);
   const pureContactPageNavigation = /(?:お問い合わせ|お問合せ|問い合わせ|問合せ|連絡用?)(?:の)?ページ/.test(value)
     && asksForNavigation(value)
     && !/フォーム|メール|参加|入会|入部|加入|相談|提携|協業|コラボ|取材|スポンサー/.test(value);
@@ -681,6 +982,89 @@ function inferEllipticalFollowUp(
   }
 }
 
+function boundedExplicitCircleSegment(
+  clause: string,
+  start: number,
+  aliasLength: number,
+): string {
+  const candidate = clause.slice(start);
+  let boundary = candidate.length;
+
+  for (const clubWord of UNIVERSITY_CLUB_SCOPE_WORDS) {
+    let clubIndex = candidate.indexOf(clubWord, aliasLength);
+    while (clubIndex !== -1) {
+      for (const target of findUniversityClubTargets(candidate, clubIndex)) {
+        if (target.start < aliasLength) continue;
+        const beforeTarget = candidate.slice(aliasLength, target.start);
+        const connectorIndex = Math.max(
+          beforeTarget.lastIndexOf('それと'),
+          beforeTarget.lastIndexOf('また'),
+          beforeTarget.lastIndexOf('加えて'),
+          beforeTarget.lastIndexOf('および'),
+          beforeTarget.lastIndexOf('ならびに'),
+          beforeTarget.lastIndexOf('と'),
+        );
+        boundary = Math.min(
+          boundary,
+          connectorIndex === -1 ? target.start : aliasLength + connectorIndex,
+        );
+      }
+      clubIndex = candidate.indexOf(clubWord, clubIndex + clubWord.length);
+    }
+  }
+
+  return candidate.slice(0, boundary);
+}
+
+function explicitCircleFactIds(
+  normalizedClauses: readonly string[],
+): Set<AssistantFactId> {
+  const facts = new Set<AssistantFactId>();
+  const normalizedAliases = [
+    ...CIRCLE_ALIASES,
+    ...CIRCLE_CORRECTION_ALIASES,
+  ].map(normalizeAssistantQuery);
+
+  for (const clause of normalizedClauses) {
+    for (const alias of normalizedAliases) {
+      let start = clause.indexOf(alias);
+      while (start !== -1) {
+        const segment = boundedExplicitCircleSegment(clause, start, alias.length);
+        if (!rejectsCirclePhrase(segment)) {
+          const probe: MutablePlanState = {
+            facts: [],
+            requiredFacts: [],
+            excludedFacts: [],
+            excludedPages: [],
+            excludedExternal: [],
+            navigationRequested: false,
+            linksRejected: false,
+            forcePlanner: false,
+            historyDependent: false,
+          };
+          detectIdentityFacts(segment, probe);
+          detectMembershipAndActivityFacts(segment, probe);
+          detectContactAndSocialFacts(segment, probe);
+          detectVideoAndMathFacts(segment, probe);
+          for (const factId of probe.facts) {
+            if (!isCircleSpecificFact(factId)) continue;
+            if (
+              factId === 'circle.identity'
+              && !asksForDefinition(segment)
+              && !/について/.test(segment)
+              && !detectIdentityEntities(segment).circleCorrection
+            ) continue;
+            facts.add(factId);
+          }
+        }
+        start = clause.indexOf(alias, start + alias.length);
+      }
+    }
+  }
+
+  return facts;
+}
+
 function finalizePlan(
   state: MutablePlanState,
   explicitOutOfScope: boolean,
@@ -744,6 +1128,7 @@ function finalizePlan(
       : explicitOutOfScope ? 'none' : 'low',
     requiresHistory: state.historyDependent,
     factIds: validFacts,
+    requiredFactIds: state.requiredFacts.filter((factId) => validFacts.includes(factId)),
     excludedFactIds: [...state.excludedFacts],
     pageIds,
     excludedPageIds: [...state.excludedPages],
@@ -766,6 +1151,7 @@ export function planAssistantRequest(
   const normalizedClauses = normalizeAssistantQueryClauses(message);
   const state: MutablePlanState = {
     facts: [],
+    requiredFacts: [],
     excludedFacts: [],
     excludedPages: [],
     excludedExternal: [],
@@ -787,13 +1173,51 @@ export function planAssistantRequest(
     return finalizePlan(state, false);
   }
 
-  if (detectIdentityFacts(value, normalizedClauses, state)) {
-    return finalizePlan(state, false);
+  const universityScopeClauses = normalizedClauses.map(isUniversityClubScopeClause);
+  const hasUniversityClubScope = universityScopeClauses.some(Boolean);
+  const otherUniversityClubClauses = normalizedClauses.map((clause) => {
+    const kinds = universityClubTargetKinds(clause);
+    const rejectedWithoutAcceptedScope = (
+      kinds.has('rejected')
+      && !kinds.has('toyota')
+      && !kinds.has('generic')
+    );
+    return kinds.has('other') || rejectedWithoutAcceptedScope;
+  });
+  const hasOtherUniversityClubScope = otherUniversityClubClauses.some(Boolean);
+  const universityClubBoundaryClauses = normalizedClauses.map((_clause, index) => (
+    universityScopeClauses[index] || otherUniversityClubClauses[index]
+  ));
+  const hasUniversityClubBoundary = (
+    hasUniversityClubScope || hasOtherUniversityClubScope
+  );
+  const residualValue = hasUniversityClubBoundary
+    ? normalizedClauses
+      .filter((_clause, index) => !universityClubBoundaryClauses[index])
+      .join('')
+    : value;
+  const hasResidualAfterUniversityClubBoundary = (
+    hasUniversityClubBoundary
+    && residualValue.length > 0
+  );
+  const allowedCircleFacts = hasUniversityClubBoundary
+    ? explicitCircleFactIds(normalizedClauses)
+    : new Set<AssistantFactId>();
+
+  if (hasUniversityClubScope) {
+    addRequiredFact(state, 'university.clubs-scope');
   }
-  detectMembershipAndActivityFacts(value, state);
-  detectContactAndSocialFacts(value, state);
-  detectVideoAndMathFacts(value, state);
-  detectPageFacts(value, state);
+  if (hasUniversityClubBoundary) {
+    for (const factId of allowedCircleFacts) addRequiredFact(state, factId);
+    excludeCircleSpecificFacts(state, allowedCircleFacts);
+  }
+  if (!hasUniversityClubScope && residualValue.length > 0) {
+    detectIdentityFacts(residualValue, state);
+    detectMembershipAndActivityFacts(residualValue, state);
+    detectContactAndSocialFacts(residualValue, state);
+    detectVideoAndMathFacts(residualValue, state);
+    detectPageFacts(residualValue, state);
+  }
 
   // Pure TTI comparison supersedes the component identity facts.
   if (state.facts.includes('identity.tti-difference')) {
@@ -804,8 +1228,10 @@ export function planAssistantRequest(
     ));
   }
 
-  inferEllipticalFollowUp(value, history, state);
-  detectSmallTalk(value, state);
+  if (!hasUniversityClubScope && residualValue.length > 0) {
+    inferEllipticalFollowUp(residualValue, history, state);
+    detectSmallTalk(residualValue, state);
+  }
 
   // A partially recognized compound question must not become a confident,
   // incomplete answer. Let the narrow fact selector reassess the whole turn.
@@ -824,12 +1250,18 @@ export function planAssistantRequest(
   const hasFactExclusions = state.excludedFacts.length > 0
     || state.excludedPages.length > 0
     || state.excludedExternal.length > 0;
+  const onlyUniversityClubScope = (
+    state.facts.length === 1
+    && state.facts[0] === 'university.clubs-scope'
+  );
   if (
     state.facts.length > 1
+    || hasResidualAfterUniversityClubBoundary
+    || hasOtherUniversityClubScope
     || state.historyDependent
     || historyReferenceCue
-    || semanticNegation
-    || hasFactExclusions
+    || (semanticNegation && !onlyUniversityClubScope)
+    || (hasFactExclusions && !onlyUniversityClubScope)
     || (
       compoundCue
       && !state.facts.includes('identity.tti-difference')
@@ -850,11 +1282,12 @@ export function planFromFactSelection(
   factIds: readonly AssistantFactId[],
   constraints: Pick<
     AssistantQueryPlan,
-    'excludedFactIds' | 'excludedPageIds' | 'excludedExternalLinks' | 'suppressLinks'
+    'requiredFactIds' | 'excludedFactIds' | 'excludedPageIds' | 'excludedExternalLinks' | 'suppressLinks'
   >,
 ): AssistantQueryPlan {
   const state: MutablePlanState = {
     facts: [],
+    requiredFacts: [],
     excludedFacts: [...constraints.excludedFactIds],
     excludedPages: [...constraints.excludedPageIds],
     excludedExternal: [...constraints.excludedExternalLinks],
@@ -863,6 +1296,7 @@ export function planFromFactSelection(
     forcePlanner: false,
     historyDependent: false,
   };
+  for (const factId of constraints.requiredFactIds) addRequiredFact(state, factId);
   for (const factId of factIds) addFact(state, factId);
   return finalizePlan(state, false);
 }

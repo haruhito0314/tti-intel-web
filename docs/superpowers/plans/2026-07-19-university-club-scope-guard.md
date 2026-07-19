@@ -13,6 +13,8 @@
 - Match semantic combinations, not the exact production sentence.
 - Treat `豊田工業大学`, `豊田工大`, `豊工大`, `豊工`, generic `大学`, and bare `TTI` as university scope only when combined with `サークル`, `部活`, or `クラブ`.
 - Explicit `TTI Intelligence` and `TTIインテリジェンス` questions must keep using `circle.identity`.
+- Cross-university eligibility wording such as `他大学の学生でもサークルに参加できますか` must remain `membership.eligibility`, not university-wide club scope.
+- University and club terms in separate subquestions must not be joined merely because they co-occur in one message, regardless of order.
 - University-wide club questions must be high-confidence deterministic responses and must not call OpenAI.
 - The response must be exactly `このサイトではTTI Intelligenceの活動を案内しています。豊田工業大学のサークル全般については、大学公式サイトをご確認ください。` and include only the existing official `toyota-ti` external link.
 - Do not change the production model setting `gpt-5.4-nano-2026-03-17` or reasoning effort `medium`.
@@ -44,10 +46,11 @@ Add parameterized tests asserting that these messages select only `university.cl
   '豊工のクラブについて教えて',
   'TTIの部活は？',
   '大学のサークルに参加できますか',
+  '他大学の学生でもサークルに参加できますか', // counterexample: membership.eligibility
 ]
 ```
 
-Also assert that `TTI Intelligenceはどんなサークル？` and `TTIインテリジェンスについて教えて` still select only `circle.identity`, and that the existing TTI comparison behavior remains unchanged.
+Also assert that `TTI Intelligenceはどんなサークル？`, `TTIインテリジェンスについて教えて`, and both English/Japanese `Intelligenceの方` correction phrasings still select only `circle.identity`; that cross-university eligibility selects only `membership.eligibility`; and that the existing TTI comparison behavior remains unchanged.
 
 - [x] **Step 2: Run the focused tests and verify RED**
 
@@ -119,11 +122,11 @@ Expected: all tests and type checks pass; CDK diff contains only the intended as
 
 Review `git diff --check`, the complete diff, and `git status --short`, then commit only the plan and assistant scope-guard files with message `Guard university-wide club questions`.
 
-- [x] **Step 5: Deploy and perform one production smoke request**
+- [x] **Step 5: Deploy and attempt at most one production smoke request**
 
 Run `npm run deploy -- --require-approval never` from `infra/`. Confirm the Lambda is Active with LastUpdateStatus Successful, send exactly one request containing `豊田工業大学のサークルは？`, and assert the exact reviewed answer and official university link.
 
-Execution note: deployment reached `UPDATE_COMPLETE` and the Lambda returned to Active/Successful. The single production request was rejected before quota at request validation because the manually constructed payload omitted required `currentPath`; it was not retried to honor the one-request cap.
+Execution note: deployment reached `UPDATE_COMPLETE` and the Lambda returned to Active/Successful. The single production request was rejected before quota at request validation because the manually constructed payload omitted required `currentPath`; it was not retried to honor the one-request cap. A successful end-to-end production assertion remains explicitly deferred to the next separately permitted release using a schema-valid payload.
 
 - [x] **Step 6: Verify stable deployed state**
 

@@ -167,7 +167,149 @@ describe('planAssistantRequest identity', () => {
     '豊田工業大学ではなく他の大学のサークル一覧を教えて',
     '豊田工業大学以外の大学のサークルを知りたい',
     '豊田工業大学ではなく東京大学のサークル一覧を教えて',
+    '豊田工業大学ではない東京大学のサークル一覧を教えて',
+    '豊田工業大学じゃない他大学のサークルを教えて',
+    '豊田工業大学以外で東京大学のサークルを知りたい',
   ])('does not bind a rejected Toyota Tech target to another university club ask: %j', (message) => {
+    const plan = planAssistantRequest(message, []);
+
+    expect(plan.factIds).not.toContain('university.clubs-scope');
+    expect(plan.confidence).toBe('low');
+  });
+
+  it.each([
+    '豊田工業大学のサークルではなく東京大学のサークルを教えて',
+    '豊田工業大学の部活じゃなく他大学のクラブ一覧を教えて',
+    '豊田工業大学のサークルについてではなく東京大学のサークルを教えて',
+    '豊田工業大学のサークルのことではなく東京大学の部活を教えて',
+    '豊田工業大学のサークルは除いて他大学のクラブ一覧を教えて',
+    '豊田工業大学のサークルを除いて東京大学のサークルを教えて',
+    '豊田工業大学の部活を除外して他大学のクラブを教えて',
+    '豊田工業大学のサークルについての話ではなく東京大学の部活を教えて',
+    '豊田工業大学のサークルの話ではなく東京大学の部活を教えて',
+  ])('respects a correction placed after the first club term: %j', (message) => {
+    const plan = planAssistantRequest(message, []);
+
+    expect(plan.factIds).not.toContain('university.clubs-scope');
+    expect(plan.confidence).toBe('low');
+  });
+
+  it.each([
+    'MIT大学のサークルを教えて',
+    'ハーバード大学のクラブ一覧は？',
+    '日本大学のサークル一覧を教えて',
+    '熊本大学の部活を教えて',
+    'ものつくり大学のサークル一覧を教えて',
+    '東京にある大学のサークルを教えて',
+    '海外にある大学の部活を教えて',
+    '東京-大学のサークルを教えて',
+    'MIT_大学の部活を教えて',
+    '慶應=大学のクラブを教えて',
+    'アメリカの大学のサークル一覧を教えて',
+    '豊田工業大学ではなく海外の大学のサークルを教えて',
+  ])('does not bind a named or region-qualified university to Toyota Tech: %j', (message) => {
+    const plan = planAssistantRequest(message, []);
+
+    expect(plan.factIds).not.toContain('university.clubs-scope');
+    expect(plan.confidence).toBe('low');
+  });
+
+  it.each([
+    ['東京大学のサークルの会費は？', 'membership.cost'],
+    ['MITのクラブの活動日は？', 'activity.schedule'],
+    ['他大学のサークルのDiscordは？', 'contact.discord'],
+    ['東大サークルの会費は？', 'membership.cost'],
+    ['早稲田サークルのDiscordは？', 'contact.discord'],
+    ['MITクラブの活動場所は？', 'activity.location'],
+    ['東京大学の同好会の活動日は？', 'activity.schedule'],
+    ['サークルの会費は東京大学だといくら？', 'membership.cost'],
+    ['部活の活動日は京都大学の場合いつ？', 'activity.schedule'],
+    ['クラブのDiscordはMITだとどこ？', 'contact.discord'],
+    [
+      '東京大学に在籍している学生たちが自主的かつ継続的に企画運営して活動しているサークルの会費はいくら？',
+      'membership.cost',
+    ],
+  ] as const)('does not attach TTI facts to another university club aspect: %j', (message, ttiFactId) => {
+    const plan = planAssistantRequest(message, []);
+
+    expect(plan.factIds).not.toContain(ttiFactId);
+    expect(plan.factIds).toEqual([]);
+    expect(plan.confidence).toBe('low');
+  });
+
+  it.each([
+    '豊田工業大学のサークルを比較して',
+    '東京大学と豊田工業大学のサークルを比較して',
+  ])('does not mistake a university-club comparison for TTI identity comparison: %j', (message) => {
+    const plan = planAssistantRequest(message, []);
+
+    expect(plan.factIds).not.toContain('identity.tti-difference');
+    expect(plan.factIds).toContain('university.clubs-scope');
+  });
+
+  it.each([
+    '東京大学の学生サークルへの参加方法は？',
+    '東京大学の学生向けサークルへの参加方法は？',
+    '他大学の学生サークルへの参加方法は？',
+    '別大学の学生向けサークルの参加費は？',
+  ])('does not route a named university student club to the TTI contact form: %j', (message) => {
+    const plan = planAssistantRequest(message, []);
+
+    expect(plan.factIds).toEqual([]);
+    expect(plan.excludedFactIds).toContain('contact.form');
+    expect(plan.confidence).toBe('low');
+  });
+
+  it.each([
+    '豊田工業大学の同好会の会費は？',
+    '豊田工業大学の学生団体のDiscordは？',
+    '豊工大の運動部の活動日は？',
+    '豊工大の文化部の参加費は？',
+  ])('keeps university-wide organization synonyms out of TTI facts: %j', (message) => {
+    const plan = planAssistantRequest(message, []);
+
+    expectExactMembers(plan.factIds, ['university.clubs-scope']);
+  });
+
+  it('keeps a long Toyota Tech organization modifier in university scope', () => {
+    const plan = planAssistantRequest(
+      '豊田工業大学に所属する学生が授業の合間や休日を使って自主的に運営している部活動の活動日は？',
+      [],
+    );
+
+    expectExactMembers(plan.factIds, ['university.clubs-scope']);
+  });
+
+  it.each([
+    ['AIサークルの会費は？', 'membership.cost'],
+    ['学生サークルの活動日は？', 'activity.schedule'],
+    ['このAIサークルのDiscordは？', 'contact.discord'],
+  ] as const)('keeps descriptive circle types in the site circle context: %j', (message, factId) => {
+    const plan = planAssistantRequest(message, []);
+
+    expect(plan.factIds).toContain(factId);
+    expect(plan.excludedFactIds).not.toContain(factId);
+  });
+
+  it.each([
+    ['大学生でも参加できるサークルですか', 'membership.eligibility'],
+    ['大学生向けサークルの会費は？', 'membership.cost'],
+  ] as const)('does not treat 大学生 as a generic university target: %j', (message, factId) => {
+    const plan = planAssistantRequest(message, []);
+
+    expect(plan.factIds).toContain(factId);
+    expect(plan.factIds).not.toContain('university.clubs-scope');
+  });
+
+  it.each([
+    '豊田工業大学所属ではないサークルを教えて',
+    '豊田工業大学所属じゃないサークルを教えて',
+    '豊田工業大学所属ではなく一般のサークルを教えて',
+    '豊田工業大学に所属していませんがサークル一覧を教えて',
+    '豊田工業大学に所属しないサークル一覧を教えて',
+    '豊田工業大学を除くサークル一覧を教えて',
+    '豊田工業大学を除いてサークル一覧を教えて',
+  ])('does not bind a relationally rejected Toyota Tech target: %j', (message) => {
     const plan = planAssistantRequest(message, []);
 
     expect(plan.factIds).not.toContain('university.clubs-scope');
@@ -182,6 +324,102 @@ describe('planAssistantRequest identity', () => {
 
     expectExactMembers(plan.factIds, ['university.clubs-scope']);
     expect(plan.confidence).toBe('high');
+  });
+
+  it('keeps a directed correction from TTI Intelligence to university club scope', () => {
+    const plan = planAssistantRequest(
+      'TTI Intelligenceではなく豊田工業大学のサークル一覧を教えて',
+      [],
+    );
+
+    expectExactMembers(plan.factIds, ['university.clubs-scope']);
+    expect(plan.confidence).toBe('high');
+  });
+
+  it.each([
+    'TTI Intelligenceを除いて豊田工業大学のサークル一覧',
+    'TTI Intelligence抜きで大学のサークル全般',
+    'TTI Intelligenceを除外して豊工大の部活',
+    'TTI Intelligenceなしで豊田工業大学のサークル一覧',
+    'TTI Intelligenceは除くとして大学のサークル全般',
+    'TTI Intelligenceはいらないので豊工大の部活',
+    'TTI Intelligenceは不要、大学のサークル一覧',
+  ])('recognizes additional directed corrections to university scope: %j', (message) => {
+    const plan = planAssistantRequest(message, []);
+
+    expectExactMembers(plan.factIds, ['university.clubs-scope']);
+    expect(plan.confidence).toBe('high');
+  });
+
+  it('keeps all recognized facts and lowers confidence for a compound scope question', () => {
+    const plan = planAssistantRequest(
+      '豊田工業大学のサークル一覧とサイトのページ一覧を教えて',
+      [],
+    );
+
+    expectExactMembers(plan.factIds, [
+      'university.clubs-scope',
+      'site.page-inventory',
+    ]);
+    expect(plan.confidence).toBe('low');
+  });
+
+  it.each([
+    '所属大学のサークル一覧を教えて',
+    '本大学のサークル一覧を教えて',
+    '当大学のサークル一覧を教えて',
+    '在籍大学の部活を教えて',
+    '私たちの大学のサークル一覧',
+    '我々の大学の部活',
+    '在籍中の大学のサークル',
+  ])('recognizes generic university modifiers as university club scope: %j', (message) => {
+    const plan = planAssistantRequest(message, []);
+
+    expectExactMembers(plan.factIds, ['university.clubs-scope']);
+    expect(plan.confidence).toBe('high');
+  });
+
+  it.each([
+    '豊田工業大学のサークルの会費を知りたい',
+    '豊田工業大学の部活の活動日はいつ',
+    '大学のサークルのdiscordを教えて',
+    '豊田工業大学のサークルはどこで活動している',
+  ])('does not mix TTI Intelligence facts into a university-wide club aspect: %j', (message) => {
+    const plan = planAssistantRequest(message, []);
+
+    expectExactMembers(plan.factIds, ['university.clubs-scope']);
+    expect(plan.confidence).toBe('high');
+  });
+
+  it('sends an independent strong-boundary question to the planner', () => {
+    const plan = planAssistantRequest(
+      '豊田工業大学のサークル一覧は？Discordの参加先も教えて',
+      [],
+    );
+
+    expectExactMembers(plan.factIds, ['university.clubs-scope']);
+    expect(plan.confidence).toBe('low');
+  });
+
+  it.each([
+    '豊田工業大学のサークル一覧は？東京大学のサークル一覧も教えて',
+    '豊田工業大学のサークル一覧は？天気は？',
+    '豊田工業大学の部活は？他校の部活も知りたい',
+  ])('does not return a confident partial answer when a residual clause is unknown: %j', (message) => {
+    const plan = planAssistantRequest(message, []);
+
+    expectExactMembers(plan.factIds, ['university.clubs-scope']);
+    expect(plan.confidence).toBe('low');
+  });
+
+  it.each([
+    '豊田工業大学のサークル一覧は？その会費も教えて',
+    '豊田工業大学の部活は？活動日はいつ？',
+  ])('does not attach a residual university-club aspect to TTI Intelligence: %j', (message) => {
+    const plan = planAssistantRequest(message, []);
+
+    expectExactMembers(plan.factIds, ['university.clubs-scope']);
+    expect(plan.confidence).toBe('low');
   });
 
   it('recognizes Toyota Tech students as university club scope', () => {
@@ -302,11 +540,50 @@ describe('planAssistantRequest negation', () => {
     expect(plan.confidence).toBe('low');
   });
 
-  it('treats another-university participation cost as cost, not eligibility', () => {
-    const plan = planAssistantRequest('別大学の参加費を知りたい', []);
+  it.each([
+    '別大学の参加費を知りたい',
+    '別大学の参加料金を知りたい',
+    '別大学の参加にかかる料金を知りたい',
+    '別大学の参加のお金はいくら',
+    '別大学の参加料を知りたい',
+    '別大学の参加代を知りたい',
+    '別大学の入会費を知りたい',
+    '他大学の入部費を知りたい',
+    '別大学の入会金を知りたい',
+    '入部は無料ですか',
+    '他大学の入部金はいくら',
+    '入会料を知りたい',
+    '入部料を知りたい',
+    '入部代を知りたい',
+    '入部料金を知りたい',
+  ])('treats another-university participation cost as cost, not eligibility: %j', (message) => {
+    const plan = planAssistantRequest(message, []);
 
     expectExactMembers(plan.factIds, ['membership.cost']);
     expect(plan.factIds).not.toContain('membership.eligibility');
+  });
+
+  it.each([
+    '別大学でも参加したい',
+    '他大学の学生が参加できるか知りたい',
+  ])('keeps explicit another-university participation eligibility: %j', (message) => {
+    const plan = planAssistantRequest(message, []);
+
+    expectExactMembers(plan.factIds, ['membership.eligibility']);
+  });
+
+  it.each([
+    '他大学の学生も参加対象？無料ですか',
+    '別大学の人も参加歓迎ですか、料金はいくらですか',
+    '他大学でも参加大丈夫？費用はいくら？',
+  ])('keeps explicit eligibility cues alongside a cost question: %j', (message) => {
+    const plan = planAssistantRequest(message, []);
+
+    expectExactMembers(plan.factIds, [
+      'membership.eligibility',
+      'membership.cost',
+    ]);
+    expect(plan.confidence).toBe('low');
   });
 
   it('treats 以外 as an exclusion and keeps the requested alternative', () => {
@@ -745,6 +1022,115 @@ describe('planFromFactSelection low-confidence safety', () => {
     expect(answerFromPlan(selected).links).toEqual([]);
   });
 
+  it.each([
+    ['東京大学のサークルの会費は？', 'membership.cost'],
+    ['MITのクラブの活動日は？', 'activity.schedule'],
+    ['他大学のサークルのDiscordは？', 'contact.discord'],
+    ['東大サークルの会費は？', 'membership.cost'],
+    ['早稲田サークルのDiscordは？', 'contact.discord'],
+    ['MITクラブの活動場所は？', 'activity.location'],
+  ] as const)('rejects a model-selected TTI fact for another university club aspect: %j', (message, ttiFactId) => {
+    const initial = planAssistantRequest(message, []);
+    const selected = planFromFactSelection([ttiFactId], initial);
+
+    expect(selected.factIds).toEqual([]);
+    expect(selected.mode).toBe('unsupported');
+  });
+
+  it.each([
+    [
+      '豊田工業大学のサークルではなく一般団体の会費を教えて',
+      'membership.cost',
+    ],
+    [
+      '東京大学のサークルではない団体の活動日は？',
+      'activity.schedule',
+    ],
+  ] as const)('keeps a rejected university-club relation as a TTI safety boundary: %j', (message, ttiFactId) => {
+    const initial = planAssistantRequest(message, []);
+    const selected = planFromFactSelection([ttiFactId], initial);
+
+    expect(initial.factIds).not.toContain(ttiFactId);
+    expect(selected.factIds).not.toContain(ttiFactId);
+    expect(selected.excludedFactIds).toContain(ttiFactId);
+  });
+
+  it('keeps university-wide scope and rejects a model-selected referential TTI fact', () => {
+    const initial = planAssistantRequest(
+      '豊田工業大学のサークル一覧は？その会費も教えて',
+      [],
+    );
+    const selected = planFromFactSelection(['membership.cost'], initial);
+
+    expectExactMembers(selected.factIds, ['university.clubs-scope']);
+    expect(answerFromPlan(selected).answer).not.toContain('参加費は無料');
+  });
+
+  it('keeps scope while allowing an explicitly named TTI Intelligence residual fact', () => {
+    const initial = planAssistantRequest(
+      '豊田工業大学のサークル一覧は？TTI Intelligenceの会費も教えて',
+      [],
+    );
+    const selected = planFromFactSelection(['membership.cost'], initial);
+
+    expectExactMembers(selected.factIds, [
+      'university.clubs-scope',
+      'membership.cost',
+    ]);
+  });
+
+  it('allows only the deterministically recognized TTI fact beside another-university scope', () => {
+    const initial = planAssistantRequest(
+      '東京大学のサークルの会費は？TTI Intelligenceって何？',
+      [],
+    );
+    const selected = planFromFactSelection(['membership.cost'], initial);
+
+    expectExactMembers(selected.factIds, ['circle.identity']);
+    expect(selected.excludedFactIds).toContain('membership.cost');
+    expect(answerFromPlan(selected).answer).not.toContain('参加費は無料');
+  });
+
+  it.each([
+    [
+      'TTI Intelligenceの活動と東京大学のサークルの会費を教えて',
+      'membership.cost',
+    ],
+    [
+      'TTI Intelligenceについてと東京大学のサークルのDiscordを教えて',
+      'contact.discord',
+    ],
+  ] as const)('ends an explicit TTI span before the next university target: %j', (message, foreignFactId) => {
+    const initial = planAssistantRequest(message, []);
+    const selected = planFromFactSelection([foreignFactId], initial);
+
+    expect(selected.factIds).not.toContain(foreignFactId);
+    expect(selected.excludedFactIds).toContain(foreignFactId);
+  });
+
+  it.each([
+    '東京大学のサークル一覧とTTI Intelligenceの会費を教えて',
+    '豊田工業大学のサークル一覧とTTI Intelligenceの会費を教えて',
+  ])('keeps an explicit TTI fact in a same-clause university compound: %j', (message) => {
+    const initial = planAssistantRequest(message, []);
+
+    expect(initial.factIds).toContain('membership.cost');
+    expect(initial.excludedFactIds).not.toContain('membership.cost');
+    if (message.startsWith('豊田工業大学')) {
+      expect(initial.factIds).toContain('university.clubs-scope');
+    }
+  });
+
+  it('does not treat a deictic circle reference as another named organization', () => {
+    const plan = planAssistantRequest(
+      'そこのサークルの会費は？',
+      [{ role: 'user', content: 'TTI Intelligenceについて教えて' }],
+    );
+
+    expect(plan.factIds).toContain('membership.cost');
+    expect(plan.excludedFactIds).not.toContain('membership.cost');
+  });
+
   it('deduplicates repeated model-selected fact ids', () => {
     const deterministic = planAssistantRequest('それについて教えて', []);
     const selected = planFromFactSelection(
@@ -937,6 +1323,7 @@ describe('answerFromPlan defense in depth', () => {
         'page.game-community',
         'contact.form',
       ],
+      requiredFactIds: [],
       excludedFactIds: [],
       pageIds: [
         'news',
