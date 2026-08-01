@@ -8,10 +8,81 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { markInitialSplashSeen, shouldShowInitialSplash } from '@/lib/splashSettings';
 
 function ScrollToTop() {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
+
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
+    let frame = 0;
+    let attempts = 0;
+    const root = document.documentElement;
+    const previousInlineScrollBehavior = root.style.scrollBehavior;
+    let scrollBehaviorOverridden = false;
+
+    const overrideSmoothScroll = () => {
+      if (scrollBehaviorOverridden) return;
+      root.style.scrollBehavior = 'auto';
+      scrollBehaviorOverridden = true;
+    };
+
+    const restoreSmoothScroll = () => {
+      if (!scrollBehaviorOverridden) return;
+      root.style.scrollBehavior = previousInlineScrollBehavior;
+      scrollBehaviorOverridden = false;
+    };
+
+    const animateTo = (target: HTMLElement) => {
+      const startTop = window.scrollY;
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const initialTargetTop = target.getBoundingClientRect().top + window.scrollY;
+      overrideSmoothScroll();
+      if (reducedMotion || Math.abs(initialTargetTop - startTop) < 2) {
+        window.scrollTo(0, initialTargetTop);
+        restoreSmoothScroll();
+        return;
+      }
+
+      const duration = 2400;
+      const startedAt = performance.now();
+      const tick = (now: number) => {
+        const progress = Math.min(1, (now - startedAt) / duration);
+        const eased = progress < 0.5
+          ? 4 * progress * progress * progress
+          : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+        const currentTargetTop = target.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo(0, startTop + (currentTargetTop - startTop) * eased);
+        if (progress < 1) {
+          frame = window.requestAnimationFrame(tick);
+        } else {
+          restoreSmoothScroll();
+        }
+      };
+      frame = window.requestAnimationFrame(tick);
+    };
+
+    const scrollToLocation = () => {
+      if (!hash) {
+        overrideSmoothScroll();
+        window.scrollTo(0, 0);
+        restoreSmoothScroll();
+        return;
+      }
+
+      const target = document.getElementById(decodeURIComponent(hash.slice(1)));
+      if (target) {
+        animateTo(target);
+        return;
+      }
+
+      attempts += 1;
+      if (attempts < 12) frame = window.requestAnimationFrame(scrollToLocation);
+    };
+
+    frame = window.requestAnimationFrame(scrollToLocation);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      restoreSmoothScroll();
+    };
+  }, [pathname, hash]);
+
   return null;
 }
 
@@ -32,6 +103,7 @@ const WeeklyMath = lazy(() => import('@/pages/WeeklyMath').then(m => ({ default:
 const WeeklyMathDetail = lazy(() => import('@/pages/WeeklyMathDetail').then(m => ({ default: m.WeeklyMathDetail })));
 const WeeklyMathSolution = lazy(() => import('@/pages/WeeklyMathSolution').then(m => ({ default: m.WeeklyMathSolution })));
 const Development = lazy(() => import('@/pages/Development').then(m => ({ default: m.Development })));
+const AiAssistantProduct = lazy(() => import('@/pages/AiAssistantProduct').then(m => ({ default: m.AiAssistantProductPage })));
 const Board = lazy(() => import('@/pages/Board').then(m => ({ default: m.Board })));
 const BoardDetail = lazy(() => import('@/pages/BoardDetail').then(m => ({ default: m.BoardDetail })));
 const Admin = lazy(() => import('@/pages/Admin').then(m => ({ default: m.Admin })));
@@ -208,6 +280,7 @@ function App() {
               <Route path="news/:slug" element={<Suspense fallback={<PageLoader />}><NewsDetail /></Suspense>} />
               <Route path="app" element={<AppShowcase />} />
               <Route path="development" element={<Suspense fallback={<PageLoader />}><Development /></Suspense>} />
+              <Route path="app/ai-assistant" element={<Suspense fallback={<PageLoader />}><AiAssistantProduct /></Suspense>} />
               <Route path="app/table-tennis" element={<TableTennisMatchMakerPage />} />
               <Route path="app/color-sort" element={<ColorSortPuzzlePage />} />
               <Route path="app/cli-practice" element={<CliPracticePage />} />

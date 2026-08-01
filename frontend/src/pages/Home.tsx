@@ -241,6 +241,7 @@ export function Home() {
                 description="豊田工業大学の学生を中心に、AI技術、開発、数学、ゲーム、解説動画へ取り組む学生コミュニティです。"
             />
             <section
+                id="home-top"
                 className={`home-hero${introReady ? ' home-hero--play' : ''}`}
                 aria-label="TTI Intelligence"
             >
@@ -293,9 +294,9 @@ export function Home() {
                                 <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
                             </Button>
                         </Link>
-                        <Link to="/contact">
+                        <Link to="/development">
                             <Button variant="outline" size="lg">
-                                お問い合わせ
+                                AIを使った開発
                                 <ArrowRight className="w-5 h-5" />
                             </Button>
                         </Link>
@@ -307,7 +308,7 @@ export function Home() {
 
             <div className="home-main-color-flow bg-[#F5F5F7] dark:bg-[var(--surface-2)]">
                 {/* Explanation Videos */}
-                <section className="home-flow-block bg-[#F5F5F7] dark:bg-[#111113] w-full py-14 lg:py-16 relative z-10 border-y border-black/5 dark:border-white/10">
+                <section id="home-videos" className="home-flow-block bg-[#F5F5F7] dark:bg-[#111113] w-full py-14 lg:py-16 relative z-10 border-y border-black/5 dark:border-white/10">
                     <div className="max-w-[1120px] mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex items-end justify-between mb-8 gap-4">
                             <h2 className="text-[24px] sm:text-[34px] font-semibold tracking-[-0.03em] text-[#1D1D1F] dark:text-[#F5F5F7] leading-[1.06]">
@@ -426,7 +427,7 @@ export function Home() {
                 </section>
 
                 {/* Weekly Math */}
-                <section className="home-flow-block max-w-[1120px] mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-16 relative z-10">
+                <section id="home-math" className="home-flow-block max-w-[1120px] mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-16 relative z-10">
                     <div className="flex items-center gap-3 mb-8">
                         <div className="flex flex-col sm:flex-row sm:items-end sm:gap-3">
                             <h2 className="text-[24px] sm:text-[34px] font-semibold tracking-[-0.03em] text-[#0071E3] dark:text-[#5CABFF] leading-[1.06]">
@@ -486,7 +487,7 @@ export function Home() {
                 </section>
 
                 {/* Latest Posts */}
-                <section className="home-flow-block home-flow-block-news max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-16 relative z-10">
+                <section id="home-news" className="home-flow-block home-flow-block-news max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-16 relative z-10">
                     <div className="flex items-center justify-between mb-8">
                         <h2 className="text-[24px] sm:text-[34px] font-semibold tracking-[-0.03em] text-[#1D1D1F] dark:text-[#F5F5F7] leading-[1.06]">
                             最新のお知らせ
@@ -532,7 +533,7 @@ export function Home() {
             </div>
 
             {/* CTA Section */}
-            <section className="home-cta-band max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20 text-center">
+            <section id="home-cta" className="home-cta-band max-w-[980px] mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20 text-center">
                 <h2 className="text-[24px] sm:text-[34px] font-semibold tracking-[-0.03em] text-[#1D1D1F] dark:text-[#F5F5F7] mb-3 leading-[1.06]">
                     一緒にAIを学びませんか？
                 </h2>

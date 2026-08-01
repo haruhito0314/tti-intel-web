@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Badge, Card, CardContent } from '@/components/ui';
 import { PageSeo } from '@/components/PageSeo';
-import { Smartphone, ExternalLink, Rocket } from 'lucide-react';
+import { Smartphone, ExternalLink, Rocket, Sparkles } from 'lucide-react';
 
 // Future: Load from Firestore or CMS
 const apps: {
@@ -13,16 +13,15 @@ const apps: {
     url?: string;
     path?: string;
     images?: string[];
+    visual?: 'assistant';
 }[] = [
     {
-        title: 'TOEIC Practice',
-        status: 'wip',
-        description: 'TOEIC対策に使える練習アプリ。Part別演習やタイムアタックで、学習の進み具合を確認できます。',
-        tags: ['React', 'TypeScript', 'Appwrite'],
-        url: 'https://toeic-practice.appwrite.network',
-        images: [
-            '/images/toeic-practice.webp',
-        ]
+        title: 'AI Assistant',
+        status: 'available',
+        description: 'サイトの公開情報を検索・検証し、根拠となるページと一緒に案内するAIアシスタント。',
+        tags: ['OpenAI', 'AWS Lambda', 'Grounded AI'],
+        path: '/app/ai-assistant',
+        visual: 'assistant',
     },
     {
         title: '卓球組み合わせ表ジェネレーター',
@@ -42,16 +41,6 @@ const apps: {
         path: '/app/color-sort',
         images: [
             '/images/color-sort-puzzle.webp',
-        ],
-    },
-    {
-        title: 'コマンドライン練習',
-        status: 'available',
-        description: 'ターミナル操作を安全なデモ環境で練習。git・npm・デプロイの流れを Tab 補完付きで体験できます。',
-        tags: ['React', 'TypeScript', 'Learning'],
-        path: '/app/cli-practice',
-        images: [
-            '/images/cli-practice.webp',
         ],
     },
 ];
@@ -151,7 +140,37 @@ export function AppShowcase() {
                                 className={`${index % 2 === 0 ? 'accent-card-soft' : 'accent-card-cool'} overflow-hidden hover:scale-[1.015] transition-transform duration-300 group`}
                             >
                                 {/* App Image */}
-                                {app.images && app.images.length > 0 ? (
+                                {app.visual === 'assistant' ? (
+                                    <div className="aspect-video relative overflow-hidden bg-[#071017] p-5">
+                                        <div className="absolute -right-14 -top-14 h-40 w-40 rounded-full border border-[#8ED3F2]/20" />
+                                        <div className="absolute -right-5 -top-5 h-24 w-24 rounded-full border border-[#8ED3F2]/15" />
+                                        <div className="relative h-full overflow-hidden rounded-xl border border-white/15 bg-white/10 shadow-2xl backdrop-blur-xl">
+                                            <div className="flex h-9 items-center justify-between border-b border-white/10 px-3 text-[10px] text-white/80">
+                                                <span className="flex items-center gap-1.5 font-semibold">
+                                                    <Sparkles className="h-3.5 w-3.5 text-[#8ED3F2]" />
+                                                    AI Assistant
+                                                </span>
+                                                <span className="flex items-center gap-1 text-[8px] font-bold tracking-widest text-[#8FE2BD]">
+                                                    <i className="h-1.5 w-1.5 rounded-full bg-[#46D49B]" /> LIVE
+                                                </span>
+                                            </div>
+                                            <div className="space-y-2 p-3 text-[9px]">
+                                                <div className="ml-auto w-fit rounded-lg rounded-br-sm bg-[#3A83AC] px-2.5 py-1.5 text-white">
+                                                    活動日はいつ？
+                                                </div>
+                                                <div className="flex items-start gap-2">
+                                                    <span className="grid h-5 w-5 shrink-0 place-items-center rounded-md bg-white/10">
+                                                        <Sparkles className="h-3 w-3 text-[#9ADCF8]" />
+                                                    </span>
+                                                    <div className="rounded-lg rounded-tl-sm bg-white/10 px-2.5 py-1.5 leading-relaxed text-white/80">
+                                                        公開情報を確認して回答します。
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="absolute inset-x-3 bottom-3 h-7 rounded-full border border-white/10 bg-black/15" />
+                                        </div>
+                                    </div>
+                                ) : app.images && app.images.length > 0 ? (
                                     <ImageCarousel images={app.images} title={app.title} />
                                 ) : (
                                     <div className="aspect-video bg-[#F5F5F7] dark:bg-[#111113] flex items-center justify-center">

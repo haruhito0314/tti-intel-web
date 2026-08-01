@@ -22,6 +22,10 @@ function isAdminPath(pathname: string) {
     );
 }
 
+function isEmbeddedAssistantPath(pathname: string) {
+    return pathname === '/app/ai-assistant';
+}
+
 export interface LayoutProps {
     assistantClient?: AssistantClient;
     assistantCreateId?: () => string;
@@ -35,6 +39,7 @@ export function Layout({
     const backgroundRef = useRef<HTMLDivElement>(null);
     const isDevPage = isDevelopmentPath(pathname);
     const assistantEnabled = !isAdminPath(pathname);
+    const hasEmbeddedAssistant = isEmbeddedAssistantPath(pathname);
 
     return (
         <AssistantProvider
@@ -43,16 +48,16 @@ export function Layout({
         >
             <div
                 ref={backgroundRef}
-                className="min-h-screen flex flex-col"
+                className={hasEmbeddedAssistant ? 'h-dvh overflow-hidden' : 'min-h-screen flex flex-col'}
             >
-                {isDevPage ? <DevHeader /> : <Header />}
-                <main tabIndex={-1} className="flex-1">
+                {!hasEmbeddedAssistant && (isDevPage ? <DevHeader /> : <Header />)}
+                <main tabIndex={-1} className={hasEmbeddedAssistant ? 'h-full min-h-0' : 'flex-1'}>
                     <Outlet />
                 </main>
-                <Footer />
+                {!hasEmbeddedAssistant && <Footer />}
             </div>
             <AssistantWidget
-                enabled={assistantEnabled}
+                enabled={assistantEnabled && !hasEmbeddedAssistant}
                 backgroundRef={backgroundRef}
             />
         </AssistantProvider>

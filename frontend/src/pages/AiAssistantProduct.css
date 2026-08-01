@@ -1,0 +1,435 @@
+.assistant-app-page,
+.assistant-app-page * {
+    box-sizing: border-box;
+}
+
+.assistant-app-page {
+    --surface-1: #f8fbfc;
+    --surface-2: #e8f0f4;
+    --foreground: #223946;
+    --muted: #718590;
+    --link: #397fa8;
+    --border: #cadbe4;
+    --line-soft: #d8e5eb;
+    width: 100%;
+    height: 100dvh;
+    display: grid;
+    grid-template-columns: 270px minmax(0, 1fr);
+    overflow: hidden;
+    color: var(--foreground);
+    background: #eef4f7;
+}
+
+.assistant-app-sidebar {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    border-right: 1px solid rgba(129, 164, 183, 0.16);
+    color: #dcecf4;
+    background:
+        radial-gradient(circle at 0 0, rgba(67, 154, 196, 0.18), transparent 27%),
+        linear-gradient(165deg, #071017, #0c1820);
+}
+
+.assistant-app-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.45rem 0.35rem 1.25rem;
+}
+
+.assistant-app-brand > span {
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(184, 226, 244, 0.16);
+    border-radius: 12px;
+    color: #9fdcf5;
+    background: rgba(183, 224, 242, 0.08);
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.assistant-app-brand svg {
+    width: 19px;
+    height: 19px;
+}
+
+.assistant-app-brand strong,
+.assistant-app-brand small {
+    display: block;
+}
+
+.assistant-app-brand strong {
+    font-size: 0.88rem;
+}
+
+.assistant-app-brand small {
+    margin-top: 0.14rem;
+    color: rgba(190, 219, 232, 0.46);
+    font-size: 0.48rem;
+    font-weight: 760;
+    letter-spacing: 0.12em;
+}
+
+.assistant-app-new {
+    width: 100%;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0 0.8rem;
+    border: 1px solid rgba(174, 218, 238, 0.14);
+    border-radius: 11px;
+    color: #eaf6fb;
+    background: rgba(174, 218, 238, 0.08);
+    font: inherit;
+    font-size: 0.76rem;
+    font-weight: 670;
+    cursor: pointer;
+    transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+.assistant-app-new:hover:not(:disabled) {
+    border-color: rgba(174, 218, 238, 0.25);
+    background: rgba(174, 218, 238, 0.13);
+}
+
+.assistant-app-new:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.assistant-app-new svg {
+    width: 17px;
+    height: 17px;
+}
+
+.assistant-app-prompts {
+    display: grid;
+    gap: 0.3rem;
+    margin-top: 1.8rem;
+}
+
+.assistant-app-prompts > span {
+    padding: 0 0.45rem 0.4rem;
+    color: rgba(189, 218, 231, 0.42);
+    font-size: 0.52rem;
+    font-weight: 760;
+    letter-spacing: 0.11em;
+}
+
+.assistant-app-prompts button {
+    width: 100%;
+    min-height: 40px;
+    padding: 0.5rem 0.65rem;
+    overflow: hidden;
+    border: 0;
+    border-radius: 9px;
+    color: rgba(213, 233, 242, 0.7);
+    background: transparent;
+    font: inherit;
+    font-size: 0.7rem;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.assistant-app-prompts button:hover:not(:disabled) {
+    color: #fff;
+    background: rgba(180, 222, 241, 0.08);
+}
+
+.assistant-app-prompts button:disabled {
+    opacity: 0.42;
+    cursor: not-allowed;
+}
+
+.assistant-app-sidebar-footer {
+    display: flex;
+    align-items: start;
+    gap: 0.6rem;
+    margin-top: auto;
+    padding: 0.9rem 0.6rem 0.35rem;
+    border-top: 1px solid rgba(183, 221, 238, 0.1);
+    color: rgba(193, 219, 231, 0.5);
+}
+
+.assistant-app-sidebar-footer svg {
+    width: 15px;
+    height: 15px;
+    flex: 0 0 auto;
+    color: #75bad8;
+}
+
+.assistant-app-sidebar-footer p {
+    margin: 0;
+    font-size: 0.6rem;
+    line-height: 1.55;
+}
+
+.assistant-app-main {
+    min-width: 0;
+    min-height: 0;
+    display: grid;
+    grid-template-rows: 64px auto minmax(0, 1fr);
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 100% 0, rgba(91, 171, 207, 0.11), transparent 26%),
+        #f6fafc;
+}
+
+.assistant-app-header {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0 1rem;
+    border-bottom: 1px solid rgba(89, 127, 148, 0.12);
+    background: rgba(247, 251, 252, 0.82);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+.assistant-app-header > a,
+.assistant-app-header > button {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    color: #5f7785;
+    background: transparent;
+    cursor: pointer;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.assistant-app-header > a:hover,
+.assistant-app-header > button:hover:not(:disabled) {
+    color: #285f80;
+    background: rgba(57, 127, 168, 0.08);
+}
+
+.assistant-app-header > button:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.assistant-app-header svg {
+    width: 19px;
+    height: 19px;
+}
+
+.assistant-app-header > div {
+    text-align: center;
+}
+
+.assistant-app-header h1 {
+    margin: 0;
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+}
+
+.assistant-app-header span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-top: 0.12rem;
+    color: #68808d;
+    font-size: 0.52rem;
+}
+
+.assistant-app-header span i {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #31bb7f;
+    box-shadow: 0 0 0 4px rgba(49, 187, 127, 0.09);
+    animation: assistant-app-online 1.8s ease-in-out infinite;
+}
+
+.assistant-app-chat {
+    width: min(100%, 900px);
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-self: center;
+    overflow: hidden;
+}
+
+.assistant-app-chat .assistant-conversation {
+    min-height: 0;
+}
+
+.assistant-app-chat .assistant-messages {
+    padding: clamp(1.25rem, 3vw, 2.4rem);
+    scroll-padding-bottom: 1rem;
+}
+
+.assistant-app-chat .assistant-message-row {
+    margin-bottom: 1rem;
+}
+
+.assistant-app-chat .assistant-message {
+    max-width: min(78%, 680px);
+    padding: 0.8rem 0.95rem;
+    border-radius: 17px;
+    font-size: 0.9rem;
+    line-height: 1.65;
+    box-shadow: inset 0 0 0 1px rgba(86, 126, 148, 0.06);
+}
+
+.assistant-app-chat .assistant-message-assistant {
+    border-bottom-left-radius: 6px;
+}
+
+.assistant-app-chat .assistant-message-user {
+    border-bottom-right-radius: 6px;
+    box-shadow: 0 8px 24px rgba(48, 116, 154, 0.11);
+}
+
+.assistant-app-chat .assistant-avatar {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    color: #397fa8;
+    background: #e2edf2;
+}
+
+.assistant-app-chat .assistant-form {
+    padding: 0.75rem clamp(1rem, 3vw, 2.4rem) 0.3rem;
+    border-top: 0;
+    background: linear-gradient(to top, #f6fafc 75%, rgba(246, 250, 252, 0));
+}
+
+.assistant-app-chat .assistant-input-row {
+    gap: 0.6rem;
+    padding: 0.45rem 0.5rem 0.45rem 0.7rem;
+    border: 1px solid #c9dce5;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow:
+        0 13px 38px rgba(45, 84, 105, 0.09),
+        inset 0 1px rgba(255, 255, 255, 0.8);
+}
+
+.assistant-app-chat .assistant-form textarea {
+    height: 48px;
+    padding: 0.7rem 0.45rem;
+    border: 0;
+    border-radius: 0;
+    outline: none;
+    background: transparent;
+}
+
+.assistant-app-chat .assistant-send {
+    width: 42px;
+    min-width: 42px;
+    min-height: 42px;
+    border-radius: 13px;
+}
+
+.assistant-app-chat .assistant-form-meta,
+.assistant-app-chat .assistant-form [role="alert"] {
+    padding-inline: 0.3rem;
+}
+
+.assistant-app-notice {
+    margin: 0;
+    padding: 0.15rem 1rem max(0.65rem, env(safe-area-inset-bottom, 0px));
+    color: #8798a1;
+    font-size: 0.56rem;
+    text-align: center;
+}
+
+.assistant-app-mobile-prompts {
+    display: none;
+}
+
+@keyframes assistant-app-online {
+    50% { opacity: 0.48; transform: scale(0.78); }
+}
+
+@media (max-width: 760px) {
+    .assistant-app-page {
+        grid-template-columns: 1fr;
+    }
+
+    .assistant-app-sidebar {
+        display: none;
+    }
+
+    .assistant-app-main {
+        grid-template-rows: 58px auto minmax(0, 1fr);
+    }
+
+    .assistant-app-mobile-prompts {
+        display: flex;
+        gap: 0.4rem;
+        overflow-x: auto;
+        padding: 0.55rem 0.75rem 0.45rem;
+        border-bottom: 1px solid rgba(89, 127, 148, 0.08);
+        scrollbar-width: none;
+    }
+
+    .assistant-app-mobile-prompts::-webkit-scrollbar {
+        display: none;
+    }
+
+    .assistant-app-mobile-prompts button {
+        min-height: 34px;
+        padding: 0.4rem 0.65rem;
+        flex: 0 0 auto;
+        border: 1px solid #d3e2e9;
+        border-radius: 999px;
+        color: #577484;
+        background: rgba(255, 255, 255, 0.72);
+        font: inherit;
+        font-size: 0.61rem;
+        white-space: nowrap;
+    }
+
+    .assistant-app-mobile-prompts button:disabled {
+        opacity: 0.42;
+    }
+
+    .assistant-app-chat .assistant-messages {
+        padding: 1rem 0.75rem;
+    }
+
+    .assistant-app-chat .assistant-message {
+        max-width: 86%;
+        font-size: 0.82rem;
+    }
+
+    .assistant-app-chat .assistant-form {
+        padding-inline: 0.75rem;
+    }
+
+    .assistant-app-notice {
+        font-size: 0.5rem;
+    }
+}
+
+@media (max-height: 620px) and (min-width: 761px) {
+    .assistant-app-prompts {
+        margin-top: 0.8rem;
+    }
+
+    .assistant-app-sidebar-footer {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .assistant-app-header span i {
+        animation: none;
+    }
+}
