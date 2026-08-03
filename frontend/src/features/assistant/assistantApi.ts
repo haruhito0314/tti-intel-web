@@ -17,26 +17,21 @@ const TOYOTA_TI_HREF_PATTERN = /^https:\/\/www\.toyota-ti\.ac\.jp\/?$/;
 /** Allowlisted circle YouTube channel; must match server-injected YOUTUBE_CHANNEL_URL. */
 const YOUTUBE_CHANNEL_HREF_PATTERN = /^https:\/\/www\.youtube\.com\/@ttiintelligence\/?$/;
 
-function isSafeWebSourceHref(href: string): boolean {
-    if (href.length > 2_048) return false;
-    try {
-        const url = new URL(href);
-        return url.protocol === 'https:'
-            && url.username.length === 0
-            && url.password.length === 0
-            && url.hostname.length > 0
-            && url.hostname !== 'localhost'
-            && !url.hostname.endsWith('.local');
-    } catch {
-        return false;
-    }
+/** Never render model-written URLs in prose. Verified sources use `links`. */
+export function removeInlineAssistantUrls(answer: string): string {
+    return answer
+        .replace(/\[([^\]]+)]\(https?:\/\/[^)\s]+\)/gi, '$1')
+        .replace(/<https?:\/\/[^>\s]+>/gi, '')
+        .replace(/https?:\/\/[^\s<>"'。．、，！？）)\]}]+/gi, '')
+        .replace(/\s+/g, ' ')
+        .replace(/\s+([。．、，！？])/g, '$1')
+        .trim();
 }
 
 export function isExternalAssistantHref(href: string): boolean {
     return DISCORD_HREF_PATTERN.test(href)
         || TOYOTA_TI_HREF_PATTERN.test(href)
-        || YOUTUBE_CHANNEL_HREF_PATTERN.test(href)
-        || isSafeWebSourceHref(href);
+        || YOUTUBE_CHANNEL_HREF_PATTERN.test(href);
 }
 
 const assistantLinkSchema = z.object({
@@ -47,8 +42,7 @@ const assistantLinkSchema = z.object({
     const valid = INTERNAL_HREF_PATTERN.test(link.href)
         || DISCORD_HREF_PATTERN.test(link.href)
         || TOYOTA_TI_HREF_PATTERN.test(link.href)
-        || YOUTUBE_CHANNEL_HREF_PATTERN.test(link.href)
-        || (link.pageId === 'source' && isSafeWebSourceHref(link.href));
+        || YOUTUBE_CHANNEL_HREF_PATTERN.test(link.href);
     if (!valid) {
         context.addIssue({ code: 'custom', message: 'Unsafe assistant link', path: ['href'] });
     }
@@ -160,7 +154,12 @@ export function createAssistantApi(
                     throw new AssistantApiError('invalid-response');
                 }
 
-                return parsed.data;
+                const answer = removeInlineAssistantUrls(parsed.data.answer);
+                if (!answer) {
+                    throw new AssistantApiError('invalid-response');
+                }
+
+                return { ...parsed.data, answer };
             } catch (error) {
                 if (error instanceof AssistantApiError) {
                     throw error;

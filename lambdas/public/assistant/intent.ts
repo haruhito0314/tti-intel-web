@@ -9,6 +9,7 @@ import {
   isToyotaTiQuestion,
   normalizeSearchText,
   promptDisclosureAnswer,
+  sanitizeAssistantAnswer,
   withMentionedPageIds,
   withoutOffTopicMathMention,
   withoutRedundantContactPageId,
@@ -479,6 +480,11 @@ export function resolveAnswerForIntent(
   message: string,
   answer: string,
 ): string {
+  answer = sanitizeAssistantAnswer(answer);
+  if (!answer) {
+    return '回答を表示できませんでした。質問を少し言い換えてください。';
+  }
+
   if (intent.kind === 'design_remark') {
     if (!answer || /難しいね|むずかしいね|[」』]/.test(answer) || answer.length > 60) {
       return 'ありがとう！そう言ってもらえるとうれしいです。';

@@ -52,7 +52,6 @@ import {
 } from './quota.js';
 import type {
   AssistantRequest,
-  AssistantLink,
   AssistantResponse,
   OpenAIResult,
   OpenAIUsage,
@@ -103,6 +102,11 @@ export const CONTACT_FALLBACK: AssistantResponse = {
   links: [{ pageId: 'contact', title: 'お問い合わせ', href: '/contact' }],
 };
 
+export const OUT_OF_SCOPE_RESPONSE: AssistantResponse = {
+  answer: 'このAI Assistantでは、TTI Intelligenceやサイトの内容、AI・開発・数学・ゲームについて案内できます。',
+  links: [],
+};
+
 function fallbackResponseFor(plan: AssistantQueryPlan): AssistantResponse {
   if (
     plan.suppressLinks
@@ -138,22 +142,6 @@ export interface AssistantHandlerDependencies {
     trustedFactIds: readonly AssistantFactId[];
   }): Promise<OpenAIResult>;
   log(record: Record<string, string | number>): void;
-}
-
-function withWebSources(
-  links: readonly AssistantLink[],
-  sources: OpenAIResult['sources'],
-  suppressed: boolean,
-): AssistantLink[] {
-  if (suppressed || !sources || sources.length === 0) return [...links];
-  const combined = [...links];
-  const seen = new Set(combined.map(({ href }) => href));
-  for (const source of sources) {
-    if (combined.length >= 4 || seen.has(source.url)) continue;
-    seen.add(source.url);
-    combined.push({ pageId: 'source', title: source.title, href: source.url });
-  }
-  return combined;
 }
 
 export type AssistantHandler = (
@@ -330,11 +318,11 @@ export function createAssistantHandler(
       const initialPlan = planAssistantRequest(request.message, request.history);
       fallbackPlan = initialPlan;
 
-      // The legacy local-only mode retains the old closed site scope.
-      if (!dependencies.useAllApi && initialPlan.confidence === 'none') {
+      // Clearly unrelated requests never consume quota or reach paid systems.
+      if (initialPlan.confidence === 'none') {
         outcome = 'no_relevant_knowledge';
         statusCode = 200;
-        return jsonResponse(statusCode, fallbackResponseFor(initialPlan), origin);
+        return jsonResponse(statusCode, OUT_OF_SCOPE_RESPONSE, origin);
       }
 
       if (requestId.length === 0) {
@@ -429,13 +417,11 @@ export function createAssistantHandler(
             },
           );
 
-        outcome = result.sources && result.sources.length > 0
-          ? 'web_search_success'
-          : 'ai_success';
+        outcome = 'ai_success';
         statusCode = 200;
         return jsonResponse(statusCode, {
           answer,
-          links: withWebSources(siteLinks, result.sources, initialPlan.suppressLinks),
+          links: siteLinks,
         }, origin);
       }
 

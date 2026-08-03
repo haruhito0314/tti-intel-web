@@ -7,6 +7,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import {
   CONTACT_FALLBACK,
+  OUT_OF_SCOPE_RESPONSE,
   createAssistantHandler,
   createRuntimeDependencies,
   type AssistantHandlerDependencies,
@@ -172,22 +173,64 @@ function createDependencies(
 }
 
 describe('createAssistantHandler all-API mode', () => {
-  it('sends a general question to Luna once and returns verified web sources', async () => {
+  it.each([
+    '今日の天気を教えて',
+    '京都旅行のおすすめを教えて',
+    'カレーの作り方を教えて',
+    '芸能ニュースを教えて',
+  ])('does not spend quota on a clearly unrelated all-API request: %s', async (message) => {
+    const dependencies = createDependencies({ useAllApi: true });
+
+    const response = await invoke(dependencies, eventForRequest({
+      message,
+      history: [],
+    }));
+
+    expect(response.statusCode).toBe(200);
+    expect(parsedBody(response)).toEqual({
+      answer: 'このAI Assistantでは、TTI Intelligenceやサイトの内容、AI・開発・数学・ゲームについて案内できます。',
+      links: [],
+    });
+    expectNoOperationalCalls(dependencies);
+    expect(dependencies.requestOpenAI).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    'AIって何？',
+    'プログラミングを始めるには？',
+    'AIアプリの作り方を教えて',
+    'Webアプリ開発の進め方は？',
+    '数学を勉強するコツは？',
+    'ゲーム制作は何から始めればいい？',
+  ])('still sends an adjacent learning question to Luna: %s', async (message) => {
+    const dependencies = createDependencies({ useAllApi: true });
+
+    const response = await invoke(dependencies, eventForRequest({
+      message,
+      history: [],
+    }));
+
+    expect(response.statusCode).toBe(200);
+    expect(dependencies.requestOpenAI).toHaveBeenCalledTimes(1);
+    expect(parsedBody(response)).toMatchObject({ answer: expect.any(String) });
+  });
+
+  it('ignores legacy web sources returned alongside an adjacent AI answer', async () => {
     const requestOpenAI = vi.fn(async (
       _input: Parameters<NonNullable<AssistantHandlerDependencies['requestOpenAI']>>[0],
     ): Promise<OpenAIResult> => ({
       ...successfulAnswerResult,
       output: {
-        answer: '量子コンピュータは量子力学の性質を計算に利用するコンピュータです。',
-        pageIds: ['contact'],
+        answer: 'AIは、人間の知的な作業をコンピュータで扱う技術の総称です。',
+        pageIds: [],
         contentIds: [],
       },
-      sources: [{ title: '参考資料', url: 'https://example.org/quantum' }],
-    }));
+      sources: [{ title: '偽の公式サイト', url: 'https://wrong.example/' }],
+    } as unknown as OpenAIResult));
     const dependencies = createDependencies({ useAllApi: true, requestOpenAI });
 
     const response = await invoke(dependencies, eventForRequest({
-      message: '量子コンピュータって何？',
+      message: 'AIって何？',
       history: [],
     }));
 
@@ -196,8 +239,8 @@ describe('createAssistantHandler all-API mode', () => {
     expect(dependencies.requestOpenAIPlan).not.toHaveBeenCalled();
     expect(dependencies.reserveQuota).toHaveBeenCalledTimes(1);
     expect(parsedBody(response)).toEqual({
-      answer: '量子コンピュータは量子力学の性質を計算に利用するコンピュータです。',
-      links: [{ pageId: 'source', title: '参考資料', href: 'https://example.org/quantum' }],
+      answer: 'AIは、人間の知的な作業をコンピュータで扱う技術の総称です。',
+      links: [],
     });
   });
 
@@ -683,7 +726,7 @@ describe('createAssistantHandler planning paths', () => {
     }));
 
     expect(response.statusCode).toBe(200);
-    expect(parsedBody(response)).toEqual(CONTACT_FALLBACK);
+    expect(parsedBody(response)).toEqual(OUT_OF_SCOPE_RESPONSE);
     expectNoOperationalCalls(dependencies);
   });
 

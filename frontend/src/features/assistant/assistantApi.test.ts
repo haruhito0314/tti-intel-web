@@ -325,7 +325,7 @@ describe('createAssistantApi', () => {
         await expect(client.send(request)).resolves.toEqual(fourLinks);
     });
 
-    it('accepts a verified HTTPS web source link', async () => {
+    it('rejects arbitrary HTTPS source links even when pageId is source', async () => {
         const withSource = {
             answer: '一般的な回答です。',
             links: [{ pageId: 'source', title: '参考資料', href: 'https://example.org/source' }],
@@ -336,7 +336,24 @@ describe('createAssistantApi', () => {
             fetchImpl: injectedFetch(fetchMock),
         });
 
-        await expect(client.send(request)).resolves.toEqual(withSource);
+        await expect(client.send(request)).rejects.toMatchObject({ kind: 'invalid-response' });
+    });
+
+    it('removes model-written URLs from answer prose', async () => {
+        const withInlineUrl = {
+            answer: '最新モデルを案内します。 https://wrong.example/fake',
+            links: [],
+        };
+        const fetchMock = vi.fn().mockResolvedValue(jsonResponse(withInlineUrl));
+        const client = createAssistantApi({
+            baseUrl: 'https://api.example.com',
+            fetchImpl: injectedFetch(fetchMock),
+        });
+
+        await expect(client.send(request)).resolves.toEqual({
+            answer: '最新モデルを案内します。',
+            links: [],
+        });
     });
 
     it('accepts allowlisted Discord invite hrefs', async () => {

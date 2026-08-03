@@ -763,6 +763,15 @@ describe('toyota ti location FAQs', () => {
 });
 
 describe('sanitizeAssistantAnswer', () => {
+  it('removes untrusted raw and Markdown URLs from answer prose', () => {
+    expect(sanitizeAssistantAnswer(
+      '最新情報は https://wrong.example/models を確認してください。',
+    )).toBe('最新情報は を確認してください。');
+    expect(sanitizeAssistantAnswer(
+      '詳細は[OpenAI公式](https://example.invalid/fake)をご覧ください。',
+    )).toBe('詳細はOpenAI公式をご覧ください。');
+  });
+
   it('strips Discord instruction leaks', () => {
     expect(sanitizeAssistantAnswer(
       'Discordの参加リンクはシステムが別途案内します。お問い合わせは以下からどうぞ。',

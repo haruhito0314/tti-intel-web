@@ -593,10 +593,11 @@ function isExplicitOutOfScope(value: string): boolean {
   const programmingLanguage = /python|javascript|typescript|java|c\+\+|rust|golang|react|swift|kotlin|php|ruby|sql/.test(value);
   const codeArtifact = /コード|プログラム|スクリプト/.test(value);
   const creationRequest = /書いて|作って|実装して|生成して|組んで/.test(value);
+  const cookingHowTo = /(?:カレー|パスタ|ご飯|お菓子|ケーキ|料理).{0,8}(?:作り方|レシピ)/.test(value);
   return (
     creationRequest
     && (programmingLanguage || codeArtifact)
-  ) || /天気|ニュース速報|株価|為替|翻訳して|作文して|宿題を解いて|銀河|宇宙|惑星/.test(value);
+  ) || cookingHowTo || /天気|ニュース速報|芸能(?:人|界|ニュース)|旅行|観光|ホテル|旅館|レシピ|料理|献立|株価|為替|翻訳して|作文して|宿題を解いて|銀河|宇宙|惑星/.test(value);
 }
 
 function detectExclusions(value: string, state: MutablePlanState): void {

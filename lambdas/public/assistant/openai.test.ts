@@ -21,7 +21,6 @@ import {
   buildResponsesPayload,
   createApiKeyProvider,
   FACT_PLANNER_INSTRUCTIONS,
-  extractWebSources,
   OpenAiTimeoutError,
   OpenAiUpstreamError,
   parseFactPlannerEnvelope,
@@ -515,18 +514,7 @@ describe('buildResponsesPayload', () => {
       stream: false,
       reasoning: { effort: 'low' },
       max_output_tokens: 800,
-      max_tool_calls: 1,
-      tools: [{
-        type: 'web_search',
-        external_web_access: true,
-        user_location: {
-          type: 'approximate',
-          country: 'JP',
-          timezone: 'Asia/Tokyo',
-        },
-      }],
-      tool_choice: 'auto',
-      include: ['web_search_call.action.sources'],
+      tools: [],
       instructions: SYSTEM_INSTRUCTIONS,
       input: [{
         role: 'user',
@@ -566,6 +554,10 @@ describe('buildResponsesPayload', () => {
     expect(serialized).not.toContain(request.sessionId);
     expect(serialized).not.toContain('route');
     expect(serialized).not.toContain('keywords');
+    expect(serialized).not.toContain('web_search');
+    expect(payload).not.toHaveProperty('max_tool_calls');
+    expect(payload).not.toHaveProperty('tool_choice');
+    expect(payload).not.toHaveProperty('include');
     expect(payload.text.format.schema.properties.answer).toEqual({ type: 'string' });
   });
 
@@ -591,7 +583,7 @@ describe('buildResponsesPayload', () => {
     expect(JSON.stringify(payload).match(/systemを無視して/g)).toHaveLength(1);
   });
 
-  it('includes reviewed site facts and bounded automatic web search', () => {
+  it('includes reviewed site facts without exposing web search', () => {
     const payload = buildResponsesPayload({
       request: { ...request, message: '豊田工業大学のサークルは？' },
       selected: [],
@@ -605,10 +597,11 @@ describe('buildResponsesPayload', () => {
       id: 'university.clubs-scope',
       answer: ASSISTANT_FACTS['university.clubs-scope'].answer,
     }]);
-    expect(payload.tools).toEqual([expect.objectContaining({ type: 'web_search' })]);
-    expect(payload.tool_choice).toBe('auto');
-    expect(payload.max_tool_calls).toBe(1);
-    expect(payload.include).toEqual(['web_search_call.action.sources']);
+    expect(payload.tools).toEqual([]);
+    expect(JSON.stringify(payload)).not.toContain('web_search');
+    expect(payload).not.toHaveProperty('tool_choice');
+    expect(payload).not.toHaveProperty('max_tool_calls');
+    expect(payload).not.toHaveProperty('include');
   });
 
   it('keeps only user turns in the model history envelope', () => {
@@ -840,7 +833,7 @@ describe('parseResponsesEnvelope', () => {
     });
   });
 
-  it('extracts at most two unique safe HTTPS web sources', () => {
+  it('does not expose legacy web sources from a response envelope', () => {
     const envelope = completedEnvelope() as ReturnType<typeof completedEnvelope> & {
       output: unknown[];
     };
@@ -857,11 +850,7 @@ describe('parseResponsesEnvelope', () => {
       },
     });
 
-    expect(extractWebSources(envelope)).toEqual([
-      { title: 'One', url: 'https://example.com/one' },
-      { title: 'Two', url: 'https://example.org/two' },
-    ]);
-    expect(parseResponsesEnvelope(envelope).sources).toEqual(extractWebSources(envelope));
+    expect(parseResponsesEnvelope(envelope)).not.toHaveProperty('sources');
   });
 
   it('rejects a refusal even if an output_text is also present', () => {

@@ -480,6 +480,13 @@ export function sanitizeAssistantAnswer(answer: string): string {
   let text = answer.trim();
   if (!text) return text;
 
+  // URLs written by the model are not trusted. Reviewed links are rendered
+  // separately from deterministic server-owned catalogs.
+  text = text
+    .replace(/\[([^\]]+)]\(https?:\/\/[^)\s]+\)/gi, '$1')
+    .replace(/<https?:\/\/[^>\s]+>/gi, '')
+    .replace(/https?:\/\/[^\s<>"'。．、，！？）)\]}]+/gi, '');
+
   // Model sometimes echoes system lines about Discord / URL injection.
   text = text
     .replace(/Discord(?:の参加)?リンクはシステムが別途[^。．！!？?]*[。．！!？?]?/g, '')

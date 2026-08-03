@@ -925,6 +925,17 @@ describe('QueryPlan invariants', () => {
     expect(outOfScope.mode).toBe('unsupported');
   });
 
+  it.each([
+    '京都旅行のおすすめを教えて',
+    'カレーの作り方を教えて',
+    '芸能ニュースを教えて',
+  ])('marks a clearly unrelated topic as explicit out of scope: %s', (message) => {
+    const plan = planAssistantRequest(message, []);
+
+    expect(plan.mode).toBe('unsupported');
+    expect(plan.confidence).toBe('none');
+  });
+
   it('recognizes programming inexperience compositionally without a fixed sentence', () => {
     const plan = planAssistantRequest(
       'プログラミングを一度もしたことがなくても大丈夫？',
