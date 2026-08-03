@@ -253,7 +253,7 @@ export function selectStructuredKnowledge(
       const messageScore = scoreQuery(item, normalizedMessage);
       const historyScore = Math.max(0, ...normalizedHistory.map((query) => scoreQuery(item, query)));
       const score = messageScore
-        + (contextualFollowUp ? historyScore : Math.floor(historyScore / 2))
+        + (contextualFollowUp ? historyScore : 0)
         + (messageScore > 0 && hasCurrentPageBoost(item, currentPageId) ? 3 : 0);
       return { item, score, catalogIndex };
     })

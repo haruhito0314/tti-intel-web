@@ -150,6 +150,13 @@ describe('selectStructuredKnowledge', () => {
     expect(selectStructuredKnowledge('カレーの作り方', '/', [])).toEqual([]);
   });
 
+  it('does not leak relevant history into a new unrelated question', () => {
+    expect(selectStructuredKnowledge('カレーの作り方', '/', [
+      { role: 'user', content: 'Codex' },
+      { role: 'user', content: '豊田工業大学' },
+    ])).toEqual([]);
+  });
+
   it('never returns duplicate IDs and never exceeds the hard five-item cap', () => {
     const selected = selectStructuredKnowledge('豊田工業大学の特徴と教育とサークル', '/', [], 99);
     const ids = selected.map(({ item }) => item.id);
