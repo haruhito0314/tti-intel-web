@@ -8,34 +8,48 @@ import {
   parseInterimEvaluationFixture,
 } from './assistant-local-noise-eval.js';
 
-const fixtureUrl = new URL('./fixtures/assistant-noise-eval-dry-run.json', import.meta.url);
+const fixtureUrl = new URL('../../scripts/fixtures/assistant-noise-eval-100.json', import.meta.url);
 
 describe('interim evaluator fixture', () => {
-  it('loads the new structured-knowledge acceptance schema', () => {
+  it('loads exactly 100 cases from the Luna acceptance matrix', () => {
     const fixture = parseInterimEvaluationFixture(JSON.parse(
       readFileSync(fixtureUrl, 'utf8'),
     ));
 
-    expect(fixture.metadata).toEqual({ schemaVersion: 2, count: 3 });
-    expect(fixture.cases.map(({ expectation }) => expectation)).toEqual([
-      'site',
-      'follow-up',
-      'general',
-    ]);
+    expect(fixture.metadata.schemaVersion).toBe(3);
+    expect(fixture.metadata.count).toBe(100);
+    expect(fixture.cases).toHaveLength(100);
+    expect(new Set(fixture.cases.map(({ category }) => category))).toEqual(new Set([
+      'site/join/contact',
+      'university overview/education/life/clubs',
+      'university-vs-TTI-Intelligence distinction',
+      'Codex/Vercel/AWS/Plugin/CLI/MCP',
+      'apps/game/math',
+      'stable general knowledge',
+      'real-time/high-risk constraints',
+    ]));
+    expect(fixture.cases.filter(({ expectation }) => (
+      expectation === 'general'
+      || expectation === 'current'
+      || expectation === 'high-risk'
+    )).length).toBeGreaterThanOrEqual(10);
+    expect(fixture.cases.filter(({ category }) => (
+      category === 'Codex/Vercel/AWS/Plugin/CLI/MCP'
+    )).length).toBeGreaterThanOrEqual(6);
+    expect(fixture.cases.every((evaluationCase) => (
+      evaluationCase.variant.length > 0
+      && evaluationCase.requiredConcepts.length + evaluationCase.forbiddenConcepts.length > 0
+      && evaluationCase.linkExpectation.mode.length > 0
+    ))).toBe(true);
   });
 
   it('rejects legacy fact-selection fields', () => {
-    expect(() => parseInterimEvaluationFixture({
-      metadata: { schemaVersion: 2, count: 1 },
-      cases: [{
-        id: 'BAD',
-        message: 'test',
-        currentPath: '/',
-        history: [],
-        expectation: 'site',
-        expectedFactIds: ['membership.cost'],
-      }],
-    })).toThrow(/unknown field/i);
+    const fixture = JSON.parse(readFileSync(fixtureUrl, 'utf8')) as {
+      cases: Record<string, unknown>[];
+    };
+    fixture.cases[0]!.expectedFactIds = ['membership.cost'];
+
+    expect(() => parseInterimEvaluationFixture(fixture)).toThrow(/unknown field/i);
   });
 });
 
@@ -110,6 +124,76 @@ describe('assessInterimObservation', () => {
     expectation: 'site' as const,
   };
 
+  it('checks required and forbidden concepts plus per-case link expectations', () => {
+    const result = assessInterimObservation({
+      ...evaluationCase,
+      category: 'Codex/Vercel/AWS/Plugin/CLI/MCP',
+      variant: 'clean',
+      expectation: 'development',
+      requiredConcepts: ['Codex', '開発'],
+      forbiddenConcepts: ['CLI Practice', 'TOEIC'],
+      linkExpectation: {
+        mode: 'required',
+        allowedHrefs: ['/development'],
+        requiredHrefs: ['/development'],
+      },
+    }, {
+      statusCode: 200,
+      latencyMs: 280,
+      response: {
+        answer: 'CodexはCLI Practiceの案内です。',
+        links: [],
+      },
+      lunaCallCount: 1,
+      webCallCount: 0,
+      usage: {
+        inputTokens: 100,
+        cachedInputTokens: 20,
+        cacheWriteTokens: 10,
+        outputTokens: 20,
+        totalTokens: 120,
+      },
+      logs: [],
+    });
+
+    expect(result.failures).toEqual(expect.arrayContaining([
+      'answer is missing required concept: 開発',
+      'answer contains forbidden concept: CLI Practice',
+      'response is missing a required link: /development',
+    ]));
+  });
+
+  it('requires explicit university/community distinction language', () => {
+    const result = assessInterimObservation({
+      ...evaluationCase,
+      category: 'university-vs-TTI-Intelligence distinction',
+      variant: 'clean',
+      expectation: 'distinction',
+      requiredConcepts: ['大学', 'TTI Intelligence', '団体'],
+      forbiddenConcepts: ['同一'],
+      linkExpectation: { mode: 'optional', allowedHrefs: [], requiredHrefs: [] },
+    }, {
+      statusCode: 200,
+      latencyMs: 250,
+      response: {
+        answer: '豊田工業大学とTTI Intelligenceという団体について説明します。',
+        links: [],
+      },
+      lunaCallCount: 1,
+      webCallCount: 0,
+      usage: {
+        inputTokens: 80,
+        cachedInputTokens: 10,
+        cacheWriteTokens: 0,
+        outputTokens: 20,
+        totalTokens: 100,
+      },
+      logs: [],
+    });
+
+    expect(result.failures).toContain('answer does not distinguish the university and community');
+  });
+
   it('accepts valid cached/write accounting for a safe one-call observation', () => {
     const result = assessInterimObservation(evaluationCase, {
       statusCode: 200,
@@ -143,7 +227,30 @@ describe('assessInterimObservation', () => {
       passed: true,
       failures: [],
       estimatedCostUsd: 0.0000414,
+      responseFingerprint: expect.stringMatching(/^[0-9a-f]{8}$/),
     });
+  });
+
+  it('detects a repeated answer template across unrelated categories', async () => {
+    const module = await import('./assistant-local-noise-eval.js');
+    const summarize = (module as unknown as {
+      summarizeEvaluationBatch?: (values: unknown[]) => {
+        templateConcentrationPassed: boolean;
+        suspiciousFingerprints: string[];
+      };
+    }).summarizeEvaluationBatch;
+
+    expect(typeof summarize).toBe('function');
+    const summary = summarize!([
+      { caseId: 'A', category: 'site/join/contact', passed: true, responseFingerprint: 'same' },
+      { caseId: 'B', category: 'stable general knowledge', passed: true, responseFingerprint: 'same' },
+      { caseId: 'C', category: 'apps/game/math', passed: true, responseFingerprint: 'same' },
+      { caseId: 'D', category: 'real-time/high-risk constraints', passed: true, responseFingerprint: 'same' },
+      { caseId: 'E', category: 'site/join/contact', passed: true, responseFingerprint: 'other' },
+    ]);
+
+    expect(summary.templateConcentrationPassed).toBe(false);
+    expect(summary.suspiciousFingerprints).toEqual(['same']);
   });
 
   it('rejects extra calls, web use, unsafe output, and private logs', () => {

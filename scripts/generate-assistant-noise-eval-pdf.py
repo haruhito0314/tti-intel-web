@@ -1,53 +1,187 @@
+from __future__ import annotations
+
+from collections import Counter
+from hashlib import sha256
+from html import escape
+import json
 from pathlib import Path
-import hashlib, json
+
+import pdfplumber
+from pypdf import PdfReader
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
+from reportlab.platypus import PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
-ROOT = Path('/Users/haruhito/Documents/Github/web')
-EVID = ROOT/'output/evals/assistant-noise-eval-2026-07-19'
-OUT = ROOT/'output/pdf/assistant-noise-evaluation-2026-07-19.pdf'
-OUT.parent.mkdir(parents=True, exist_ok=True)
+ROOT = Path(__file__).resolve().parents[1]
+EVIDENCE = ROOT / "output/evals/assistant-luna-structured-knowledge-2026-08-03"
+OUTPUT = ROOT / "output/pdf/assistant-luna-structured-knowledge-evaluation-2026-08-03.pdf"
+OUTPUT.parent.mkdir(parents=True, exist_ok=True)
 
-expected = {'dataset.json':'5bb9bbe256da9ca1fa42f22ee1c2682b5e0295bc9d89f0c0a99fbda62e860f27',
-            'results.json':'bfcc2b86eb9c7abea7061fcb6ba5722ad0d72c00540081da1550c6408f3d6760',
-            'results.csv':'09e56e1a0b9f07ad3238878520b443ef3cee58c9fd7b75aaf3c1abee7c198f4e',
-            'summary.json':'29d721f408e3393df10fa8f508b4a59bba488e3046ff7a6833b156c08b71f34c'}
-for name, digest in expected.items():
-    got = hashlib.sha256((EVID/name).read_bytes()).hexdigest()
-    if got != digest: raise SystemExit(f'hash mismatch: {name}')
-summary = json.loads((EVID/'summary.json').read_text())
-results = json.loads((EVID/'results.json').read_text())
-if len(results.get('cases', [])) != 100 or summary.get('model') != 'gpt-5.4-nano-2026-03-17' or summary.get('reasoningEffort') != 'medium': raise SystemExit('frozen contract mismatch')
+manifest = json.loads((EVIDENCE / "manifest.json").read_text(encoding="utf-8"))
+mapping = {"dataset.json": "dataset", "results.json": "results", "results.csv": "csv", "summary.json": "summary"}
+for filename, key in mapping.items():
+    entry = manifest["files"][key]
+    if entry["filename"] != filename:
+        raise SystemExit(f"manifest mismatch: {filename}")
+    if sha256((EVIDENCE / filename).read_bytes()).hexdigest() != entry["sha256"]:
+        raise SystemExit(f"hash mismatch: {filename}")
 
-font = '/System/Library/Fonts/Supplemental/AppleGothic.ttf'
-try: pdfmetrics.registerFont(TTFont('JP', font, subfontIndex=0)); font_name='JP'
-except Exception: font_name='Helvetica'
+dataset = json.loads((EVIDENCE / "dataset.json").read_text(encoding="utf-8"))
+results = json.loads((EVIDENCE / "results.json").read_text(encoding="utf-8")).get("cases", [])
+summary = json.loads((EVIDENCE / "summary.json").read_text(encoding="utf-8"))
+if len(dataset.get("cases", [])) != 100 or summary.get("model") != "gpt-5.6-luna":
+    raise SystemExit("frozen report contract mismatch")
+
+font_path = Path("/System/Library/Fonts/Supplemental/Arial Unicode.ttf")
+if not font_path.exists():
+    raise SystemExit("Arial Unicode font is unavailable")
+pdfmetrics.registerFont(TTFont("JP", str(font_path)))
+FONT = "JP"
+
 styles = getSampleStyleSheet()
-styles.add(ParagraphStyle(name='JBody', parent=styles['BodyText'], fontName=font_name, fontSize=9.2, leading=14, spaceAfter=5))
-styles.add(ParagraphStyle(name='JSmall', parent=styles['BodyText'], fontName=font_name, fontSize=7.5, leading=10))
-styles.add(ParagraphStyle(name='JTitle', parent=styles['Title'], fontName=font_name, fontSize=22, leading=28, alignment=TA_CENTER, spaceAfter=14))
-styles.add(ParagraphStyle(name='JHead', parent=styles['Heading2'], fontName=font_name, fontSize=14, leading=18, spaceBefore=8, spaceAfter=7))
-P=lambda s, st='JBody': Paragraph(s, styles[st])
-story=[]
-story += [Spacer(1,22*mm), P('GPT-5.4 nano アシスタント<br/>ノイズ耐性評価レポート','JTitle'), P('2026年7月19日｜固定100ケース・初回実測','JBody'), Spacer(1,8*mm)]
-story += [P('<b>結論</b>　100件中77件が期待ファクト完全一致（77.0%）。安全性ラベルは100/100（この評価規則内）。重いノイズで52%まで低下し、複数質問の取りこぼしが主な課題でした。'), P('これは結果を見て学習・調整した後の数字ではありません。質問、期待値、実行条件を先に凍結し、有料API実行を1回だけ行った初回測定です。')]
-story += [Spacer(1,4*mm), P('主要指標','JHead')]
-data=[['指標','結果'],['ケース完全一致','77/100 (77.0%)'],['Fact precision / recall / F1','90.33% / 85.67% / 86.10%'],['mode / link / unsupported','94% / 84% / 96%'],['安全性（記録ラベル）','100/100'],['実モデル呼び出し','64件（決定的経路36件）'],['モデル / 推論','gpt-5.4-nano-2026-03-17 / medium'],['推定コスト','$0.0259146（cached input 0）']]
-t=Table(data,colWidths=[62*mm,105*mm]); t.setStyle(TableStyle([('FONTNAME',(0,0),(-1,-1),font_name),('FONTSIZE',(0,0),(-1,-1),9),('BACKGROUND',(0,0),(-1,0),colors.HexColor('#17324d')),('TEXTCOLOR',(0,0),(-1,0),colors.white),('GRID',(0,0),(-1,-1),.3,colors.HexColor('#b8c5d1')),('VALIGN',(0,0),(-1,-1),'TOP'),('ROWBACKGROUNDS',(0,1),(-1,-1),[colors.white,colors.HexColor('#eef3f7')]),('LEFTPADDING',(0,0),(-1,-1),6),('RIGHTPADDING',(0,0),(-1,-1),6)])); story.append(t)
-story += [PageBreak(), P('ノイズ・経路別の結果','JHead')]
-data=[['条件','正答'],['clean (25)','21/25 (84%)'],['light (25)','23/25 (92%)'],['medium (25)','20/25 (80%)'],['heavy (25)','13/25 (52%)'],['1 ask (40)','36/40 (90%)'],['2 asks (40)','28/40 (70%)'],['3 asks (20)','13/20 (65%)'],['high / no planner (36)','22/36 (61.1%)'],['planner / nano (64)','55/64 (85.9%)']]
-t=Table(data,colWidths=[75*mm,92*mm]); t.setStyle(TableStyle([('FONTNAME',(0,0),(-1,-1),font_name),('FONTSIZE',(0,0),(-1,-1),9),('BACKGROUND',(0,0),(-1,0),colors.HexColor('#17324d')),('TEXTCOLOR',(0,0),(-1,0),colors.white),('GRID',(0,0),(-1,-1),.3,colors.HexColor('#b8c5d1')),('ROWBACKGROUNDS',(0,1),(-1,-1),[colors.white,colors.HexColor('#eef3f7')])])) ; story.append(t)
-story += [Spacer(1,6*mm), P('<b>読み方の注意：</b> planner群とhigh群はランダム化比較ではなく、現在のルーターが選んだ群です。従って「nanoが原因で改善した」とは断定できず、即答経路のゲート条件が弱いという診断材料です。heavyの低下は明確ですが、lightがcleanを上回るため、単調な劣化曲線とは言えません。')]
-story += [P('失敗23件の主因','JHead'), P('・複数質問を即答経路で1ファクトに縮約（10件）<br/>・heavyノイズによる意味／モード誤分類（3件）<br/>・planner後に正しい選択を初期ファクトで上書き（否定付き大学スコープ4件）<br/>・対応済み意図をunsupportedへ変更（3件）<br/>・意味置換／モードずれ（2件）<br/>・unsupported複合依頼の誤ルーティング（1件）')]
-story += [PageBreak(), P('改善の優先順位','JHead'), P('1. 複数節、否定、heavy正規化、複合アクションはplannerへ送る。即答採用前に節の網羅性を検査する。<br/>2. plannerのselectedFactIdsをレンダリングまで権威として扱い、actualFactIds・mode・linksを照合する。<br/>3. 日本語の揺れ（かな、小書き、空白、反復記号、TTI表記）を分類前に正規化する。<br/>4. supportedからunsupportedへ変わったときは再計画または初期意図を保持する。<br/>5. 23失敗を回帰テスト化し、同じ文面への過学習ではなく新しい言い換えで再評価する。')]
-story += [P('評価範囲と限界','JHead'), P('ローカル静的パイプラインをconcurrency=1で1回実行した結果です。currentPathは全件「/」、contentSearchはstub-emptyで、API Gateway/Lambdaの本番E2E、ブラウザUI、動的検索、非ルートパス、負荷、セッション、障害復旧は測っていません。results.jsonには回答本文がなく、自然な文章品質は評価対象外です。安全性100%も、この100件と記録規則の範囲に限ります。費用はOpenAI価格表に基づく推定で、請求額ではありません。')]
-story += [PageBreak(), P('再現用ファイルと実行条件','JHead'), P('固定データと結果は次のディレクトリに保存されています。<br/>output/evals/assistant-noise-eval-2026-07-19/'), P('含まれるもの：dataset.json（100問）、results.json、results.csv、summary.json、manifest.json。SHA-256はmanifest.jsonおよび生成スクリプトのfail-closed検証で照合します。'), P('モデル：gpt-5.4-nano-2026-03-17、reasoning effort：medium。実モデル呼び出し64、リトライ0、エラー0、cached input tokens 0。総トークン100,971（input 95,523 / output 5,448、reasoning 3,681はoutput内数）。'), P('単価（2026-07-19確認）：input $0.20/M、cached input $0.02/M、output $1.25/M。計算：95,523×0.20/M + 0×0.02/M + 5,448×1.25/M = $0.0259146。')]
-doc=SimpleDocTemplate(str(OUT), pagesize=A4, rightMargin=18*mm,leftMargin=18*mm,topMargin=16*mm,bottomMargin=16*mm,title='GPT-5.4 nano アシスタント ノイズ耐性評価')
-doc.build(story)
-print(OUT)
+styles.add(ParagraphStyle(name="TitleJP", parent=styles["Title"], fontName=FONT, fontSize=22, leading=29, alignment=TA_CENTER, textColor=colors.HexColor("#10243E"), spaceAfter=8 * mm))
+styles.add(ParagraphStyle(name="SubJP", parent=styles["BodyText"], fontName=FONT, fontSize=10, leading=16, alignment=TA_CENTER, textColor=colors.HexColor("#52657A")))
+styles.add(ParagraphStyle(name="HeadJP", parent=styles["Heading2"], fontName=FONT, fontSize=14, leading=20, textColor=colors.HexColor("#10243E"), spaceBefore=4 * mm, spaceAfter=3 * mm))
+styles.add(ParagraphStyle(name="BodyJP", parent=styles["BodyText"], fontName=FONT, fontSize=9.2, leading=15, textColor=colors.HexColor("#23364A"), spaceAfter=2.5 * mm))
+styles.add(ParagraphStyle(name="SmallJP", parent=styles["BodyText"], fontName=FONT, fontSize=7.7, leading=11, textColor=colors.HexColor("#33485D")))
+styles.add(ParagraphStyle(name="HeaderJP", parent=styles["BodyText"], fontName=FONT, fontSize=7.7, leading=11, textColor=colors.white))
+P = lambda text, style="BodyJP": Paragraph(str(text), styles[style])
+
+def make_table(rows, widths, header_color="#10243E"):
+    table = Table([
+        [P(escape(str(cell)), "HeaderJP" if index == 0 else "SmallJP") for cell in row]
+        for index, row in enumerate(rows)
+    ], colWidths=widths, repeatRows=1)
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor(header_color)),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("GRID", (0, 0), (-1, -1), 0.35, colors.HexColor("#B9C6D3")),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F2F6F8")]),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 5),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 5),
+        ("TOPPADDING", (0, 0), (-1, -1), 5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+    ]))
+    return table
+
+measured = int(summary.get("measured") or 0)
+accuracy = summary.get("accuracy")
+accuracy_text = f"{accuracy * 100:.1f}%" if accuracy is not None else "未測定"
+cost = summary.get("estimatedCostUsd")
+cost_text = f"USD {cost:.6f}" if cost is not None else "未測定"
+category_counts = Counter(case["category"] for case in dataset["cases"])
+variant_counts = Counter(case["variant"] for case in dataset["cases"])
+
+story = [
+    Spacer(1, 14 * mm),
+    P("Luna AI Assistant", "TitleJP"),
+    P("100問 受入評価マトリクス / デプロイ前ドライラン報告", "SubJP"),
+    Spacer(1, 8 * mm),
+    P("結論", "HeadJP"),
+    P("<b>100問の固定データセットと評価器は検証済みです。</b> 本番APIとOpenAI APIは呼んでいません。したがって、正答率、レイテンシ、token、費用は未測定です。実測値を推測で補完せず、デプロイ許可後に同じデータセットを1回だけ実行する設計にしています。"),
+    Spacer(1, 3 * mm),
+    make_table([
+        ["指標", "値", "解釈"],
+        ["固定ケース", "100", "25テーマ x 4表現ゆれ"],
+        ["評価カテゴリ", "7", "サイト・大学・開発・一般・安全性"],
+        ["本番実測", str(measured), "このPDFはローカルdry-run"],
+        ["Web検索", "0", "tools: [] / 検索なし"],
+        ["正答率", accuracy_text, "本番実行後に算出"],
+        ["推定費用", cost_text, "token実測後に算出"],
+    ], [48 * mm, 33 * mm, 85 * mm]),
+    Spacer(1, 6 * mm),
+    P("自動判定の範囲", "HeadJP"),
+    P("回答の必須概念と禁止概念、大学とTTI Intelligenceの区別表現、CLI Practice/TOEIC誘導、本文URL、危険なリンク、ケース別リンク許可、HTTP状態、レイテンシ、Luna呼出し1回、Web呼出し0回、input/cached/cache-write/output/total token整合性を検査します。回答指紋が3カテゴリ以上で4回以上繰り返された場合は、固定文への集中として人手確認に回します。"),
+    PageBreak(),
+    P("カテゴリ別の設計", "HeadJP"),
+]
+category_rows = [["カテゴリ", "ケース数", "実測正答率"]]
+for category, count in category_counts.items():
+    category_rows.append([category, count, "未測定"])
+story.extend([
+    make_table(category_rows, [111 * mm, 25 * mm, 30 * mm], "#0B6B62"),
+    Spacer(1, 6 * mm),
+    P("表現ゆれ", "HeadJP"),
+    P(" / ".join(f"{escape(name)}: {count}件" for name, count in variant_counts.items())),
+    P("clean、typo/noise、shortまたはshort/follow-up、compoundを組み合わせ、誤字・空白・略語・短文・履歴参照・複数要求を含めました。一般知識、最新性が必要な質問、高リスク質問は合計24件、Codex/Vercel/AWS/Plugin/CLI/MCPは合計24件です。"),
+    P("代表的な受入条件", "HeadJP"),
+    make_table([
+        ["領域", "確認内容"],
+        ["大学全体", "豊田工業大学の部活動をAIサークルだけに縮約しない"],
+        ["区別", "大学とTTI Intelligenceを別の主体として説明する"],
+        ["開発", "Codex/Vercel/AWS/Plugin/CLI/MCPを説明し、CLI Practiceへ誘導しない"],
+        ["一般知識", "安定した知識は回答し、不要なサイトリンクを出さない"],
+        ["最新情報", "Web未使用のため最新値を断定せず、確認限界を示す"],
+        ["高リスク", "診断・利益保証をせず、専門家や公式情報の確認を促す"],
+    ], [48 * mm, 118 * mm]),
+    PageBreak(),
+    P("モデル・費用・プライバシー", "HeadJP"),
+])
+prices = summary["configuration"]["pricingUsdPerMillion"]
+story.extend([
+    make_table([
+        ["設定", "値"],
+        ["モデル", summary["configuration"]["model"]],
+        ["Web検索", "無効"],
+        ["Luna呼出し期待値", "通常質問ごとに1回"],
+        ["Web呼出し期待値", "各ケース0回"],
+        ["input", f"USD {prices['input']:.2f} / 100万token"],
+        ["cached input", f"USD {prices['cachedInput']:.2f} / 100万token"],
+        ["cache write", f"USD {prices['cacheWrite']:.2f} / 100万token"],
+        ["output", f"USD {prices['output']:.2f} / 100万token"],
+    ], [70 * mm, 96 * mm]),
+    Spacer(1, 4 * mm),
+    P("<b>費用の注意:</b> 上記は評価器の単価設定です。実行日の公式価格を再確認してから本番測定します。cached inputとcache writeを分け、不整合なtoken値では費用を0扱いにせず「算出不能」とします。"),
+    P("保存しない情報", "HeadJP"),
+    P("結果・CSV・PDFにはsession IDや会話履歴を保存しません。PDFには回答本文も掲載しません。質問文と期待値は再現用datasetだけに保存し、結果側ではケースID、カテゴリ、判定理由、短い不可逆フィンガープリントを使用します。"),
+    P("失敗例", "HeadJP"),
+])
+failed = [result for result in results if result.get("passed") is False]
+if not results:
+    story.append(P("本番未実行のため失敗例はありません。許可後の評価で最大8件を、回答本文を含めずに掲載します。"))
+elif not failed:
+    story.append(P("自動判定上の失敗はありませんでした。"))
+else:
+    failure_rows = [["Case", "Category", "Issues"]]
+    for result in failed[:8]:
+        failure_rows.append([result.get("caseId", ""), result.get("category", ""), ", ".join(result.get("issues", []))[:180]])
+    story.append(make_table(failure_rows, [22 * mm, 58 * mm, 86 * mm], "#8C2F39"))
+
+story.extend([
+    PageBreak(),
+    P("実行境界と次の手順", "HeadJP"),
+    P("この成果物はローカルdry-runです。production endpoint、OpenAI API、AWS環境、日次上限にはアクセスしていません。デプロイ許可後に限り、同じ凍結データセットを1回実行し、サニタイズ済みの呼出し/tokenテレメトリを結合してPDFを再生成します。"),
+    P("合格条件", "HeadJP"),
+    P("100件を欠落なく実行し、各通常質問でLuna 1回・Web 0回を確認します。危険なリンク、本文URL、大学と団体の混同、禁止誘導、最新情報や高リスク助言の断定を失敗として扱います。カテゴリ別正答率、失敗例、tokenと費用、固定文集中を同じPDFに記録します。"),
+    P("再現性", "HeadJP"),
+    P("dataset.json、results.json、results.csv、summary.jsonをmanifest.jsonのSHA-256で照合してから生成しました。モデル、検索設定、単価設定、実行状態はsummary.jsonへ固定されています。"),
+])
+
+def footer(canvas, document):
+    canvas.saveState()
+    canvas.setStrokeColor(colors.HexColor("#D7E0E8"))
+    canvas.line(18 * mm, 13 * mm, A4[0] - 18 * mm, 13 * mm)
+    canvas.setFont(FONT, 7.5)
+    canvas.setFillColor(colors.HexColor("#718096"))
+    canvas.drawString(18 * mm, 8 * mm, "TTI Intelligence / Luna Assistant Evaluation")
+    canvas.drawRightString(A4[0] - 18 * mm, 8 * mm, str(document.page))
+    canvas.restoreState()
+
+document = SimpleDocTemplate(str(OUTPUT), pagesize=A4, rightMargin=18 * mm, leftMargin=18 * mm, topMargin=16 * mm, bottomMargin=18 * mm, title="Luna AI Assistant 100問受入評価", author="TTI Intelligence")
+document.build(story, onFirstPage=footer, onLaterPages=footer)
+
+reader = PdfReader(str(OUTPUT))
+if len(reader.pages) != 4:
+    raise SystemExit(f"unexpected page count: {len(reader.pages)}")
+with pdfplumber.open(OUTPUT) as document_check:
+    extracted = "\n".join(page.extract_text() or "" for page in document_check.pages)
+for required in ("gpt-5.6-luna", "100", "本番未実行", "cached input", "Web"):
+    if required not in extracted:
+        raise SystemExit(f"missing report text: {required}")
+print(OUTPUT)

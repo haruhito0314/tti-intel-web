@@ -12,7 +12,31 @@ import type {
   OpenAIUsage,
 } from '../public/assistant/types.js';
 
-export type InterimExpectation = 'site' | 'follow-up' | 'general';
+export type EvaluationCategory =
+  | 'site/join/contact'
+  | 'university overview/education/life/clubs'
+  | 'university-vs-TTI-Intelligence distinction'
+  | 'Codex/Vercel/AWS/Plugin/CLI/MCP'
+  | 'apps/game/math'
+  | 'stable general knowledge'
+  | 'real-time/high-risk constraints';
+
+export type InterimExpectation =
+  | 'site'
+  | 'follow-up'
+  | 'university'
+  | 'distinction'
+  | 'development'
+  | 'app'
+  | 'general'
+  | 'current'
+  | 'high-risk';
+
+export interface LinkExpectation {
+  mode: 'none' | 'optional' | 'required';
+  allowedHrefs: string[];
+  requiredHrefs: string[];
+}
 
 export interface InterimEvaluationCase {
   id: string;
@@ -20,15 +44,37 @@ export interface InterimEvaluationCase {
   currentPath: string;
   history: HistoryMessage[];
   expectation: InterimExpectation;
+  category?: EvaluationCategory;
+  variant?: string;
+  requiredConcepts?: string[];
+  forbiddenConcepts?: string[];
+  linkExpectation?: LinkExpectation;
+}
+
+export interface MatrixEvaluationCase extends InterimEvaluationCase {
+  category: EvaluationCategory;
+  variant: string;
+  requiredConcepts: string[];
+  forbiddenConcepts: string[];
+  linkExpectation: LinkExpectation;
 }
 
 export interface InterimEvaluationFixture {
-  metadata: { schemaVersion: 2; count: number };
-  cases: InterimEvaluationCase[];
+  metadata: {
+    schemaVersion: 3;
+    count: number;
+    createdAt: string;
+    model: 'gpt-5.6-luna';
+    webSearch: false;
+    execution: string;
+    design: string;
+  };
+  cases: MatrixEvaluationCase[];
 }
 
 export interface InterimObservation {
   statusCode: number;
+  latencyMs?: number;
   response: AssistantResponse;
   lunaCallCount: number;
   webCallCount: number;
@@ -40,6 +86,19 @@ export interface InterimAssessment {
   passed: boolean;
   failures: string[];
   estimatedCostUsd: number;
+  responseFingerprint: string;
+}
+
+export interface EvaluationBatchEntry {
+  caseId: string;
+  category: EvaluationCategory;
+  passed: boolean;
+  responseFingerprint: string;
+}
+
+export interface EvaluationBatchSummary {
+  templateConcentrationPassed: boolean;
+  suspiciousFingerprints: string[];
 }
 
 const CASE_FIELDS = new Set([
@@ -48,8 +107,32 @@ const CASE_FIELDS = new Set([
   'currentPath',
   'history',
   'expectation',
+  'category',
+  'variant',
+  'requiredConcepts',
+  'forbiddenConcepts',
+  'linkExpectation',
 ]);
-const EXPECTATIONS = new Set<InterimExpectation>(['site', 'follow-up', 'general']);
+const EXPECTATIONS = new Set<InterimExpectation>([
+  'site',
+  'follow-up',
+  'university',
+  'distinction',
+  'development',
+  'app',
+  'general',
+  'current',
+  'high-risk',
+]);
+const CATEGORIES = new Set<EvaluationCategory>([
+  'site/join/contact',
+  'university overview/education/life/clubs',
+  'university-vs-TTI-Intelligence distinction',
+  'Codex/Vercel/AWS/Plugin/CLI/MCP',
+  'apps/game/math',
+  'stable general knowledge',
+  'real-time/high-risk constraints',
+]);
 const INPUT_USD_PER_MILLION = 0.20;
 const CACHED_INPUT_USD_PER_MILLION = 0.02;
 const OUTPUT_USD_PER_MILLION = 1.25;
@@ -102,7 +185,32 @@ function parseHistory(value: unknown, field: string): HistoryMessage[] {
   });
 }
 
-function parseCase(value: unknown, index: number): InterimEvaluationCase {
+function parseStringList(value: unknown, field: string): string[] {
+  if (!Array.isArray(value)) return invalidFixture(`${field} must be an array`);
+  return value.map((entry, index) => nonEmptyString(entry, `${field}[${index}]`));
+}
+
+function parseLinkExpectation(value: unknown, field: string): LinkExpectation {
+  if (!isRecord(value)) return invalidFixture(`${field} must be an object`);
+  const keys = new Set(['mode', 'allowedHrefs', 'requiredHrefs']);
+  for (const key of Object.keys(value)) {
+    if (!keys.has(key)) return invalidFixture(`${field} has unknown field ${key}`);
+  }
+  if (value.mode !== 'none' && value.mode !== 'optional' && value.mode !== 'required') {
+    return invalidFixture(`${field}.mode is unknown`);
+  }
+  const allowedHrefs = parseStringList(value.allowedHrefs, `${field}.allowedHrefs`);
+  const requiredHrefs = parseStringList(value.requiredHrefs, `${field}.requiredHrefs`);
+  if (requiredHrefs.some((href) => !allowedHrefs.includes(href))) {
+    return invalidFixture(`${field}.requiredHrefs must be allowed`);
+  }
+  if (value.mode === 'none' && (allowedHrefs.length > 0 || requiredHrefs.length > 0)) {
+    return invalidFixture(`${field} cannot allow links in none mode`);
+  }
+  return { mode: value.mode, allowedHrefs, requiredHrefs };
+}
+
+function parseCase(value: unknown, index: number): MatrixEvaluationCase {
   const field = `cases[${index}]`;
   if (!isRecord(value)) return invalidFixture(`${field} must be an object`);
   for (const key of Object.keys(value)) {
@@ -111,12 +219,20 @@ function parseCase(value: unknown, index: number): InterimEvaluationCase {
   if (typeof value.expectation !== 'string' || !EXPECTATIONS.has(value.expectation as InterimExpectation)) {
     return invalidFixture(`${field}.expectation is unknown`);
   }
+  if (typeof value.category !== 'string' || !CATEGORIES.has(value.category as EvaluationCategory)) {
+    return invalidFixture(`${field}.category is unknown`);
+  }
   return {
     id: nonEmptyString(value.id, `${field}.id`),
     message: nonEmptyString(value.message, `${field}.message`),
     currentPath: nonEmptyString(value.currentPath, `${field}.currentPath`),
     history: parseHistory(value.history, `${field}.history`),
     expectation: value.expectation as InterimExpectation,
+    category: value.category as EvaluationCategory,
+    variant: nonEmptyString(value.variant, `${field}.variant`),
+    requiredConcepts: parseStringList(value.requiredConcepts, `${field}.requiredConcepts`),
+    forbiddenConcepts: parseStringList(value.forbiddenConcepts, `${field}.forbiddenConcepts`),
+    linkExpectation: parseLinkExpectation(value.linkExpectation, `${field}.linkExpectation`),
   };
 }
 
@@ -124,9 +240,18 @@ export function parseInterimEvaluationFixture(value: unknown): InterimEvaluation
   if (!isRecord(value) || !isRecord(value.metadata) || !Array.isArray(value.cases)) {
     return invalidFixture('root fields are invalid');
   }
-  if (value.metadata.schemaVersion !== 2 || !Number.isSafeInteger(value.metadata.count)) {
-    return invalidFixture('metadata must contain schemaVersion 2 and an integer count');
+  if (
+    value.metadata.schemaVersion !== 3
+    || !Number.isSafeInteger(value.metadata.count)
+    || value.metadata.count !== 100
+    || value.metadata.model !== 'gpt-5.6-luna'
+    || value.metadata.webSearch !== false
+  ) {
+    return invalidFixture('metadata must describe the 100-case Luna no-web matrix');
   }
+  const createdAt = nonEmptyString(value.metadata.createdAt, 'metadata.createdAt');
+  const execution = nonEmptyString(value.metadata.execution, 'metadata.execution');
+  const design = nonEmptyString(value.metadata.design, 'metadata.design');
   const cases = value.cases.map(parseCase);
   if (value.metadata.count !== cases.length) {
     return invalidFixture('metadata count does not match cases');
@@ -134,7 +259,15 @@ export function parseInterimEvaluationFixture(value: unknown): InterimEvaluation
   const ids = cases.map(({ id }) => id);
   if (new Set(ids).size !== ids.length) return invalidFixture('case IDs must be unique');
   return {
-    metadata: { schemaVersion: 2, count: cases.length },
+    metadata: {
+      schemaVersion: 3,
+      count: cases.length,
+      createdAt,
+      model: 'gpt-5.6-luna',
+      webSearch: false,
+      execution,
+      design,
+    },
     cases,
   };
 }
@@ -264,6 +397,39 @@ function normalizePrivateText(value: string): string {
     .replace(/[\s\p{P}\p{S}]/gu, '');
 }
 
+export function fingerprintAnswer(answer: string): string {
+  const normalized = normalizePrivateText(answer).replace(/\p{N}+/gu, '#');
+  let hash = 0x811c9dc5;
+  for (const character of normalized) {
+    hash ^= character.codePointAt(0) ?? 0;
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash.toString(16).padStart(8, '0');
+}
+
+export function summarizeEvaluationBatch(
+  entries: readonly EvaluationBatchEntry[],
+): EvaluationBatchSummary {
+  const groups = new Map<string, { count: number; categories: Set<EvaluationCategory> }>();
+  for (const entry of entries) {
+    const group = groups.get(entry.responseFingerprint) ?? {
+      count: 0,
+      categories: new Set<EvaluationCategory>(),
+    };
+    group.count += 1;
+    group.categories.add(entry.category);
+    groups.set(entry.responseFingerprint, group);
+  }
+  const suspiciousFingerprints = [...groups.entries()]
+    .filter(([, group]) => group.count >= 4 && group.categories.size >= 3)
+    .map(([fingerprint]) => fingerprint)
+    .sort();
+  return {
+    templateConcentrationPassed: suspiciousFingerprints.length === 0,
+    suspiciousFingerprints,
+  };
+}
+
 function containsSignificantPrivateFragment(
   logValue: string,
   privateValue: string,
@@ -300,6 +466,12 @@ export function assessInterimObservation(
 ): InterimAssessment {
   const failures: string[] = [];
   if (observation.statusCode !== 200) failures.push('expected a 200 response');
+  if (
+    observation.latencyMs !== undefined
+    && (!Number.isSafeInteger(observation.latencyMs) || observation.latencyMs < 0)
+  ) {
+    failures.push('latency is invalid');
+  }
   if (observation.lunaCallCount !== 1) failures.push('expected exactly one Luna call');
   if (observation.webCallCount !== 0) failures.push('web access is forbidden');
   if (/(?:https?|ftp):\/\/|www\.|\/\/[\p{L}\p{N}]/iu.test(observation.response.answer)) {
@@ -307,6 +479,41 @@ export function assessInterimObservation(
   }
   if (observation.response.links.some((link) => !isVerifiedLink(link))) {
     failures.push('response contains an unsafe link');
+  }
+  const normalizedAnswer = normalizePrivateText(observation.response.answer);
+  for (const concept of evaluationCase.requiredConcepts ?? []) {
+    if (!normalizedAnswer.includes(normalizePrivateText(concept))) {
+      failures.push(`answer is missing required concept: ${concept}`);
+    }
+  }
+  for (const concept of evaluationCase.forbiddenConcepts ?? []) {
+    if (normalizedAnswer.includes(normalizePrivateText(concept))) {
+      failures.push(`answer contains forbidden concept: ${concept}`);
+    }
+  }
+  if (
+    evaluationCase.expectation === 'distinction'
+    && !/(?:別|異な|区別|ではなく|一方|対して)/u.test(observation.response.answer)
+  ) {
+    failures.push('answer does not distinguish the university and community');
+  }
+  const linkExpectation = evaluationCase.linkExpectation;
+  if (linkExpectation !== undefined) {
+    const hrefs = observation.response.links.map(({ href }) => href);
+    if (linkExpectation.mode === 'none' && hrefs.length > 0) {
+      failures.push('response contains an unexpected link');
+    }
+    if (hrefs.some((href) => !linkExpectation.allowedHrefs.includes(href))) {
+      failures.push('response contains a link outside the case allowlist');
+    }
+    for (const requiredHref of linkExpectation.requiredHrefs) {
+      if (!hrefs.includes(requiredHref)) {
+        failures.push(`response is missing a required link: ${requiredHref}`);
+      }
+    }
+    if (linkExpectation.mode === 'required' && hrefs.length === 0) {
+      failures.push('response requires at least one link');
+    }
   }
   const usageValues = Object.values(observation.usage);
   const safeUsage = usageValues.every(safeTokenCount);
@@ -353,5 +560,6 @@ export function assessInterimObservation(
     estimatedCostUsd: consistentUsage
       ? estimateCostUsd(observation.usage)
       : 0,
+    responseFingerprint: fingerprintAnswer(observation.response.answer),
   };
 }
