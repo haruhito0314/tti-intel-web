@@ -1,0 +1,253 @@
+[
+  {
+    "id": "circle-identity",
+    "domain": "circle",
+    "title": "TTI Intelligenceの位置づけと活動",
+    "summary": "TTI Intelligenceは、豊田工業大学の学生を中心とするAIサークルで、AI技術を使った学習・研究・開発などに取り組む。",
+    "details": [
+      "公開中の活動紹介は、解説動画、開発、ゲーム交流、今週の数学の4領域で構成されている。",
+      "解説動画では科目の本質に踏み込む動画を制作し、開発ではAIモデルやMCPを使ったWeb・アプリ・ゲーム開発に取り組む。"
+    ],
+    "keywords": ["TTI Intelligence", "TTIインテリジェンス", "AIサークル", "豊田工業大学の学生", "どんな活動", "何のサークル", "サークル活動"],
+    "sourceIds": [],
+    "volatility": "stable"
+  },
+  {
+    "id": "circle-participation",
+    "domain": "circle",
+    "title": "TTI Intelligenceへの参加",
+    "summary": "主な活動日は土日で、参加は自由。プログラミング未経験者を基礎から支援し、学部1年生から大学院生、他大学の学生も参加対象としている。",
+    "details": [
+      "参加費用は無料で、個人で利用するAIツールなどのサービス料金は各自負担となる。",
+      "参加相談や活動に関する質問は問い合わせ窓口で受け付けている。"
+    ],
+    "keywords": ["参加", "入りたい", "入部", "未経験", "活動日", "土日", "費用", "無料", "他大学", "学年", "問い合わせ"],
+    "sourceIds": [],
+    "asOf": "2026-08-03",
+    "volatility": "periodic"
+  },
+  {
+    "id": "site-public-contact",
+    "domain": "site",
+    "title": "公開問い合わせ先",
+    "summary": "TTI Intelligenceの公開連絡先メールアドレスはtti.intel@gmail.com。",
+    "details": [
+      "サイトには参加相談や活動に関する質問のための問い合わせページがある。"
+    ],
+    "keywords": ["メール", "メールアドレス", "連絡先", "問い合わせ", "contact", "tti.intel@gmail.com"],
+    "sourceIds": [],
+    "asOf": "2026-08-03",
+    "volatility": "periodic"
+  },
+  {
+    "id": "circle-discord-youtube",
+    "domain": "circle",
+    "title": "DiscordとYouTube",
+    "summary": "TTI Intelligenceは、参加・交流用のDiscordと解説動画を公開するYouTubeチャンネルを案内している。",
+    "details": [
+      "ゲーム交流ページの参加導線はDiscordと問い合わせページに接続されている。",
+      "サークル紹介ページの解説動画活動はTTI IntelligenceのYouTubeチャンネルに接続されている。"
+    ],
+    "keywords": ["Discord", "ディスコード", "YouTube", "ユーチューブ", "動画", "チャンネル", "参加リンク", "SNS"],
+    "sourceIds": ["discord", "youtube"],
+    "asOf": "2026-08-03",
+    "volatility": "periodic"
+  },
+  {
+    "id": "app-ai-assistant",
+    "domain": "app",
+    "title": "AI Assistant",
+    "summary": "AI Assistantは公開中のアプリで、サイトの案内情報と根拠となるページを組み合わせて回答する。",
+    "details": [
+      "アプリ紹介ではOpenAI、AWS Lambda、Grounded AIを使用技術として掲げている。",
+      "構造化されたサイト・大学資料がない一般質問は安定した一般知識で扱い、実行時のWeb検索やリアルタイム確認は行わない。"
+    ],
+    "keywords": ["AI Assistant", "AIアシスタント", "アシスタント", "チャット", "現在のアプリ", "公開中のアプリ", "アプリ一覧"],
+    "sourceIds": [],
+    "asOf": "2026-08-03",
+    "volatility": "periodic"
+  },
+  {
+    "id": "app-table-tennis",
+    "domain": "app",
+    "title": "卓球組み合わせ表ジェネレーター",
+    "summary": "人数とクール数を指定し、卓球の組み合わせを自動生成する公開中のアプリ。",
+    "details": [
+      "番号シャッフル、休み枠、台ローテーションに対応する。",
+      "ReactとTypeScriptを使ったスポーツ向けの制作例として掲載されている。"
+    ],
+    "keywords": ["Table Tennis Match Maker", "卓球", "組み合わせ表", "対戦表", "マッチメーカー", "現在のアプリ", "公開中のアプリ", "アプリ一覧"],
+    "sourceIds": [],
+    "asOf": "2026-08-03",
+    "volatility": "periodic"
+  },
+  {
+    "id": "app-color-sort",
+    "domain": "app",
+    "title": "Color Sort Puzzle",
+    "summary": "透明なボトルの色を移し替え、同じ色ごとにそろえる公開中のミニパズル。",
+    "details": [
+      "日本語のアプリ名はカラーソートパズル。",
+      "ReactとTypeScriptを使ったパズルの制作例として掲載されている。"
+    ],
+    "keywords": ["Color Sort Puzzle", "Color Sort", "カラーソートパズル", "カラーソート", "色分け", "ボトル", "パズル", "現在のアプリ", "公開中のアプリ", "アプリ一覧"],
+    "sourceIds": [],
+    "asOf": "2026-08-03",
+    "volatility": "periodic"
+  },
+  {
+    "id": "circle-game-activity",
+    "domain": "game",
+    "title": "ゲーム交流活動",
+    "summary": "VALORANT、APEX LEGENDS、Minecraftなどを中心に、メンバーがオンラインで交流する活動。",
+    "details": [
+      "開催は不定期で夜の時間帯が中心。自宅、寮、外出先からオンライン参加できる。",
+      "初心者、復帰者、1人参加、見るだけの参加、作業しながらVCだけ参加する人も歓迎している。",
+      "勝敗だけでなく、雑談しながら気軽に遊び、メンバー同士が自然に話せる場を重視している。"
+    ],
+    "keywords": ["ゲーム", "ゲーム交流", "VALORANT", "APEX", "APEX LEGENDS", "Minecraft", "マイクラ", "VC", "聞き専", "初心者", "オンライン", "夜", "不定期"],
+    "sourceIds": ["discord"],
+    "asOf": "2026-08-03",
+    "volatility": "periodic"
+  },
+  {
+    "id": "circle-weekly-math",
+    "domain": "math",
+    "title": "今週の数学の活動",
+    "summary": "自作問題を通じて、数学的な発想力と表現力を磨く活動。",
+    "details": [
+      "サークル紹介ページから公開中の数学問題ページへ接続されている。",
+      "問題を作ることと、考え方を表現して共有することを活動に含む。"
+    ],
+    "keywords": ["今週の数学", "数学", "自作問題", "数学問題", "発想力", "表現力", "問題を解く"],
+    "sourceIds": [],
+    "asOf": "2026-08-03",
+    "volatility": "periodic"
+  },
+  {
+    "id": "circle-ap-exam-schedule",
+    "domain": "circle",
+    "title": "応用情報技術者試験への取り組み予定",
+    "summary": "TTI Intelligenceの公開中の予定では、メンバー有志が2026年11月の秋期応用情報技術者試験に挑戦する。",
+    "details": [
+      "試験会場は各地の試験会場と案内されている。",
+      "参加者が一緒に合格を目指すサークル内の取り組みとして掲載されている。"
+    ],
+    "keywords": ["応用情報技術者試験", "応用情報", "AP試験", "AP", "試験予定", "次回の取り組み", "2026年11月", "秋期"],
+    "sourceIds": [],
+    "asOf": "2026-08-03",
+    "volatility": "volatile"
+  },
+  {
+    "id": "development-codex",
+    "domain": "development",
+    "title": "Codexを使った開発",
+    "summary": "Codexに目的と完成像を自然言語で共有し、調査・実装・確認を進める開発方法。",
+    "details": [
+      "既存コードを調べ、実装し、レスポンシブ表示を確認し、ローカルプレビューまで進める流れを扱う。",
+      "サイトのHomeを活動内容が伝わる構成へ作り直す指示と、ローカルサーバーを起動してプレビューする指示が制作例として示されている。"
+    ],
+    "keywords": ["Codex", "OpenAI Codex", "コーデックス", "AIコーディング", "自然言語で開発", "プロンプト開発"],
+    "sourceIds": [],
+    "asOf": "2026-08-03",
+    "volatility": "periodic"
+  },
+  {
+    "id": "development-vercel",
+    "domain": "development",
+    "title": "Vercelへの公開",
+    "summary": "AIやCLIからVercelへ接続し、フロントエンドを公開する工程。",
+    "details": [
+      "Codex CLIへVercelへの公開を指示し、production deploymentを進める画面例がある。",
+      "公開はレビューと動作確認を経て、利用者へ届けるワークフローの一部に位置づけられている。"
+    ],
+    "keywords": ["Vercel", "ヴェルセル", "フロントエンド公開", "Web公開", "デプロイ", "ホスティング"],
+    "sourceIds": [],
+    "asOf": "2026-08-03",
+    "volatility": "periodic"
+  },
+  {
+    "id": "development-aws",
+    "domain": "development",
+    "title": "AWSでのバックエンド構築",
+    "summary": "AIやCLIからAWSへ接続し、バックエンドとクラウド環境を構築・配備する工程。",
+    "details": [
+      "Codex CLIへAWSへのバックエンド配備を指示し、クラウド側の構築状態を確認する画面例がある。",
+      "Vercelへのフロントエンド公開とAWSへのバックエンド配備を一つの流れとして扱う。"
+    ],
+    "keywords": ["AWS", "Amazon Web Services", "バックエンド", "クラウド", "クラウド構築", "Lambda", "デプロイ"],
+    "sourceIds": [],
+    "asOf": "2026-08-03",
+    "volatility": "periodic"
+  },
+  {
+    "id": "development-plugin",
+    "domain": "development",
+    "title": "Pluginによる手順の再利用",
+    "summary": "検証や公開の決まりをPluginにまとめ、同じ品質確認と公開準備を再利用可能にする。",
+    "details": [
+      "PluginとCLIを組み合わせ、テスト、ビルド、公開前確認を一貫した手順として実行する。",
+      "Codex CLIの同じターミナルセッションからPluginを選び、保存されたskillを読み込む制作例がある。"
+    ],
+    "keywords": ["Plugin", "Plugins", "プラグイン", "skill", "スキル", "再利用", "検証手順", "公開手順"],
+    "sourceIds": [],
+    "asOf": "2026-08-03",
+    "volatility": "periodic"
+  },
+  {
+    "id": "development-cli",
+    "domain": "development",
+    "title": "CLIを通じたローカル開発",
+    "summary": "CLIはローカル環境でCodexを起動し、ビルド、テスト、公開やクラウド配備のコマンドを実行する接点。",
+    "details": [
+      "ローカルサーバーの起動とプレビュー表示を同じ開発の流れで扱う。",
+      "Codex CLIからVercel、AWS、Plugin、MCPへつながる制作例が示されている。"
+    ],
+    "keywords": ["CLI", "コマンドライン", "ターミナル", "ローカル開発", "コマンド実行", "Codex CLI", "ビルド", "テスト"],
+    "sourceIds": [],
+    "asOf": "2026-08-03",
+    "volatility": "periodic"
+  },
+  {
+    "id": "development-mcp",
+    "domain": "development",
+    "title": "MCPによる道具と情報への接続",
+    "summary": "MCPを通じてCodexをデザイン、リポジトリ、ブラウザなどへ接続し、実装と検証に必要な情報を扱う。",
+    "details": [
+      "開発ページではFigmaのデザインとGitHubのIssueを確認し、実装との差を整理する例がある。",
+      "MCPはコード編集だけでなくブラウザ操作による動作確認にも使われる。"
+    ],
+    "keywords": ["MCP", "Model Context Protocol", "モデルコンテキストプロトコル", "Figma", "GitHub", "ブラウザ操作", "リポジトリ", "デザイン接続"],
+    "sourceIds": [],
+    "asOf": "2026-08-03",
+    "volatility": "periodic"
+  },
+  {
+    "id": "development-combined-workflow",
+    "domain": "development",
+    "title": "Codex・CLI・Vercel・AWS・Plugin・MCPの連携",
+    "summary": "構想、調査、実装、検証、公開、改善を、CodexとCLIを中心にVercel、AWS、Plugin、MCPへつなぐ開発ワークフロー。",
+    "details": [
+      "アイデアをAIと整理して要件へ落とし、AIコーディングツールと実装し、MCP経由のブラウザ操作で確認する。",
+      "確認後はVercelへフロントエンドを公開し、AWSへバックエンドを配備する。検証・公開手順はPluginとして再利用する。"
+    ],
+    "keywords": ["開発ワークフロー", "開発の流れ", "Codex", "Vercel", "AWS", "Plugin", "CLI", "MCP", "構想", "調査", "実装", "検証", "公開", "改善"],
+    "sourceIds": [],
+    "asOf": "2026-08-03",
+    "volatility": "periodic"
+  },
+  {
+    "id": "development-project-examples",
+    "domain": "development",
+    "title": "AI開発の制作例",
+    "summary": "AI Assistant、Color Sort Puzzle、卓球組み合わせ表が、AIを使った開発の制作例として掲載されている。",
+    "details": [
+      "AI Assistantは公開情報と安全な参照先を組み合わせる案内機能。",
+      "Color Sort Puzzleは色をそろえるゲームで、卓球組み合わせ表は参加人数や台数に応じた対戦表を作る。"
+    ],
+    "keywords": ["制作例", "開発事例", "プロジェクト", "AI Assistant", "Color Sort Puzzle", "卓球組み合わせ表", "Codex", "Vercel", "AWS", "Plugin", "CLI", "MCP"],
+    "sourceIds": [],
+    "asOf": "2026-08-03",
+    "volatility": "periodic"
+  }
+]

@@ -1,5 +1,270 @@
+import rawSiteKnowledge from './knowledge/site-knowledge.json' with { type: 'json' };
+import rawUniversityKnowledge from './knowledge/university-knowledge.json' with { type: 'json' };
+import {
+  OFFICIAL_SOURCE_LINKS,
+  normalizeSearchText,
+  resolveCurrentPageId,
+} from './runtimeCatalog.js';
+import type {
+  HistoryMessage,
+  KnowledgeDomain,
+  KnowledgeItem,
+  OfficialSourceId,
+  PageId,
+  RankedKnowledgeItem,
+} from './types.js';
+
 export type {
   KnowledgeDomain,
   KnowledgeItem,
   RankedKnowledgeItem,
 } from './types.js';
+
+const KNOWLEDGE_DOMAINS: ReadonlySet<KnowledgeDomain> = new Set([
+  'site',
+  'circle',
+  'university',
+  'development',
+  'app',
+  'game',
+  'math',
+]);
+const VOLATILITY_VALUES = new Set(['stable', 'periodic', 'volatile']);
+const OFFICIAL_SOURCE_IDS: ReadonlySet<string> = new Set(
+  Object.keys(OFFICIAL_SOURCE_LINKS),
+);
+const CATALOG_FIELDS = new Set([
+  'id',
+  'domain',
+  'title',
+  'summary',
+  'details',
+  'keywords',
+  'sourceIds',
+  'asOf',
+  'volatility',
+]);
+
+function invalidCatalog(catalog: string, reason: string): never {
+  throw new TypeError(`Invalid ${catalog} knowledge catalog: ${reason}`);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function parseNonEmptyString(value: unknown, field: string, catalog: string): string {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return invalidCatalog(catalog, `${field} must be a non-empty string`);
+  }
+  return value;
+}
+
+function parseNonEmptyStringArray(
+  value: unknown,
+  field: string,
+  catalog: string,
+): string[] {
+  if (!Array.isArray(value) || value.length === 0) {
+    return invalidCatalog(catalog, `${field} must be a non-empty array`);
+  }
+  return value.map((entry, index) => (
+    parseNonEmptyString(entry, `${field}[${index}]`, catalog)
+  ));
+}
+
+function parseSourceIds(
+  value: unknown,
+  field: string,
+  catalog: string,
+): OfficialSourceId[] {
+  if (!Array.isArray(value)) {
+    return invalidCatalog(catalog, `${field} must be an array`);
+  }
+
+  const sourceIds: OfficialSourceId[] = [];
+  for (const sourceId of value) {
+    if (typeof sourceId !== 'string' || !OFFICIAL_SOURCE_IDS.has(sourceId)) {
+      return invalidCatalog(catalog, `${field} contains an unknown source ID`);
+    }
+    if (sourceIds.includes(sourceId as OfficialSourceId)) {
+      return invalidCatalog(catalog, `${field} contains a duplicate source ID`);
+    }
+    sourceIds.push(sourceId as OfficialSourceId);
+  }
+  return sourceIds;
+}
+
+function parseKnowledgeItem(
+  value: unknown,
+  index: number,
+  catalog: string,
+): KnowledgeItem {
+  const field = `entries[${index}]`;
+  if (!isRecord(value)) {
+    return invalidCatalog(catalog, `${field} must be an object`);
+  }
+  for (const key of Object.keys(value)) {
+    if (!CATALOG_FIELDS.has(key)) {
+      return invalidCatalog(catalog, `${field} contains unknown field ${key}`);
+    }
+  }
+
+  if (typeof value.domain !== 'string' || !KNOWLEDGE_DOMAINS.has(value.domain as KnowledgeDomain)) {
+    return invalidCatalog(catalog, `${field}.domain is unknown`);
+  }
+  if (typeof value.volatility !== 'string' || !VOLATILITY_VALUES.has(value.volatility)) {
+    return invalidCatalog(catalog, `${field}.volatility is unknown`);
+  }
+  if (
+    value.asOf !== undefined
+    && (typeof value.asOf !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value.asOf))
+  ) {
+    return invalidCatalog(catalog, `${field}.asOf must use YYYY-MM-DD`);
+  }
+
+  return {
+    id: parseNonEmptyString(value.id, `${field}.id`, catalog),
+    domain: value.domain as KnowledgeDomain,
+    title: parseNonEmptyString(value.title, `${field}.title`, catalog),
+    summary: parseNonEmptyString(value.summary, `${field}.summary`, catalog),
+    details: parseNonEmptyStringArray(value.details, `${field}.details`, catalog),
+    keywords: parseNonEmptyStringArray(value.keywords, `${field}.keywords`, catalog),
+    sourceIds: parseSourceIds(value.sourceIds, `${field}.sourceIds`, catalog),
+    ...(value.asOf === undefined ? {} : { asOf: value.asOf }),
+    volatility: value.volatility as KnowledgeItem['volatility'],
+  };
+}
+
+function parseKnowledgeCatalog(value: unknown, catalog: string): readonly KnowledgeItem[] {
+  if (!Array.isArray(value) || value.length === 0) {
+    return invalidCatalog(catalog, 'catalog must be a non-empty array');
+  }
+  const items = value.map((entry, index) => parseKnowledgeItem(entry, index, catalog));
+  const seenIds = new Set<string>();
+  for (const item of items) {
+    if (seenIds.has(item.id)) {
+      return invalidCatalog(catalog, `catalog contains duplicate ID ${item.id}`);
+    }
+    seenIds.add(item.id);
+  }
+  return items;
+}
+
+export const SITE_KNOWLEDGE = parseKnowledgeCatalog(rawSiteKnowledge, 'site');
+export const UNIVERSITY_KNOWLEDGE = parseKnowledgeCatalog(
+  rawUniversityKnowledge,
+  'university',
+);
+export const STRUCTURED_KNOWLEDGE: readonly KnowledgeItem[] = [
+  ...SITE_KNOWLEDGE,
+  ...UNIVERSITY_KNOWLEDGE,
+];
+
+const allKnowledgeIds = new Set<string>();
+for (const item of STRUCTURED_KNOWLEDGE) {
+  if (allKnowledgeIds.has(item.id)) {
+    invalidCatalog('structured', `catalog contains duplicate ID ${item.id}`);
+  }
+  allKnowledgeIds.add(item.id);
+}
+
+function normalizeKnowledgeText(value: string): string {
+  return normalizeSearchText(value)
+    .replace(/[!！?？。．、,，:：;；()（）\[\]「」『』〜~…・/\\]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function searchTokens(value: string): string[] {
+  return value.match(/[\p{L}\p{N}@._+-]+/gu) ?? [];
+}
+
+function scoreQuery(item: KnowledgeItem, normalizedQuery: string): number {
+  if (normalizedQuery.length < 2) return 0;
+
+  const title = normalizeKnowledgeText(item.title);
+  const searchable = normalizeKnowledgeText([
+    item.title,
+    item.summary,
+    ...item.details,
+  ].join(' '));
+  let score = normalizedQuery === title
+    ? 18
+    : searchable.includes(normalizedQuery)
+      ? 6
+      : 0;
+
+  const normalizedKeywords = [...new Set(item.keywords.map(normalizeKnowledgeText))];
+  for (const keyword of normalizedKeywords) {
+    if (!keyword) continue;
+    if (normalizedQuery === keyword) {
+      score += 24;
+    } else if (normalizedQuery.includes(keyword)) {
+      score += 12;
+    } else if (normalizedQuery.length >= 3 && keyword.includes(normalizedQuery)) {
+      score += 8;
+    }
+  }
+
+  const keywordTokens = new Set(normalizedKeywords.flatMap(searchTokens));
+  for (const token of new Set(searchTokens(normalizedQuery))) {
+    if (token.length >= 2 && keywordTokens.has(token)) score += 2;
+  }
+
+  return score;
+}
+
+const DOMAIN_PAGE_IDS: Readonly<Record<KnowledgeDomain, readonly PageId[]>> = {
+  site: ['home', 'about', 'apps', 'development', 'contact'],
+  circle: ['about'],
+  university: ['home'],
+  development: ['development'],
+  app: ['apps'],
+  game: ['game-community'],
+  math: ['weekly-math'],
+};
+
+function hasCurrentPageBoost(item: KnowledgeItem, currentPageId: PageId | null): boolean {
+  return currentPageId !== null && DOMAIN_PAGE_IDS[item.domain].includes(currentPageId);
+}
+
+/**
+ * Deterministically selects reviewed facts. Catalog order is the final
+ * tie-breaker so equal scores remain stable across runs.
+ */
+export function selectStructuredKnowledge(
+  message: string,
+  currentPath: string,
+  history: readonly HistoryMessage[],
+  limit = 5,
+): RankedKnowledgeItem[] {
+  const normalizedMessage = normalizeKnowledgeText(message);
+  const normalizedHistory = history
+    .slice(-2)
+    .map(({ content }) => normalizeKnowledgeText(content))
+    .filter(Boolean);
+  const currentPageId = resolveCurrentPageId(currentPath);
+  const contextualFollowUp = /^(?:それ|その|これ|どこ|どう|詳しく|ほか|他|続き)/
+    .test(normalizedMessage);
+
+  const ranked = STRUCTURED_KNOWLEDGE
+    .map((item, catalogIndex) => {
+      const messageScore = scoreQuery(item, normalizedMessage);
+      const historyScore = Math.max(0, ...normalizedHistory.map((query) => scoreQuery(item, query)));
+      const score = messageScore
+        + (contextualFollowUp ? historyScore : Math.floor(historyScore / 2))
+        + (messageScore > 0 && hasCurrentPageBoost(item, currentPageId) ? 3 : 0);
+      return { item, score, catalogIndex };
+    })
+    .filter(({ score }) => score >= 10)
+    .sort((left, right) => (
+      right.score - left.score || left.catalogIndex - right.catalogIndex
+    ))
+    .slice(0, 5);
+
+  const requestedLimit = Number.isFinite(limit)
+    ? Math.min(5, Math.max(0, Math.floor(limit)))
+    : 5;
+  return ranked.slice(0, requestedLimit).map(({ item, score }) => ({ item, score }));
+}
