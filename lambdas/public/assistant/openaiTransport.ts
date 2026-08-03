@@ -136,7 +136,7 @@ function parseUsageToken(value: unknown): number {
   return (
     typeof value === 'number'
     && Number.isFinite(value)
-    && Number.isInteger(value)
+    && Number.isSafeInteger(value)
     && value >= 0
   ) ? value : 0;
 }

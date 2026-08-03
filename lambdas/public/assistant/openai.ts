@@ -27,6 +27,8 @@ export {
 } from './openaiTransport.js';
 export type { SecretReader } from './openaiTransport.js';
 
+const OPENAI_MODEL = 'gpt-5.6-luna' as const;
+
 export const SYSTEM_INSTRUCTIONS = [
   'あなたはTTI Intelligence公開サイトの案内と一般的な質問に答えるAI Assistantです。',
   '利用者の最新の質問に、内部の判断過程を見せず、自然な日本語で直接答えてください。',
@@ -122,7 +124,6 @@ export function buildResponsesPayload({
   knowledge,
   content,
   dynamicContentAvailable,
-  model,
   contextualFollowUp,
 }: BuildResponsesPayloadInput) {
   const knowledgeEntries = boundedKnowledgeEntries(knowledge);
@@ -132,10 +133,10 @@ export function buildResponsesPayload({
   const history = contextualFollowUp ? userHistoryForModel(request.history) : [];
 
   return {
-    model,
+    model: OPENAI_MODEL,
     store: false,
     stream: false,
-    reasoning: { effort: reasoningEffortForModel(model) },
+    reasoning: { effort: reasoningEffortForModel(OPENAI_MODEL) },
     max_output_tokens: 800,
     tools: [],
     instructions: SYSTEM_INSTRUCTIONS,
@@ -202,7 +203,6 @@ export async function requestOpenAI({
   knowledge,
   content,
   dynamicContentAvailable,
-  model,
   contextualFollowUp,
   fetchImpl,
   timeoutMs = DEFAULT_OPENAI_TIMEOUT_MS,
@@ -214,7 +214,7 @@ export async function requestOpenAI({
       knowledge,
       content,
       dynamicContentAvailable,
-      model,
+      model: OPENAI_MODEL,
       contextualFollowUp,
     }),
     fetchImpl,
