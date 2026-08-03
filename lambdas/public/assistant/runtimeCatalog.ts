@@ -1,14 +1,15 @@
-import { PAGE_IDS } from './types.js';
+import { PUBLIC_ROUTE_IDS } from './types.js';
 import type {
   AssistantLink,
+  AssistantPageId,
   ContentKind,
   OfficialSourceId,
-  PageId,
+  PublicRouteId,
   RankedContentEntry,
 } from './types.js';
 
-/** Small, reviewed runtime catalog shared by the new assistant core. */
-export const KNOWN_PAGE_ROUTES = {
+/** Every public React route, including routes not offered by Assistant. */
+export const PUBLIC_PAGE_ROUTES = {
   home: { title: 'ホーム', href: '/' },
   about: { title: 'サークルについて', href: '/about' },
   news: { title: 'お知らせ', href: '/news' },
@@ -21,7 +22,22 @@ export const KNOWN_PAGE_ROUTES = {
   'table-tennis': { title: 'Table Tennis Match Maker', href: '/app/table-tennis' },
   'color-sort': { title: 'Color Sort Puzzle', href: '/app/color-sort' },
   'cli-practice': { title: 'CLI Practice', href: '/app/cli-practice' },
-} as const satisfies Record<PageId, { title: string; href: string }>;
+} as const satisfies Record<PublicRouteId, { title: string; href: string }>;
+
+/** Reviewed public pages that Luna may return as Assistant link candidates. */
+export const KNOWN_PAGE_ROUTES = {
+  home: PUBLIC_PAGE_ROUTES.home,
+  about: PUBLIC_PAGE_ROUTES.about,
+  news: PUBLIC_PAGE_ROUTES.news,
+  apps: PUBLIC_PAGE_ROUTES.apps,
+  development: PUBLIC_PAGE_ROUTES.development,
+  board: PUBLIC_PAGE_ROUTES.board,
+  contact: PUBLIC_PAGE_ROUTES.contact,
+  'game-community': PUBLIC_PAGE_ROUTES['game-community'],
+  'weekly-math': PUBLIC_PAGE_ROUTES['weekly-math'],
+  'table-tennis': PUBLIC_PAGE_ROUTES['table-tennis'],
+  'color-sort': PUBLIC_PAGE_ROUTES['color-sort'],
+} as const satisfies Record<AssistantPageId, { title: string; href: string }>;
 
 /** Official invite; keep in sync with frontend/src/config/site.ts. */
 export const DISCORD_INVITE_URL = 'https://discord.gg/DFWs8GrHxF';
@@ -66,7 +82,7 @@ export const OFFICIAL_SOURCE_LINKS = {
   },
 } as const satisfies Record<OfficialSourceId, { title: string; href: string }>;
 
-const DYNAMIC_PAGE_PATTERNS: readonly [RegExp, PageId][] = [
+const DYNAMIC_PAGE_PATTERNS: readonly [RegExp, PublicRouteId][] = [
   [/^\/news\/[^/]+$/, 'news'],
   [/^\/weekly-math\/[^/]+$/, 'weekly-math'],
   [/^\/weekly-math\/[^/]+\/solution$/, 'weekly-math'],
@@ -77,9 +93,9 @@ export function normalizeSearchText(value: string): string {
   return value.normalize('NFKC').toLocaleLowerCase('ja-JP').trim().replace(/\s+/g, ' ');
 }
 
-export function resolveCurrentPageId(currentPath: string): PageId | null {
-  for (const pageId of PAGE_IDS) {
-    if (KNOWN_PAGE_ROUTES[pageId].href === currentPath) return pageId;
+export function resolveCurrentPageId(currentPath: string): PublicRouteId | null {
+  for (const pageId of PUBLIC_ROUTE_IDS) {
+    if (PUBLIC_PAGE_ROUTES[pageId].href === currentPath) return pageId;
   }
   for (const [pattern, pageId] of DYNAMIC_PAGE_PATTERNS) {
     if (pattern.test(currentPath)) return pageId;
@@ -91,10 +107,26 @@ export function isSafeDynamicHref(href: string, kind: ContentKind): boolean {
   if (!href.startsWith('/') || href.startsWith('//') || href.includes('?') || href.includes('#')) {
     return false;
   }
-  if (kind === 'news') return /^\/news\/[^/]+$/.test(href);
-  if (kind === 'board') return /^\/board\/[^/]+$/.test(href);
-  if (kind === 'weekly-math') return /^\/weekly-math\/[^/]+$/.test(href);
-  return false;
+  const prefix = kind === 'news'
+    ? '/news/'
+    : kind === 'board'
+      ? '/board/'
+      : kind === 'weekly-math'
+        ? '/weekly-math/'
+        : null;
+  if (prefix === null || !href.startsWith(prefix)) return false;
+
+  const encodedSegment = href.slice(prefix.length);
+  if (encodedSegment.length === 0 || encodedSegment.includes('/')) return false;
+  try {
+    const segment = decodeURIComponent(encodedSegment);
+    return segment !== '.'
+      && segment !== '..'
+      && !segment.includes('/')
+      && !segment.includes('\\');
+  } catch {
+    return false;
+  }
 }
 
 /** Create links only from locally selected, same-site public content. */

@@ -1,4 +1,4 @@
-import { normalizeSearchText } from './knowledge.js';
+import { normalizeSearchText } from './runtimeCatalog.js';
 
 const CASUAL_EXACT = new Set([
   'こんにちは',

@@ -11,6 +11,7 @@ import type {
   KnowledgeItem,
   OfficialSourceId,
   PageId,
+  PublicRouteId,
   RankedKnowledgeItem,
 } from './types.js';
 
@@ -225,8 +226,13 @@ const DOMAIN_PAGE_IDS: Readonly<Record<KnowledgeDomain, readonly PageId[]>> = {
   math: ['weekly-math'],
 };
 
-function hasCurrentPageBoost(item: KnowledgeItem, currentPageId: PageId | null): boolean {
-  return currentPageId !== null && DOMAIN_PAGE_IDS[item.domain].includes(currentPageId);
+function hasCurrentPageBoost(
+  item: KnowledgeItem,
+  currentPageId: PublicRouteId | null,
+): boolean {
+  return currentPageId !== null
+    && (DOMAIN_PAGE_IDS[item.domain] as readonly PublicRouteId[])
+      .includes(currentPageId);
 }
 
 /**

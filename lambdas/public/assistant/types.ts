@@ -1,4 +1,4 @@
-export const PAGE_IDS = [
+export const ASSISTANT_PAGE_IDS = [
   'home',
   'about',
   'news',
@@ -10,10 +10,20 @@ export const PAGE_IDS = [
   'weekly-math',
   'table-tennis',
   'color-sort',
+] as const;
+
+export type AssistantPageId = (typeof ASSISTANT_PAGE_IDS)[number];
+
+export const PUBLIC_ROUTE_IDS = [
+  ...ASSISTANT_PAGE_IDS,
   'cli-practice',
 ] as const;
 
-export type PageId = (typeof PAGE_IDS)[number];
+export type PublicRouteId = (typeof PUBLIC_ROUTE_IDS)[number];
+
+/** Compatibility alias for Assistant-facing page IDs. */
+export const PAGE_IDS = ASSISTANT_PAGE_IDS;
+export type PageId = AssistantPageId;
 export type Audience = 'visitor' | 'member';
 export type ContentKind = 'news' | 'board' | 'weekly-math';
 

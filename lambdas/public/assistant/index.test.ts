@@ -55,9 +55,7 @@ const successfulAnswerResult: OpenAIResult = {
   },
 };
 
-type TestDependencies = AssistantHandlerDependencies & {
-  requestOpenAIPlan: ReturnType<typeof vi.fn>;
-};
+type TestDependencies = AssistantHandlerDependencies;
 
 function validPostEvent(
   overrides: Partial<APIGatewayProxyEvent> = {},
@@ -153,9 +151,6 @@ function createDependencies(
     getApiKey: vi.fn(async () => 'sk-test'),
     reserveQuota: vi.fn(async () => undefined),
     searchContent: vi.fn(async () => []),
-    requestOpenAIPlan: vi.fn(async () => {
-      throw new Error('legacy planner must not be called');
-    }),
     requestOpenAI: vi.fn(async () => successfulAnswerResult),
     log: vi.fn(),
     ...overrides,
@@ -193,7 +188,6 @@ function contentResult(
 
 function expectNoLunaCall(dependencies: TestDependencies): void {
   expect(dependencies.requestOpenAI).not.toHaveBeenCalled();
-  expect(dependencies.requestOpenAIPlan).not.toHaveBeenCalled();
 }
 
 describe('createAssistantHandler single-Luna path', () => {
@@ -212,7 +206,6 @@ describe('createAssistantHandler single-Luna path', () => {
     expect(response.statusCode).toBe(200);
     expect(dependencies.reserveQuota).toHaveBeenCalledTimes(1);
     expect(dependencies.requestOpenAI).toHaveBeenCalledTimes(1);
-    expect(dependencies.requestOpenAIPlan).not.toHaveBeenCalled();
     expect(parsedBody(response)).toEqual({
       answer: 'Lunaが生成した回答です。',
       links: [],
@@ -240,7 +233,6 @@ describe('createAssistantHandler single-Luna path', () => {
 
     expect(parsedBody(response)).toEqual({ answer: exactAnswer, links: [] });
     expect(dependencies.requestOpenAI).toHaveBeenCalledTimes(1);
-    expect(dependencies.requestOpenAIPlan).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -337,7 +329,6 @@ describe('createAssistantHandler single-Luna path', () => {
     await invoke(dependencies, eventForRequest({ message: 'こんにちは', history: [] }));
 
     expect(order).toEqual(['quota', 'content', 'secret', 'luna']);
-    expect(dependencies.requestOpenAIPlan).not.toHaveBeenCalled();
   });
 
   it('degrades a dynamic-content failure and still calls Luna once', async () => {
@@ -1012,7 +1003,6 @@ describe('createRuntimeDependencies', () => {
 
     expect(dependencies.allowedOrigins).toEqual(allowedOrigins);
     expect(dependencies.requestOpenAI).toBeTypeOf('function');
-    expect(dependencies).not.toHaveProperty('requestOpenAIPlan');
     expect(dependencies).not.toHaveProperty('useAllApi');
   });
 

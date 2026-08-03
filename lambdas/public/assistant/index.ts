@@ -15,9 +15,9 @@ import {
 } from './contentSearch.js';
 import { createContentRepositories } from './contentRepos.js';
 import {
-  planAssistantRequest,
-  type AssistantQueryPlan,
-} from './engine.js';
+  routingIntentFor,
+  type AssistantRoutingIntent,
+} from './intent.js';
 import {
   requestOpenAI as callOpenAI,
   type RequestOpenAIInput,
@@ -264,11 +264,11 @@ function hasMeaningfulModelAnswer(answer: string): boolean {
 function createAllowedPageIds(
   knowledge: readonly RankedKnowledgeItem[],
   content: readonly RankedContentEntry[],
-  plan: AssistantQueryPlan,
+  routingIntent: AssistantRoutingIntent,
 ): PageId[] {
-  if (plan.suppressLinks) return [];
+  if (routingIntent.suppressLinks) return [];
 
-  const excluded = new Set<PageId>(plan.excludedPageIds);
+  const excluded = new Set<PageId>(routingIntent.excludedPageIds);
   const allowed = new Set<PageId>();
   for (const { item } of knowledge) {
     const pageIds = Object.hasOwn(KNOWLEDGE_ALLOWED_PAGE_IDS, item.id)
@@ -317,13 +317,13 @@ function createVerifiedPageLinks(
 
 function sourceIsExcluded(
   sourceId: string,
-  plan: AssistantQueryPlan,
+  routingIntent: AssistantRoutingIntent,
 ): boolean {
   if (sourceId === 'discord' || sourceId === 'youtube') {
-    return plan.excludedExternalLinks.includes(sourceId);
+    return routingIntent.excludedExternalLinks.includes(sourceId);
   }
   return sourceId.startsWith('tti-')
-    && plan.excludedExternalLinks.includes('toyota-ti');
+    && routingIntent.excludedExternalLinks.includes('toyota-ti');
 }
 
 function createFinalLinks(
@@ -331,15 +331,15 @@ function createFinalLinks(
   knowledge: readonly RankedKnowledgeItem[],
   content: readonly RankedContentEntry[],
   allowedPageIds: readonly PageId[],
-  plan: AssistantQueryPlan,
+  routingIntent: AssistantRoutingIntent,
 ): AssistantLink[] {
-  if (plan.suppressLinks) return [];
+  if (routingIntent.suppressLinks) return [];
 
   const allowedPageIdSet = new Set<PageId>(allowedPageIds);
   const pageLinks = createVerifiedPageLinks(
     output.pageIds,
     allowedPageIdSet,
-    plan.excludedPageIds,
+    routingIntent.excludedPageIds,
   );
 
   const contentById = new Map<string, RankedContentEntry>();
@@ -352,7 +352,7 @@ function createFinalLinks(
     .map((contentId) => contentById.get(contentId))
     .filter((entry): entry is RankedContentEntry => (
       entry !== undefined
-      && !plan.excludedPageIds.includes(entry.entry.parentPageId)
+      && !routingIntent.excludedPageIds.includes(entry.entry.parentPageId)
     ));
   const contentLinks = createVerifiedContentLinks(
     returnedContent,
@@ -365,7 +365,7 @@ function createFinalLinks(
   const sourceLinks = createVerifiedOfficialLinks(
     output.sourceIds.filter((sourceId) => (
       allowedSourceIds.has(sourceId)
-      && !sourceIsExcluded(sourceId, plan)
+      && !sourceIsExcluded(sourceId, routingIntent)
     )),
   );
 
@@ -451,14 +451,18 @@ export function createAssistantHandler(
       const dynamicContent = await retrieveDynamicContentSafely(
         () => dependencies.searchContent(request.message),
       );
-      const plan = planAssistantRequest(request.message, request.history);
+      const routingIntent = routingIntentFor(request.message, request.history);
       const knowledge = selectStructuredKnowledge(
         request.message,
         request.currentPath,
         request.history,
       ).slice(0, 5);
       const content = dynamicContent.content.slice(0, 3);
-      const allowedPageIds = createAllowedPageIds(knowledge, content, plan);
+      const allowedPageIds = createAllowedPageIds(
+        knowledge,
+        content,
+        routingIntent,
+      );
       knowledgeCount = knowledge.length;
       knowledgeDomains = [...new Set(
         knowledge.map(({ item }) => item.domain),
@@ -478,7 +482,7 @@ export function createAssistantHandler(
         dynamicContentAvailable: dynamicContent.dynamicContentAvailable,
         allowedPageIds,
         model: OPENAI_MODEL,
-        contextualFollowUp: plan.requiresHistory,
+        contextualFollowUp: routingIntent.requiresHistory,
       });
       dependencyStage = 'internal';
 
@@ -502,7 +506,7 @@ export function createAssistantHandler(
           knowledge,
           content,
           allowedPageIds,
-          plan,
+          routingIntent,
         ),
       }, origin);
     } catch (error) {
