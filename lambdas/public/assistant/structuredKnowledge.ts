@@ -313,6 +313,20 @@ function hasDirectCurrentTopic(
   }));
 }
 
+function isProbeCompatibleWithDomain(
+  message: string,
+  domain: KnowledgeDomain,
+): boolean {
+  const normalizedMessage = normalizeKnowledgeText(message).replace(/\s+/g, '');
+  if (/^(?:住所|所在地|アクセス)/.test(normalizedMessage)) {
+    return domain === 'university' || domain === 'circle';
+  }
+  if (/^(?:答え|解答|ヒント|解説)/.test(normalizedMessage)) {
+    return domain === 'math';
+  }
+  return true;
+}
+
 /** Select knowledge and history once, then share that decision with Luna. */
 export function selectAssistantRequestContext(
   message: string,
@@ -343,18 +357,23 @@ export function selectAssistantRequestContext(
       false,
     );
     const latestDomain = latestHistoryKnowledge[0]?.item.domain;
-    const combinedKnowledge = selectStructuredKnowledge(
-      message,
-      currentPath,
-      history,
-      limit,
-      true,
-    );
-    followUpKnowledge = latestDomain === undefined
-      ? []
-      : combinedKnowledge.filter(({ item }) => item.domain === latestDomain);
-    if (followUpKnowledge.length === 0 && latestDomain !== undefined) {
-      followUpKnowledge = latestHistoryKnowledge;
+    if (
+      latestDomain !== undefined
+      && isProbeCompatibleWithDomain(message, latestDomain)
+    ) {
+      const combinedKnowledge = selectStructuredKnowledge(
+        message,
+        currentPath,
+        history,
+        limit,
+        true,
+      );
+      followUpKnowledge = combinedKnowledge.filter(
+        ({ item }) => item.domain === latestDomain,
+      );
+      if (followUpKnowledge.length === 0) {
+        followUpKnowledge = latestHistoryKnowledge;
+      }
     }
     resolvedFollowUp = followUpKnowledge.length > 0;
   }

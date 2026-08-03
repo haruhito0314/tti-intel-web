@@ -53,10 +53,24 @@ const EXPECTATIONS = new Set<InterimExpectation>(['site', 'follow-up', 'general'
 const INPUT_USD_PER_MILLION = 0.20;
 const CACHED_INPUT_USD_PER_MILLION = 0.02;
 const OUTPUT_USD_PER_MILLION = 1.25;
-const SIGNIFICANT_PRIVATE_FRAGMENT_LENGTH = 8;
+const SIGNIFICANT_PRIVATE_FRAGMENT_LENGTH = 4;
 const MAX_LOG_STRING_VALUES = 200;
 const MAX_LOG_STRING_LENGTH = 4_096;
+const MAX_LOG_TOTAL_CHARACTERS = 32_768;
+const MAX_LOG_NODES = 1_000;
 const MAX_LOG_VALUE_DEPTH = 6;
+const PRIVATE_PREVIEW_LABEL = /(?:query|message|history|answer|knowledge|prompt|request|response|input|output)(?:[_\s-]*(?:preview|excerpt|snippet|text|value|content))?\s*[:=：]/i;
+const ALLOWED_OUTCOMES = new Set([
+  'ai_success',
+  'internal_error',
+  'invalid_request',
+  'origin_not_allowed',
+  'preflight',
+  'rate_limited',
+  'unsafe_model_output',
+  'upstream_timeout',
+  'upstream_unavailable',
+]);
 
 function invalidFixture(reason: string): never {
   throw new TypeError(`Invalid interim evaluator fixture: ${reason}`);
@@ -194,31 +208,51 @@ function isVerifiedLink(link: AssistantResponse['links'][number]): boolean {
   return false;
 }
 
+interface LogStringValue {
+  key: string | null;
+  value: string;
+}
+
+interface LogScanState {
+  nodes: number;
+  totalCharacters: number;
+  values: LogStringValue[];
+}
+
 function collectLogStringValues(
   value: unknown,
-  output: string[],
+  state: LogScanState,
   depth = 0,
+  key: string | null = null,
 ): boolean {
-  if (depth > MAX_LOG_VALUE_DEPTH) return false;
+  state.nodes += 1;
+  if (state.nodes > MAX_LOG_NODES || depth > MAX_LOG_VALUE_DEPTH) return false;
   if (typeof value === 'string') {
+    state.totalCharacters += value.length;
     if (
-      output.length >= MAX_LOG_STRING_VALUES
+      state.values.length >= MAX_LOG_STRING_VALUES
       || value.length > MAX_LOG_STRING_LENGTH
+      || state.totalCharacters > MAX_LOG_TOTAL_CHARACTERS
     ) {
       return false;
     }
-    output.push(value);
+    state.values.push({ key, value });
     return true;
   }
   if (Array.isArray(value)) {
     return value.every((entry) => (
-      collectLogStringValues(entry, output, depth + 1)
+      collectLogStringValues(entry, state, depth + 1, key)
     ));
   }
   if (isRecord(value)) {
-    return Object.values(value).every((entry) => (
-      collectLogStringValues(entry, output, depth + 1)
-    ));
+    for (const entryKey in value) {
+      if (
+        Object.hasOwn(value, entryKey)
+        && !collectLogStringValues(value[entryKey], state, depth + 1, entryKey)
+      ) {
+        return false;
+      }
+    }
   }
   return true;
 }
@@ -238,7 +272,8 @@ function containsSignificantPrivateFragment(
   const normalizedPrivate = normalizePrivateText(privateValue);
   if (normalizedPrivate.length === 0) return false;
   if (normalizedPrivate.length < SIGNIFICANT_PRIVATE_FRAGMENT_LENGTH) {
-    return normalizedPrivate.length >= 4 && normalizedLog === normalizedPrivate;
+    return PRIVATE_PREVIEW_LABEL.test(logValue)
+      && normalizedLog.includes(normalizedPrivate);
   }
   for (
     let index = 0;
@@ -253,6 +288,10 @@ function containsSignificantPrivateFragment(
     }
   }
   return false;
+}
+
+function isAllowedFixedTelemetryValue({ key, value }: LogStringValue): boolean {
+  return key === 'outcome' && ALLOWED_OUTCOMES.has(value);
 }
 
 export function assessInterimObservation(
@@ -293,13 +332,17 @@ export function assessInterimObservation(
       ...item.keywords,
     );
   }
-  const logValues: string[] = [];
-  const scannedAllLogValues = collectLogStringValues(observation.logs, logValues);
-  if (!scannedAllLogValues || logValues.some((logValue) => (
-    /(?:^|[^A-Za-z0-9_-])(?:bearer\s+[A-Za-z0-9._~-]{4,}|sk-[A-Za-z0-9_-]{4,})/i.test(logValue)
+  const logScan: LogScanState = { nodes: 0, totalCharacters: 0, values: [] };
+  const scannedAllLogValues = collectLogStringValues(observation.logs, logScan);
+  if (!scannedAllLogValues) {
+    failures.push('logs exceed privacy scan budget');
+  }
+  if (logScan.values.some((logEntry) => (
+    !isAllowedFixedTelemetryValue(logEntry)
+    && (/(?:^|[^A-Za-z0-9_-])(?:bearer\s+[A-Za-z0-9._~-]{4,}|sk-[A-Za-z0-9_-]{4,})/i.test(logEntry.value)
     || privateValues.some((privateValue) => (
-      containsSignificantPrivateFragment(logValue, privateValue)
-    ))
+      containsSignificantPrivateFragment(logEntry.value, privateValue)
+    )))
   ))) {
     failures.push('logs contain private request data');
   }

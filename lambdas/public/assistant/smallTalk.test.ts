@@ -198,4 +198,18 @@ describe('shouldUseFollowUpHistory', () => {
   ])('allows bare open-question clarifiers %j', (message) => {
     expect(shouldUseFollowUpHistory(message)).toBe(true);
   });
+
+  it('distinguishes an underspecified location probe from an explicit Kyoto topic', () => {
+    expect(shouldUseFollowUpHistory('どこから見るの？')).toBe(true);
+    expect(shouldUseFollowUpHistory('どこに京都がありますか？')).toBe(false);
+  });
+
+  it.each([
+    '住所を教えて',
+    '所在地も教えて',
+    '解答を教えて',
+    'ヒントをお願い',
+  ])('allows a natural topic-specific continuation %j', (message) => {
+    expect(shouldUseFollowUpHistory(message)).toBe(true);
+  });
 });

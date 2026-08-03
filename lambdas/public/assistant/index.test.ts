@@ -417,6 +417,47 @@ describe('createAssistantHandler single-Luna path', () => {
       .not.toContain('development-codex');
   });
 
+  it('does not send prior Codex history for an explicit uncataloged Kyoto question', async () => {
+    const dependencies = createDependencies();
+
+    await invoke(dependencies, eventForRequest({
+      message: 'どこに京都がありますか？',
+      history: [{ role: 'user', content: 'Codexについて教えて' }],
+    }));
+
+    const input = vi.mocked(dependencies.requestOpenAI).mock.calls[0]?.[0];
+    expect(input?.contextualFollowUp).toBe(false);
+    expect(input?.knowledge).toEqual([]);
+  });
+
+  it.each([
+    [
+      '住所を教えて',
+      '豊田工業大学について教えて',
+      'university-campus-access',
+    ],
+    [
+      '解答を教えて',
+      '今週の数学の問題を見たい',
+      'circle-weekly-math',
+    ],
+  ])('sends compatible prior context for a natural probe: %s', async (
+    message,
+    priorMessage,
+    expectedKnowledgeId,
+  ) => {
+    const dependencies = createDependencies();
+
+    await invoke(dependencies, eventForRequest({
+      message,
+      history: [{ role: 'user', content: priorMessage }],
+    }));
+
+    const input = vi.mocked(dependencies.requestOpenAI).mock.calls[0]?.[0];
+    expect(input?.contextualFollowUp).toBe(true);
+    expect(input?.knowledge.map(({ item }) => item.id)).toContain(expectedKnowledgeId);
+  });
+
   it('does not send prior Codex context for a different unrelated topic', async () => {
     const dependencies = createDependencies();
 

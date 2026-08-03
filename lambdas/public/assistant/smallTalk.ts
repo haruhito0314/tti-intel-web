@@ -407,6 +407,10 @@ const OPEN_QUESTION_RESTS = new Set([
   '風',
 ]);
 
+function hasExplicitLocationSubject(rest: string): boolean {
+  return /^に.{2,}(?:が|は)(?:あり|ある|いま)/.test(rest);
+}
+
 /** Whether a short clarifier is eligible for local history resolution. */
 export function shouldUseFollowUpHistory(message: string): boolean {
   if (isShortFollowUpProbe(message)) {
@@ -425,7 +429,7 @@ export function shouldUseFollowUpHistory(message: string): boolean {
   if (/^(?:それ|その|そこ|あれ|これ)(?:$|は|って|の|を|が|も|どこ|どう|何|なに|場所|詳細|内容|リンク)/.test(normalized)) {
     return true;
   }
-  if (/^(?:場所|住所|所在地|英語名|正式名称|答え|解答|ヒント|費用|料金|日程|活動日|会費|参加費|ツール代|サブスク代)(?:も|だけ|は)$/.test(normalized)) {
+  if (/^(?:場所|住所|所在地|英語名|正式名称|答え|解答|ヒント|費用|料金|日程|活動日|会費|参加費|ツール代|サブスク代)(?:も|だけ|は|も?教えて|を(?:教えて|お願い(?:します)?)|お願い(?:します)?)$/.test(normalized)) {
     return true;
   }
 
@@ -436,6 +440,9 @@ export function shouldUseFollowUpHistory(message: string): boolean {
       continue;
     }
     const rest = normalized.slice(prefix.length).trim();
+    if (prefix === 'どこ' && hasExplicitLocationSubject(rest)) {
+      return false;
+    }
     if (OPEN_QUESTION_PREFIXES.has(prefix) && !OPEN_QUESTION_RESTS.has(rest)) {
       // Full new question, e.g. 「どんなプロンプトで作ってるの」.
       return false;

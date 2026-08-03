@@ -158,6 +158,45 @@ describe('selectStructuredKnowledge', () => {
       .not.toContain('development-codex');
   });
 
+  it('treats an explicit uncataloged location topic as current instead of prior Codex', () => {
+    const context = selectAssistantRequestContext('どこに京都がありますか？', '/', [
+      { role: 'user', content: 'Codexについて教えて' },
+    ]);
+
+    expect(context.routingIntent.requiresHistory).toBe(false);
+    expect(context.knowledge).toEqual([]);
+  });
+
+  it('resolves address and math-answer probes only against compatible prior topics', () => {
+    const address = selectAssistantRequestContext('住所を教えて', '/', [
+      { role: 'user', content: '豊田工業大学について教えて' },
+    ]);
+    const answer = selectAssistantRequestContext('解答を教えて', '/', [
+      { role: 'user', content: '今週の数学の問題を見たい' },
+    ]);
+
+    expect(address.routingIntent.requiresHistory).toBe(true);
+    expect(address.knowledge.map(({ item }) => item.id))
+      .toContain('university-campus-access');
+    expect(answer.routingIntent.requiresHistory).toBe(true);
+    expect(answer.knowledge.map(({ item }) => item.id)).toContain('circle-weekly-math');
+  });
+
+  it('does not apply address or answer probes to incompatible prior topics', () => {
+    const addressAfterCodex = selectAssistantRequestContext('住所を教えて', '/', [
+      { role: 'user', content: 'Codexについて教えて' },
+    ]);
+    const answerAfterUniversity = selectAssistantRequestContext('解答を教えて', '/', [
+      { role: 'user', content: '豊田工業大学について教えて' },
+    ]);
+
+    expect(addressAfterCodex.routingIntent.requiresHistory).toBe(false);
+    expect(addressAfterCodex.knowledge.map(({ item }) => item.id))
+      .not.toContain('development-codex');
+    expect(answerAfterUniversity.routingIntent.requiresHistory).toBe(false);
+    expect(answerAfterUniversity.knowledge).toEqual([]);
+  });
+
   it('does not resolve a different unrelated topic against prior Codex history', () => {
     const context = selectAssistantRequestContext('カレーの作り方を教えて', '/', [
       { role: 'user', content: 'Codexについて教えて' },

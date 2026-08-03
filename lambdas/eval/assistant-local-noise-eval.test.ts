@@ -80,6 +80,25 @@ describe('buildInterimEvaluationCase', () => {
     expect(input.isFollowUp).toBe(true);
     expect(input.history).toHaveLength(1);
   });
+
+  it('omits prior history for an explicit uncataloged Kyoto question', () => {
+    const built = buildInterimEvaluationCase({
+      id: 'G002',
+      message: 'どこに京都がありますか？',
+      currentPath: '/',
+      history: [{ role: 'user', content: 'Codexについて教えて' }],
+      expectation: 'general',
+    });
+    const input = JSON.parse(built.payload.input[0]!.content[0]!.text) as {
+      isFollowUp: boolean;
+      history: unknown[];
+    };
+
+    expect(built.contextualFollowUp).toBe(false);
+    expect(built.knowledgeIds).toEqual([]);
+    expect(input.isFollowUp).toBe(false);
+    expect(input.history).toEqual([]);
+  });
 });
 
 describe('assessInterimObservation', () => {
@@ -183,7 +202,7 @@ describe('assessInterimObservation', () => {
   });
 
   it.each([
-    ['request preview', 'Codexについて'],
+    ['request preview', 'Codex'],
     ['history preview', '前の相談内容は数'],
     ['answer preview', '月面探査の回答本'],
     ['knowledge preview', '自然言語で共有し'],
@@ -208,6 +227,120 @@ describe('assessInterimObservation', () => {
     });
 
     expect(result.failures).toContain('logs contain private request data');
+  });
+
+  it('uses a four-character significant-fragment boundary', () => {
+    const privateCase = { ...evaluationCase, message: 'abcdefghij' };
+    const observation = {
+      statusCode: 200,
+      response: { answer: '安全な回答です。', links: [] },
+      lunaCallCount: 1,
+      webCallCount: 0,
+      usage: {
+        inputTokens: 10,
+        cachedInputTokens: 2,
+        cacheWriteTokens: 1,
+        outputTokens: 2,
+        totalTokens: 12,
+      },
+    };
+
+    expect(assessInterimObservation(privateCase, {
+      ...observation,
+      logs: [{ preview: 'abcd' }],
+    }).failures).toContain('logs contain private request data');
+    expect(assessInterimObservation(privateCase, {
+      ...observation,
+      logs: [{ preview: 'abc' }],
+    }).failures).not.toContain('logs contain private request data');
+  });
+
+  it('rejects a labeled preview of a short private value', () => {
+    const result = assessInterimObservation({
+      ...evaluationCase,
+      message: '秘密',
+    }, {
+      statusCode: 200,
+      response: { answer: '安全な回答です。', links: [] },
+      lunaCallCount: 1,
+      webCallCount: 0,
+      usage: {
+        inputTokens: 10,
+        cachedInputTokens: 0,
+        cacheWriteTokens: 0,
+        outputTokens: 2,
+        totalTokens: 12,
+      },
+      logs: [{ note: 'queryPreview: 秘密' }],
+    });
+
+    expect(result.failures).toContain('logs contain private request data');
+  });
+
+  it('allows a fixed outcome value even when it equals the user input', () => {
+    const result = assessInterimObservation({
+      ...evaluationCase,
+      message: 'ai_success',
+    }, {
+      statusCode: 200,
+      response: { answer: '安全な回答です。', links: [] },
+      lunaCallCount: 1,
+      webCallCount: 0,
+      usage: {
+        inputTokens: 10,
+        cachedInputTokens: 0,
+        cacheWriteTokens: 0,
+        outputTokens: 2,
+        totalTokens: 12,
+      },
+      logs: [{ outcome: 'ai_success' }],
+    });
+
+    expect(result.failures).not.toContain('logs contain private request data');
+  });
+
+  it('fails closed when a wide primitive log exceeds the node budget', () => {
+    const wideLog = Object.fromEntries(Array.from(
+      { length: 1_200 },
+      (_, index) => [`metric${index}`, index],
+    ));
+    const result = assessInterimObservation(evaluationCase, {
+      statusCode: 200,
+      response: { answer: '安全な回答です。', links: [] },
+      lunaCallCount: 1,
+      webCallCount: 0,
+      usage: {
+        inputTokens: 10,
+        cachedInputTokens: 0,
+        cacheWriteTokens: 0,
+        outputTokens: 2,
+        totalTokens: 12,
+      },
+      logs: [wideLog],
+    });
+
+    expect(result.failures).toContain('logs exceed privacy scan budget');
+  });
+
+  it('fails closed when aggregate log characters exceed the total budget', () => {
+    const result = assessInterimObservation(evaluationCase, {
+      statusCode: 200,
+      response: { answer: '安全な回答です。', links: [] },
+      lunaCallCount: 1,
+      webCallCount: 0,
+      usage: {
+        inputTokens: 10,
+        cachedInputTokens: 0,
+        cacheWriteTokens: 0,
+        outputTokens: 2,
+        totalTokens: 12,
+      },
+      logs: Array.from({ length: 9 }, (_, index) => ({
+        [`telemetry${index}`]: 'x'.repeat(4_096),
+      })),
+    });
+
+    expect(result.failures).toContain('logs exceed privacy scan budget');
   });
 
   it.each([
