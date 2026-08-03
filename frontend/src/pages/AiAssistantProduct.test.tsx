@@ -40,10 +40,21 @@ describe('AiAssistantProductPage', () => {
             </MemoryRouter>,
         );
 
-        expect(screen.getByText(/TTI Intelligenceのサイトと豊田工業大学の資料/)).toBeInTheDocument();
+        expect(screen.getByText(/事前に用意したTTI Intelligenceのサイト情報/)).toBeInTheDocument();
+        expect(screen.getByText(/豊田工業大学の構造化資料/)).toBeInTheDocument();
         expect(screen.getByText(/Lunaの安定した一般知識/)).toBeInTheDocument();
-        expect(screen.getByText(/リアルタイムのWeb検索は行いません/)).toBeInTheDocument();
+        expect(screen.getByText(/質問のたびにサイトを取得したり、リアルタイムのWeb検索を行ったりはしません/)).toBeInTheDocument();
         expect(screen.getByText(/現在の情報や重要な情報は公式情報源でも確認/)).toBeInTheDocument();
+
+        const description = document.querySelector('meta[name="description"]');
+        expect(description).toHaveAttribute(
+            'content',
+            expect.stringContaining('事前に用意したTTI Intelligenceのサイト情報・豊田工業大学の構造化資料'),
+        );
+        expect(description).toHaveAttribute(
+            'content',
+            expect.stringContaining('質問時のサイト取得やリアルタイムWeb検索は行いません'),
+        );
     });
 
     it('対応範囲を示す四種類の質問例を表示する', () => {

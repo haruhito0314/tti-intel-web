@@ -43,7 +43,7 @@ export function AiAssistantProductPage() {
         <div className="assistant-app-page">
             <PageSeo
                 title="AI Assistant | TTI Intelligence"
-                description="TTI Intelligenceのサイト・大学資料とLunaの安定した一般知識を使うAI Assistantです。リアルタイムのWeb検索は行いません。"
+                description="事前に用意したTTI Intelligenceのサイト情報・豊田工業大学の構造化資料と、Lunaの安定した一般知識を使うAI Assistantです。質問時のサイト取得やリアルタイムWeb検索は行いません。"
             />
 
             <aside className="assistant-app-sidebar">
@@ -81,7 +81,7 @@ export function AiAssistantProductPage() {
 
                 <div className="assistant-app-sidebar-footer">
                     <ShieldCheck />
-                    <p>TTI Intelligenceのサイトと豊田工業大学の資料、Lunaの安定した一般知識を使って回答します。リアルタイムのWeb検索は行いません。</p>
+                    <p>事前に用意したTTI Intelligenceのサイト情報と豊田工業大学の構造化資料を、Lunaの安定した一般知識と組み合わせて回答します。質問のたびにサイトを取得したり、リアルタイムのWeb検索を行ったりはしません。</p>
                 </div>
             </aside>
 
