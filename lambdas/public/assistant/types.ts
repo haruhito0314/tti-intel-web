@@ -17,6 +17,33 @@ export type PageId = (typeof PAGE_IDS)[number];
 export type Audience = 'visitor' | 'member';
 export type ContentKind = 'news' | 'board' | 'weekly-math';
 
+export type KnowledgeDomain =
+  | 'site' | 'circle' | 'university' | 'development'
+  | 'app' | 'game' | 'math';
+
+export type OfficialSourceId =
+  | 'discord' | 'youtube'
+  | 'tti-overview' | 'tti-features' | 'tti-academics'
+  | 'tti-program' | 'tti-student-activity' | 'tti-clubs'
+  | 'tti-access';
+
+export interface KnowledgeItem {
+  id: string;
+  domain: KnowledgeDomain;
+  title: string;
+  summary: string;
+  details: string[];
+  keywords: string[];
+  sourceIds: OfficialSourceId[];
+  asOf?: string;
+  volatility: 'stable' | 'periodic' | 'volatile';
+}
+
+export interface RankedKnowledgeItem {
+  item: KnowledgeItem;
+  score: number;
+}
+
 export interface HistoryMessage {
   role: 'user';
   content: string;
@@ -29,7 +56,7 @@ export interface AssistantRequest {
   history: HistoryMessage[];
 }
 
-export type AssistantLinkPageId = PageId | 'discord' | 'toyota-ti' | 'youtube';
+export type AssistantLinkPageId = PageId | 'toyota-ti' | OfficialSourceId;
 
 export interface AssistantLink {
   pageId: AssistantLinkPageId;
@@ -81,6 +108,7 @@ export interface ModelGuideResponse {
   answer: string;
   pageIds: string[];
   contentIds: string[];
+  sourceIds: string[];
 }
 
 export interface OpenAIUsage {

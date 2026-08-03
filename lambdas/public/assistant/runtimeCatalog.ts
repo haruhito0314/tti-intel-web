@@ -2,6 +2,7 @@ import { PAGE_IDS } from './types.js';
 import type {
   AssistantLink,
   ContentKind,
+  OfficialSourceId,
   PageId,
   RankedContentEntry,
 } from './types.js';
@@ -30,6 +31,40 @@ export const TOYOTA_TI_URL = 'https://www.toyota-ti.ac.jp/';
 
 /** Circle YouTube channel; keep in sync with the frontend About page. */
 export const YOUTUBE_CHANNEL_URL = 'https://www.youtube.com/@ttiintelligence';
+
+/** Reviewed official sources. URLs must only be emitted from this exact catalog. */
+export const OFFICIAL_SOURCE_LINKS = {
+  discord: { title: 'TTI Intelligence Discord', href: DISCORD_INVITE_URL },
+  youtube: { title: 'TTI Intelligence YouTube', href: YOUTUBE_CHANNEL_URL },
+  'tti-overview': {
+    title: '豊田工業大学 大学案内',
+    href: 'https://www.toyota-ti.ac.jp/about/index.html',
+  },
+  'tti-features': {
+    title: '豊田工業大学 本学の特色',
+    href: 'https://www.toyota-ti.ac.jp/about/profile/tokushoku.html',
+  },
+  'tti-academics': {
+    title: '豊田工業大学 学部・大学院教育',
+    href: 'https://www.toyota-ti.ac.jp/academics/index.html',
+  },
+  'tti-program': {
+    title: '豊田工業大学 学びの特色',
+    href: 'https://www.toyota-ti.ac.jp/academics/program/feature.html',
+  },
+  'tti-student-activity': {
+    title: '豊田工業大学 課外活動',
+    href: 'https://www.toyota-ti.ac.jp/student/activity/index.html',
+  },
+  'tti-clubs': {
+    title: '豊田工業大学 課外団体一覧',
+    href: 'https://www.toyota-ti.ac.jp/student/activity/club.html',
+  },
+  'tti-access': {
+    title: '豊田工業大学 交通アクセス',
+    href: 'https://www.toyota-ti.ac.jp/access/index.html',
+  },
+} as const satisfies Record<OfficialSourceId, { title: string; href: string }>;
 
 const DYNAMIC_PAGE_PATTERNS: readonly [RegExp, PageId][] = [
   [/^\/news\/[^/]+$/, 'news'],
@@ -84,5 +119,24 @@ export function createVerifiedContentLinks(
       href: entry.href,
     });
   }
+  return links;
+}
+
+/** Create links only from reviewed official-source identifiers. */
+export function createVerifiedOfficialLinks(sourceIds: readonly string[]): AssistantLink[] {
+  const links: AssistantLink[] = [];
+  const seenSourceIds = new Set<OfficialSourceId>();
+
+  for (const sourceId of sourceIds) {
+    if (!Object.hasOwn(OFFICIAL_SOURCE_LINKS, sourceId) || seenSourceIds.has(sourceId as OfficialSourceId)) {
+      continue;
+    }
+
+    const verifiedSourceId = sourceId as OfficialSourceId;
+    seenSourceIds.add(verifiedSourceId);
+    const source = OFFICIAL_SOURCE_LINKS[verifiedSourceId];
+    links.push({ pageId: verifiedSourceId, title: source.title, href: source.href });
+  }
+
   return links;
 }

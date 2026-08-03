@@ -100,25 +100,38 @@ describe('validateModelGuideResponse', () => {
     expect(validateModelGuideResponse({
       answer: '  今週の数学はお知らせから確認できます。  ',
       pageIds: ['news', 'weekly-math'],
-    contentIds: [],
+      contentIds: [],
+      sourceIds: ['tti-academics'],
     })).toEqual({
       answer: '今週の数学はお知らせから確認できます。',
       pageIds: ['news', 'weekly-math'],
-    contentIds: [],
+      contentIds: [],
+      sourceIds: ['tti-academics'],
     });
   });
 
   it.each([
     ['null output', null],
     ['array output', []],
-    ['empty answer', { answer: '   ', pageIds: [], contentIds: [] }],
-    ['501 character answer', { answer: 'a'.repeat(501), pageIds: [], contentIds: [] }],
-    ['4 IDs', { answer: 'answer', pageIds: ['home', 'about', 'news', 'apps'], contentIds: [] }],
-    ['duplicate ID', { answer: 'answer', pageIds: ['news', 'news'], contentIds: [] }],
-    ['non-string ID', { answer: 'answer', pageIds: ['news', 1], contentIds: [] }],
-    ['invalid ID format', { answer: 'answer', pageIds: ['News'], contentIds: [] }],
-    ['missing contentIds', { answer: 'answer', pageIds: [] }],
-    ['extra property', { answer: 'answer', pageIds: [], contentIds: [], extra: true }],
+    ['empty answer', { answer: '   ', pageIds: [], contentIds: [], sourceIds: [] }],
+    ['501 character answer', { answer: 'a'.repeat(501), pageIds: [], contentIds: [], sourceIds: [] }],
+    ['4 IDs', { answer: 'answer', pageIds: ['home', 'about', 'news', 'apps'], contentIds: [], sourceIds: [] }],
+    ['duplicate ID', { answer: 'answer', pageIds: ['news', 'news'], contentIds: [], sourceIds: [] }],
+    ['non-string ID', { answer: 'answer', pageIds: ['news', 1], contentIds: [], sourceIds: [] }],
+    ['invalid ID format', { answer: 'answer', pageIds: ['News'], contentIds: [], sourceIds: [] }],
+    ['missing contentIds', { answer: 'answer', pageIds: [], sourceIds: [] }],
+    ['missing sourceIds', { answer: 'answer', pageIds: [], contentIds: [] }],
+    ['more than 3 source IDs', {
+      answer: 'answer', pageIds: [], contentIds: [],
+      sourceIds: ['discord', 'youtube', 'tti-overview', 'tti-features'],
+    }],
+    ['duplicate source ID', {
+      answer: 'answer', pageIds: [], contentIds: [], sourceIds: ['discord', 'discord'],
+    }],
+    ['unknown source ID', {
+      answer: 'answer', pageIds: [], contentIds: [], sourceIds: ['https://example.com'],
+    }],
+    ['extra property', { answer: 'answer', pageIds: [], contentIds: [], sourceIds: [], extra: true }],
   ])('rejects %s', (_name, value) => {
     expect(() => validateModelGuideResponse(value)).toThrow(UnsafeModelOutputError);
   });

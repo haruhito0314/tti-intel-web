@@ -4,6 +4,7 @@ import type {
   ModelGuideResponse,
   OpenAIUsage,
 } from './types.js';
+import { OFFICIAL_SOURCE_LINKS } from './runtimeCatalog.js';
 
 const MAX_RAW_BODY_LENGTH = 65_536;
 const MAX_MESSAGE_LENGTH = 500;
@@ -15,6 +16,7 @@ const MAX_HISTORY_CONTENT_LENGTH = 800;
 const MAX_HISTORY_TOTAL_LENGTH = 1_200;
 const MAX_MODEL_PAGE_IDS = 3;
 const MAX_MODEL_CONTENT_IDS = 3;
+const MAX_MODEL_SOURCE_IDS = 3;
 
 const UUID_V4_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const MODEL_PAGE_ID_PATTERN = /^[a-z0-9-]{1,64}$/;
@@ -149,15 +151,16 @@ export function validateModelGuideResponse(
 
   const keys = Object.keys(value);
   if (
-    keys.length !== 3
+    keys.length !== 4
     || !Object.hasOwn(value, 'answer')
     || !Object.hasOwn(value, 'pageIds')
     || !Object.hasOwn(value, 'contentIds')
+    || !Object.hasOwn(value, 'sourceIds')
   ) {
     return unsafeModelOutput();
   }
 
-  const { answer, pageIds, contentIds } = value;
+  const { answer, pageIds, contentIds, sourceIds } = value;
   if (typeof answer !== 'string') {
     return unsafeModelOutput();
   }
@@ -199,9 +202,26 @@ export function validateModelGuideResponse(
     seenContentIds.add(contentId);
   }
 
+  if (!Array.isArray(sourceIds) || sourceIds.length > MAX_MODEL_SOURCE_IDS) {
+    return unsafeModelOutput();
+  }
+
+  const seenSourceIds = new Set<string>();
+  for (const sourceId of sourceIds) {
+    if (
+      typeof sourceId !== 'string'
+      || !Object.hasOwn(OFFICIAL_SOURCE_LINKS, sourceId)
+      || seenSourceIds.has(sourceId)
+    ) {
+      return unsafeModelOutput();
+    }
+    seenSourceIds.add(sourceId);
+  }
+
   return {
     answer: trimmedAnswer,
     pageIds: [...pageIds] as string[],
     contentIds: [...contentIds] as string[],
+    sourceIds: [...sourceIds] as string[],
   };
 }
