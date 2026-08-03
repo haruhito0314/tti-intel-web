@@ -113,6 +113,8 @@ export interface ModelGuideResponse {
 
 export interface OpenAIUsage {
   inputTokens: number;
+  cachedInputTokens: number;
+  cacheWriteTokens: number;
   outputTokens: number;
   totalTokens: number;
 }

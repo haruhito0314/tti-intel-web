@@ -146,9 +146,14 @@ function parseResponsesUsage(value: unknown): OpenAIUsage {
     isPlainObject(value)
     && isPlainObject(value.usage)
   ) ? value.usage : {};
+  const inputTokenDetails = isPlainObject(usage.input_tokens_details)
+    ? usage.input_tokens_details
+    : {};
 
   return {
     inputTokens: parseUsageToken(usage.input_tokens),
+    cachedInputTokens: parseUsageToken(inputTokenDetails.cached_tokens),
+    cacheWriteTokens: parseUsageToken(inputTokenDetails.cache_write_tokens),
     outputTokens: parseUsageToken(usage.output_tokens),
     totalTokens: parseUsageToken(usage.total_tokens),
   };
