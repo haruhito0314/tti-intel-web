@@ -24,7 +24,6 @@ export type PublicRouteId = (typeof PUBLIC_ROUTE_IDS)[number];
 /** Compatibility alias for Assistant-facing page IDs. */
 export const PAGE_IDS = ASSISTANT_PAGE_IDS;
 export type PageId = AssistantPageId;
-export type Audience = 'visitor' | 'member';
 export type ContentKind = 'news' | 'board' | 'weekly-math';
 
 export type KnowledgeDomain =
@@ -77,27 +76,6 @@ export interface AssistantLink {
 export interface AssistantResponse {
   answer: string;
   links: AssistantLink[];
-}
-
-export interface GuideFaq {
-  question: string;
-  answer: string;
-}
-
-export interface GuideEntry {
-  id: PageId;
-  route: string;
-  title: string;
-  summary: string;
-  audiences: Audience[];
-  keywords: string[];
-  faqs: GuideFaq[];
-  relatedPageIds: PageId[];
-}
-
-export interface RankedGuideEntry {
-  entry: GuideEntry;
-  score: number;
 }
 
 export interface ContentEntry {

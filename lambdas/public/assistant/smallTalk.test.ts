@@ -165,6 +165,9 @@ describe('shouldUseFollowUpHistory', () => {
     '続きは？',
     'さっきの',
     '具体的には？',
+    'その場所は？',
+    '場所は？',
+    '英語名も？',
   ])('allows short clarifications %j', (message) => {
     expect(shouldUseFollowUpHistory(message)).toBe(true);
   });
@@ -183,6 +186,7 @@ describe('shouldUseFollowUpHistory', () => {
     'ページについて教えて',
     '内容を教えて',
     '詳細を知りたい',
+    'これから京都へ旅行します',
   ])('rejects out-of-scope or new-topic messages %j', (message) => {
     expect(shouldUseFollowUpHistory(message)).toBe(false);
   });

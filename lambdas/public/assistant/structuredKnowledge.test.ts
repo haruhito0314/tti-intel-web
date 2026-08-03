@@ -8,6 +8,7 @@ import {
   SITE_KNOWLEDGE,
   STRUCTURED_KNOWLEDGE,
   UNIVERSITY_KNOWLEDGE,
+  selectAssistantRequestContext,
   selectStructuredKnowledge,
 } from './structuredKnowledge.js';
 
@@ -123,10 +124,59 @@ describe('selectStructuredKnowledge', () => {
     expect(selectedIds('ＣＯＤＥＸ')[0]).toBe('development-codex');
   });
 
-  it('uses recent user history for a contextual follow-up', () => {
-    expect(selectedIds('それはどう使う？', '/', [
+  it('uses recent user history only when local follow-up search resolves it', () => {
+    const context = selectAssistantRequestContext('どこから見るの？', '/', [
       { role: 'user', content: 'Codexについて教えて' },
-    ])).toContain('development-codex');
+    ]);
+
+    expect(context.routingIntent.requiresHistory).toBe(true);
+    expect(context.knowledge.map(({ item }) => item.id)).toContain('development-codex');
+  });
+
+  it('keeps an unrelated new topic free of stale history knowledge', () => {
+    const context = selectAssistantRequestContext('これから京都へ旅行します', '/', [
+      { role: 'user', content: 'Codexについて教えて' },
+    ]);
+
+    expect(context.routingIntent.requiresHistory).toBe(false);
+    expect(context.knowledge).toEqual([]);
+  });
+
+  it('lets a deictic location follow-up keep the prior circle domain', () => {
+    const context = selectAssistantRequestContext('その場所は？', '/', [
+      { role: 'user', content: 'TTI Intelligenceについて教えて' },
+    ]);
+
+    expect(context.routingIntent.requiresHistory).toBe(true);
+    expect(context.knowledge.map(({ item }) => item.id)).toContain('circle-identity');
+    expect(context.knowledge.map(({ item }) => item.id))
+      .not.toContain('university-campus-access');
+  });
+
+  it('keeps a referential beginner question on the prior game topic', () => {
+    const context = selectAssistantRequestContext('それって初心者でも大丈夫？', '/', [
+      { role: 'user', content: 'ゲームコミュニティについて教えて' },
+    ]);
+
+    expect(context.routingIntent.requiresHistory).toBe(true);
+    expect(context.knowledge.map(({ item }) => item.id)).toContain('circle-game-activity');
+  });
+
+  it('resolves a bare location probe against the latest circle or university domain', () => {
+    const circle = selectAssistantRequestContext('場所は？', '/', [
+      { role: 'user', content: 'TTI Intelligenceについて教えて' },
+    ]);
+    const university = selectAssistantRequestContext('場所は？', '/', [
+      { role: 'user', content: '豊田工業大学について教えて' },
+    ]);
+
+    expect(circle.routingIntent.requiresHistory).toBe(true);
+    expect(circle.knowledge.map(({ item }) => item.id)).toContain('circle-identity');
+    expect(circle.knowledge.map(({ item }) => item.id))
+      .not.toContain('university-campus-access');
+    expect(university.routingIntent.requiresHistory).toBe(true);
+    expect(university.knowledge.map(({ item }) => item.id))
+      .toContain('university-campus-access');
   });
 
   it('boosts facts associated with the current page', () => {

@@ -5,6 +5,8 @@ import {
   normalizeSearchText,
   resolveCurrentPageId,
 } from './runtimeCatalog.js';
+import { routingIntentFor, type AssistantRoutingIntent } from './intent.js';
+import { shouldUseFollowUpHistory } from './smallTalk.js';
 import type {
   HistoryMessage,
   KnowledgeDomain,
@@ -244,6 +246,7 @@ export function selectStructuredKnowledge(
   currentPath: string,
   history: readonly HistoryMessage[],
   limit = 5,
+  contextualFollowUp = false,
 ): RankedKnowledgeItem[] {
   const normalizedMessage = normalizeKnowledgeText(message);
   const normalizedHistory = history
@@ -251,8 +254,6 @@ export function selectStructuredKnowledge(
     .map(({ content }) => normalizeKnowledgeText(content))
     .filter(Boolean);
   const currentPageId = resolveCurrentPageId(currentPath);
-  const contextualFollowUp = /^(?:それ|その|これ|どこ|どう|詳しく|ほか|他|続き)/
-    .test(normalizedMessage);
 
   const ranked = STRUCTURED_KNOWLEDGE
     .map((item, catalogIndex) => {
@@ -273,4 +274,74 @@ export function selectStructuredKnowledge(
     ? Math.min(5, Math.max(0, Math.floor(limit)))
     : 5;
   return ranked.slice(0, requestedLimit).map(({ item, score }) => ({ item, score }));
+}
+
+export interface AssistantRequestContext {
+  knowledge: RankedKnowledgeItem[];
+  routingIntent: AssistantRoutingIntent;
+}
+
+/** Select knowledge and history once, then share that decision with Luna. */
+export function selectAssistantRequestContext(
+  message: string,
+  currentPath: string,
+  history: readonly HistoryMessage[],
+  limit = 5,
+): AssistantRequestContext {
+  const currentKnowledge = selectStructuredKnowledge(
+    message,
+    currentPath,
+    [],
+    limit,
+    false,
+  );
+  let followUpKnowledge: RankedKnowledgeItem[] = [];
+  let usedFollowUpSearch = false;
+
+  if (
+    history.length > 0
+    && shouldUseFollowUpHistory(message)
+  ) {
+    const latestHistoryKnowledge = selectStructuredKnowledge(
+      history.at(-1)?.content ?? '',
+      '',
+      [],
+      limit,
+      false,
+    );
+    const latestDomain = latestHistoryKnowledge[0]?.item.domain;
+    const combinedKnowledge = selectStructuredKnowledge(
+      message,
+      currentPath,
+      history,
+      limit,
+      true,
+    );
+    followUpKnowledge = latestDomain === undefined
+      ? []
+      : combinedKnowledge.filter(({ item }) => item.domain === latestDomain);
+    if (followUpKnowledge.length === 0 && latestDomain !== undefined) {
+      followUpKnowledge = latestHistoryKnowledge;
+    }
+    usedFollowUpSearch = followUpKnowledge.length > 0;
+  }
+
+  const routingIntent = routingIntentFor(
+    message,
+    history,
+    usedFollowUpSearch,
+  );
+  const knowledge = routingIntent.requiresHistory
+    ? usedFollowUpSearch
+      ? followUpKnowledge
+      : selectStructuredKnowledge(
+        message,
+        currentPath,
+        history,
+        limit,
+        true,
+      )
+    : currentKnowledge;
+
+  return { knowledge, routingIntent };
 }

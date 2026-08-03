@@ -1,0 +1,39 @@
+{
+  "metadata": {
+    "schemaVersion": 2,
+    "count": 3
+  },
+  "cases": [
+    {
+      "id": "S001",
+      "message": "Codexについて教えて",
+      "currentPath": "/",
+      "history": [],
+      "expectation": "site"
+    },
+    {
+      "id": "F001",
+      "message": "どこから見るの？",
+      "currentPath": "/",
+      "history": [
+        {
+          "role": "user",
+          "content": "今週の数学について教えて"
+        }
+      ],
+      "expectation": "follow-up"
+    },
+    {
+      "id": "G001",
+      "message": "これから京都へ旅行します",
+      "currentPath": "/",
+      "history": [
+        {
+          "role": "user",
+          "content": "Codexについて教えて"
+        }
+      ],
+      "expectation": "general"
+    }
+  ]
+}

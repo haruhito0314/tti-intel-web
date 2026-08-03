@@ -14,10 +14,7 @@ import {
   type ContentRepositories,
 } from './contentSearch.js';
 import { createContentRepositories } from './contentRepos.js';
-import {
-  routingIntentFor,
-  type AssistantRoutingIntent,
-} from './intent.js';
+import type { AssistantRoutingIntent } from './intent.js';
 import {
   requestOpenAI as callOpenAI,
   type RequestOpenAIInput,
@@ -40,7 +37,7 @@ import {
   createVerifiedOfficialLinks,
   KNOWN_PAGE_ROUTES,
 } from './runtimeCatalog.js';
-import { selectStructuredKnowledge } from './structuredKnowledge.js';
+import { selectAssistantRequestContext } from './structuredKnowledge.js';
 import type {
   AssistantLink,
   OpenAIResult,
@@ -451,12 +448,11 @@ export function createAssistantHandler(
       const dynamicContent = await retrieveDynamicContentSafely(
         () => dependencies.searchContent(request.message),
       );
-      const routingIntent = routingIntentFor(request.message, request.history);
-      const knowledge = selectStructuredKnowledge(
+      const { knowledge, routingIntent } = selectAssistantRequestContext(
         request.message,
         request.currentPath,
         request.history,
-      ).slice(0, 5);
+      );
       const content = dynamicContent.content.slice(0, 3);
       const allowedPageIds = createAllowedPageIds(
         knowledge,

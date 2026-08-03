@@ -2,7 +2,10 @@ import type {
   AssistantPageId,
   HistoryMessage,
 } from './types.js';
-import { shouldTreatAsFollowUp } from './smallTalk.js';
+import {
+  shouldOmitAssistantLinks,
+  shouldTreatAsFollowUp,
+} from './smallTalk.js';
 
 export type ExcludedExternalLink = 'discord' | 'youtube' | 'toyota-ti';
 
@@ -66,6 +69,7 @@ function rejectsAlias(value: string, alias: string): boolean {
 function requiresHistory(
   message: string,
   history: readonly HistoryMessage[],
+  usedFollowUpSearch: boolean,
 ): boolean {
   if (history.length === 0) return false;
   const value = normalizeRoutingText(message);
@@ -79,17 +83,15 @@ function requiresHistory(
     && /数学|問題/.test(lastUserMessage)
   );
 
-  return shouldTreatAsFollowUp(message, history, false)
+  return shouldTreatAsFollowUp(message, history, usedFollowUpSearch)
     || universityLocationFollowUp
-    || mathAnswerFollowUp
-    || /^(?:それ|その|そこ|あれ|これ|さっき|先ほど|前の)/.test(value)
-    || /リンクだけ/.test(value)
-    || /(?:場所|住所|所在地|英語名|正式名称|答え|解答|ヒント|費用|料金|日程|活動日|会費|参加費|ツール代|サブスク代)(?:も|だけ|は)$/.test(value);
+    || mathAnswerFollowUp;
 }
 
 export function routingIntentFor(
   message: string,
   history: readonly HistoryMessage[],
+  usedFollowUpSearch = false,
 ): AssistantRoutingIntent {
   const value = normalizeRoutingText(message);
   const excludedPageIds = PAGE_EXCLUSION_ALIASES
@@ -98,11 +100,12 @@ export function routingIntentFor(
   const excludedExternalLinks = EXTERNAL_EXCLUSION_ALIASES
     .filter(([, aliases]) => aliases.some((alias) => rejectsAlias(value, alias)))
     .map(([externalLink]) => externalLink);
-  const suppressLinks = /(?:リンク|url)(?:は|が)?(?:いらない|要らない|不要|なし|抜き|結構|付けない|つけない|貼らない|載せない|付けず|つけず|貼らず|載せず)|リンクなし|リンク不要/
-    .test(value);
+  const suppressLinks = shouldOmitAssistantLinks(message)
+    || /(?:リンク|url)(?:は|が)?(?:いらない|要らない|不要|なし|抜き|結構|付けない|つけない|貼らない|載せない|付けず|つけず|貼らず|載せず)|リンクなし|リンク不要/
+      .test(value);
 
   return {
-    requiresHistory: requiresHistory(message, history),
+    requiresHistory: requiresHistory(message, history, usedFollowUpSearch),
     excludedPageIds,
     excludedExternalLinks,
     suppressLinks,

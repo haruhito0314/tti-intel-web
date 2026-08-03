@@ -45,10 +45,15 @@ describe('routingIntentFor', () => {
       .toMatchObject({ suppressLinks: true });
   });
 
+  it('also suppresses links for established acknowledgements', () => {
+    expect(routingIntentFor('Codex わかりました', [], false))
+      .toMatchObject({ suppressLinks: true });
+  });
+
   it('recognizes contextual follow-ups without carrying history into a new topic', () => {
     const history = [{ role: 'user' as const, content: '豊田工業大学について教えて' }];
 
-    expect(routingIntentFor('その場所は？', history).requiresHistory).toBe(true);
+    expect(routingIntentFor('その場所は？', history, true).requiresHistory).toBe(true);
     expect(routingIntentFor('会費はかかりますか？', history).requiresHistory).toBe(false);
 
     expect(routingIntentFor('住所を教えて', history).requiresHistory).toBe(true);
@@ -65,7 +70,12 @@ describe('routingIntentFor', () => {
     ]) {
       expect(routingIntentFor(probe, history).requiresHistory).toBe(true);
     }
-    expect(routingIntentFor('どこから見るの？', history).requiresHistory).toBe(false);
+    expect(routingIntentFor('どこから見るの？', history, false).requiresHistory)
+      .toBe(false);
+    expect(routingIntentFor('どこから見るの？', history, true).requiresHistory)
+      .toBe(true);
+    expect(routingIntentFor('これから京都へ旅行します', history, false).requiresHistory)
+      .toBe(false);
   });
 
   it('does not expose removed Assistant app candidates through exclusions', () => {

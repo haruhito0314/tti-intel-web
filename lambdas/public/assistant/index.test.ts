@@ -372,6 +372,71 @@ describe('createAssistantHandler single-Luna path', () => {
     expect(input?.knowledge.length).toBeGreaterThan(0);
     expect(input?.knowledge.length).toBeLessThanOrEqual(5);
   });
+
+  it('sends history and matching local knowledge for a resolved follow-up search', async () => {
+    const dependencies = createDependencies();
+
+    await invoke(dependencies, eventForRequest({
+      message: 'どこから見るの？',
+      history: [{ role: 'user', content: '今週の数学について教えて' }],
+    }));
+
+    const input = vi.mocked(dependencies.requestOpenAI).mock.calls[0]?.[0];
+    expect(input?.contextualFollowUp).toBe(true);
+    expect(input?.knowledge.map(({ item }) => item.id)).toContain('circle-weekly-math');
+  });
+
+  it('does not send history or stale knowledge for an unrelated new topic', async () => {
+    const dependencies = createDependencies();
+
+    await invoke(dependencies, eventForRequest({
+      message: 'これから京都へ旅行します',
+      history: [{ role: 'user', content: '今週の数学について教えて' }],
+    }));
+
+    const input = vi.mocked(dependencies.requestOpenAI).mock.calls[0]?.[0];
+    expect(input?.contextualFollowUp).toBe(false);
+    expect(input?.knowledge).toEqual([]);
+  });
+
+  it('uses prior circle context instead of a generic location hit for a deictic turn', async () => {
+    const dependencies = createDependencies();
+
+    await invoke(dependencies, eventForRequest({
+      message: 'その場所は？',
+      history: [{ role: 'user', content: 'TTI Intelligenceについて教えて' }],
+    }));
+
+    const input = vi.mocked(dependencies.requestOpenAI).mock.calls[0]?.[0];
+    expect(input?.contextualFollowUp).toBe(true);
+    expect(input?.knowledge.map(({ item }) => item.id)).toContain('circle-identity');
+    expect(input?.knowledge.map(({ item }) => item.id))
+      .not.toContain('university-campus-access');
+  });
+
+  it('keeps acknowledgement links suppressed even when knowledge is selected', async () => {
+    const dependencies = createDependencies({
+      requestOpenAI: vi.fn(async (): Promise<OpenAIResult> => ({
+        ...successfulAnswerResult,
+        output: {
+          answer: '了解です。',
+          pageIds: ['development'],
+          contentIds: [],
+          sourceIds: [],
+        },
+      })),
+    });
+
+    const response = await invoke(dependencies, eventForRequest({
+      message: 'Codex わかりました',
+      history: [],
+    }));
+    const input = vi.mocked(dependencies.requestOpenAI).mock.calls[0]?.[0];
+
+    expect(input?.knowledge.map(({ item }) => item.id)).toContain('development-codex');
+    expect(input?.allowedPageIds).toEqual([]);
+    expect(parsedBody(response)).toEqual({ answer: '了解です。', links: [] });
+  });
 });
 
 describe('createAssistantHandler zero-call exits', () => {

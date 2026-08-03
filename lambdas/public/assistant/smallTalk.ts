@@ -426,6 +426,13 @@ export function shouldUseFollowUpHistory(message: string): boolean {
     return false;
   }
 
+  if (/^(?:それ|その|そこ|あれ|これ)(?:$|は|って|の|を|が|も|どこ|どう|何|なに|場所|詳細|内容|リンク)/.test(normalized)) {
+    return true;
+  }
+  if (/^(?:場所|住所|所在地|英語名|正式名称|答え|解答|ヒント|費用|料金|日程|活動日|会費|参加費|ツール代|サブスク代)(?:も|だけ|は)$/.test(normalized)) {
+    return true;
+  }
+
   // Longer prefixes first so 「どうやって」 wins over 「どう」.
   const prefixes = [...FOLLOW_UP_PREFIXES].sort((a, b) => b.length - a.length);
   for (const prefix of prefixes) {
