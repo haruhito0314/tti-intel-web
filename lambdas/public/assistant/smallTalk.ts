@@ -407,11 +407,7 @@ const OPEN_QUESTION_RESTS = new Set([
   '風',
 ]);
 
-/**
- * Search may reuse history for short clarifiers (broader: prefix like 「どこから」).
- * The model may reuse history only for bare probes or when that follow-up search hit —
- * see shouldTreatAsFollowUp. Keep these two gates separate on purpose.
- */
+/** Whether a short clarifier is eligible for local history resolution. */
 export function shouldUseFollowUpHistory(message: string): boolean {
   if (isShortFollowUpProbe(message)) {
     return true;
@@ -448,24 +444,4 @@ export function shouldUseFollowUpHistory(message: string): boolean {
   }
 
   return false;
-}
-
-/**
- * Whether the model should treat the turn as a continuation of the prior topic.
- * Stricter than search: only when follow-up search hit, or the message is a
- * bare probe like 「どこ？」. Longer clarifications (e.g. 「どこから見るの？」)
- * get history only via usedFollowUpSearch so new topics are not dragged in.
- */
-export function shouldTreatAsFollowUp(
-  message: string,
-  history: readonly { role: string; content: string }[],
-  usedFollowUpSearch: boolean,
-): boolean {
-  if (history.filter((entry) => entry.role === 'user').length === 0) {
-    return false;
-  }
-  if (usedFollowUpSearch) {
-    return true;
-  }
-  return isShortFollowUpProbe(message);
 }

@@ -55,25 +55,17 @@ describe('routingIntentFor', () => {
 
     expect(routingIntentFor('その場所は？', history, true).requiresHistory).toBe(true);
     expect(routingIntentFor('会費はかかりますか？', history).requiresHistory).toBe(false);
-
-    expect(routingIntentFor('住所を教えて', history).requiresHistory).toBe(true);
-    expect(routingIntentFor(
-      '解答を教えて',
-      [{ role: 'user', content: '今週の数学の問題を見たい' }],
-    ).requiresHistory).toBe(true);
-
-    for (const probe of [
-      'もっと詳しく',
-      'ページは？',
-      '詳細は？',
-      '内容は？',
-    ]) {
-      expect(routingIntentFor(probe, history).requiresHistory).toBe(true);
-    }
+    expect(routingIntentFor('住所を教えて', history, false).requiresHistory).toBe(false);
+    expect(routingIntentFor('住所を教えて', history, true).requiresHistory).toBe(true);
     expect(routingIntentFor('どこから見るの？', history, false).requiresHistory)
       .toBe(false);
     expect(routingIntentFor('どこから見るの？', history, true).requiresHistory)
       .toBe(true);
+    expect(routingIntentFor(
+      'どこに豊田工業大学がありますか？',
+      history,
+      false,
+    ).requiresHistory).toBe(false);
     expect(routingIntentFor('これから京都へ旅行します', history, false).requiresHistory)
       .toBe(false);
   });

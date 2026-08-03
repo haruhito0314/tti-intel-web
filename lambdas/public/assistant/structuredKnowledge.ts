@@ -281,6 +281,38 @@ export interface AssistantRequestContext {
   routingIntent: AssistantRoutingIntent;
 }
 
+const CONTEXT_DEPENDENT_KEYWORDS = new Set([
+  '場所',
+  '住所',
+  '所在地',
+  'アクセス',
+  '交通',
+  '行き方',
+  '正式名称',
+  '英語名',
+  '略称',
+  '初心者',
+  '未経験',
+  '参加',
+  '活動日',
+  '費用',
+  '無料',
+  '問い合わせ',
+]);
+
+function hasDirectCurrentTopic(
+  message: string,
+  knowledge: readonly RankedKnowledgeItem[],
+): boolean {
+  const normalizedMessage = normalizeKnowledgeText(message);
+  return knowledge.some(({ item }) => item.keywords.some((keyword) => {
+    const normalizedKeyword = normalizeKnowledgeText(keyword);
+    return normalizedKeyword.length >= 2
+      && !CONTEXT_DEPENDENT_KEYWORDS.has(normalizedKeyword)
+      && normalizedMessage.includes(normalizedKeyword);
+  }));
+}
+
 /** Select knowledge and history once, then share that decision with Luna. */
 export function selectAssistantRequestContext(
   message: string,
@@ -296,11 +328,12 @@ export function selectAssistantRequestContext(
     false,
   );
   let followUpKnowledge: RankedKnowledgeItem[] = [];
-  let usedFollowUpSearch = false;
+  let resolvedFollowUp = false;
 
   if (
     history.length > 0
     && shouldUseFollowUpHistory(message)
+    && !hasDirectCurrentTopic(message, currentKnowledge)
   ) {
     const latestHistoryKnowledge = selectStructuredKnowledge(
       history.at(-1)?.content ?? '',
@@ -323,25 +356,15 @@ export function selectAssistantRequestContext(
     if (followUpKnowledge.length === 0 && latestDomain !== undefined) {
       followUpKnowledge = latestHistoryKnowledge;
     }
-    usedFollowUpSearch = followUpKnowledge.length > 0;
+    resolvedFollowUp = followUpKnowledge.length > 0;
   }
 
   const routingIntent = routingIntentFor(
     message,
     history,
-    usedFollowUpSearch,
+    resolvedFollowUp,
   );
-  const knowledge = routingIntent.requiresHistory
-    ? usedFollowUpSearch
-      ? followUpKnowledge
-      : selectStructuredKnowledge(
-        message,
-        currentPath,
-        history,
-        limit,
-        true,
-      )
-    : currentKnowledge;
+  const knowledge = resolvedFollowUp ? followUpKnowledge : currentKnowledge;
 
   return { knowledge, routingIntent };
 }

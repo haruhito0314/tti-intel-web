@@ -142,6 +142,31 @@ describe('selectStructuredKnowledge', () => {
     expect(context.knowledge).toEqual([]);
   });
 
+  it('lets an explicit current university topic override a prior Codex topic', () => {
+    const context = selectAssistantRequestContext(
+      'どこに豊田工業大学がありますか？',
+      '/',
+      [{ role: 'user', content: 'Codexについて教えて' }],
+    );
+
+    expect(context.routingIntent.requiresHistory).toBe(false);
+    expect(context.knowledge.map(({ item }) => item.id))
+      .toContain('university-identity');
+    expect(context.knowledge.every(({ item }) => item.domain === 'university'))
+      .toBe(true);
+    expect(context.knowledge.map(({ item }) => item.id))
+      .not.toContain('development-codex');
+  });
+
+  it('does not resolve a different unrelated topic against prior Codex history', () => {
+    const context = selectAssistantRequestContext('カレーの作り方を教えて', '/', [
+      { role: 'user', content: 'Codexについて教えて' },
+    ]);
+
+    expect(context.routingIntent.requiresHistory).toBe(false);
+    expect(context.knowledge).toEqual([]);
+  });
+
   it('lets a deictic location follow-up keep the prior circle domain', () => {
     const context = selectAssistantRequestContext('その場所は？', '/', [
       { role: 'user', content: 'TTI Intelligenceについて教えて' },

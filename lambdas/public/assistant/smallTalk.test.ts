@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isCasualConversation, isBareEmpathyRemark, isGreetingMessage, isLookOrDesignRemark, isShortFollowUpProbe, shouldOmitAssistantLinks, shouldTreatAsFollowUp, shouldUseFollowUpHistory } from './smallTalk.js';
+import { isCasualConversation, isBareEmpathyRemark, isGreetingMessage, isLookOrDesignRemark, isShortFollowUpProbe, shouldOmitAssistantLinks, shouldUseFollowUpHistory } from './smallTalk.js';
 
 describe('isCasualConversation', () => {
   it.each([
@@ -197,30 +197,5 @@ describe('shouldUseFollowUpHistory', () => {
     'どうやって？',
   ])('allows bare open-question clarifiers %j', (message) => {
     expect(shouldUseFollowUpHistory(message)).toBe(true);
-  });
-});
-
-describe('shouldTreatAsFollowUp', () => {
-  const mathHistory = [{ role: 'user' as const, content: '今週の数学について教えて' }];
-
-  it.each([
-    'webサイトについて教えて',
-    'このサイトは何ですか？',
-    '会社について教えて',
-    'どこから見るの？',
-  ])('treats self-contained or longer clarifications as new topics without search hit: %j', (message) => {
-    expect(shouldTreatAsFollowUp(message, mathHistory, false)).toBe(false);
-  });
-
-  it('treats follow-up search hits as continuations', () => {
-    expect(shouldTreatAsFollowUp('どこから見るの？', mathHistory, true)).toBe(true);
-  });
-
-  it('treats short probes as continuations even without follow-up search', () => {
-    expect(shouldTreatAsFollowUp('どこ？', mathHistory, false)).toBe(true);
-  });
-
-  it('returns false when there is no user history', () => {
-    expect(shouldTreatAsFollowUp('webサイトについて', [], false)).toBe(false);
   });
 });

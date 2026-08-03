@@ -399,6 +399,37 @@ describe('createAssistantHandler single-Luna path', () => {
     expect(input?.knowledge).toEqual([]);
   });
 
+  it('uses an explicit current university topic instead of prior Codex history', async () => {
+    const dependencies = createDependencies();
+
+    await invoke(dependencies, eventForRequest({
+      message: 'どこに豊田工業大学がありますか？',
+      history: [{ role: 'user', content: 'Codexについて教えて' }],
+    }));
+
+    const input = vi.mocked(dependencies.requestOpenAI).mock.calls[0]?.[0];
+    expect(input?.contextualFollowUp).toBe(false);
+    expect(input?.knowledge.map(({ item }) => item.id))
+      .toContain('university-identity');
+    expect(input?.knowledge.every(({ item }) => item.domain === 'university'))
+      .toBe(true);
+    expect(input?.knowledge.map(({ item }) => item.id))
+      .not.toContain('development-codex');
+  });
+
+  it('does not send prior Codex context for a different unrelated topic', async () => {
+    const dependencies = createDependencies();
+
+    await invoke(dependencies, eventForRequest({
+      message: 'カレーの作り方を教えて',
+      history: [{ role: 'user', content: 'Codexについて教えて' }],
+    }));
+
+    const input = vi.mocked(dependencies.requestOpenAI).mock.calls[0]?.[0];
+    expect(input?.contextualFollowUp).toBe(false);
+    expect(input?.knowledge).toEqual([]);
+  });
+
   it('uses prior circle context instead of a generic location hit for a deictic turn', async () => {
     const dependencies = createDependencies();
 

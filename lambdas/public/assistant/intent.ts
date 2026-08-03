@@ -4,7 +4,6 @@ import type {
 } from './types.js';
 import {
   shouldOmitAssistantLinks,
-  shouldTreatAsFollowUp,
 } from './smallTalk.js';
 
 export type ExcludedExternalLink = 'discord' | 'youtube' | 'toyota-ti';
@@ -66,32 +65,10 @@ function rejectsAlias(value: string, alias: string): boolean {
   ).test(value);
 }
 
-function requiresHistory(
-  message: string,
-  history: readonly HistoryMessage[],
-  usedFollowUpSearch: boolean,
-): boolean {
-  if (history.length === 0) return false;
-  const value = normalizeRoutingText(message);
-  const lastUserMessage = normalizeRoutingText(history.at(-1)?.content ?? '');
-  const universityLocationFollowUp = (
-    /(?:住所|所在地|アクセス)(?:も|は|を|お願い|教えて)?/.test(value)
-    && /豊田工業大学|豊田工大|豊工|tti/.test(lastUserMessage)
-  );
-  const mathAnswerFollowUp = (
-    /(?:解答|答え|ヒント|解説)(?:のほう|の方)?(?:は|も|お願い|教えて)?/.test(value)
-    && /数学|問題/.test(lastUserMessage)
-  );
-
-  return shouldTreatAsFollowUp(message, history, usedFollowUpSearch)
-    || universityLocationFollowUp
-    || mathAnswerFollowUp;
-}
-
 export function routingIntentFor(
   message: string,
   history: readonly HistoryMessage[],
-  usedFollowUpSearch = false,
+  resolvedFollowUp = false,
 ): AssistantRoutingIntent {
   const value = normalizeRoutingText(message);
   const excludedPageIds = PAGE_EXCLUSION_ALIASES
@@ -105,7 +82,7 @@ export function routingIntentFor(
       .test(value);
 
   return {
-    requiresHistory: requiresHistory(message, history, usedFollowUpSearch),
+    requiresHistory: history.length > 0 && resolvedFollowUp,
     excludedPageIds,
     excludedExternalLinks,
     suppressLinks,

@@ -53,6 +53,10 @@ const EXPECTATIONS = new Set<InterimExpectation>(['site', 'follow-up', 'general'
 const INPUT_USD_PER_MILLION = 0.20;
 const CACHED_INPUT_USD_PER_MILLION = 0.02;
 const OUTPUT_USD_PER_MILLION = 1.25;
+const SIGNIFICANT_PRIVATE_FRAGMENT_LENGTH = 8;
+const MAX_LOG_STRING_VALUES = 200;
+const MAX_LOG_STRING_LENGTH = 4_096;
+const MAX_LOG_VALUE_DEPTH = 6;
 
 function invalidFixture(reason: string): never {
   throw new TypeError(`Invalid interim evaluator fixture: ${reason}`);
@@ -153,6 +157,13 @@ function safeTokenCount(value: number): boolean {
   return Number.isSafeInteger(value) && value >= 0;
 }
 
+function hasConsistentUsage(usage: OpenAIUsage): boolean {
+  return usage.cachedInputTokens <= usage.inputTokens
+    && usage.cacheWriteTokens <= usage.inputTokens
+    && usage.cachedInputTokens + usage.cacheWriteTokens <= usage.inputTokens
+    && usage.totalTokens === usage.inputTokens + usage.outputTokens;
+}
+
 function estimateCostUsd(usage: OpenAIUsage): number {
   const nonCachedInput = Math.max(
     0,
@@ -183,6 +194,67 @@ function isVerifiedLink(link: AssistantResponse['links'][number]): boolean {
   return false;
 }
 
+function collectLogStringValues(
+  value: unknown,
+  output: string[],
+  depth = 0,
+): boolean {
+  if (depth > MAX_LOG_VALUE_DEPTH) return false;
+  if (typeof value === 'string') {
+    if (
+      output.length >= MAX_LOG_STRING_VALUES
+      || value.length > MAX_LOG_STRING_LENGTH
+    ) {
+      return false;
+    }
+    output.push(value);
+    return true;
+  }
+  if (Array.isArray(value)) {
+    return value.every((entry) => (
+      collectLogStringValues(entry, output, depth + 1)
+    ));
+  }
+  if (isRecord(value)) {
+    return Object.values(value).every((entry) => (
+      collectLogStringValues(entry, output, depth + 1)
+    ));
+  }
+  return true;
+}
+
+function normalizePrivateText(value: string): string {
+  return value
+    .normalize('NFKC')
+    .toLocaleLowerCase('ja-JP')
+    .replace(/[\s\p{P}\p{S}]/gu, '');
+}
+
+function containsSignificantPrivateFragment(
+  logValue: string,
+  privateValue: string,
+): boolean {
+  const normalizedLog = normalizePrivateText(logValue);
+  const normalizedPrivate = normalizePrivateText(privateValue);
+  if (normalizedPrivate.length === 0) return false;
+  if (normalizedPrivate.length < SIGNIFICANT_PRIVATE_FRAGMENT_LENGTH) {
+    return normalizedPrivate.length >= 4 && normalizedLog === normalizedPrivate;
+  }
+  for (
+    let index = 0;
+    index <= normalizedPrivate.length - SIGNIFICANT_PRIVATE_FRAGMENT_LENGTH;
+    index += 1
+  ) {
+    if (normalizedLog.includes(normalizedPrivate.slice(
+      index,
+      index + SIGNIFICANT_PRIVATE_FRAGMENT_LENGTH,
+    ))) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export function assessInterimObservation(
   evaluationCase: InterimEvaluationCase,
   observation: InterimObservation,
@@ -198,25 +270,44 @@ export function assessInterimObservation(
     failures.push('response contains an unsafe link');
   }
   const usageValues = Object.values(observation.usage);
-  if (!usageValues.every(safeTokenCount)) failures.push('token usage is invalid');
+  const safeUsage = usageValues.every(safeTokenCount);
+  const consistentUsage = safeUsage && hasConsistentUsage(observation.usage);
+  if (!safeUsage) failures.push('token usage is invalid');
+  if (safeUsage && !consistentUsage) failures.push('token usage is inconsistent');
 
-  const serializedLogs = JSON.stringify(observation.logs);
   const privateValues = [
     evaluationCase.message,
     ...evaluationCase.history.map(({ content }) => content),
     observation.response.answer,
   ];
-  if (
-    privateValues.some((value) => value.length > 0 && serializedLogs.includes(value))
-    || /sk-[A-Za-z0-9_-]+|authorization|bearer/i.test(serializedLogs)
-  ) {
+  const { knowledge } = selectAssistantRequestContext(
+    evaluationCase.message,
+    evaluationCase.currentPath,
+    evaluationCase.history,
+  );
+  for (const { item } of knowledge) {
+    privateValues.push(
+      item.title,
+      item.summary,
+      ...item.details,
+      ...item.keywords,
+    );
+  }
+  const logValues: string[] = [];
+  const scannedAllLogValues = collectLogStringValues(observation.logs, logValues);
+  if (!scannedAllLogValues || logValues.some((logValue) => (
+    /(?:^|[^A-Za-z0-9_-])(?:bearer\s+[A-Za-z0-9._~-]{4,}|sk-[A-Za-z0-9_-]{4,})/i.test(logValue)
+    || privateValues.some((privateValue) => (
+      containsSignificantPrivateFragment(logValue, privateValue)
+    ))
+  ))) {
     failures.push('logs contain private request data');
   }
 
   return {
     passed: failures.length === 0,
     failures,
-    estimatedCostUsd: usageValues.every(safeTokenCount)
+    estimatedCostUsd: consistentUsage
       ? estimateCostUsd(observation.usage)
       : 0,
   };
