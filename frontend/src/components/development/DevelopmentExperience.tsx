@@ -151,10 +151,9 @@ function useDemoTime(active: boolean, reducedMotion: boolean) {
 
     useEffect(() => {
         if (reducedMotion) return;
-        if (!active) {
-            const resetFrame = window.requestAnimationFrame(() => setTime(0));
-            return () => window.cancelAnimationFrame(resetFrame);
-        }
+        // Retain the last rendered frame while the pinned stage hands off to
+        // the next scene. Resetting here caused a visible snap at the boundary.
+        if (!active) return;
 
         let frame = 0;
         let holdTimer = 0;
@@ -226,6 +225,16 @@ function BrandIcon({ icon }: { icon: SimpleIcon }) {
     );
 }
 
+function BalancedJapaneseTitle({ text }: { text: string }) {
+    const phrases = text.split('、');
+
+    return phrases.map((phrase, index) => (
+        <span className="dx-balanced-phrase" key={`${phrase}-${index}`}>
+            {phrase}{index < phrases.length - 1 ? '、' : ''}
+        </span>
+    ));
+}
+
 function ToolLauncher({
     hidden,
     codexOpen,
@@ -293,7 +302,7 @@ function CodexDemo({
     stageRef: RefObject<HTMLDivElement | null>;
 }) {
     const conversationRef = useRef<HTMLDivElement>(null);
-    const [cursorPoint, setCursorPoint] = useState({ x: 0, y: 0, visible: false });
+    const cursorRef = useRef<HTMLSpanElement>(null);
     const step = demoStep(demoTime);
     const launcherOpening = reducedMotion || demoTime >= CODEX_LAUNCH_OPEN_MS;
     const contentReady = reducedMotion || demoTime >= 4_350;
@@ -404,20 +413,15 @@ function CodexDemo({
         const updateCursor = () => {
             const stage = stageRef.current;
             const target = stage?.querySelector<HTMLElement>(`[data-dx-cursor-target="${cursor}"]`);
-            if (!stage || !target) {
-                setCursorPoint((current) => ({ ...current, visible: false }));
-                return;
-            }
+            const cursorNode = cursorRef.current;
+            if (!stage || !target || !cursorNode) return;
 
             const stageRect = stage.getBoundingClientRect();
             const targetRect = target.getBoundingClientRect();
             const targetX = Number(target.dataset.dxCursorX ?? 0.5);
             const targetY = Number(target.dataset.dxCursorY ?? 0.5);
-            setCursorPoint({
-                x: targetRect.left - stageRect.left + targetRect.width * targetX,
-                y: targetRect.top - stageRect.top + targetRect.height * targetY,
-                visible: true,
-            });
+            cursorNode.style.left = `${targetRect.left - stageRect.left + targetRect.width * targetX}px`;
+            cursorNode.style.top = `${targetRect.top - stageRect.top + targetRect.height * targetY}px`;
         };
         const requestUpdate = () => {
             window.cancelAnimationFrame(frame);
@@ -456,7 +460,7 @@ function CodexDemo({
             <div className="dx-demo-camera" style={cameraStyle}>
             <ToolLauncher hidden={workspaceHidden} codexOpen={launcherOpening}>
             <div
-                className={`dx-launcher-codex-screen dx-product-window dx-window-glass is-content-ready ${previewVisible ? 'is-preview-behind' : ''} ${handoffComplete ? 'is-handoff-complete' : ''}`}
+                className={`dx-launcher-codex-screen dx-product-window dx-window-glass ${!launcherOpening || contentReady ? 'is-content-ready' : ''} ${previewVisible ? 'is-preview-behind' : ''} ${handoffComplete ? 'is-handoff-complete' : ''}`}
                 data-dx-codex-window="primary"
                 data-dx-cursor-target="codex-window"
                 data-dx-cursor-y="0.04"
@@ -627,17 +631,16 @@ function CodexDemo({
                 <div className="dx-demo-story-index" aria-hidden="true">{story.number}</div>
                 <div className="dx-demo-story-copy" key={story.number}>
                     <span>{story.label}</span>
-                    <strong>{story.title}</strong>
+                    <strong><BalancedJapaneseTitle text={story.title} /></strong>
                     <p>{story.body}</p>
                 </div>
             </aside>
 
             {!reducedMotion && (
                 <span
-                    className={`dx-demo-cursor ${cursorVisible && cursorPoint.visible ? 'is-visible' : ''} ${isCursorClicking(demoTime) ? 'is-clicking' : ''}`}
+                    ref={cursorRef}
+                    className={`dx-demo-cursor ${cursorVisible ? 'is-visible' : ''} ${isCursorClicking(demoTime) ? 'is-clicking' : ''}`}
                     style={{
-                        left: cursorPoint.x,
-                        top: cursorPoint.y,
                         '--dx-cursor-duration': cursorDuration,
                     } as MotionStyle}
                     aria-hidden="true"
@@ -661,19 +664,11 @@ function DevelopmentDemo({
     const handoffStarted = progress >= 0.82;
     const demoActive = reducedMotion || (revealed && !handoffStarted);
     const runningDemoTime = useDemoTime(demoActive, reducedMotion);
-    // Freeze the last live frame on handoff — never snap to the final demo beat.
-    const lastLiveDemoTimeRef = useRef(runningDemoTime);
-    if (demoActive && runningDemoTime >= 0) {
-        lastLiveDemoTimeRef.current = runningDemoTime;
-    }
-    const demoTime = handoffStarted
-        ? (lastLiveDemoTimeRef.current || DEMO_PLAY_MS)
-        : runningDemoTime;
 
     return (
         <CodexDemo
             progress={progress}
-            demoTime={demoTime}
+            demoTime={runningDemoTime}
             demoActive={demoActive}
             reducedMotion={reducedMotion}
             stageRef={stageRef}
@@ -1271,7 +1266,7 @@ function AutomationEcosystem({
                             <div className="dx-ecosystem-mobile-title">
                                 <span>{scene.number}</span>
                                 <small>{scene.label}</small>
-                                <strong>{scene.title}</strong>
+                                <strong><BalancedJapaneseTitle text={scene.title} /></strong>
                             </div>
                             <p className="dx-ecosystem-mobile-body">{scene.body}</p>
                         </div>

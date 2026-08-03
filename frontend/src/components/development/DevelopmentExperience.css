@@ -5307,6 +5307,10 @@ body:has(.development-experience) footer span {
 }
 
 @media (max-width: 800px) {
+    body:has(.development-experience) .assistant-root {
+        display: none;
+    }
+
     .dx-proof-stage {
         padding-block: 6rem;
     }
@@ -11897,4 +11901,130 @@ body:has(.development-experience) footer span {
     box-shadow: var(--dx-glass-shadow);
     backdrop-filter: var(--dx-glass-blur);
     -webkit-backdrop-filter: var(--dx-glass-blur);
+}
+
+/* Do not reflow visible copy while the opening window changes size. The same
+   Codex surface remains in place; its contents return after the frame settles. */
+.dx-tool-launcher.is-opening
+    > .dx-launcher-codex-screen.dx-product-window:not(.is-content-ready)
+    > .dx-window-bar,
+.dx-tool-launcher.is-opening
+    > .dx-launcher-codex-screen.dx-product-window:not(.is-content-ready)
+    > .dx-codex-app {
+    opacity: 0;
+    transform: none;
+    transition: none;
+}
+
+/* Animate one coordinate system. Combining a moving left edge with
+   translate(-50%) made the pane reverse direction briefly on launch. */
+.dx-tool-launcher.is-opening > .dx-launcher-codex-screen.dx-product-window {
+    left: 8%;
+    top: 2%;
+    transform:
+        translateX(var(--dx-window-depth-x))
+        scale(var(--dx-window-depth-scale));
+}
+
+@media (max-width: 640px) {
+    .dx-tool-launcher.is-opening > .dx-launcher-codex-screen.dx-product-window {
+        left: 4%;
+        top: 2%;
+    }
+}
+
+/* Final mobile layout guard: keep Japanese phrases and cards inside the viewport. */
+.dx-balanced-phrase {
+    display: inline;
+}
+
+@media (max-width: 800px) {
+    body:has(.development-experience) .assistant-root {
+        display: none;
+    }
+
+    .dx-demo-story-copy > strong .dx-balanced-phrase,
+    .dx-ecosystem-mobile-title > strong .dx-balanced-phrase {
+        display: block;
+        white-space: nowrap;
+    }
+
+    .dx-demo-story-copy > strong,
+    .dx-ecosystem-mobile-title > strong {
+        max-width: 100%;
+        overflow-wrap: normal;
+        word-break: keep-all;
+    }
+
+    .dx-ecosystem-visual,
+    .dx-automation-window,
+    .dx-plugin-window,
+    .dx-mcp-window {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 640px) {
+    .dx-project-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1rem;
+        padding: 0 1rem 1rem;
+        overflow-x: hidden;
+        scroll-padding-inline: 0;
+        scroll-snap-type: none;
+    }
+
+    .dx-project-grid > article {
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        min-height: 488px;
+        flex: none;
+        scroll-snap-align: none;
+    }
+
+    .dx-project-copy h3,
+    .dx-project-copy p {
+        max-width: 100%;
+        overflow-wrap: anywhere;
+    }
+}
+
+@media (max-width: 360px) {
+    .dx-demo-story {
+        top: calc(42% + min(27svh, 210px) + 12px);
+    }
+
+    .dx-ecosystem-mobile-copies {
+        top: calc(42% + min(27svh, 210px) + 12px);
+    }
+
+    .dx-demo-story,
+    .dx-ecosystem-mobile-copies {
+        min-height: 166px;
+    }
+
+    .dx-demo-story,
+    .dx-ecosystem-mobile-copy {
+        padding: 1rem;
+    }
+
+    .dx-ecosystem-mobile-copy,
+    .dx-ecosystem-mobile-title {
+        grid-template-columns: 2rem minmax(0, 1fr);
+        column-gap: 0.65rem;
+    }
+
+    .dx-ecosystem-mobile-title > span {
+        width: 2rem;
+    }
+
+    .dx-project-grid {
+        padding-inline: 0.75rem;
+    }
+
+    .dx-project-copy {
+        padding-inline: 1rem;
+    }
 }
