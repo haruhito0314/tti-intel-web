@@ -5,6 +5,7 @@ import {
   isWeeklyMathListingQuery,
   scoreContentCandidate,
   selectRelevantContent,
+  retrieveDynamicContentSafely,
   truncateExcerpt,
   type ContentRepositories,
 } from './contentSearch.js';
@@ -22,6 +23,34 @@ function createRepos(
 }
 
 describe('contentSearch', () => {
+  it('returns selected content with an available dynamic-content flag', async () => {
+    const selected = [{
+      score: 8,
+      entry: {
+        id: 'news:welcome',
+        kind: 'news' as const,
+        title: 'Welcome',
+        href: '/news/welcome',
+        excerpt: 'Published body',
+        parentPageId: 'news' as const,
+      },
+    }];
+
+    await expect(retrieveDynamicContentSafely(async () => selected)).resolves.toEqual({
+      content: selected,
+      dynamicContentAvailable: true,
+    });
+  });
+
+  it('contains a dynamic-content exception at the retrieval boundary', async () => {
+    await expect(retrieveDynamicContentSafely(async () => {
+      throw new Error('private repository failure');
+    })).resolves.toEqual({
+      content: [],
+      dynamicContentAvailable: false,
+    });
+  });
+
   it('truncates long excerpts without leaking answer fields from math shaping', async () => {
     expect(truncateExcerpt('a'.repeat(1_250)).endsWith('…')).toBe(true);
 

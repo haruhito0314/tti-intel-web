@@ -43,6 +43,31 @@ export interface ContentRepositories {
   listPublishedMathProblems(): Promise<MathListItem[]>;
 }
 
+export interface DynamicContentResult {
+  content: RankedContentEntry[];
+  dynamicContentAvailable: boolean;
+}
+
+/**
+ * Dynamic repositories are optional answer context. Contain failures at this
+ * one boundary so quota, secret, and Luna failures keep their own mappings.
+ */
+export async function retrieveDynamicContentSafely(
+  search: () => Promise<RankedContentEntry[]>,
+): Promise<DynamicContentResult> {
+  try {
+    return {
+      content: await search(),
+      dynamicContentAvailable: true,
+    };
+  } catch {
+    return {
+      content: [],
+      dynamicContentAvailable: false,
+    };
+  }
+}
+
 export function truncateExcerpt(value: string, maxLength = MAX_CONTENT_EXCERPT_LENGTH): string {
   const normalized = value.replace(/\s+/g, ' ').trim();
   if (normalized.length <= maxLength) return normalized;
