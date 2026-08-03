@@ -59,6 +59,27 @@ const OPENAI_TIMEOUT_MS = 20_000;
 const OPENAI_MODEL = 'gpt-5.6-luna' as const;
 const MAX_ASSISTANT_LINKS = 4;
 
+const KNOWLEDGE_ALLOWED_PAGE_IDS = {
+  'circle-identity': ['about'],
+  'circle-participation': ['about', 'contact'],
+  'site-public-contact': ['contact'],
+  'circle-discord-youtube': ['about'],
+  'app-ai-assistant': ['apps'],
+  'app-table-tennis': ['apps', 'table-tennis'],
+  'app-color-sort': ['apps', 'color-sort'],
+  'circle-game-activity': ['game-community'],
+  'circle-weekly-math': ['weekly-math'],
+  'circle-ap-exam-schedule': ['about'],
+  'development-codex': ['development'],
+  'development-vercel': ['development'],
+  'development-aws': ['development'],
+  'development-plugin': ['development'],
+  'development-cli': ['development'],
+  'development-mcp': ['development'],
+  'development-combined-workflow': ['development'],
+  'development-project-examples': ['development'],
+} as const satisfies Readonly<Record<string, readonly PageId[]>>;
+
 const ERROR_RESPONSES = {
   400: {
     code: 'INVALID_REQUEST',
@@ -206,14 +227,57 @@ function safeUsage(usage: Readonly<OpenAIUsage>): OpenAIUsage {
   };
 }
 
+const PROTOCOL_RELATIVE_URL_TARGET = /^(?:[^@/]+@)?(?:\[[0-9A-Fa-f:.]+\]|localhost|(?:[\p{L}\p{N}-]+\.)+[\p{L}\p{N}-]+)(?::\d+)?(?:[/?#].*)?$/u;
+
+function stripProtocolRelativeUrl(
+  match: string,
+  prefix: string,
+  target: string,
+): string {
+  return PROTOCOL_RELATIVE_URL_TARGET.test(target) ? prefix : match;
+}
+
 function sanitizeModelAnswer(answer: string): string {
   return answer
     .trim()
-    .replace(/\[([^\]]+)]\(https?:\/\/[^)\s]+\)/gi, '$1')
-    .replace(/<https?:\/\/[^>\s]+>/gi, '')
-    .replace(/https?:\/\/[^\s<>"'。．、，！？）)\]}]+/gi, '')
-    .replace(/\s+/g, ' ')
+    .replace(
+      /\[([^\]]+)]\((?:(?:https?|ftp):\/\/|\/\/|www\.)[^)\s]+\)/gi,
+      '$1',
+    )
+    .replace(
+      /<(?:(?:https?|ftp):\/\/|\/\/|www\.)[^>\s]+>/gi,
+      '',
+    )
+    .replace(/(?:https?|ftp):\/\/[^\s<>"'。．、，！？）)}]+/gi, '')
+    .replace(
+      /(^|[^A-Za-z0-9/])\/\/([^\s<>"'。．、，！？）)\]}]+)/gu,
+      stripProtocolRelativeUrl,
+    )
+    .replace(/(^|[^A-Za-z0-9.])www\.[^\s<>"'。．、，！？）)\]}]+/gi, '$1')
     .trim();
+}
+
+function createAllowedPageIds(
+  knowledge: readonly RankedKnowledgeItem[],
+  content: readonly RankedContentEntry[],
+  plan: AssistantQueryPlan,
+): PageId[] {
+  if (plan.suppressLinks) return [];
+
+  const excluded = new Set<PageId>(plan.excludedPageIds);
+  const allowed = new Set<PageId>();
+  for (const { item } of knowledge) {
+    const pageIds = Object.hasOwn(KNOWLEDGE_ALLOWED_PAGE_IDS, item.id)
+      ? KNOWLEDGE_ALLOWED_PAGE_IDS[item.id as keyof typeof KNOWLEDGE_ALLOWED_PAGE_IDS]
+      : [];
+    for (const pageId of pageIds) {
+      if (!excluded.has(pageId)) allowed.add(pageId);
+    }
+  }
+  for (const { entry } of content) {
+    if (!excluded.has(entry.parentPageId)) allowed.add(entry.parentPageId);
+  }
+  return [...allowed];
 }
 
 function createVerifiedPageLinks(
@@ -262,17 +326,15 @@ function createFinalLinks(
   output: OpenAIResult['output'],
   knowledge: readonly RankedKnowledgeItem[],
   content: readonly RankedContentEntry[],
+  allowedPageIds: readonly PageId[],
   plan: AssistantQueryPlan,
 ): AssistantLink[] {
   if (plan.suppressLinks) return [];
 
-  const allowedPageIds = new Set<PageId>([
-    ...plan.pageIds,
-    ...content.map(({ entry }) => entry.parentPageId),
-  ]);
+  const allowedPageIdSet = new Set<PageId>(allowedPageIds);
   const pageLinks = createVerifiedPageLinks(
     output.pageIds,
-    allowedPageIds,
+    allowedPageIdSet,
     plan.excludedPageIds,
   );
 
@@ -390,7 +452,9 @@ export function createAssistantHandler(
         request.message,
         request.currentPath,
         request.history,
-      );
+      ).slice(0, 5);
+      const content = dynamicContent.content.slice(0, 3);
+      const allowedPageIds = createAllowedPageIds(knowledge, content, plan);
       knowledgeCount = knowledge.length;
       knowledgeDomains = [...new Set(
         knowledge.map(({ item }) => item.domain),
@@ -406,8 +470,9 @@ export function createAssistantHandler(
         apiKey,
         request,
         knowledge,
-        content: dynamicContent.content,
+        content,
         dynamicContentAvailable: dynamicContent.dynamicContentAvailable,
+        allowedPageIds,
         model: OPENAI_MODEL,
         contextualFollowUp: plan.requiresHistory,
       });
@@ -431,7 +496,8 @@ export function createAssistantHandler(
         links: createFinalLinks(
           result.output,
           knowledge,
-          dynamicContent.content,
+          content,
+          allowedPageIds,
           plan,
         ),
       }, origin);

@@ -203,7 +203,7 @@
       "ローカルサーバーの起動とプレビュー表示を同じ開発の流れで扱う。",
       "Codex CLIからVercel、AWS、Plugin、MCPへつながる制作例が示されている。"
     ],
-    "keywords": ["CLI", "コマンドライン", "ターミナル", "ローカル開発", "コマンド実行", "Codex CLI", "ビルド", "テスト"],
+    "keywords": ["CLI", "Git", "Gitコマンド", "コマンドライン", "ターミナル", "ローカル開発", "コマンド実行", "Codex CLI", "ビルド", "テスト"],
     "sourceIds": [],
     "asOf": "2026-08-03",
     "volatility": "periodic"

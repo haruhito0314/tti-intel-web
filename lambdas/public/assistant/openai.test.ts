@@ -159,6 +159,44 @@ afterEach(() => {
 });
 
 describe('buildResponsesPayload', () => {
+  it('constrains pageIds to the exact locally grounded page set', () => {
+    const payload = buildResponsesPayload({
+      request: { ...request, message: 'Gitコマンドについて教えて' },
+      knowledge: [rankedKnowledge(0, [])],
+      content: [],
+      dynamicContentAvailable: true,
+      allowedPageIds: ['development'],
+      model: 'gpt-5.6-luna',
+      contextualFollowUp: false,
+    } as Parameters<typeof buildResponsesPayload>[0]);
+
+    expect(payload.text.format.schema.properties.pageIds).toEqual({
+      type: 'array',
+      maxItems: 3,
+      items: { type: 'string', enum: ['development'] },
+    });
+    expect(JSON.stringify(payload.text.format.schema.properties.pageIds))
+      .not.toContain('cli-practice');
+  });
+
+  it('uses an empty pageIds schema when no grounded page is available', () => {
+    const payload = buildResponsesPayload({
+      request: { ...request, message: '一般的な質問です' },
+      knowledge: [],
+      content: [],
+      dynamicContentAvailable: true,
+      allowedPageIds: [],
+      model: 'gpt-5.6-luna',
+      contextualFollowUp: false,
+    } as Parameters<typeof buildResponsesPayload>[0]);
+
+    expect(payload.text.format.schema.properties.pageIds).toEqual({
+      type: 'array',
+      maxItems: 0,
+      items: { type: 'string' },
+    });
+  });
+
   it('builds one bounded Luna payload from selected knowledge and content', () => {
     const boundedKnowledge = [
       rankedKnowledge(0, ['discord', 'tti-overview']),
@@ -175,6 +213,7 @@ describe('buildResponsesPayload', () => {
       knowledge: boundedKnowledge,
       content,
       dynamicContentAvailable: false,
+      allowedPageIds: ['about'] as const,
       model: 'gpt-5.6-luna',
       contextualFollowUp: false,
     });
@@ -245,6 +284,7 @@ describe('buildResponsesPayload', () => {
       knowledge: [],
       content: [],
       dynamicContentAvailable: true,
+      allowedPageIds: [],
       model: 'gpt-5.6-luna',
       contextualFollowUp: false,
     });
@@ -283,6 +323,7 @@ describe('buildResponsesPayload', () => {
       knowledge,
       content: [],
       dynamicContentAvailable: true,
+      allowedPageIds: ['about'],
       model: 'gpt-5-nano' as 'gpt-5.6-luna',
       contextualFollowUp: false,
     });
@@ -306,6 +347,7 @@ describe('buildResponsesPayload', () => {
       knowledge,
       content: [],
       dynamicContentAvailable: true,
+      allowedPageIds: ['about'],
       model: 'gpt-5.6-luna',
       contextualFollowUp: true,
     });
@@ -341,6 +383,7 @@ describe('buildResponsesPayload', () => {
       knowledge,
       content: [],
       dynamicContentAvailable: true,
+      allowedPageIds: ['about'],
       model: 'gpt-5.6-luna',
       contextualFollowUp: true,
     });
@@ -349,6 +392,7 @@ describe('buildResponsesPayload', () => {
       knowledge,
       content: [],
       dynamicContentAvailable: true,
+      allowedPageIds: ['about'],
       model: 'gpt-5.6-luna',
       contextualFollowUp: false,
     });
@@ -543,6 +587,7 @@ describe('requestOpenAI', () => {
       knowledge,
       content: [],
       dynamicContentAvailable: true,
+      allowedPageIds: ['about'] as const,
       model: 'gpt-5.6-luna' as const,
       contextualFollowUp: false,
       fetchImpl: fetchMock as typeof fetch,
@@ -589,6 +634,7 @@ describe('requestOpenAI', () => {
       knowledge,
       content: [],
       dynamicContentAvailable: true,
+      allowedPageIds: ['about'],
       model: 'gpt-5.6-luna',
       contextualFollowUp: false,
       fetchImpl: fetchMock as typeof fetch,
@@ -609,6 +655,7 @@ describe('requestOpenAI', () => {
       knowledge,
       content: [],
       dynamicContentAvailable: true,
+      allowedPageIds: ['about'],
       model: 'gpt-5.6-luna',
       contextualFollowUp: false,
       fetchImpl: fetchMock as typeof fetch,
@@ -632,6 +679,7 @@ describe('requestOpenAI', () => {
       knowledge,
       content: [],
       dynamicContentAvailable: true,
+      allowedPageIds: ['about'],
       model: 'gpt-5.6-luna',
       contextualFollowUp: false,
       fetchImpl: fetchMock as typeof fetch,
@@ -648,6 +696,7 @@ describe('requestOpenAI', () => {
       knowledge,
       content: [],
       dynamicContentAvailable: true,
+      allowedPageIds: ['about'],
       model: 'gpt-5.6-luna',
       contextualFollowUp: false,
       fetchImpl: fetchMock as typeof fetch,
@@ -672,6 +721,7 @@ describe('requestOpenAI', () => {
       knowledge,
       content: [],
       dynamicContentAvailable: true,
+      allowedPageIds: ['about'],
       model: 'gpt-5.6-luna',
       contextualFollowUp: false,
       fetchImpl: fetchMock as typeof fetch,

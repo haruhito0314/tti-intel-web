@@ -283,6 +283,48 @@ describe('createAssistantHandler single-Luna path', () => {
     expect(response.body).not.toContain('evil.example');
   });
 
+  it.each([
+    ['www host', '回答です。www.evil.example/path は参照しません。', '回答です。 は参照しません。'],
+    ['FTP URL', '回答です。ftp://evil.example/path は参照しません。', '回答です。 は参照しません。'],
+    ['protocol-relative URL', '回答です。//evil.example/path は参照しません。', '回答です。 は参照しません。'],
+    ['www host with port', '回答です。www.evil.example:8443/path は参照しません。', '回答です。 は参照しません。'],
+    ['protocol-relative URL with port', '回答です。//evil.example:8443/path は参照しません。', '回答です。 は参照しません。'],
+    ['URL with userinfo', '回答です。ftp://user:pass@evil.example:21/path は参照しません。', '回答です。 は参照しません。'],
+    ['IPv6 URL', '回答です。http://[2001:db8::1]:8080/path は参照しません。', '回答です。 は参照しません。'],
+    ['Unicode-host URL', '回答です。https://悪意.example/道 は参照しません。', '回答です。 は参照しません。'],
+  ])('strips a model-written %s', async (_name, answer, expectedAnswer) => {
+    const dependencies = createDependencies({
+      requestOpenAI: vi.fn(async (): Promise<OpenAIResult> => ({
+        ...successfulAnswerResult,
+        output: {
+          answer,
+          pageIds: [],
+          contentIds: [],
+          sourceIds: [],
+        },
+      })),
+    });
+
+    const response = await invoke(dependencies);
+
+    expect(parsedBody(response)).toEqual({ answer: expectedAnswer, links: [] });
+    expect(response.body).not.toContain('evil.example');
+  });
+
+  it('does not mangle ordinary Japanese prose containing slashes, comments, or www text', async () => {
+    const answer = 'CLIでは cd /tmp のようなパスを使います。\n\twwwという文字や、A//B、JavaScriptの //コメント も  説明できます。';
+    const dependencies = createDependencies({
+      requestOpenAI: vi.fn(async (): Promise<OpenAIResult> => ({
+        ...successfulAnswerResult,
+        output: { answer, pageIds: [], contentIds: [], sourceIds: [] },
+      })),
+    });
+
+    const response = await invoke(dependencies);
+
+    expect(parsedBody(response)).toEqual({ answer, links: [] });
+  });
+
   it('runs quota, dynamic retrieval, secret, then one Luna call', async () => {
     const order: string[] = [];
     const dependencies = createDependencies({
@@ -355,6 +397,27 @@ describe('createAssistantHandler zero-call exits', () => {
     expectNoLunaCall(dependencies);
   });
 
+  it('returns fixed 400 for a base64 body before quota or Luna', async () => {
+    const dependencies = createDependencies();
+    const response = await invoke(dependencies, validPostEvent({
+      isBase64Encoded: true,
+    }));
+
+    expect(response.statusCode).toBe(400);
+    expect(dependencies.reserveQuota).not.toHaveBeenCalled();
+    expectNoLunaCall(dependencies);
+  });
+
+  it('returns fixed 400 for an unsupported method before dependencies', async () => {
+    const dependencies = createDependencies();
+    const response = await invoke(dependencies, validPostEvent({ httpMethod: 'GET' }));
+
+    expect(response.statusCode).toBe(400);
+    expect(dependencies.now).not.toHaveBeenCalled();
+    expect(dependencies.reserveQuota).not.toHaveBeenCalled();
+    expectNoLunaCall(dependencies);
+  });
+
   it('returns fixed 403 for a denied origin before quota or Luna', async () => {
     const dependencies = createDependencies();
     const response = await invoke(dependencies, validPostEvent({
@@ -375,6 +438,26 @@ describe('createAssistantHandler zero-call exits', () => {
     expect(response.body).toBe('');
     expect(dependencies.reserveQuota).not.toHaveBeenCalled();
     expectNoLunaCall(dependencies);
+  });
+
+  it('reflects an allowed mixed-case Origin and allows an originless POST', async () => {
+    const allowedDependencies = createDependencies();
+    const originlessDependencies = createDependencies();
+
+    const allowedResponse = await invoke(allowedDependencies, validPostEvent({
+      headers: { oRiGiN: 'http://localhost:5173' },
+    }));
+    const originlessResponse = await invoke(originlessDependencies, validPostEvent({
+      headers: {},
+    }));
+
+    expect(allowedResponse.statusCode).toBe(200);
+    expect(allowedResponse.headers?.['Access-Control-Allow-Origin'])
+      .toBe('http://localhost:5173');
+    expect(originlessResponse.statusCode).toBe(200);
+    expect(originlessResponse.headers).not.toHaveProperty('Access-Control-Allow-Origin');
+    expect(allowedDependencies.requestOpenAI).toHaveBeenCalledTimes(1);
+    expect(originlessDependencies.requestOpenAI).toHaveBeenCalledTimes(1);
   });
 
   it('returns fixed 429 for quota rejection without content, secret, or Luna', async () => {
@@ -417,9 +500,58 @@ describe('createAssistantHandler zero-call exits', () => {
     expect(dependencies.reserveQuota).not.toHaveBeenCalled();
     expectNoLunaCall(dependencies);
   });
+
+  it('uses the Lambda request ID when the gateway request ID is empty', async () => {
+    const dependencies = createDependencies();
+
+    await invoke(
+      dependencies,
+      validPostEvent({
+        requestContext: { ...validPostEvent().requestContext, requestId: '' },
+      }),
+      fakeContext({ awsRequestId: 'lambda-fallback-request' }),
+    );
+
+    expect(dependencies.reserveQuota).toHaveBeenCalledWith(expect.objectContaining({
+      requestId: 'lambda-fallback-request',
+    }));
+  });
 });
 
 describe('createAssistantHandler verified links', () => {
+  it('grounds CLI development to development and never authorizes CLI Practice', async () => {
+    const requestOpenAI = vi.fn(async (
+      _input: Parameters<AssistantHandlerDependencies['requestOpenAI']>[0],
+    ): Promise<OpenAIResult> => ({
+      ...successfulAnswerResult,
+      output: {
+        answer: 'CLIを使った開発について説明します。',
+        pageIds: ['development', 'cli-practice'],
+        contentIds: [],
+        sourceIds: [],
+      },
+    }));
+    const dependencies = createDependencies({ requestOpenAI });
+
+    const response = await invoke(dependencies, eventForRequest({
+      message: 'Gitコマンドについて教えて',
+      history: [],
+    }));
+    const input = requestOpenAI.mock.calls[0]![0];
+
+    expect(input.knowledge.map(({ item }) => item.id)).toContain('development-cli');
+    expect(input.allowedPageIds).toEqual(['development']);
+    expect(parsedBody(response)).toEqual({
+      answer: 'CLIを使った開発について説明します。',
+      links: [{
+        pageId: 'development',
+        title: '開発について',
+        href: '/development',
+      }],
+    });
+    expect(response.body).not.toContain('cli-practice');
+  });
+
   it('intersects model IDs with server page, selected content, and selected source IDs', async () => {
     const selectedContent = contentResult();
     const dependencies = createDependencies({
@@ -678,6 +810,27 @@ describe('createAssistantHandler error mapping', () => {
     expect(response.body).not.toContain('evil.example');
   });
 
+  it.each([
+    'www.evil.example/private',
+    'ftp://evil.example/private',
+    '//evil.example/private',
+  ])('returns fixed 502 when stripping URL-like output leaves no answer: %s', async (answer) => {
+    const dependencies = createDependencies({
+      requestOpenAI: vi.fn(async (): Promise<OpenAIResult> => ({
+        ...successfulAnswerResult,
+        output: { answer, pageIds: [], contentIds: [], sourceIds: [] },
+      })),
+    });
+
+    const response = await invoke(dependencies);
+
+    expect(response.statusCode).toBe(502);
+    expect(parsedBody(response)).toEqual({
+      code: 'UPSTREAM_UNAVAILABLE',
+      message: '現在AI Assistantを利用できません。通常のメニューをご利用ください。',
+    });
+  });
+
   it('keeps timeout and upstream status classes and never retries Luna', async () => {
     const timeoutDependencies = createDependencies({
       requestOpenAI: vi.fn(async () => { throw new OpenAiTimeoutError(); }),
@@ -707,6 +860,35 @@ describe('createAssistantHandler error mapping', () => {
     expect(response.statusCode).toBe(502);
     expect(response.body).not.toContain('PRIVATE_DDB_BODY');
     expectNoLunaCall(dependencies);
+  });
+
+  it.each([
+    ['secret', 'PRIVATE_SECRET_ERROR sk-private-key'],
+    ['openai', 'PRIVATE_OPENAI_ERROR sk-private-key'],
+  ] as const)('maps an unexpected %s error to fixed 502 without leaking details', async (
+    stage,
+    privateMessage,
+  ) => {
+    const log = vi.fn();
+    const dependencies = createDependencies({
+      log,
+      getApiKey: vi.fn(async () => {
+        if (stage === 'secret') throw new Error(privateMessage);
+        return 'sk-test';
+      }),
+      requestOpenAI: vi.fn(async () => {
+        if (stage === 'openai') throw new Error(privateMessage);
+        return successfulAnswerResult;
+      }),
+    });
+
+    const response = await invoke(dependencies);
+
+    expect(response.statusCode).toBe(502);
+    expect(response.body).not.toContain(privateMessage);
+    expect(JSON.stringify(log.mock.calls)).not.toContain(privateMessage);
+    expect(JSON.stringify(log.mock.calls)).not.toContain('sk-private-key');
+    expect(dependencies.requestOpenAI).toHaveBeenCalledTimes(stage === 'openai' ? 1 : 0);
   });
 });
 

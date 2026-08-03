@@ -2,6 +2,7 @@ import { resolveCurrentPageId } from './runtimeCatalog.js';
 import type {
   AssistantRequest,
   OpenAIResult,
+  PageId,
   RankedContentEntry,
   RankedKnowledgeItem,
 } from './types.js';
@@ -50,6 +51,7 @@ export interface BuildResponsesPayloadInput {
   knowledge: readonly RankedKnowledgeItem[];
   content: readonly RankedContentEntry[];
   dynamicContentAvailable: boolean;
+  allowedPageIds: readonly PageId[];
   model: 'gpt-5.6-luna';
   contextualFollowUp: boolean;
 }
@@ -60,6 +62,7 @@ export interface RequestOpenAIInput {
   knowledge: readonly RankedKnowledgeItem[];
   content: readonly RankedContentEntry[];
   dynamicContentAvailable: boolean;
+  allowedPageIds: readonly PageId[];
   model: 'gpt-5.6-luna';
   contextualFollowUp: boolean;
 }
@@ -124,12 +127,16 @@ export function buildResponsesPayload({
   knowledge,
   content,
   dynamicContentAvailable,
+  allowedPageIds,
   contextualFollowUp,
 }: BuildResponsesPayloadInput) {
   const knowledgeEntries = boundedKnowledgeEntries(knowledge);
   const contentEntries = boundedContentEntries(content);
   const sourceIds = [...new Set(knowledgeEntries.flatMap((entry) => entry.sourceIds))];
   const contentIds = contentEntries.map(({ id }) => id);
+  const pageIds = [...new Set(
+    allowedPageIds.filter((pageId) => PAGE_IDS.includes(pageId)),
+  )];
   const history = contextualFollowUp ? userHistoryForModel(request.history) : [];
 
   return {
@@ -150,9 +157,7 @@ export function buildResponsesPayload({
           properties: {
             answer: { type: 'string' },
             pageIds: {
-              type: 'array',
-              maxItems: 3,
-              items: { type: 'string', enum: PAGE_IDS },
+              ...boundedIdSchema(pageIds),
             },
             contentIds: boundedIdSchema(contentIds),
             sourceIds: boundedIdSchema(sourceIds),
@@ -203,6 +208,7 @@ export async function requestOpenAI({
   knowledge,
   content,
   dynamicContentAvailable,
+  allowedPageIds,
   contextualFollowUp,
   fetchImpl,
   timeoutMs = DEFAULT_OPENAI_TIMEOUT_MS,
@@ -214,6 +220,7 @@ export async function requestOpenAI({
       knowledge,
       content,
       dynamicContentAvailable,
+      allowedPageIds,
       model: OPENAI_MODEL,
       contextualFollowUp,
     }),
