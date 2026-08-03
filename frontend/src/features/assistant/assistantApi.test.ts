@@ -238,7 +238,7 @@ describe('createAssistantApi', () => {
 
     it.each([
         ['empty answer', { ...response, answer: '   ' }],
-        ['201 character answer', { ...response, answer: 'a'.repeat(201) }],
+        ['501 character answer', { ...response, answer: 'a'.repeat(501) }],
         ['5 links', {
             ...response,
             links: [
@@ -275,6 +275,14 @@ describe('createAssistantApi', () => {
         ['non-discord https href', {
             ...response,
             links: [{ pageId: 'evil', title: 'Evil', href: 'https://example.com/discord' }],
+        }],
+        ['http web source', {
+            ...response,
+            links: [{ pageId: 'source', title: 'Source', href: 'http://example.com/source' }],
+        }],
+        ['localhost web source', {
+            ...response,
+            links: [{ pageId: 'source', title: 'Source', href: 'https://localhost/source' }],
         }],
         ['backslash href', {
             ...response,
@@ -315,6 +323,20 @@ describe('createAssistantApi', () => {
         });
 
         await expect(client.send(request)).resolves.toEqual(fourLinks);
+    });
+
+    it('accepts a verified HTTPS web source link', async () => {
+        const withSource = {
+            answer: '一般的な回答です。',
+            links: [{ pageId: 'source', title: '参考資料', href: 'https://example.org/source' }],
+        };
+        const fetchMock = vi.fn().mockResolvedValue(jsonResponse(withSource));
+        const client = createAssistantApi({
+            baseUrl: 'https://api.example.com',
+            fetchImpl: injectedFetch(fetchMock),
+        });
+
+        await expect(client.send(request)).resolves.toEqual(withSource);
     });
 
     it('accepts allowlisted Discord invite hrefs', async () => {

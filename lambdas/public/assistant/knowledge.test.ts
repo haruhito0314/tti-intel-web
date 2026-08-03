@@ -34,7 +34,7 @@ const PUBLIC_COPY_CHECKS = {
   about: ['About.tsx', 'TTI Intelligenceの活動内容、参加条件、開催予定、よくある質問を紹介します。'],
   news: ['News.tsx', 'TTI Intelligenceの活動報告、お知らせ、イベント情報、技術記事を掲載しています。'],
   apps: ['AppShowcase.tsx', 'TTI Intelligenceのメンバーが開発したアプリケーションやプロジェクトを紹介します。'],
-  development: ['Development.tsx', '最新のAIコーディングツールとMCPを活用したWeb・アプリ開発'],
+  development: ['Development.tsx', 'TTI IntelligenceのAIを使った開発を、構想・調査・実装・検証の流れと実例から紹介します。'],
   board: ['Board.tsx', '質問、相談、活動に関する投稿を確認できます。'],
   contact: ['Contact.tsx', '参加相談や活動に関する質問を送信できます。'],
   'game-community': ['GameCommunity.tsx', 'VALORANT、APEX LEGENDS、Minecraftなどを中心に'],

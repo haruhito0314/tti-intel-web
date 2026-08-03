@@ -20,6 +20,19 @@ import {
   planFromFactSelection,
   type AssistantQueryPlan,
 } from './engine.js';
+import type { AssistantFactId } from './facts.js';
+import {
+  classifyIntent,
+  intentHintFor,
+  pageIdsFromIntent,
+  resolveAnswerForIntent,
+  seedGuideForIntent,
+} from './intent.js';
+import {
+  createVerifiedLinks,
+  selectRelevantKnowledge,
+} from './knowledge.js';
+import { requestOpenAI as callOpenAI } from './openai.js';
 import {
   requestOpenAIPlan as callOpenAIPlan,
   type OpenAIPlanResult,
@@ -39,9 +52,12 @@ import {
 } from './quota.js';
 import type {
   AssistantRequest,
+  AssistantLink,
   AssistantResponse,
+  OpenAIResult,
   OpenAIUsage,
   RankedContentEntry,
+  RankedGuideEntry,
 } from './types.js';
 import {
   parseAssistantRequest,
@@ -110,7 +126,34 @@ export interface AssistantHandlerDependencies {
     apiKey: string;
     request: AssistantRequest;
   }): Promise<OpenAIPlanResult>;
+  useAllApi?: boolean;
+  requestOpenAI?(input: {
+    apiKey: string;
+    request: AssistantRequest;
+    selected: readonly RankedGuideEntry[];
+    content: readonly RankedContentEntry[];
+    contextualFollowUp: boolean;
+    intent: string;
+    intentHint: string;
+    trustedFactIds: readonly AssistantFactId[];
+  }): Promise<OpenAIResult>;
   log(record: Record<string, string | number>): void;
+}
+
+function withWebSources(
+  links: readonly AssistantLink[],
+  sources: OpenAIResult['sources'],
+  suppressed: boolean,
+): AssistantLink[] {
+  if (suppressed || !sources || sources.length === 0) return [...links];
+  const combined = [...links];
+  const seen = new Set(combined.map(({ href }) => href));
+  for (const source of sources) {
+    if (combined.length >= 4 || seen.has(source.url)) continue;
+    seen.add(source.url);
+    combined.push({ pageId: 'source', title: source.title, href: source.url });
+  }
+  return combined;
 }
 
 export type AssistantHandler = (
@@ -287,8 +330,8 @@ export function createAssistantHandler(
       const initialPlan = planAssistantRequest(request.message, request.history);
       fallbackPlan = initialPlan;
 
-      // Clearly out-of-scope requests do not consume quota or reach external systems.
-      if (initialPlan.confidence === 'none') {
+      // The legacy local-only mode retains the old closed site scope.
+      if (!dependencies.useAllApi && initialPlan.confidence === 'none') {
         outcome = 'no_relevant_knowledge';
         statusCode = 200;
         return jsonResponse(statusCode, fallbackResponseFor(initialPlan), origin);
@@ -310,6 +353,91 @@ export function createAssistantHandler(
       dependencyStage = 'quota';
       await dependencies.reserveQuota(reservationInput);
       dependencyStage = 'internal';
+
+      if (dependencies.useAllApi) {
+        if (dependencies.requestOpenAI === undefined) {
+          throw new Error('Missing all-API dependency');
+        }
+
+        dependencyStage = 'content';
+        const content = await dependencies.searchContent(request.message);
+        dependencyStage = 'internal';
+
+        const intent = classifyIntent(request.message);
+        const selected = seedGuideForIntent(
+          intent,
+          selectRelevantKnowledge(request.message, request.currentPath),
+        );
+
+        dependencyStage = 'secret';
+        const apiKey = await dependencies.getApiKey();
+        dependencyStage = 'internal';
+
+        dependencyStage = 'openai';
+        const result = await dependencies.requestOpenAI({
+          apiKey,
+          request,
+          selected,
+          content,
+          contextualFollowUp: initialPlan.requiresHistory,
+          intent: intent.kind,
+          intentHint: intentHintFor(intent),
+          trustedFactIds: initialPlan.factIds,
+        });
+        dependencyStage = 'internal';
+
+        const usage = safeUsage(result.usage);
+        inputTokens = usage.inputTokens;
+        outputTokens = usage.outputTokens;
+        totalTokens = usage.totalTokens;
+
+        const answer = resolveAnswerForIntent(
+          intent,
+          request.message,
+          result.output.answer,
+        );
+        const hasVerifiedSiteContext =
+          initialPlan.confidence === 'high'
+          || selected.length > 0
+          || intent.kind !== 'guide_default';
+        const pageIds = (
+          !hasVerifiedSiteContext
+            ? []
+            : pageIdsFromIntent(
+                intent,
+                request.message,
+                answer,
+                result.output.pageIds,
+                selected,
+              )
+        ).filter((pageId) => !initialPlan.excludedPageIds.includes(pageId));
+        const siteLinks = initialPlan.suppressLinks
+          ? []
+          : createVerifiedLinks(
+            pageIds,
+            selected,
+            result.output.contentIds,
+            content,
+            {
+              includeDiscord: intent.includeDiscord
+                && !initialPlan.excludedExternalLinks.includes('discord'),
+              includeToyotaTi: intent.includeToyotaTi
+                && !initialPlan.excludedExternalLinks.includes('toyota-ti'),
+              includeYoutube: intent.includeYoutube
+                && !initialPlan.excludedExternalLinks.includes('youtube'),
+              extraAllowedPageIds: pageIds,
+            },
+          );
+
+        outcome = result.sources && result.sources.length > 0
+          ? 'web_search_success'
+          : 'ai_success';
+        statusCode = 200;
+        return jsonResponse(statusCode, {
+          answer,
+          links: withWebSources(siteLinks, result.sources, initialPlan.suppressLinks),
+        }, origin);
+      }
 
       let content: RankedContentEntry[] = [];
       if (initialPlan.confidence === 'low') {
@@ -466,6 +594,7 @@ export function createRuntimeDependencies(
 
   return {
     allowedOrigins,
+    useAllApi: environment.ASSISTANT_ALL_API === 'true',
     now: () => new Date(),
     getApiKey,
     reserveQuota: (input) => reserveQuota(
@@ -482,6 +611,27 @@ export function createRuntimeDependencies(
         timeoutMs: OPENAI_TIMEOUT_MS,
       })
     ),
+    requestOpenAI: ({
+      apiKey,
+      request,
+      selected,
+      content,
+      contextualFollowUp,
+      intent,
+      intentHint,
+      trustedFactIds,
+    }) => callOpenAI({
+      apiKey,
+      request,
+      selected,
+      content,
+      model,
+      contextualFollowUp,
+      intent,
+      intentHint,
+      trustedFactIds,
+      timeoutMs: OPENAI_TIMEOUT_MS,
+    }),
     log: (record) => {
       console.info(JSON.stringify(record));
     },

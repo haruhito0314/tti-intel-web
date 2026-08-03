@@ -29,7 +29,7 @@ export interface AssistantRequest {
   history: HistoryMessage[];
 }
 
-export type AssistantLinkPageId = PageId | 'discord' | 'toyota-ti' | 'youtube';
+export type AssistantLinkPageId = PageId | 'discord' | 'toyota-ti' | 'youtube' | 'source';
 
 export interface AssistantLink {
   pageId: AssistantLinkPageId;
@@ -89,7 +89,13 @@ export interface OpenAIUsage {
   totalTokens: number;
 }
 
+export interface OpenAIWebSource {
+  title: string;
+  url: string;
+}
+
 export interface OpenAIResult {
   output: ModelGuideResponse;
   usage: OpenAIUsage;
+  sources?: OpenAIWebSource[];
 }

@@ -17,24 +17,42 @@ const TOYOTA_TI_HREF_PATTERN = /^https:\/\/www\.toyota-ti\.ac\.jp\/?$/;
 /** Allowlisted circle YouTube channel; must match server-injected YOUTUBE_CHANNEL_URL. */
 const YOUTUBE_CHANNEL_HREF_PATTERN = /^https:\/\/www\.youtube\.com\/@ttiintelligence\/?$/;
 
+function isSafeWebSourceHref(href: string): boolean {
+    if (href.length > 2_048) return false;
+    try {
+        const url = new URL(href);
+        return url.protocol === 'https:'
+            && url.username.length === 0
+            && url.password.length === 0
+            && url.hostname.length > 0
+            && url.hostname !== 'localhost'
+            && !url.hostname.endsWith('.local');
+    } catch {
+        return false;
+    }
+}
+
 export function isExternalAssistantHref(href: string): boolean {
     return DISCORD_HREF_PATTERN.test(href)
         || TOYOTA_TI_HREF_PATTERN.test(href)
-        || YOUTUBE_CHANNEL_HREF_PATTERN.test(href);
+        || YOUTUBE_CHANNEL_HREF_PATTERN.test(href)
+        || isSafeWebSourceHref(href);
 }
 
 const assistantLinkSchema = z.object({
     pageId: z.string().trim().min(1),
     title: z.string().trim().min(1),
-    href: z.string().refine(
-        (value) => (
-            INTERNAL_HREF_PATTERN.test(value)
-            || DISCORD_HREF_PATTERN.test(value)
-            || TOYOTA_TI_HREF_PATTERN.test(value)
-            || YOUTUBE_CHANNEL_HREF_PATTERN.test(value)
-        ),
-    ),
-}).strict();
+    href: z.string(),
+}).strict().superRefine((link, context) => {
+    const valid = INTERNAL_HREF_PATTERN.test(link.href)
+        || DISCORD_HREF_PATTERN.test(link.href)
+        || TOYOTA_TI_HREF_PATTERN.test(link.href)
+        || YOUTUBE_CHANNEL_HREF_PATTERN.test(link.href)
+        || (link.pageId === 'source' && isSafeWebSourceHref(link.href));
+    if (!valid) {
+        context.addIssue({ code: 'custom', message: 'Unsafe assistant link', path: ['href'] });
+    }
+});
 
 const assistantResponseSchema = z.object({
     answer: z.string().trim().min(1).max(MAX_ASSISTANT_ANSWER_LENGTH),

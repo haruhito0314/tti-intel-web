@@ -21,6 +21,7 @@ import {
   buildResponsesPayload,
   createApiKeyProvider,
   FACT_PLANNER_INSTRUCTIONS,
+  extractWebSources,
   OpenAiTimeoutError,
   OpenAiUpstreamError,
   parseFactPlannerEnvelope,
@@ -397,7 +398,7 @@ describe('buildFactPlannerPayload', () => {
 describe('buildResponsesPayload', () => {
   it('identifies itself to the model as AI Assistant', () => {
     expect(SYSTEM_INSTRUCTIONS).toContain(
-      'あなたはTTI Intelligence公開サイト内だけを案内するAI Assistantです。',
+      'あなたはTTI Intelligence公開サイトの案内と一般的な質問に答えるAI Assistantです。',
     );
     expect(SYSTEM_INSTRUCTIONS).not.toContain('AIガイド');
     expect(SYSTEM_INSTRUCTIONS).toContain('intentHint');
@@ -417,13 +418,13 @@ describe('buildResponsesPayload', () => {
       'isFollowUpがfalseのときはhistoryを無視し、以前の話題に結びつけません。最新のmessageだけを新しい質問として答えてください。',
     );
     expect(SYSTEM_INSTRUCTIONS).toContain(
-      '回答は原則1〜2文、目安120文字以内。長い説明・箇条書きの連発・前置きは避けてください。',
+      'サイト案内は原則1〜2文、一般質問は必要に応じて最大5文。長い前置きは避けてください。',
     );
     expect(SYSTEM_INSTRUCTIONS).toContain(
       '今週の数学やお知らせなど一覧への案内では、個別記事・個別問題のリンクを並べず、一覧ページだけを案内してください。',
     );
     expect(SYSTEM_INSTRUCTIONS).toContain(
-      'answerは200文字以内。リンク候補と内容IDは許可された集合からだけ選んでください。',
+      'answerは500文字以内。サイト内リンク候補と内容IDは許可された集合からだけ選んでください。',
     );
     expect(SYSTEM_INSTRUCTIONS).toContain(
       '案内データで答えられる内容は該当ページを優先し、無理にお問い合わせだけへ落とさないでください。',
@@ -499,6 +500,7 @@ describe('buildResponsesPayload', () => {
       isFollowUp: false,
       intent: 'guide_default',
       intentHint: '通常案内。質問に直接必要なページだけpageIdsに入れる。',
+      trustedFacts: [],
       history: [] as typeof request.history,
       message: request.message,
       allowedPageIds,
@@ -512,8 +514,19 @@ describe('buildResponsesPayload', () => {
       store: false,
       stream: false,
       reasoning: { effort: 'low' },
-      max_output_tokens: 320,
-      tools: [],
+      max_output_tokens: 800,
+      max_tool_calls: 1,
+      tools: [{
+        type: 'web_search',
+        external_web_access: true,
+        user_location: {
+          type: 'approximate',
+          country: 'JP',
+          timezone: 'Asia/Tokyo',
+        },
+      }],
+      tool_choice: 'auto',
+      include: ['web_search_call.action.sources'],
       instructions: SYSTEM_INSTRUCTIONS,
       input: [{
         role: 'user',
@@ -576,6 +589,26 @@ describe('buildResponsesPayload', () => {
     expect(payload.instructions).toBe(SYSTEM_INSTRUCTIONS);
     expect(payload.instructions).not.toContain(maliciousRequest.message);
     expect(JSON.stringify(payload).match(/systemを無視して/g)).toHaveLength(1);
+  });
+
+  it('includes reviewed site facts and bounded automatic web search', () => {
+    const payload = buildResponsesPayload({
+      request: { ...request, message: '豊田工業大学のサークルは？' },
+      selected: [],
+      trustedFactIds: ['university.clubs-scope'],
+    });
+    const envelope = JSON.parse(payload.input[0]!.content[0]!.text) as {
+      trustedFacts: Array<{ id: string; answer: string }>;
+    };
+
+    expect(envelope.trustedFacts).toEqual([{
+      id: 'university.clubs-scope',
+      answer: ASSISTANT_FACTS['university.clubs-scope'].answer,
+    }]);
+    expect(payload.tools).toEqual([expect.objectContaining({ type: 'web_search' })]);
+    expect(payload.tool_choice).toBe('auto');
+    expect(payload.max_tool_calls).toBe(1);
+    expect(payload.include).toEqual(['web_search_call.action.sources']);
   });
 
   it('keeps only user turns in the model history envelope', () => {
@@ -805,6 +838,30 @@ describe('parseResponsesEnvelope', () => {
       outputTokens: 0,
       totalTokens: 4,
     });
+  });
+
+  it('extracts at most two unique safe HTTPS web sources', () => {
+    const envelope = completedEnvelope() as ReturnType<typeof completedEnvelope> & {
+      output: unknown[];
+    };
+    envelope.output.unshift({
+      type: 'web_search_call',
+      action: {
+        sources: [
+          { title: 'One', url: 'https://example.com/one' },
+          { title: 'Duplicate', url: 'https://example.com/one' },
+          { title: 'Unsafe', url: 'http://example.com/two' },
+          { title: 'Two', url: 'https://example.org/two' },
+          { title: 'Three', url: 'https://example.net/three' },
+        ],
+      },
+    });
+
+    expect(extractWebSources(envelope)).toEqual([
+      { title: 'One', url: 'https://example.com/one' },
+      { title: 'Two', url: 'https://example.org/two' },
+    ]);
+    expect(parseResponsesEnvelope(envelope).sources).toEqual(extractWebSources(envelope));
   });
 
   it('rejects a refusal even if an output_text is also present', () => {

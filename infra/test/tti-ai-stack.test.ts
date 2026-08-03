@@ -134,6 +134,7 @@ describe('TtiAiStack site assistant infrastructure', () => {
                     ASSISTANT_USAGE_TABLE: Match.anyValue(),
                     OPENAI_SECRET_ID: 'tti-ai/openai-api-key',
                     ASSISTANT_MODEL: 'gpt-5.6-luna',
+                    ASSISTANT_ALL_API: 'true',
                     ASSISTANT_DAILY_LIMIT: '200',
                     ASSISTANT_SESSION_LIMIT: '20',
                     ASSISTANT_SESSION_WINDOW_SECONDS: '600',
@@ -169,6 +170,7 @@ describe('TtiAiStack site assistant infrastructure', () => {
         ).Variables;
         expect(Object.keys(variables ?? {}).sort()).toEqual([
             'ALLOWED_ORIGINS',
+            'ASSISTANT_ALL_API',
             'ASSISTANT_DAILY_LIMIT',
             'ASSISTANT_MODEL',
             'ASSISTANT_SESSION_LIMIT',
@@ -180,6 +182,7 @@ describe('TtiAiStack site assistant infrastructure', () => {
             'OPENAI_SECRET_ID',
             'POSTS_TABLE',
         ]);
+        expect(variables?.ASSISTANT_ALL_API).toBe('true');
         expect(variables?.ASSISTANT_USAGE_TABLE).toEqual({ Ref: usageTable?.[0] });
         expect(variables?.POSTS_TABLE).toEqual({ Ref: postsTable?.[0] });
         expect(variables?.BOARD_TABLE).toEqual({ Ref: boardTable?.[0] });

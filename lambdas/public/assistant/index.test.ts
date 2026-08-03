@@ -25,6 +25,7 @@ import {
 } from './quota.js';
 import type {
   AssistantRequest,
+  OpenAIResult,
   RankedContentEntry,
 } from './types.js';
 import { UnsafeModelOutputError } from './validation.js';
@@ -53,6 +54,19 @@ const successfulPlanResult: OpenAIPlanResult = {
     inputTokens: 120,
     outputTokens: 12,
     totalTokens: 132,
+  },
+};
+
+const successfulAnswerResult: OpenAIResult = {
+  output: {
+    answer: '回答です。',
+    pageIds: [],
+    contentIds: [],
+  },
+  usage: {
+    inputTokens: 200,
+    outputTokens: 20,
+    totalTokens: 220,
   },
 };
 
@@ -151,10 +165,73 @@ function createDependencies(
     reserveQuota: vi.fn(async () => undefined),
     searchContent: vi.fn(async () => []),
     requestOpenAIPlan: vi.fn(async () => successfulPlanResult),
+    requestOpenAI: vi.fn(async () => successfulAnswerResult),
     log: vi.fn(),
     ...overrides,
   };
 }
+
+describe('createAssistantHandler all-API mode', () => {
+  it('sends a general question to Luna once and returns verified web sources', async () => {
+    const requestOpenAI = vi.fn(async (
+      _input: Parameters<NonNullable<AssistantHandlerDependencies['requestOpenAI']>>[0],
+    ): Promise<OpenAIResult> => ({
+      ...successfulAnswerResult,
+      output: {
+        answer: '量子コンピュータは量子力学の性質を計算に利用するコンピュータです。',
+        pageIds: ['contact'],
+        contentIds: [],
+      },
+      sources: [{ title: '参考資料', url: 'https://example.org/quantum' }],
+    }));
+    const dependencies = createDependencies({ useAllApi: true, requestOpenAI });
+
+    const response = await invoke(dependencies, eventForRequest({
+      message: '量子コンピュータって何？',
+      history: [],
+    }));
+
+    expect(response.statusCode).toBe(200);
+    expect(requestOpenAI).toHaveBeenCalledTimes(1);
+    expect(dependencies.requestOpenAIPlan).not.toHaveBeenCalled();
+    expect(dependencies.reserveQuota).toHaveBeenCalledTimes(1);
+    expect(parsedBody(response)).toEqual({
+      answer: '量子コンピュータは量子力学の性質を計算に利用するコンピュータです。',
+      links: [{ pageId: 'source', title: '参考資料', href: 'https://example.org/quantum' }],
+    });
+  });
+
+  it('passes reviewed university-scope facts to the single Luna call', async () => {
+    const requestOpenAI = vi.fn(async (
+      _input: Parameters<NonNullable<AssistantHandlerDependencies['requestOpenAI']>>[0],
+    ): Promise<OpenAIResult> => ({
+      ...successfulAnswerResult,
+      output: {
+        answer: 'このサイトではTTI Intelligenceを案内しています。大学全体のサークルは大学公式サイトをご確認ください。',
+        pageIds: [],
+        contentIds: [],
+      },
+    }));
+    const dependencies = createDependencies({ useAllApi: true, requestOpenAI });
+
+    const response = await invoke(dependencies, eventForRequest({
+      message: '豊田工業大学のサークルは？',
+      history: [],
+    }));
+
+    expect(requestOpenAI).toHaveBeenCalledTimes(1);
+    expect(requestOpenAI.mock.calls[0]?.[0].trustedFactIds).toContain('university.clubs-scope');
+    expect(dependencies.requestOpenAIPlan).not.toHaveBeenCalled();
+    expect(parsedBody(response)).toEqual({
+      answer: 'このサイトではTTI Intelligenceを案内しています。大学全体のサークルは大学公式サイトをご確認ください。',
+      links: [{
+        pageId: 'toyota-ti',
+        title: '豊田工業大学',
+        href: 'https://www.toyota-ti.ac.jp/',
+      }],
+    });
+  });
+});
 
 function expectNoOperationalCalls(
   dependencies: AssistantHandlerDependencies,
@@ -969,6 +1046,7 @@ describe('createRuntimeDependencies', () => {
   const validEnvironment = {
     OPENAI_SECRET_ID: 'tti-ai/openai-api-key',
     ASSISTANT_MODEL: 'gpt-5-nano',
+    ASSISTANT_ALL_API: 'true',
     ALLOWED_ORIGINS: 'https://tti-intel.com, http://localhost:5173',
     ASSISTANT_USAGE_TABLE: 'assistant-usage',
     ASSISTANT_DAILY_LIMIT: '200',
@@ -989,8 +1067,9 @@ describe('createRuntimeDependencies', () => {
     expect(dependencies.reserveQuota).toBeTypeOf('function');
     expect(dependencies.searchContent).toBeTypeOf('function');
     expect(dependencies.requestOpenAIPlan).toBeTypeOf('function');
+    expect(dependencies.requestOpenAI).toBeTypeOf('function');
+    expect(dependencies.useAllApi).toBe(true);
     expect(dependencies.log).toBeTypeOf('function');
-    expect(dependencies).not.toHaveProperty('requestOpenAI');
     expect(dependencies).not.toHaveProperty('recordUnanswered');
   });
 
