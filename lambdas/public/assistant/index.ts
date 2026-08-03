@@ -257,6 +257,10 @@ function sanitizeModelAnswer(answer: string): string {
     .trim();
 }
 
+function hasMeaningfulModelAnswer(answer: string): boolean {
+  return /[\p{L}\p{N}\p{S}]/u.test(answer);
+}
+
 function createAllowedPageIds(
   knowledge: readonly RankedKnowledgeItem[],
   content: readonly RankedContentEntry[],
@@ -479,7 +483,7 @@ export function createAssistantHandler(
       dependencyStage = 'internal';
 
       const answer = sanitizeModelAnswer(result.output.answer);
-      if (answer.length === 0) {
+      if (!hasMeaningfulModelAnswer(answer)) {
         throw new UnsafeModelOutputError('Unsafe model output', result.usage);
       }
       const usage = safeUsage(result.usage);

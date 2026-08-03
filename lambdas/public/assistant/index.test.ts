@@ -831,6 +831,29 @@ describe('createAssistantHandler error mapping', () => {
     });
   });
 
+  it.each([
+    ['raw URL with Japanese punctuation', 'https://evil.example/private。'],
+    ['raw URL with ASCII punctuation', 'https://evil.example/private)'],
+    ['www URL with Japanese punctuation', 'www.evil.example/private！'],
+    ['protocol-relative URL with ASCII punctuation', '//evil.example/private)'],
+  ])('returns fixed 502 when %s leaves only punctuation', async (_name, answer) => {
+    const dependencies = createDependencies({
+      requestOpenAI: vi.fn(async (): Promise<OpenAIResult> => ({
+        ...successfulAnswerResult,
+        output: { answer, pageIds: [], contentIds: [], sourceIds: [] },
+      })),
+    });
+
+    const response = await invoke(dependencies);
+
+    expect(response.statusCode).toBe(502);
+    expect(parsedBody(response)).toEqual({
+      code: 'UPSTREAM_UNAVAILABLE',
+      message: '現在AI Assistantを利用できません。通常のメニューをご利用ください。',
+    });
+    expect(response.body).not.toContain('evil.example');
+  });
+
   it('keeps timeout and upstream status classes and never retries Luna', async () => {
     const timeoutDependencies = createDependencies({
       requestOpenAI: vi.fn(async () => { throw new OpenAiTimeoutError(); }),
