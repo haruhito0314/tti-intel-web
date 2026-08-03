@@ -62,7 +62,7 @@ export const OFFICIAL_SOURCE_LINKS = {
   },
   'tti-access': {
     title: '豊田工業大学 交通アクセス',
-    href: 'https://www.toyota-ti.ac.jp/access/index.html',
+    href: 'https://www.toyota-ti.ac.jp/access.html',
   },
 } as const satisfies Record<OfficialSourceId, { title: string; href: string }>;
 

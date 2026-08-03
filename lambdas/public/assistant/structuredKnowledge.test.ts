@@ -48,7 +48,7 @@ describe('createVerifiedOfficialLinks', () => {
       'tti-program': { title: '豊田工業大学 学びの特色', href: 'https://www.toyota-ti.ac.jp/academics/program/feature.html' },
       'tti-student-activity': { title: '豊田工業大学 課外活動', href: 'https://www.toyota-ti.ac.jp/student/activity/index.html' },
       'tti-clubs': { title: '豊田工業大学 課外団体一覧', href: 'https://www.toyota-ti.ac.jp/student/activity/club.html' },
-      'tti-access': { title: '豊田工業大学 交通アクセス', href: 'https://www.toyota-ti.ac.jp/access/index.html' },
+      'tti-access': { title: '豊田工業大学 交通アクセス', href: 'https://www.toyota-ti.ac.jp/access.html' },
     };
 
     expect(OFFICIAL_SOURCE_LINKS).toEqual(expectedCatalog);
