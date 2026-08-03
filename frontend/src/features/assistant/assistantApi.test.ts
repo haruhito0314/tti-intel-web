@@ -356,92 +356,49 @@ describe('createAssistantApi', () => {
         });
     });
 
-    it('accepts allowlisted Discord invite hrefs', async () => {
-        const fetchMock = vi.fn().mockResolvedValue(jsonResponse({
-            answer: 'Discordはこちらです。',
-            links: [
-                {
-                    pageId: 'discord',
-                    title: 'Discord',
-                    href: 'https://discord.gg/DFWs8GrHxF',
-                },
-                { pageId: 'contact', title: 'お問い合わせ', href: '/contact' },
-            ],
-        }));
+    it.each([
+        ['discord', 'https://discord.gg/DFWs8GrHxF'],
+        ['youtube', 'https://www.youtube.com/@ttiintelligence'],
+        ['tti-overview', 'https://www.toyota-ti.ac.jp/about/index.html'],
+        ['tti-features', 'https://www.toyota-ti.ac.jp/about/profile/tokushoku.html'],
+        ['tti-academics', 'https://www.toyota-ti.ac.jp/academics/index.html'],
+        ['tti-program', 'https://www.toyota-ti.ac.jp/academics/program/feature.html'],
+        ['tti-student-activity', 'https://www.toyota-ti.ac.jp/student/activity/index.html'],
+        ['tti-clubs', 'https://www.toyota-ti.ac.jp/student/activity/club.html'],
+        ['tti-access', 'https://www.toyota-ti.ac.jp/access.html'],
+    ])('accepts the exact reviewed official source %s', async (pageId, href) => {
+        const withSource = {
+            answer: '公式情報源を案内します。',
+            links: [{ pageId, title: '公式情報源', href }],
+        };
+        const fetchMock = vi.fn().mockResolvedValue(jsonResponse(withSource));
         const client = createAssistantApi({
             baseUrl: 'https://api.example.com',
             fetchImpl: injectedFetch(fetchMock),
         });
 
-        await expect(client.send(request)).resolves.toEqual({
-            answer: 'Discordはこちらです。',
-            links: [
-                {
-                    pageId: 'discord',
-                    title: 'Discord',
-                    href: 'https://discord.gg/DFWs8GrHxF',
-                },
-                { pageId: 'contact', title: 'お問い合わせ', href: '/contact' },
-            ],
-        });
+        await expect(client.send(request)).resolves.toEqual(withSource);
     });
 
-    it('accepts allowlisted Toyota TI official hrefs', async () => {
+    it.each([
+        ['unreviewed university root', 'https://www.toyota-ti.ac.jp/'],
+        ['another university path', 'https://www.toyota-ti.ac.jp/student/index.html'],
+        ['lookalike university domain', 'https://www.toyota-ti.ac.jp.evil.example/about/index.html'],
+        ['query variant', 'https://www.toyota-ti.ac.jp/access.html?from=assistant'],
+        ['fragment variant', 'https://www.toyota-ti.ac.jp/access.html#map'],
+        ['another Discord invite', 'https://discord.gg/not-reviewed'],
+        ['YouTube trailing-slash variant', 'https://www.youtube.com/@ttiintelligence/'],
+    ])('rejects non-catalog external href: %s', async (_caseName, href) => {
         const fetchMock = vi.fn().mockResolvedValue(jsonResponse({
-            answer: 'TTIは豊田工業大学の略です。',
-            links: [
-                {
-                    pageId: 'toyota-ti',
-                    title: '豊田工業大学',
-                    href: 'https://www.toyota-ti.ac.jp/',
-                },
-            ],
+            answer: 'リンクを案内します。',
+            links: [{ pageId: 'source', title: '公式情報源', href }],
         }));
         const client = createAssistantApi({
             baseUrl: 'https://api.example.com',
             fetchImpl: injectedFetch(fetchMock),
         });
 
-        await expect(client.send(request)).resolves.toEqual({
-            answer: 'TTIは豊田工業大学の略です。',
-            links: [
-                {
-                    pageId: 'toyota-ti',
-                    title: '豊田工業大学',
-                    href: 'https://www.toyota-ti.ac.jp/',
-                },
-            ],
-        });
-    });
-
-    it('accepts allowlisted YouTube channel hrefs', async () => {
-        const fetchMock = vi.fn().mockResolvedValue(jsonResponse({
-            answer: '解説動画はYouTubeからどうぞ。',
-            links: [
-                {
-                    pageId: 'youtube',
-                    title: 'YouTube',
-                    href: 'https://www.youtube.com/@ttiintelligence',
-                },
-                { pageId: 'about', title: 'サークルについて', href: '/about' },
-            ],
-        }));
-        const client = createAssistantApi({
-            baseUrl: 'https://api.example.com',
-            fetchImpl: injectedFetch(fetchMock),
-        });
-
-        await expect(client.send(request)).resolves.toEqual({
-            answer: '解説動画はYouTubeからどうぞ。',
-            links: [
-                {
-                    pageId: 'youtube',
-                    title: 'YouTube',
-                    href: 'https://www.youtube.com/@ttiintelligence',
-                },
-                { pageId: 'about', title: 'サークルについて', href: '/about' },
-            ],
-        });
+        await expect(client.send(request)).rejects.toMatchObject({ kind: 'invalid-response' });
     });
 
     it('accepts root and fixed nested internal hrefs', async () => {

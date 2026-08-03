@@ -10,12 +10,18 @@ import {
 /** Client abort sits above Lambda OpenAI timeout (20s) plus API Gateway slack. */
 const DEFAULT_TIMEOUT_MS = 28_000;
 const INTERNAL_HREF_PATTERN = /^(?:\/(?:[A-Za-z0-9._~%-]+(?:\/[A-Za-z0-9._~%-]+)*)?)$/;
-/** Allowlisted Discord invite only; must match server-injected DISCORD_INVITE_URL shape. */
-const DISCORD_HREF_PATTERN = /^https:\/\/(?:discord\.gg|discord\.com\/invite)\/[A-Za-z0-9-]+$/;
-/** Allowlisted Toyota Technological Institute official site. */
-const TOYOTA_TI_HREF_PATTERN = /^https:\/\/www\.toyota-ti\.ac\.jp\/?$/;
-/** Allowlisted circle YouTube channel; must match server-injected YOUTUBE_CHANNEL_URL. */
-const YOUTUBE_CHANNEL_HREF_PATTERN = /^https:\/\/www\.youtube\.com\/@ttiintelligence\/?$/;
+/** Reviewed external sources; keep exactly synchronized with the server catalog. */
+const EXTERNAL_ASSISTANT_HREFS = new Set([
+    'https://discord.gg/DFWs8GrHxF',
+    'https://www.youtube.com/@ttiintelligence',
+    'https://www.toyota-ti.ac.jp/about/index.html',
+    'https://www.toyota-ti.ac.jp/about/profile/tokushoku.html',
+    'https://www.toyota-ti.ac.jp/academics/index.html',
+    'https://www.toyota-ti.ac.jp/academics/program/feature.html',
+    'https://www.toyota-ti.ac.jp/student/activity/index.html',
+    'https://www.toyota-ti.ac.jp/student/activity/club.html',
+    'https://www.toyota-ti.ac.jp/access.html',
+]);
 
 /** Never render model-written URLs in prose. Verified sources use `links`. */
 export function removeInlineAssistantUrls(answer: string): string {
@@ -29,9 +35,7 @@ export function removeInlineAssistantUrls(answer: string): string {
 }
 
 export function isExternalAssistantHref(href: string): boolean {
-    return DISCORD_HREF_PATTERN.test(href)
-        || TOYOTA_TI_HREF_PATTERN.test(href)
-        || YOUTUBE_CHANNEL_HREF_PATTERN.test(href);
+    return EXTERNAL_ASSISTANT_HREFS.has(href);
 }
 
 const assistantLinkSchema = z.object({
@@ -40,9 +44,7 @@ const assistantLinkSchema = z.object({
     href: z.string(),
 }).strict().superRefine((link, context) => {
     const valid = INTERNAL_HREF_PATTERN.test(link.href)
-        || DISCORD_HREF_PATTERN.test(link.href)
-        || TOYOTA_TI_HREF_PATTERN.test(link.href)
-        || YOUTUBE_CHANNEL_HREF_PATTERN.test(link.href);
+        || isExternalAssistantHref(link.href);
     if (!valid) {
         context.addIssue({ code: 'custom', message: 'Unsafe assistant link', path: ['href'] });
     }

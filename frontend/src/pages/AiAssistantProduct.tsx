@@ -13,10 +13,10 @@ import { useAssistant } from '@/features/assistant/useAssistant';
 import './AiAssistantProduct.css';
 
 const SUGGESTED_QUESTIONS = [
-    '活動日はいつ？',
-    'どんな活動をしていますか？',
-    '今週の数学について教えて',
-    '参加方法を教えて',
+    '豊田工業大学にはどんなサークルがありますか？',
+    'CodexとMCPの関係を教えて',
+    'Color Sortはどんなアプリ？',
+    '光合成を簡単に説明して',
 ] as const;
 
 export function AiAssistantProductPage() {
@@ -43,7 +43,7 @@ export function AiAssistantProductPage() {
         <div className="assistant-app-page">
             <PageSeo
                 title="AI Assistant | TTI Intelligence"
-                description="TTI Intelligenceの公開情報について質問できるAI Assistantです。"
+                description="TTI Intelligenceのサイト・大学資料とLunaの安定した一般知識を使うAI Assistantです。リアルタイムのWeb検索は行いません。"
             />
 
             <aside className="assistant-app-sidebar">
@@ -81,7 +81,7 @@ export function AiAssistantProductPage() {
 
                 <div className="assistant-app-sidebar-footer">
                     <ShieldCheck />
-                    <p>このサイトで公開している情報だけを使って回答します。</p>
+                    <p>TTI Intelligenceのサイトと豊田工業大学の資料、Lunaの安定した一般知識を使って回答します。リアルタイムのWeb検索は行いません。</p>
                 </div>
             </aside>
 
@@ -127,7 +127,7 @@ export function AiAssistantProductPage() {
                         onClearError={clearError}
                     />
                     <p className="assistant-app-notice">
-                        AIの回答には誤りが含まれる場合があります。重要な情報は参照ページでも確認してください。
+                        AIの回答には誤りが含まれる場合があります。現在の情報や重要な情報は公式情報源でも確認してください。
                     </p>
                 </section>
             </main>
