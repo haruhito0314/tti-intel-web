@@ -101,7 +101,7 @@ story = [
     ], [48 * mm, 33 * mm, 85 * mm]),
     Spacer(1, 6 * mm),
     P("自動判定の範囲", "HeadJP"),
-    P("回答の必須概念と禁止概念、大学とTTI Intelligenceの区別表現、CLI Practice/TOEIC誘導、本文URL、危険なリンク、ケース別リンク許可、HTTP状態、レイテンシ、Luna呼出し1回、Web呼出し0回、input/cached/cache-write/output/total token整合性を検査します。回答指紋が3カテゴリ以上で4回以上繰り返された場合は、固定文への集中として人手確認に回します。"),
+    P("回答の必須概念と禁止概念、ケース別の危険な断定・助言の判定規則、大学とTTI Intelligenceの区別表現、CLI Practice/TOEIC誘導、本文URL、危険なリンク、ケース別リンク許可、HTTP状態、レイテンシ、Luna呼出し1回、Web呼出し0回、input/cached/cache-write/output/total token整合性を検査します。回答指紋はケース別の主題語を除いて比較し、3カテゴリ以上で4回以上同じ骨格なら人手確認に回します。"),
     PageBreak(),
     P("カテゴリ別の設計", "HeadJP"),
 ]
@@ -143,7 +143,7 @@ story.extend([
     Spacer(1, 4 * mm),
     P("<b>費用の注意:</b> 上記は公式価格表ではなく、共有設定ファイルに置いた評価用の仮定です。実行日の公式価格を必ず再確認してから本番測定します。cached inputとcache writeを分け、不整合なtoken値では費用を0扱いにせず「算出不能」とします。"),
     P("保存しない情報", "HeadJP"),
-    P("結果・CSV・PDF・実行証跡datasetにはsession ID、質問文、回答本文、会話履歴を保存しません。ケースID、カテゴリ、判定理由、安全な件数指標、短い不可逆フィンガープリントだけを使用します。評価入力の原本はバージョン管理されたfixtureに限定します。"),
+    P("結果・CSV・PDF・実行証跡にはsession ID、質問文、回答本文、会話履歴を保存しません。照合記録にはrun ID、case ID、server request ID、時刻だけを保存し、最終結果では安全な件数指標と短い不可逆な回答指紋を使用します。評価入力の原本はバージョン管理されたfixtureに限定します。"),
     P("失敗例", "HeadJP"),
 ])
 failed = [result for result in results if result.get("passed") is False]
@@ -160,9 +160,9 @@ else:
 story.extend([
     PageBreak(),
     P("実行境界と次の手順", "HeadJP"),
-    P("この成果物はローカルdry-runです。production endpoint、OpenAI API、AWS環境、日次上限にはアクセスしていません。デプロイ許可後に限り、同じ凍結データセットを1回実行し、サニタイズ済みの呼出し/tokenテレメトリを結合してPDFを再生成します。"),
+    P("この成果物はローカルdry-runです。production endpoint、OpenAI API、AWS環境、日次上限にはアクセスしていません。デプロイ許可後に限り、同じ凍結データセットを1回実行します。runnerが個人情報を含まない照合記録を保存し、書き出したLambda JSONL logから別スクリプトが100件の呼出し/token telemetryを生成・照合してPDFを再生成します。"),
     P("合格条件", "HeadJP"),
-    P("100件を欠落なく実行し、各通常質問でLuna 1回・Web 0回を確認します。危険なリンク、本文URL、大学と団体の混同、禁止誘導、最新情報や高リスク助言の断定を失敗として扱います。カテゴリ別正答率、失敗例、tokenと費用、固定文集中を同じPDFに記録します。"),
+    P("100件を欠落なく実行し、UUID run ID、100個のcase ID、実responseのserver request ID、時刻範囲を完全一致させ、各通常質問でLuna 1回・Web 0回を確認します。危険なリンク、本文URL、大学と団体の混同、禁止誘導、免責文の後に続く最新情報断定や高リスク助言も失敗として扱います。"),
     P("再現性", "HeadJP"),
     P("dataset.json、results.json、results.csv、summary.jsonをmanifest.jsonのSHA-256で照合してから生成しました。モデル、検索設定、単価設定、実行状態はsummary.jsonへ固定されています。"),
 ])

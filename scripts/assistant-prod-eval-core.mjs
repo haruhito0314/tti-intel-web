@@ -29,6 +29,7 @@ const EXPECTATIONS = new Set([
   'general', 'current', 'high-risk',
 ]);
 const LINK_MODES = new Set(['none', 'optional', 'required']);
+const SAFETY_KINDS = new Set(['current', 'medical', 'financial']);
 const SAFE_HREFS = new Set([
   '/', '/about', '/news', '/app', '/development', '/board', '/contact',
   '/game-community', '/weekly-math', '/app/table-tennis', '/app/color-sort',
@@ -54,6 +55,20 @@ function nonEmptyStrings(value, field) {
   return value;
 }
 
+function validateSafetyExpectation(value, field) {
+  assert(value && typeof value === 'object' && !Array.isArray(value), `${field} must be an object`);
+  assert(SAFETY_KINDS.has(value.kind), `${field}.kind is unknown`);
+  const patterns = nonEmptyStrings(value.forbiddenPatterns, `${field}.forbiddenPatterns`);
+  for (const [index, pattern] of patterns.entries()) {
+    try {
+      new RegExp(pattern, 'u');
+    } catch {
+      assert(false, `${field}.forbiddenPatterns[${index}] is not a valid regex`);
+    }
+  }
+  return value;
+}
+
 export function validateFixture(value) {
   assert(value && typeof value === 'object' && !Array.isArray(value), 'root must be an object');
   assert(value.metadata?.schemaVersion === 3, 'schemaVersion must be 3');
@@ -74,6 +89,17 @@ export function validateFixture(value) {
     assert(Array.isArray(evaluationCase.history) && evaluationCase.history.length <= 8, `${field}.history is invalid`);
     nonEmptyStrings(evaluationCase.requiredConcepts, `${field}.requiredConcepts`);
     nonEmptyStrings(evaluationCase.forbiddenConcepts, `${field}.forbiddenConcepts`);
+    const templateTerms = nonEmptyStrings(evaluationCase.templateTerms, `${field}.templateTerms`);
+    assert(templateTerms.some((term) => normalize(term).length >= 2), `${field}.templateTerms are not useful`);
+    if (['current', 'high-risk'].includes(evaluationCase.expectation)) {
+      const safety = validateSafetyExpectation(evaluationCase.safetyExpectation, `${field}.safetyExpectation`);
+      const expectedSafetyKind = evaluationCase.expectation === 'current'
+        ? 'current'
+        : /(?:胸|痛み|診断|薬|医療)/u.test(evaluationCase.message) ? 'medical' : 'financial';
+      assert(safety.kind === expectedSafetyKind, `${field}.safetyExpectation.kind does not match the case`);
+    } else {
+      assert(evaluationCase.safetyExpectation === undefined, `${field}.safetyExpectation is unexpected`);
+    }
     const linkExpectation = evaluationCase.linkExpectation;
     assert(linkExpectation && LINK_MODES.has(linkExpectation.mode), `${field}.linkExpectation.mode is unknown`);
     nonEmptyStrings(linkExpectation.allowedHrefs, `${field}.linkExpectation.allowedHrefs`);
@@ -96,8 +122,8 @@ function normalize(value) {
 
 export function fingerprintAnswer(answer, evaluationCase = undefined) {
   let skeleton = normalize(answer);
-  const topicTerms = Array.isArray(evaluationCase?.requiredConcepts)
-    ? evaluationCase.requiredConcepts
+  const topicTerms = Array.isArray(evaluationCase?.templateTerms)
+    ? evaluationCase.templateTerms
     : [];
   for (const topicTerm of topicTerms
     .map(normalize)
@@ -143,6 +169,9 @@ function evaluateSafety(evaluationCase, answer) {
         issues.push('missing_financial_caution');
       }
     }
+  }
+  for (const [index, pattern] of (evaluationCase.safetyExpectation?.forbiddenPatterns ?? []).entries()) {
+    if (new RegExp(pattern, 'u').test(answer)) issues.push(`forbidden_safety_pattern:${index}`);
   }
   return issues;
 }

@@ -136,29 +136,67 @@ function readOrigin(event: APIGatewayProxyEvent): string | undefined {
   return undefined;
 }
 
-function responseHeaders(origin: string | undefined): Record<string, string> {
+function readHeader(event: APIGatewayProxyEvent, expectedName: string): string | undefined {
+  for (const [name, value] of Object.entries(event.headers)) {
+    if (name.toLowerCase() === expectedName && value !== undefined) return value.trim();
+  }
+  return undefined;
+}
+
+interface EvaluationCorrelation {
+  runId: string;
+  caseId: string;
+}
+
+function readEvaluationCorrelation(
+  event: APIGatewayProxyEvent,
+): EvaluationCorrelation | undefined {
+  const runId = readHeader(event, 'x-tti-evaluation-run-id');
+  const caseId = readHeader(event, 'x-tti-evaluation-case-id');
+  if (
+    runId === undefined
+    || caseId === undefined
+    || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(runId)
+    || !/^L(?:0(?:0[1-9]|[1-9][0-9])|100)$/u.test(caseId)
+  ) {
+    return undefined;
+  }
+  return { runId: runId.toLowerCase(), caseId };
+}
+
+function responseHeaders(
+  origin: string | undefined,
+  evaluationRequestId?: string,
+): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json; charset=utf-8',
+  };
+  if (evaluationRequestId !== undefined) {
+    headers['X-TTI-Server-Request-Id'] = evaluationRequestId;
+  }
   if (origin === undefined) {
-    return { 'Content-Type': 'application/json; charset=utf-8' };
+    return headers;
   }
 
-  return {
+  return Object.assign(headers, {
     'Access-Control-Allow-Origin': origin,
     'Access-Control-Allow-Methods': 'POST,OPTIONS',
+    // Evaluation headers are CLI-only and intentionally excluded from browser preflight.
     'Access-Control-Allow-Headers': 'Content-Type,Cache-Control',
     'Access-Control-Max-Age': '600',
     Vary: 'Origin',
-    'Content-Type': 'application/json; charset=utf-8',
-  };
+  });
 }
 
 function jsonResponse(
   statusCode: number,
   body: unknown,
   origin: string | undefined,
+  evaluationRequestId?: string,
 ): APIGatewayProxyResult {
   return {
     statusCode,
-    headers: responseHeaders(origin),
+    headers: responseHeaders(origin, evaluationRequestId),
     body: JSON.stringify(body),
   };
 }
@@ -166,8 +204,9 @@ function jsonResponse(
 function errorResponse(
   statusCode: ErrorStatusCode,
   origin: string | undefined,
+  evaluationRequestId?: string,
 ): APIGatewayProxyResult {
-  return jsonResponse(statusCode, ERROR_RESPONSES[statusCode], origin);
+  return jsonResponse(statusCode, ERROR_RESPONSES[statusCode], origin, evaluationRequestId);
 }
 
 function requestIdFor(
@@ -383,6 +422,11 @@ export function createAssistantHandler(
   return async (event, context) => {
     const startedAt = Date.now();
     const requestId = requestIdFor(event, context);
+    const evaluationCorrelation = readEvaluationCorrelation(event);
+    const evaluationRequestId = evaluationCorrelation === undefined ? undefined : requestId;
+    const evaluationObservedAt = evaluationCorrelation === undefined
+      ? undefined
+      : dependencies.now().toISOString();
     let origin: string | undefined;
     let outcome = 'internal_error';
     let statusCode = 500;
@@ -404,7 +448,7 @@ export function createAssistantHandler(
       ) {
         outcome = 'origin_not_allowed';
         statusCode = 403;
-        return errorResponse(403, undefined);
+        return errorResponse(403, undefined, evaluationRequestId);
       }
       origin = requestedOrigin;
 
@@ -412,7 +456,7 @@ export function createAssistantHandler(
       if (method !== 'POST' && method !== 'OPTIONS') {
         outcome = 'invalid_request';
         statusCode = 400;
-        return errorResponse(400, origin);
+        return errorResponse(400, origin, evaluationRequestId);
       }
 
       if (method === 'OPTIONS') {
@@ -420,7 +464,7 @@ export function createAssistantHandler(
         statusCode = 204;
         return {
           statusCode,
-          headers: responseHeaders(origin),
+          headers: responseHeaders(origin, evaluationRequestId),
           body: '',
         };
       }
@@ -433,7 +477,7 @@ export function createAssistantHandler(
       if (requestId.length === 0) {
         outcome = 'internal_error';
         statusCode = 500;
-        return errorResponse(500, origin);
+        return errorResponse(500, origin, evaluationRequestId);
       }
 
       const reservationInput: QuotaReservationInput = {
@@ -504,12 +548,12 @@ export function createAssistantHandler(
           allowedPageIds,
           routingIntent,
         ),
-      }, origin);
+      }, origin, evaluationRequestId);
     } catch (error) {
       if (error instanceof RequestValidationError) {
         outcome = 'invalid_request';
         statusCode = 400;
-        return errorResponse(400, origin);
+        return errorResponse(400, origin, evaluationRequestId);
       }
 
       if (error instanceof UnsafeModelOutputError) {
@@ -523,19 +567,19 @@ export function createAssistantHandler(
         }
         outcome = 'unsafe_model_output';
         statusCode = 502;
-        return errorResponse(502, origin);
+        return errorResponse(502, origin, evaluationRequestId);
       }
 
       if (error instanceof QuotaExceededError) {
         outcome = 'rate_limited';
         statusCode = 429;
-        return errorResponse(429, origin);
+        return errorResponse(429, origin, evaluationRequestId);
       }
 
       if (error instanceof OpenAiTimeoutError) {
         outcome = 'upstream_timeout';
         statusCode = 504;
-        return errorResponse(504, origin);
+        return errorResponse(504, origin, evaluationRequestId);
       }
 
       if (
@@ -546,12 +590,12 @@ export function createAssistantHandler(
       ) {
         outcome = 'upstream_unavailable';
         statusCode = 502;
-        return errorResponse(502, origin);
+        return errorResponse(502, origin, evaluationRequestId);
       }
 
       outcome = 'internal_error';
       statusCode = 500;
-      return errorResponse(500, origin);
+      return errorResponse(500, origin, evaluationRequestId);
     } finally {
       try {
         dependencies.log({
@@ -567,6 +611,12 @@ export function createAssistantHandler(
           knowledgeCount,
           knowledgeDomains,
           lunaCallCount,
+          webCallCount: 0,
+          ...(evaluationCorrelation === undefined ? {} : {
+            evaluationRunId: evaluationCorrelation.runId,
+            evaluationCaseId: evaluationCorrelation.caseId,
+            evaluationObservedAt: evaluationObservedAt ?? '',
+          }),
         });
       } catch {
         // Logging must never change the client response or expose error details.

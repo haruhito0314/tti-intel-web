@@ -564,6 +564,10 @@ describe('createAssistantHandler zero-call exits', () => {
 
     expect(response.statusCode).toBe(204);
     expect(response.body).toBe('');
+    expect(response.headers?.['Access-Control-Allow-Headers'])
+      .toBe('Content-Type,Cache-Control');
+    expect(response.headers?.['Access-Control-Allow-Headers'])
+      .not.toMatch(/Evaluation/i);
     expect(dependencies.reserveQuota).not.toHaveBeenCalled();
     expectNoLunaCall(dependencies);
   });
@@ -1044,6 +1048,58 @@ describe('createAssistantHandler error mapping', () => {
 });
 
 describe('createAssistantHandler privacy-safe logging', () => {
+  it('logs only strictly validated evaluation correlation and keeps it out of Luna input', async () => {
+    const log = vi.fn();
+    const dependencies = createDependencies({ log });
+    const response = await invoke(dependencies, validPostEvent({
+      headers: {
+        Origin: 'https://tti-intel.com',
+        'X-TTI-Evaluation-Run-Id': '22222222-2222-4222-8222-222222222222',
+        'X-TTI-Evaluation-Case-Id': 'L089',
+      },
+    }));
+
+    expect(log).toHaveBeenCalledWith(expect.objectContaining({
+      requestId: 'api-gateway-request-1',
+      evaluationRunId: '22222222-2222-4222-8222-222222222222',
+      evaluationCaseId: 'L089',
+      evaluationObservedAt: expect.stringMatching(/^2026-08-03T/),
+      webCallCount: 0,
+    }));
+    expect(response.headers?.['X-TTI-Server-Request-Id']).toBe('api-gateway-request-1');
+    expect(JSON.stringify(vi.mocked(dependencies.requestOpenAI).mock.calls))
+      .not.toMatch(/evaluationRunId|evaluationCaseId|22222222-2222-4222-8222-222222222222|L089/);
+  });
+
+  it.each([
+    [{
+      'X-TTI-Evaluation-Run-Id': 'PRIVATE malformed run id',
+      'X-TTI-Evaluation-Case-Id': 'L089',
+    }],
+    [{ 'X-TTI-Evaluation-Run-Id': '22222222-2222-4222-8222-222222222222' }],
+    [{
+      'X-TTI-Evaluation-Run-Id': '22222222-2222-4222-8222-222222222222',
+      'X-TTI-Evaluation-Case-Id': 'PRIVATE-L999',
+    }],
+  ])('ignores malformed or incomplete evaluation headers without echoing or logging them', async (evaluationHeaders) => {
+    const log = vi.fn();
+    const dependencies = createDependencies({ log });
+    const response = await invoke(dependencies, validPostEvent({
+      headers: {
+        Origin: 'https://tti-intel.com',
+        ...evaluationHeaders,
+      },
+    }));
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers).not.toHaveProperty('X-TTI-Server-Request-Id');
+    expect(JSON.stringify(log.mock.calls)).not.toMatch(/PRIVATE|22222222-2222-4222-8222-222222222222/);
+    expect(log).toHaveBeenCalledWith(expect.not.objectContaining({
+      evaluationRunId: expect.anything(),
+      evaluationCaseId: expect.anything(),
+    }));
+  });
+
   it('logs five safe usage counters, selected knowledge metadata, and one Luna call', async () => {
     const log = vi.fn();
     const dependencies = createDependencies({ log });
@@ -1067,6 +1123,7 @@ describe('createAssistantHandler privacy-safe logging', () => {
       knowledgeCount: 2,
       knowledgeDomains: 'app,development',
       lunaCallCount: 1,
+      webCallCount: 0,
     });
     const serialized = JSON.stringify(log.mock.calls);
     expect(serialized).not.toContain('Color Sort Puzzle');
