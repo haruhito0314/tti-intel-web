@@ -20,6 +20,7 @@ from reportlab.platypus import PageBreak, Paragraph, SimpleDocTemplate, Spacer, 
 ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE = ROOT / "output/evals/assistant-luna-structured-knowledge-2026-08-03"
 OUTPUT = ROOT / "output/pdf/assistant-luna-structured-knowledge-evaluation-2026-08-03.pdf"
+CONFIG_PATH = ROOT / "lambdas/eval/fixtures/assistant-evaluation-config.json"
 OUTPUT.parent.mkdir(parents=True, exist_ok=True)
 
 manifest = json.loads((EVIDENCE / "manifest.json").read_text(encoding="utf-8"))
@@ -34,8 +35,11 @@ for filename, key in mapping.items():
 dataset = json.loads((EVIDENCE / "dataset.json").read_text(encoding="utf-8"))
 results = json.loads((EVIDENCE / "results.json").read_text(encoding="utf-8")).get("cases", [])
 summary = json.loads((EVIDENCE / "summary.json").read_text(encoding="utf-8"))
+configuration = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
 if len(dataset.get("cases", [])) != 100 or summary.get("model") != "gpt-5.6-luna":
     raise SystemExit("frozen report contract mismatch")
+if summary.get("configuration") != configuration:
+    raise SystemExit("summary does not match the shared evaluator configuration")
 
 font_path = Path("/System/Library/Fonts/Supplemental/Arial Unicode.ttf")
 if not font_path.exists():
@@ -123,7 +127,7 @@ story.extend([
     PageBreak(),
     P("モデル・費用・プライバシー", "HeadJP"),
 ])
-prices = summary["configuration"]["pricingUsdPerMillion"]
+prices = configuration["pricingUsdPerMillion"]
 story.extend([
     make_table([
         ["設定", "値"],
@@ -137,9 +141,9 @@ story.extend([
         ["output", f"USD {prices['output']:.2f} / 100万token"],
     ], [70 * mm, 96 * mm]),
     Spacer(1, 4 * mm),
-    P("<b>費用の注意:</b> 上記は評価器の単価設定です。実行日の公式価格を再確認してから本番測定します。cached inputとcache writeを分け、不整合なtoken値では費用を0扱いにせず「算出不能」とします。"),
+    P("<b>費用の注意:</b> 上記は公式価格表ではなく、共有設定ファイルに置いた評価用の仮定です。実行日の公式価格を必ず再確認してから本番測定します。cached inputとcache writeを分け、不整合なtoken値では費用を0扱いにせず「算出不能」とします。"),
     P("保存しない情報", "HeadJP"),
-    P("結果・CSV・PDFにはsession IDや会話履歴を保存しません。PDFには回答本文も掲載しません。質問文と期待値は再現用datasetだけに保存し、結果側ではケースID、カテゴリ、判定理由、短い不可逆フィンガープリントを使用します。"),
+    P("結果・CSV・PDF・実行証跡datasetにはsession ID、質問文、回答本文、会話履歴を保存しません。ケースID、カテゴリ、判定理由、安全な件数指標、短い不可逆フィンガープリントだけを使用します。評価入力の原本はバージョン管理されたfixtureに限定します。"),
     P("失敗例", "HeadJP"),
 ])
 failed = [result for result in results if result.get("passed") is False]

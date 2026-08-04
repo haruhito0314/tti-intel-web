@@ -14,8 +14,8 @@
  */
 import { createHash, randomUUID } from 'node:crypto';
 import {
-  copyFileSync,
   mkdirSync,
+  existsSync,
   readFileSync,
   writeFileSync,
 } from 'node:fs';
@@ -35,39 +35,145 @@ const EVIDENCE = resolve(ROOT, 'output/evals/assistant-luna-structured-knowledge
 const API = 'https://dfqmc56d94.execute-api.ap-northeast-1.amazonaws.com/prod/assistant';
 const ORIGIN = 'https://tti-intel.com';
 const DELAY_MS = 700;
+const MAX_RUN_DURATION_MS = 30 * 60 * 1_000;
+const TELEMETRY_ROOT_FIELDS = new Set([
+  'schemaVersion', 'runId', 'startedAt', 'completedAt', 'cases',
+]);
+const TELEMETRY_CASE_FIELDS = new Set([
+  'caseId', 'serverRequestId', 'observedAt', 'lunaCallCount', 'webCallCount', 'usage',
+]);
+const USAGE_FIELDS = new Set([
+  'inputTokens', 'cachedInputTokens', 'cacheWriteTokens', 'outputTokens', 'totalTokens',
+]);
 
-function parseArgs(argv) {
+export function parseArgs(argv) {
   const dryRun = argv.includes('--dry-run');
   const runProduction = argv.includes('--run-production');
   const telemetryIndex = argv.indexOf('--telemetry');
   const telemetryPath = telemetryIndex >= 0 ? argv[telemetryIndex + 1] : null;
+  const runIdIndex = argv.indexOf('--run-id');
+  const runId = runIdIndex >= 0 ? argv[runIdIndex + 1] : null;
   if (dryRun === runProduction) {
     throw new TypeError('Choose exactly one mode: --dry-run or --run-production');
   }
   if (runProduction && !telemetryPath) {
     throw new TypeError('--run-production requires --telemetry with sanitized usage/call counters');
   }
-  return { dryRun, runProduction, telemetryPath };
+  if (runId !== null && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(runId)) {
+    throw new TypeError('--run-id must be a UUID');
+  }
+  return { dryRun, runProduction, telemetryPath, runId };
 }
 
 function sleep(ms) {
   return new Promise((resolvePromise) => setTimeout(resolvePromise, ms));
 }
 
-function loadTelemetry(path) {
-  if (!path) return {};
-  const value = JSON.parse(readFileSync(resolve(path), 'utf8'));
+function exactFields(value, allowed, label) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    throw new TypeError('Telemetry must be an object keyed by case ID');
+    throw new TypeError(`${label} must be an object`);
   }
+  for (const key of Object.keys(value)) {
+    if (!allowed.has(key)) throw new TypeError(`${label} contains forbidden field ${key}`);
+  }
+}
+
+function safeCounter(value, label) {
+  if (!Number.isSafeInteger(value) || value < 0) throw new TypeError(`${label} is invalid`);
   return value;
 }
 
-async function ask(evaluationCase, sessionId) {
+function parseTime(value, label) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T/u.test(value)) {
+    throw new TypeError(`${label} is invalid`);
+  }
+  const timestamp = Date.parse(value);
+  if (!Number.isFinite(timestamp)) throw new TypeError(`${label} is invalid`);
+  return timestamp;
+}
+
+export function validateTelemetry(value, fixture, correlation) {
+  exactFields(value, TELEMETRY_ROOT_FIELDS, 'Telemetry');
+  if (value.schemaVersion !== 1) throw new TypeError('Telemetry schemaVersion must be 1');
+  if (value.runId !== correlation.runId) throw new TypeError('Telemetry runId does not match this run');
+  const startedAt = parseTime(value.startedAt, 'Telemetry startedAt');
+  const completedAt = parseTime(value.completedAt, 'Telemetry completedAt');
+  if (startedAt > completedAt || completedAt - startedAt > MAX_RUN_DURATION_MS) {
+    throw new TypeError('Telemetry run time bounds are invalid');
+  }
+  const actualStartedAt = parseTime(correlation.startedAt, 'Run startedAt');
+  const actualCompletedAt = parseTime(correlation.completedAt, 'Run completedAt');
+  if (startedAt < actualStartedAt - 30_000 || completedAt > actualCompletedAt + 30_000) {
+    throw new TypeError('Telemetry does not match the executed run time bounds');
+  }
+  if (!Array.isArray(value.cases) || value.cases.length !== 100) {
+    throw new TypeError('Telemetry must contain exactly 100 cases');
+  }
+  const expected = new Map(correlation.cases.map((entry) => [entry.caseId, entry.serverRequestId]));
+  if (expected.size !== 100 || fixture.cases.length !== 100) {
+    throw new TypeError('Run correlation must contain exactly 100 unique cases');
+  }
+  const requestIds = [...expected.values()];
+  if (requestIds.some((requestId) => typeof requestId !== 'string' || !requestId.trim())
+    || new Set(requestIds).size !== 100) {
+    throw new TypeError('Run correlation requires 100 unique server request IDs');
+  }
+  const seen = new Set();
+  const metrics = new Map();
+  for (const entry of value.cases) {
+    exactFields(entry, TELEMETRY_CASE_FIELDS, 'Telemetry case');
+    if (typeof entry.caseId !== 'string' || !expected.has(entry.caseId) || seen.has(entry.caseId)) {
+      throw new TypeError('Telemetry case IDs must exactly match the run');
+    }
+    seen.add(entry.caseId);
+    if (typeof entry.serverRequestId !== 'string'
+      || entry.serverRequestId.length > 200
+      || entry.serverRequestId !== expected.get(entry.caseId)) {
+      throw new TypeError(`Telemetry serverRequestId mismatch for ${entry.caseId}`);
+    }
+    const observedAt = parseTime(entry.observedAt, `Telemetry ${entry.caseId} observedAt`);
+    if (observedAt < startedAt || observedAt > completedAt) {
+      throw new TypeError(`Telemetry ${entry.caseId} is outside the run time bounds`);
+    }
+    exactFields(entry.usage, USAGE_FIELDS, `Telemetry ${entry.caseId} usage`);
+    const usage = Object.fromEntries([...USAGE_FIELDS].map((key) => [
+      key,
+      safeCounter(entry.usage[key], `Telemetry ${entry.caseId} ${key}`),
+    ]));
+    metrics.set(entry.caseId, {
+      lunaCallCount: safeCounter(entry.lunaCallCount, `Telemetry ${entry.caseId} lunaCallCount`),
+      webCallCount: safeCounter(entry.webCallCount, `Telemetry ${entry.caseId} webCallCount`),
+      usage,
+    });
+  }
+  if (seen.size !== fixture.cases.length) throw new TypeError('Telemetry is incomplete');
+  return metrics;
+}
+
+export function loadTelemetry(path, fixture, correlation) {
+  return validateTelemetry(JSON.parse(readFileSync(resolve(path), 'utf8')), fixture, correlation);
+}
+
+async function loadPostRunTelemetry(path, fixture, correlation) {
+  const resolvedPath = resolve(path);
+  const deadline = Date.now() + 2 * 60 * 1_000;
+  while (!existsSync(resolvedPath) && Date.now() < deadline) await sleep(1_000);
+  if (!existsSync(resolvedPath)) {
+    throw new TypeError('Post-run telemetry file was not produced within two minutes');
+  }
+  return loadTelemetry(resolvedPath, fixture, correlation);
+}
+
+async function ask(evaluationCase, sessionId, runId) {
   const startedAt = Date.now();
   const response = await fetch(API, {
     method: 'POST',
-    headers: { 'content-type': 'application/json', origin: ORIGIN },
+    headers: {
+      'content-type': 'application/json',
+      origin: ORIGIN,
+      'x-tti-evaluation-run-id': runId,
+      'x-tti-evaluation-case-id': evaluationCase.id,
+    },
     body: JSON.stringify({
       message: evaluationCase.message,
       currentPath: evaluationCase.currentPath,
@@ -87,6 +193,10 @@ async function ask(evaluationCase, sessionId) {
     latencyMs: Date.now() - startedAt,
     answer: typeof body.answer === 'string' ? body.answer : '',
     links: Array.isArray(body.links) ? body.links : [],
+    serverRequestId: response.headers.get('x-amzn-requestid')
+      ?? response.headers.get('apigw-requestid')
+      ?? response.headers.get('x-amz-apigw-id')
+      ?? '',
   };
 }
 
@@ -136,7 +246,17 @@ function writeEvidence(fixture, results, summary) {
     csv: resolve(EVIDENCE, 'results.csv'),
     summary: resolve(EVIDENCE, 'summary.json'),
   };
-  copyFileSync(FIXTURE, paths.dataset);
+  const safeDataset = {
+    metadata: fixture.metadata,
+    cases: fixture.cases.map(({ id, category, variant, expectation, linkExpectation }) => ({
+      id,
+      category,
+      variant,
+      expectation,
+      linkMode: linkExpectation.mode,
+    })),
+  };
+  writeFileSync(paths.dataset, JSON.stringify(safeDataset, null, 2) + '\n');
   writeFileSync(paths.results, JSON.stringify({ cases: results }, null, 2) + '\n');
   writeFileSync(paths.csv, resultCsv(results));
   writeFileSync(paths.summary, JSON.stringify(summary, null, 2) + '\n');
@@ -167,8 +287,11 @@ async function main() {
     return;
   }
 
-  const telemetry = loadTelemetry(options.telemetryPath);
   const results = [];
+  const observations = [];
+  const runId = options.runId ?? randomUUID();
+  const runStartedAt = new Date().toISOString();
+  console.log(`Evaluation run ID: ${runId}`);
   let sessionId = randomUUID();
   let inSession = 0;
   for (const [index, evaluationCase] of fixture.cases.entries()) {
@@ -179,20 +302,28 @@ async function main() {
     }
     let response;
     try {
-      response = await ask(evaluationCase, sessionId);
+      response = await ask(evaluationCase, sessionId, runId);
     } catch (error) {
-      response = { status: 0, latencyMs: 0, answer: '', links: [], error: String(error) };
+      response = { status: 0, latencyMs: 0, answer: '', links: [], serverRequestId: '' };
     }
     inSession += 1;
-    const metrics = telemetry[evaluationCase.id] ?? {};
-    results.push(evaluateObservation(evaluationCase, {
-      ...response,
-      lunaCallCount: metrics.lunaCallCount,
-      webCallCount: metrics.webCallCount,
-      usage: metrics.usage,
-    }));
-    console.log(`[${index + 1}/100] ${evaluationCase.id} ${results.at(-1).passed ? 'OK' : 'BAD'}`);
+    observations.push({ evaluationCase, response });
+    console.log(`[${index + 1}/100] ${evaluationCase.id} response received`);
     await sleep(DELAY_MS);
+  }
+  const correlation = {
+    runId,
+    startedAt: runStartedAt,
+    completedAt: new Date().toISOString(),
+    cases: observations.map(({ evaluationCase, response }) => ({
+      caseId: evaluationCase.id,
+      serverRequestId: response.serverRequestId,
+    })),
+  };
+  const telemetry = await loadPostRunTelemetry(options.telemetryPath, fixture, correlation);
+  for (const { evaluationCase, response } of observations) {
+    const metrics = telemetry.get(evaluationCase.id);
+    results.push(evaluateObservation(evaluationCase, { ...response, ...metrics }));
   }
   const summary = summarizeResults(results, {
     ...fixture.metadata,
@@ -203,7 +334,9 @@ async function main() {
   if (summary.failed > 0 || !summary.templateConcentrationPassed) process.exitCode = 1;
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+if (fileURLToPath(import.meta.url) === resolve(process.argv[1] ?? '')) {
+  main().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+}
