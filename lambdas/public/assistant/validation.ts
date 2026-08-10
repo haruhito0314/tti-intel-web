@@ -8,7 +8,7 @@ import { OFFICIAL_SOURCE_LINKS } from './runtimeCatalog.js';
 
 const MAX_RAW_BODY_LENGTH = 65_536;
 const MAX_MESSAGE_LENGTH = 500;
-const MAX_MODEL_ANSWER_LENGTH = 400;
+const MAX_MODEL_ANSWER_LENGTH = 280;
 const MAX_CURRENT_PATH_LENGTH = 256;
 /** Frontend sends at most 2 prior user turns; match that on the wire. */
 const MAX_HISTORY_MESSAGES = 2;

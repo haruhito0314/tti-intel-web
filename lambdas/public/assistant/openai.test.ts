@@ -229,7 +229,7 @@ describe('buildResponsesPayload', () => {
       store: false,
       stream: false,
       reasoning: { effort: 'low' },
-      max_output_tokens: 600,
+      max_output_tokens: 450,
       tools: [],
       instructions: SYSTEM_INSTRUCTIONS,
     });
@@ -423,7 +423,8 @@ describe('buildResponsesPayload', () => {
     expect(SYSTEM_INSTRUCTIONS).toContain('医療・法律・金融');
     expect(SYSTEM_INSTRUCTIONS).toContain('URL');
     expect(SYSTEM_INSTRUCTIONS).toContain('そのまま繰り返さず');
-    expect(SYSTEM_INSTRUCTIONS).toContain('400文字以内');
+    expect(SYSTEM_INSTRUCTIONS).toContain('280文字以内');
+    expect(SYSTEM_INSTRUCTIONS).toContain('LINEのように短く');
     expect(SYSTEM_INSTRUCTIONS).not.toContain('intentHint');
     expect(SYSTEM_INSTRUCTIONS).not.toContain('FAQ');
   });
