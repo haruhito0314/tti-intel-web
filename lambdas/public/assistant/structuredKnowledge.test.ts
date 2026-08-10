@@ -263,4 +263,12 @@ describe('scope-aware assistant context', () => {
     expect(broad.knowledge.every(({ item }) => item.domain !== 'app')).toBe(true);
     expect(apps.knowledge.some(({ item }) => item.domain === 'app')).toBe(true);
   });
+
+  it('does not restore app facts from history for a vague circle follow-up', () => {
+    const result = selectAssistantRequestContext('どれがおすすめ？', '/', [
+      { role: 'user', content: 'このサークルのアプリについて教えて' },
+    ], 'circle');
+
+    expect(result.knowledge.every(({ item }) => item.domain !== 'app')).toBe(true);
+  });
 });

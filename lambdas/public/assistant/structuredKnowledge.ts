@@ -378,7 +378,7 @@ export function selectAssistantRequestContext(
       limit,
       false,
       scope,
-    );
+    ).filter(({ item }) => allowedInScope(item, scope, message));
     const latestDomain = latestHistoryKnowledge[0]?.item.domain;
     if (
       latestDomain !== undefined
