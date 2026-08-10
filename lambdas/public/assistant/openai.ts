@@ -43,7 +43,7 @@ export const SYSTEM_INSTRUCTIONS = [
   'isFollowUpがtrueのときだけhistoryを文脈として使い、必ず最新のmessageで新たに聞かれた点へ答えてください。',
   'isFollowUpがfalseのときは以前の話題に結びつけず、最新のmessageだけを新しい質問として扱ってください。',
   'サイトや大学について根拠が足りないときは推測せず、確認できないことを簡潔に伝えてください。一般質問をサイトのお問い合わせへ誘導しないでください。',
-  'contentIdsとsourceIdsは入力JSONに含まれるIDからだけ選んでください。answerは500文字以内、pageIds・contentIds・sourceIdsはそれぞれ最大3件です。',
+  'contentIdsとsourceIdsは入力JSONに含まれるIDからだけ選んでください。answerは原則300文字以内、長くても400文字以内に簡潔にまとめ、pageIds・contentIds・sourceIdsはそれぞれ最大3件です。',
 ].join('\n');
 
 export interface BuildResponsesPayloadInput {
@@ -144,7 +144,7 @@ export function buildResponsesPayload({
     store: false,
     stream: false,
     reasoning: { effort: reasoningEffortForModel(OPENAI_MODEL) },
-    max_output_tokens: 800,
+    max_output_tokens: 600,
     tools: [],
     instructions: SYSTEM_INSTRUCTIONS,
     text: {

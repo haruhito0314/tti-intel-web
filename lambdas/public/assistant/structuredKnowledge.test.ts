@@ -106,6 +106,7 @@ describe('selectStructuredKnowledge', () => {
 
   it.each([
     'このサークルは？',
+    'このサークルについて教えて',
     'AIサークルについて教えて',
   ])('prioritizes TTI Intelligence knowledge for %s', (query) => {
     const selected = selectStructuredKnowledge(query, '/', []);

@@ -114,7 +114,7 @@ describe('validateModelGuideResponse', () => {
     ['null output', null],
     ['array output', []],
     ['empty answer', { answer: '   ', pageIds: [], contentIds: [], sourceIds: [] }],
-    ['501 character answer', { answer: 'a'.repeat(501), pageIds: [], contentIds: [], sourceIds: [] }],
+    ['401 character answer', { answer: 'a'.repeat(401), pageIds: [], contentIds: [], sourceIds: [] }],
     ['4 IDs', { answer: 'answer', pageIds: ['home', 'about', 'news', 'apps'], contentIds: [], sourceIds: [] }],
     ['duplicate ID', { answer: 'answer', pageIds: ['news', 'news'], contentIds: [], sourceIds: [] }],
     ['non-string ID', { answer: 'answer', pageIds: ['news', 1], contentIds: [], sourceIds: [] }],
