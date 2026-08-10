@@ -52,34 +52,6 @@ export const YOUTUBE_CHANNEL_URL = 'https://www.youtube.com/@ttiintelligence';
 export const OFFICIAL_SOURCE_LINKS = {
   discord: { title: 'TTI Intelligence Discord', href: DISCORD_INVITE_URL },
   youtube: { title: 'TTI Intelligence YouTube', href: YOUTUBE_CHANNEL_URL },
-  'tti-overview': {
-    title: '豊田工業大学 大学案内',
-    href: 'https://www.toyota-ti.ac.jp/about/index.html',
-  },
-  'tti-features': {
-    title: '豊田工業大学 本学の特色',
-    href: 'https://www.toyota-ti.ac.jp/about/profile/tokushoku.html',
-  },
-  'tti-academics': {
-    title: '豊田工業大学 学部・大学院教育',
-    href: 'https://www.toyota-ti.ac.jp/academics/index.html',
-  },
-  'tti-program': {
-    title: '豊田工業大学 学びの特色',
-    href: 'https://www.toyota-ti.ac.jp/academics/program/feature.html',
-  },
-  'tti-student-activity': {
-    title: '豊田工業大学 課外活動',
-    href: 'https://www.toyota-ti.ac.jp/student/activity/index.html',
-  },
-  'tti-clubs': {
-    title: '豊田工業大学 課外団体一覧',
-    href: 'https://www.toyota-ti.ac.jp/student/activity/club.html',
-  },
-  'tti-access': {
-    title: '豊田工業大学 交通アクセス',
-    href: 'https://www.toyota-ti.ac.jp/access.html',
-  },
 } as const satisfies Record<OfficialSourceId, { title: string; href: string }>;
 
 const DYNAMIC_PAGE_PATTERNS: readonly [RegExp, PublicRouteId][] = [

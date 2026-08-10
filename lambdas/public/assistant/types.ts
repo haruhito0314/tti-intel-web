@@ -27,14 +27,11 @@ export type PageId = AssistantPageId;
 export type ContentKind = 'news' | 'board' | 'weekly-math';
 
 export type KnowledgeDomain =
-  | 'site' | 'circle' | 'university' | 'development'
+  | 'site' | 'circle' | 'development'
   | 'app' | 'game' | 'math';
 
 export type OfficialSourceId =
-  | 'discord' | 'youtube'
-  | 'tti-overview' | 'tti-features' | 'tti-academics'
-  | 'tti-program' | 'tti-student-activity' | 'tti-clubs'
-  | 'tti-access';
+  | 'discord' | 'youtube';
 
 export interface KnowledgeItem {
   id: string;

@@ -60,7 +60,7 @@
     "summary": "AI Assistantは公開中のアプリで、サイトの案内情報と根拠となるページを組み合わせて回答する。",
     "details": [
       "アプリ紹介ではOpenAI、AWS Lambda、Grounded AIを使用技術として掲げている。",
-      "構造化されたサイト・大学資料がない一般質問は安定した一般知識で扱い、実行時のWeb検索やリアルタイム確認は行わない。"
+      "AI AssistantはTTI IntelligenceとこのWebサイトに関する内容だけを、確認済みの資料に基づいて案内する。"
     ],
     "keywords": ["AI Assistant", "AIアシスタント", "アシスタント", "チャット", "現在のアプリ", "公開中のアプリ", "アプリ一覧"],
     "sourceIds": [],

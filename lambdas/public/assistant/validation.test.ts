@@ -101,12 +101,12 @@ describe('validateModelGuideResponse', () => {
       answer: '  今週の数学はお知らせから確認できます。  ',
       pageIds: ['news', 'weekly-math'],
       contentIds: [],
-      sourceIds: ['tti-academics'],
+      sourceIds: ['discord'],
     })).toEqual({
       answer: '今週の数学はお知らせから確認できます。',
       pageIds: ['news', 'weekly-math'],
       contentIds: [],
-      sourceIds: ['tti-academics'],
+      sourceIds: ['discord'],
     });
   });
 
@@ -123,7 +123,7 @@ describe('validateModelGuideResponse', () => {
     ['missing sourceIds', { answer: 'answer', pageIds: [], contentIds: [] }],
     ['more than 3 source IDs', {
       answer: 'answer', pageIds: [], contentIds: [],
-      sourceIds: ['discord', 'youtube', 'tti-overview', 'tti-features'],
+      sourceIds: ['discord', 'youtube', 'discord', 'youtube'],
     }],
     ['duplicate source ID', {
       answer: 'answer', pageIds: [], contentIds: [], sourceIds: ['discord', 'discord'],

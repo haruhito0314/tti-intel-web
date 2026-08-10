@@ -39,7 +39,7 @@ function rankedKnowledge(
   return {
     item: {
       id: `knowledge-${index}`,
-      domain: index % 2 === 0 ? 'site' : 'university',
+      domain: index % 2 === 0 ? 'site' : 'circle',
       title: `KNOWLEDGE_TITLE_${index}`,
       summary: `KNOWLEDGE_SUMMARY_${index}`,
       details: [`KNOWLEDGE_DETAIL_${index}`],
@@ -65,8 +65,8 @@ function rankedContent(index: number): RankedContentEntry {
 }
 
 const knowledge: RankedKnowledgeItem[] = [
-  rankedKnowledge(0, ['discord', 'tti-overview']),
-  rankedKnowledge(1, ['tti-overview', 'tti-features']),
+  rankedKnowledge(0, ['discord']),
+  rankedKnowledge(1, ['youtube']),
 ];
 
 function completedEnvelope(
@@ -74,7 +74,7 @@ function completedEnvelope(
     answer: '豊田工業大学については、公式情報をもとにご案内します。',
     pageIds: ['about'],
     contentIds: [],
-    sourceIds: ['tti-overview'],
+    sourceIds: ['discord'],
   })],
   usage: unknown = {
     input_tokens: 120,
@@ -199,12 +199,12 @@ describe('buildResponsesPayload', () => {
 
   it('builds one bounded Luna payload from selected knowledge and content', () => {
     const boundedKnowledge = [
-      rankedKnowledge(0, ['discord', 'tti-overview']),
-      rankedKnowledge(1, ['tti-overview', 'tti-features']),
-      rankedKnowledge(2, ['tti-academics']),
-      rankedKnowledge(3, ['tti-program']),
-      rankedKnowledge(4, ['tti-clubs']),
-      rankedKnowledge(5, ['tti-access']),
+      rankedKnowledge(0, ['discord']),
+      rankedKnowledge(1, ['youtube']),
+      rankedKnowledge(2, ['discord']),
+      rankedKnowledge(3, ['youtube']),
+      rankedKnowledge(4, ['discord']),
+      rankedKnowledge(5, ['youtube']),
     ];
     const content = [0, 1, 2, 3].map(rankedContent);
 
@@ -254,20 +254,12 @@ describe('buildResponsesPayload', () => {
       maxItems: 3,
       items: {
         type: 'string',
-        enum: [
-          'discord',
-          'tti-overview',
-          'tti-features',
-          'tti-academics',
-          'tti-program',
-          'tti-clubs',
-        ],
+        enum: ['discord', 'youtube'],
       },
     });
 
     const serialized = JSON.stringify(payload);
     expect(serialized).not.toContain('KNOWLEDGE_TITLE_5');
-    expect(serialized).not.toContain('tti-access');
     expect(serialized).not.toContain('CONTENT_TITLE_3');
     expect(serialized).not.toContain('PRIVATE_KEYWORD_');
     expect(serialized).not.toContain('FAQ_ANSWER_');
@@ -415,12 +407,12 @@ describe('buildResponsesPayload', () => {
     expect(JSON.stringify(continuation)).not.toContain('ASSISTANT_HISTORY_MUST_NOT_LEAK');
   });
 
-  it('contains the stable answer policy without stored answer-shaping prose', () => {
+  it('limits Luna to reviewed TTI Intelligence and site material', () => {
     expect(SYSTEM_INSTRUCTIONS).toContain('自然な日本語で直接');
-    expect(SYSTEM_INSTRUCTIONS).toContain('サイト固有および大学固有');
-    expect(SYSTEM_INSTRUCTIONS).toContain('安定した一般知識');
-    expect(SYSTEM_INSTRUCTIONS).toContain('リアルタイム');
-    expect(SYSTEM_INSTRUCTIONS).toContain('医療・法律・金融');
+    expect(SYSTEM_INSTRUCTIONS).toContain('TTI IntelligenceとこのWebサイト');
+    expect(SYSTEM_INSTRUCTIONS).toContain('入力JSONのknowledgeEntriesとcontentEntriesだけ');
+    expect(SYSTEM_INSTRUCTIONS).not.toContain('一般的な質問');
+    expect(SYSTEM_INSTRUCTIONS).not.toContain('安定した一般知識');
     expect(SYSTEM_INSTRUCTIONS).toContain('URL');
     expect(SYSTEM_INSTRUCTIONS).toContain('そのまま繰り返さず');
     expect(SYSTEM_INSTRUCTIONS).toContain('280文字以内');
@@ -437,7 +429,7 @@ describe('parseResponsesEnvelope', () => {
         answer: '豊田工業大学については、公式情報をもとにご案内します。',
         pageIds: ['about'],
         contentIds: [],
-        sourceIds: ['tti-overview'],
+        sourceIds: ['discord'],
       },
       usage: {
         inputTokens: 120,
@@ -603,7 +595,7 @@ describe('requestOpenAI', () => {
         answer: '豊田工業大学については、公式情報をもとにご案内します。',
         pageIds: ['about'],
         contentIds: [],
-        sourceIds: ['tti-overview'],
+        sourceIds: ['discord'],
       },
       usage: {
         inputTokens: 120,

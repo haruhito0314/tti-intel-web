@@ -360,13 +360,6 @@ describe('createAssistantApi', () => {
         ['discord', 'https://discord.gg/DFWs8GrHxF'],
         ['youtube', 'https://www.youtube.com/@ttiintelligence'],
         ['tti-root', 'https://www.toyota-ti.ac.jp/'],
-        ['tti-overview', 'https://www.toyota-ti.ac.jp/about/index.html'],
-        ['tti-features', 'https://www.toyota-ti.ac.jp/about/profile/tokushoku.html'],
-        ['tti-academics', 'https://www.toyota-ti.ac.jp/academics/index.html'],
-        ['tti-program', 'https://www.toyota-ti.ac.jp/academics/program/feature.html'],
-        ['tti-student-activity', 'https://www.toyota-ti.ac.jp/student/activity/index.html'],
-        ['tti-clubs', 'https://www.toyota-ti.ac.jp/student/activity/club.html'],
-        ['tti-access', 'https://www.toyota-ti.ac.jp/access.html'],
     ])('accepts the exact reviewed official source %s', async (pageId, href) => {
         const withSource = {
             answer: '公式情報源を案内します。',
@@ -382,6 +375,13 @@ describe('createAssistantApi', () => {
     });
 
     it.each([
+        ['detailed university overview', 'https://www.toyota-ti.ac.jp/about/index.html'],
+        ['detailed university features', 'https://www.toyota-ti.ac.jp/about/profile/tokushoku.html'],
+        ['detailed university academics', 'https://www.toyota-ti.ac.jp/academics/index.html'],
+        ['detailed university program', 'https://www.toyota-ti.ac.jp/academics/program/feature.html'],
+        ['detailed university student activities', 'https://www.toyota-ti.ac.jp/student/activity/index.html'],
+        ['detailed university clubs', 'https://www.toyota-ti.ac.jp/student/activity/club.html'],
+        ['detailed university access', 'https://www.toyota-ti.ac.jp/access.html'],
         ['another university path', 'https://www.toyota-ti.ac.jp/student/index.html'],
         ['lookalike university domain', 'https://www.toyota-ti.ac.jp.evil.example/about/index.html'],
         ['query variant', 'https://www.toyota-ti.ac.jp/access.html?from=assistant'],

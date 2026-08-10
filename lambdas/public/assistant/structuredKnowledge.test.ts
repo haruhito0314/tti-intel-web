@@ -7,7 +7,6 @@ import {
 import {
   SITE_KNOWLEDGE,
   STRUCTURED_KNOWLEDGE,
-  UNIVERSITY_KNOWLEDGE,
   selectAssistantRequestContext,
   selectStructuredKnowledge,
 } from './structuredKnowledge.js';
@@ -15,17 +14,10 @@ import {
 describe('createVerifiedOfficialLinks', () => {
   it('returns only deduplicated catalog entries for requested official source IDs', () => {
     expect(createVerifiedOfficialLinks([
-      'tti-overview',
       'unknown-source',
       'discord',
-      'tti-overview',
       'youtube',
     ])).toEqual([
-      {
-        pageId: 'tti-overview',
-        title: '豊田工業大学 大学案内',
-        href: 'https://www.toyota-ti.ac.jp/about/index.html',
-      },
       {
         pageId: 'discord',
         title: 'TTI Intelligence Discord',
@@ -43,26 +35,12 @@ describe('createVerifiedOfficialLinks', () => {
     const expectedCatalog = {
       discord: { title: 'TTI Intelligence Discord', href: 'https://discord.gg/DFWs8GrHxF' },
       youtube: { title: 'TTI Intelligence YouTube', href: 'https://www.youtube.com/@ttiintelligence' },
-      'tti-overview': { title: '豊田工業大学 大学案内', href: 'https://www.toyota-ti.ac.jp/about/index.html' },
-      'tti-features': { title: '豊田工業大学 本学の特色', href: 'https://www.toyota-ti.ac.jp/about/profile/tokushoku.html' },
-      'tti-academics': { title: '豊田工業大学 学部・大学院教育', href: 'https://www.toyota-ti.ac.jp/academics/index.html' },
-      'tti-program': { title: '豊田工業大学 学びの特色', href: 'https://www.toyota-ti.ac.jp/academics/program/feature.html' },
-      'tti-student-activity': { title: '豊田工業大学 課外活動', href: 'https://www.toyota-ti.ac.jp/student/activity/index.html' },
-      'tti-clubs': { title: '豊田工業大学 課外団体一覧', href: 'https://www.toyota-ti.ac.jp/student/activity/club.html' },
-      'tti-access': { title: '豊田工業大学 交通アクセス', href: 'https://www.toyota-ti.ac.jp/access.html' },
     };
 
     expect(OFFICIAL_SOURCE_LINKS).toEqual(expectedCatalog);
     expect(createVerifiedOfficialLinks([
       'discord',
       'youtube',
-      'tti-overview',
-      'tti-features',
-      'tti-academics',
-      'tti-program',
-      'tti-student-activity',
-      'tti-clubs',
-      'tti-access',
     ]).map(({ href }) => href)).toEqual(Object.values(expectedCatalog).map(({ href }) => href));
   });
 });
@@ -74,36 +52,6 @@ describe('selectStructuredKnowledge', () => {
     history: readonly { role: 'user'; content: string }[] = [],
   ) => selectStructuredKnowledge(message, currentPath, history).map(({ item }) => item.id);
 
-  it('selects a bounded overview for a broad Toyota Technological Institute query', () => {
-    const selected = selectStructuredKnowledge('豊田工業大学', '/', []);
-
-    expect(selected.length).toBeGreaterThanOrEqual(3);
-    expect(selected.length).toBeLessThanOrEqual(5);
-    expect(selected[0]?.item.id).toBe('university-identity');
-    expect(selected.every(({ item }) => item.domain === 'university')).toBe(true);
-  });
-
-  it('selects university-wide recognized groups for a university club question', () => {
-    const ids = selectedIds('豊田工業大学のサークルは？');
-
-    expect(ids.length).toBeGreaterThanOrEqual(3);
-    expect(ids).toEqual(expect.arrayContaining([
-      'university-recognized-sports',
-      'university-recognized-cultural',
-      'university-ai-circle-listing',
-    ]));
-  });
-
-  it('distinguishes an official recognized-group listing from university operation', () => {
-    const selected = selectStructuredKnowledge('AIサークルは大学公式？', '/', []);
-    const listing = selected.find(({ item }) => item.id === 'university-ai-circle-listing');
-
-    expect(selected.length).toBeGreaterThanOrEqual(3);
-    expect(listing?.item.asOf).toBe('2026-04-01');
-    expect(listing?.item.details.join(' ')).toContain('大学公式サイトの認定団体一覧');
-    expect(listing?.item.details.join(' ')).toContain('大学による運営を意味しない');
-  });
-
   it.each([
     'このサークルは？',
     'このサークルについて教えて',
@@ -113,12 +61,6 @@ describe('selectStructuredKnowledge', () => {
 
     expect(selected[0]?.item.id).toBe('circle-identity');
     expect(selected.slice(0, 3).every(({ item }) => item.domain === 'circle')).toBe(true);
-  });
-
-  it('keeps the university listing for an explicit official university question', () => {
-    const selected = selectStructuredKnowledge('豊田工業大学のAIサークルは大学公式？', '/', []);
-
-    expect(selected[0]?.item.id).toBe('university-ai-circle-listing');
   });
 
   it.each([
@@ -144,7 +86,7 @@ describe('selectStructuredKnowledge', () => {
   it('uses recent user history only when local follow-up search resolves it', () => {
     const context = selectAssistantRequestContext('どこから見るの？', '/', [
       { role: 'user', content: 'Codexについて教えて' },
-    ]);
+    ], 'site');
 
     expect(context.routingIntent.requiresHistory).toBe(true);
     expect(context.knowledge.map(({ item }) => item.id)).toContain('development-codex');
@@ -153,24 +95,22 @@ describe('selectStructuredKnowledge', () => {
   it('keeps an unrelated new topic free of stale history knowledge', () => {
     const context = selectAssistantRequestContext('これから京都へ旅行します', '/', [
       { role: 'user', content: 'Codexについて教えて' },
-    ]);
+    ], 'site');
 
     expect(context.routingIntent.requiresHistory).toBe(false);
     expect(context.knowledge).toEqual([]);
   });
 
-  it('lets an explicit current university topic override a prior Codex topic', () => {
+  it('does not add university facts when a university query follows a site topic', () => {
     const context = selectAssistantRequestContext(
       'どこに豊田工業大学がありますか？',
       '/',
       [{ role: 'user', content: 'Codexについて教えて' }],
+      'site',
     );
 
     expect(context.routingIntent.requiresHistory).toBe(false);
-    expect(context.knowledge.map(({ item }) => item.id))
-      .toContain('university-identity');
-    expect(context.knowledge.every(({ item }) => item.domain === 'university'))
-      .toBe(true);
+    expect(context.knowledge).toEqual([]);
     expect(context.knowledge.map(({ item }) => item.id))
       .not.toContain('development-codex');
   });
@@ -178,23 +118,17 @@ describe('selectStructuredKnowledge', () => {
   it('treats an explicit uncataloged location topic as current instead of prior Codex', () => {
     const context = selectAssistantRequestContext('どこに京都がありますか？', '/', [
       { role: 'user', content: 'Codexについて教えて' },
-    ]);
+    ], 'site');
 
     expect(context.routingIntent.requiresHistory).toBe(false);
     expect(context.knowledge).toEqual([]);
   });
 
-  it('resolves address and math-answer probes only against compatible prior topics', () => {
-    const address = selectAssistantRequestContext('住所を教えて', '/', [
-      { role: 'user', content: '豊田工業大学について教えて' },
-    ]);
+  it('resolves a math-answer probe only against compatible prior circle history', () => {
     const answer = selectAssistantRequestContext('解答を教えて', '/', [
       { role: 'user', content: '今週の数学の問題を見たい' },
-    ]);
+    ], 'circle');
 
-    expect(address.routingIntent.requiresHistory).toBe(true);
-    expect(address.knowledge.map(({ item }) => item.id))
-      .toContain('university-campus-access');
     expect(answer.routingIntent.requiresHistory).toBe(true);
     expect(answer.knowledge.map(({ item }) => item.id)).toContain('circle-weekly-math');
   });
@@ -202,22 +136,17 @@ describe('selectStructuredKnowledge', () => {
   it('does not apply address or answer probes to incompatible prior topics', () => {
     const addressAfterCodex = selectAssistantRequestContext('住所を教えて', '/', [
       { role: 'user', content: 'Codexについて教えて' },
-    ]);
-    const answerAfterUniversity = selectAssistantRequestContext('解答を教えて', '/', [
-      { role: 'user', content: '豊田工業大学について教えて' },
-    ]);
+    ], 'site');
 
     expect(addressAfterCodex.routingIntent.requiresHistory).toBe(false);
     expect(addressAfterCodex.knowledge.map(({ item }) => item.id))
       .not.toContain('development-codex');
-    expect(answerAfterUniversity.routingIntent.requiresHistory).toBe(false);
-    expect(answerAfterUniversity.knowledge).toEqual([]);
   });
 
   it('does not resolve a different unrelated topic against prior Codex history', () => {
     const context = selectAssistantRequestContext('カレーの作り方を教えて', '/', [
       { role: 'user', content: 'Codexについて教えて' },
-    ]);
+    ], 'site');
 
     expect(context.routingIntent.requiresHistory).toBe(false);
     expect(context.knowledge).toEqual([]);
@@ -226,7 +155,7 @@ describe('selectStructuredKnowledge', () => {
   it('lets a deictic location follow-up keep the prior circle domain', () => {
     const context = selectAssistantRequestContext('その場所は？', '/', [
       { role: 'user', content: 'TTI Intelligenceについて教えて' },
-    ]);
+    ], 'circle');
 
     expect(context.routingIntent.requiresHistory).toBe(true);
     expect(context.knowledge.map(({ item }) => item.id)).toContain('circle-identity');
@@ -237,27 +166,21 @@ describe('selectStructuredKnowledge', () => {
   it('keeps a referential beginner question on the prior game topic', () => {
     const context = selectAssistantRequestContext('それって初心者でも大丈夫？', '/', [
       { role: 'user', content: 'ゲームコミュニティについて教えて' },
-    ]);
+    ], 'circle');
 
     expect(context.routingIntent.requiresHistory).toBe(true);
     expect(context.knowledge.map(({ item }) => item.id)).toContain('circle-game-activity');
   });
 
-  it('resolves a bare location probe against the latest circle or university domain', () => {
+  it('resolves a bare location probe against the latest circle domain', () => {
     const circle = selectAssistantRequestContext('場所は？', '/', [
       { role: 'user', content: 'TTI Intelligenceについて教えて' },
-    ]);
-    const university = selectAssistantRequestContext('場所は？', '/', [
-      { role: 'user', content: '豊田工業大学について教えて' },
-    ]);
+    ], 'circle');
 
     expect(circle.routingIntent.requiresHistory).toBe(true);
     expect(circle.knowledge.map(({ item }) => item.id)).toContain('circle-identity');
     expect(circle.knowledge.map(({ item }) => item.id))
       .not.toContain('university-campus-access');
-    expect(university.routingIntent.requiresHistory).toBe(true);
-    expect(university.knowledge.map(({ item }) => item.id))
-      .toContain('university-campus-access');
   });
 
   it('boosts facts associated with the current page', () => {
@@ -284,12 +207,11 @@ describe('selectStructuredKnowledge', () => {
   it('does not leak relevant history into a new unrelated question', () => {
     expect(selectStructuredKnowledge('カレーの作り方', '/', [
       { role: 'user', content: 'Codex' },
-      { role: 'user', content: '豊田工業大学' },
     ])).toEqual([]);
   });
 
   it('never returns duplicate IDs and never exceeds the hard five-item cap', () => {
-    const selected = selectStructuredKnowledge('豊田工業大学の特徴と教育とサークル', '/', [], 99);
+    const selected = selectStructuredKnowledge('Codex Vercel AWS Plugin CLI MCP', '/', [], 99);
     const ids = selected.map(({ item }) => item.id);
 
     expect(selected.length).toBe(5);
@@ -297,14 +219,13 @@ describe('selectStructuredKnowledge', () => {
   });
 
   it('honors a smaller requested limit', () => {
-    expect(selectStructuredKnowledge('豊田工業大学', '/', [], 3)).toHaveLength(3);
+    expect(selectStructuredKnowledge('Codex Vercel AWS Plugin CLI MCP', '/', [], 3)).toHaveLength(3);
   });
 });
 
 describe('reviewed structured knowledge catalogs', () => {
-  it('loads non-empty site and university catalogs with unique IDs', () => {
+  it('loads a non-empty site catalog with unique IDs', () => {
     expect(SITE_KNOWLEDGE.length).toBeGreaterThan(0);
-    expect(UNIVERSITY_KNOWLEDGE.length).toBeGreaterThan(0);
 
     const ids = STRUCTURED_KNOWLEDGE.map(({ id }) => id);
     expect(new Set(ids).size).toBe(ids.length);
@@ -315,5 +236,31 @@ describe('reviewed structured knowledge catalogs', () => {
 
     expect(serialized).not.toMatch(/CLI Practice/i);
     expect(serialized).not.toMatch(/TOEIC/i);
+  });
+
+  it('contains no university domain or detailed university source IDs', () => {
+    expect(JSON.stringify(STRUCTURED_KNOWLEDGE)).not.toContain('"domain":"university"');
+    expect(JSON.stringify(STRUCTURED_KNOWLEDGE)).not.toMatch(/tti-(?:overview|features|academics|program|student-activity|clubs|access)/);
+  });
+});
+
+describe('scope-aware assistant context', () => {
+  it('selects only circle facts for the circle scope', () => {
+    const result = selectAssistantRequestContext('このサークルについて教えて', '/', [], 'circle');
+
+    expect(result.knowledge[0]?.item.id).toBe('circle-identity');
+    expect(result.knowledge.every(({ item }) => ['circle', 'game', 'math'].includes(item.domain))).toBe(true);
+  });
+
+  it.each(['Codex', 'Vercel', 'AWS', 'Plugin', 'CLI', 'MCP'])('keeps %s available in site scope', (tool) => {
+    expect(selectAssistantRequestContext(tool, '/', [], 'site').knowledge.length).toBeGreaterThan(0);
+  });
+
+  it('includes app facts in circle scope only for an explicit circle app question', () => {
+    const broad = selectAssistantRequestContext('このサークルについて教えて', '/', [], 'circle');
+    const apps = selectAssistantRequestContext('このサークルのアプリについて教えて', '/', [], 'circle');
+
+    expect(broad.knowledge.every(({ item }) => item.domain !== 'app')).toBe(true);
+    expect(apps.knowledge.some(({ item }) => item.domain === 'app')).toBe(true);
   });
 });

@@ -1,5 +1,4 @@
 import rawSiteKnowledge from './knowledge/site-knowledge.json' with { type: 'json' };
-import rawUniversityKnowledge from './knowledge/university-knowledge.json' with { type: 'json' };
 import {
   OFFICIAL_SOURCE_LINKS,
   normalizeSearchText,
@@ -26,7 +25,6 @@ export type {
 const KNOWLEDGE_DOMAINS: ReadonlySet<KnowledgeDomain> = new Set([
   'site',
   'circle',
-  'university',
   'development',
   'app',
   'game',
@@ -155,14 +153,7 @@ function parseKnowledgeCatalog(value: unknown, catalog: string): readonly Knowle
 }
 
 export const SITE_KNOWLEDGE = parseKnowledgeCatalog(rawSiteKnowledge, 'site');
-export const UNIVERSITY_KNOWLEDGE = parseKnowledgeCatalog(
-  rawUniversityKnowledge,
-  'university',
-);
-export const STRUCTURED_KNOWLEDGE: readonly KnowledgeItem[] = [
-  ...SITE_KNOWLEDGE,
-  ...UNIVERSITY_KNOWLEDGE,
-];
+export const STRUCTURED_KNOWLEDGE: readonly KnowledgeItem[] = SITE_KNOWLEDGE;
 
 const allKnowledgeIds = new Set<string>();
 for (const item of STRUCTURED_KNOWLEDGE) {
@@ -221,7 +212,6 @@ function scoreQuery(item: KnowledgeItem, normalizedQuery: string): number {
 const DOMAIN_PAGE_IDS: Readonly<Record<KnowledgeDomain, readonly PageId[]>> = {
   site: ['home', 'about', 'apps', 'development', 'contact'],
   circle: ['about'],
-  university: ['home'],
   development: ['development'],
   app: ['apps'],
   game: ['game-community'],
@@ -237,11 +227,28 @@ function hasCurrentPageBoost(
       .includes(currentPageId);
 }
 
-function prefersSiteCircleKnowledge(normalizedMessage: string): boolean {
+function isCircleTopic(normalizedMessage: string): boolean {
   const compactMessage = normalizedMessage.replace(/\s+/g, '');
-  const hasCircleAlias = /(?:このサークル|AIサークル|TTIIntelligence|TTIインテリジェンス)/iu.test(compactMessage);
-  const hasUniversityAnchor = /(?:豊田工業大学|大学公式|認定団体|公式掲載)/u.test(compactMessage);
-  return hasCircleAlias && !hasUniversityAnchor;
+  return /(?:このサークル|AIサークル|TTIIntelligence|TTIインテリジェンス)/iu.test(compactMessage);
+}
+
+export type GenerativeAssistantScope = 'circle' | 'site';
+
+function explicitlyAsksAboutCircleApps(message: string): boolean {
+  const normalizedMessage = normalizeKnowledgeText(message).replace(/\s+/g, '');
+  const refersToCircle = /(?:このサークル|AIサークル|TTIIntelligence|TTIインテリジェンス)/iu.test(normalizedMessage);
+  const refersToAppsOrWorks = /(?:アプリ|作品|制作物|制作|開発|作ったもの|公開中|カラーソート|colorsort|卓球)/iu.test(normalizedMessage);
+  return refersToCircle && refersToAppsOrWorks;
+}
+
+function allowedInScope(
+  item: KnowledgeItem,
+  scope: GenerativeAssistantScope,
+  message: string,
+): boolean {
+  if (scope === 'site') return true;
+  if (item.domain === 'app') return explicitlyAsksAboutCircleApps(message);
+  return ['circle', 'game', 'math'].includes(item.domain);
 }
 
 /**
@@ -254,6 +261,7 @@ export function selectStructuredKnowledge(
   history: readonly HistoryMessage[],
   limit = 5,
   contextualFollowUp = false,
+  scope: GenerativeAssistantScope = 'site',
 ): RankedKnowledgeItem[] {
   const normalizedMessage = normalizeKnowledgeText(message);
   const normalizedHistory = history
@@ -261,7 +269,8 @@ export function selectStructuredKnowledge(
     .map(({ content }) => normalizeKnowledgeText(content))
     .filter(Boolean);
   const currentPageId = resolveCurrentPageId(currentPath);
-  const siteCircleQuery = prefersSiteCircleKnowledge(normalizedMessage);
+  const circleTopic = isCircleTopic(normalizedMessage);
+  const circleAppQuestion = explicitlyAsksAboutCircleApps(message);
 
   const ranked = STRUCTURED_KNOWLEDGE
     .map((item, catalogIndex) => {
@@ -270,14 +279,15 @@ export function selectStructuredKnowledge(
       const score = messageScore
         + (contextualFollowUp ? historyScore : 0)
         + (messageScore > 0 && hasCurrentPageBoost(item, currentPageId) ? 3 : 0)
-        + (siteCircleQuery && item.domain === 'circle' ? 100 : 0);
+        + (circleTopic && item.domain === 'circle' ? 100 : 0)
+        + (circleAppQuestion && item.domain === 'app' ? 100 : 0);
       return { item, score, catalogIndex };
     })
     .filter(({ score }) => score >= 10)
     .sort((left, right) => (
       right.score - left.score || left.catalogIndex - right.catalogIndex
     ))
-    .filter(({ item }) => !siteCircleQuery || item.domain === 'circle')
+    .filter(({ item }) => allowedInScope(item, scope, message))
     .slice(0, 5);
 
   const requestedLimit = Number.isFinite(limit)
@@ -329,7 +339,7 @@ function isProbeCompatibleWithDomain(
 ): boolean {
   const normalizedMessage = normalizeKnowledgeText(message).replace(/\s+/g, '');
   if (/^(?:住所|所在地|アクセス)/.test(normalizedMessage)) {
-    return domain === 'university' || domain === 'circle';
+    return domain === 'circle';
   }
   if (/^(?:答え|解答|ヒント|解説)/.test(normalizedMessage)) {
     return domain === 'math';
@@ -342,6 +352,7 @@ export function selectAssistantRequestContext(
   message: string,
   currentPath: string,
   history: readonly HistoryMessage[],
+  scope: GenerativeAssistantScope,
   limit = 5,
 ): AssistantRequestContext {
   const currentKnowledge = selectStructuredKnowledge(
@@ -350,6 +361,7 @@ export function selectAssistantRequestContext(
     [],
     limit,
     false,
+    scope,
   );
   let followUpKnowledge: RankedKnowledgeItem[] = [];
   let resolvedFollowUp = false;
@@ -365,6 +377,7 @@ export function selectAssistantRequestContext(
       [],
       limit,
       false,
+      scope,
     );
     const latestDomain = latestHistoryKnowledge[0]?.item.domain;
     if (
@@ -377,6 +390,7 @@ export function selectAssistantRequestContext(
         history,
         limit,
         true,
+        scope,
       );
       followUpKnowledge = combinedKnowledge.filter(
         ({ item }) => item.domain === latestDomain,
