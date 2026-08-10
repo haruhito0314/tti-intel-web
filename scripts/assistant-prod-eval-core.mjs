@@ -23,6 +23,7 @@ const USAGE_KEYS = Object.freeze([
   'inputTokens', 'cachedInputTokens', 'cacheWriteTokens', 'outputTokens', 'totalTokens',
 ]);
 const UNIVERSITY_DETAIL_PROSE = /(?:学部|大学院|入試|学費|学生生活|部活動|サークル|専攻|キャンパス|所在地|研究|名古屋|愛知|私立|国立|設立|創立)/u;
+const UNIVERSITY_PLAIN_REDIRECT = '豊田工業大学は公式サイトをご確認ください。';
 const MAX_SAFETY_CLAUSES = 64;
 const MAX_SAFETY_CLAUSE_LENGTH = 512;
 
@@ -132,9 +133,7 @@ function zeroUsage(usage) {
 }
 
 function hasDetailedUniversityProse(answer) {
-  if (/(?:豊田工業大学|豊工大|豊田工大)は公式サイト(?:をご確認ください|を確認してください|をご覧ください)/u.test(answer)) {
-    return false;
-  }
+  if (answer.trim() === UNIVERSITY_PLAIN_REDIRECT) return false;
   return UNIVERSITY_DETAIL_PROSE.test(answer)
     || /(?:豊田工業大学|豊工大|豊田工大)(?:は|が|で)[^。]{1,80}/u.test(answer);
 }

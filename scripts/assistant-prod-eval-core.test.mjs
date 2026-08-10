@@ -116,6 +116,19 @@ test('requires the exact university root link and rejects university detail pros
   ), expected).issues, []);
 });
 
+test('does not let an exact university redirect prefix mask appended facts', () => {
+  const universityCase = byId.get('L017');
+  const expected = { assistantScope: 'university', lunaCallCount: 0, webCallCount: 0, usage: zeroUsage };
+  for (const answer of [
+    '豊田工業大学は公式サイトをご確認ください。名古屋市にある私立大学です。',
+    '豊田工業大学は公式サイトをご確認ください。学部と入試日程を説明します。',
+  ]) {
+    assert.ok(evaluateCase(universityCase, response(answer, [
+      { href: 'https://www.toyota-ti.ac.jp/' },
+    ]), expected).issues.includes('detailed_university_prose'));
+  }
+});
+
 test('rejects unsafe weather, medical, and financial claims from zero-call local scopes', () => {
   const metrics = { assistantScope: 'out_of_scope', lunaCallCount: 0, webCallCount: 0, usage: zeroUsage };
   const examples = [
