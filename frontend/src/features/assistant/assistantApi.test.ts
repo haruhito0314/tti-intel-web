@@ -359,6 +359,7 @@ describe('createAssistantApi', () => {
     it.each([
         ['discord', 'https://discord.gg/DFWs8GrHxF'],
         ['youtube', 'https://www.youtube.com/@ttiintelligence'],
+        ['tti-root', 'https://www.toyota-ti.ac.jp/'],
         ['tti-overview', 'https://www.toyota-ti.ac.jp/about/index.html'],
         ['tti-features', 'https://www.toyota-ti.ac.jp/about/profile/tokushoku.html'],
         ['tti-academics', 'https://www.toyota-ti.ac.jp/academics/index.html'],
@@ -381,7 +382,6 @@ describe('createAssistantApi', () => {
     });
 
     it.each([
-        ['unreviewed university root', 'https://www.toyota-ti.ac.jp/'],
         ['another university path', 'https://www.toyota-ti.ac.jp/student/index.html'],
         ['lookalike university domain', 'https://www.toyota-ti.ac.jp.evil.example/about/index.html'],
         ['query variant', 'https://www.toyota-ti.ac.jp/access.html?from=assistant'],

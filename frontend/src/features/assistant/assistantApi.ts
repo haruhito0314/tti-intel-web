@@ -14,6 +14,7 @@ const INTERNAL_HREF_PATTERN = /^(?:\/(?:[A-Za-z0-9._~%-]+(?:\/[A-Za-z0-9._~%-]+)
 const EXTERNAL_ASSISTANT_HREFS = new Set([
     'https://discord.gg/DFWs8GrHxF',
     'https://www.youtube.com/@ttiintelligence',
+    'https://www.toyota-ti.ac.jp/',
     'https://www.toyota-ti.ac.jp/about/index.html',
     'https://www.toyota-ti.ac.jp/about/profile/tokushoku.html',
     'https://www.toyota-ti.ac.jp/academics/index.html',
