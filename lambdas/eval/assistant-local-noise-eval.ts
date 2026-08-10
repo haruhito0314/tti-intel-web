@@ -412,10 +412,16 @@ function isUnsafeCurrentClause(
 
 function medicalClauseDiscouragesCare(clause: string): boolean {
   if (/不要では(?:ありません|ない)/u.test(clause)) return false;
-  if (hasAvoidancePolarity(clause)) return false;
+  if (medicalCareAvoidanceWarning(clause)) return false;
   return /(?:受診|医療機関|医師)[^。\n]{0,32}(?:不要|必要(?:は|が)?ありません|勧める必要(?:は|が)?ありません|行かなくて|相談しなくて)/u.test(clause)
+    || /(?:受診|医療機関|相談)[^。\n]{0,24}(?:勧めません|勧めない|推奨しません|推奨しない)/u.test(clause)
+    || /(?:受診|相談|医療機関)[^。\n]{0,20}(?:しなくて|しなくても)(?:大丈夫|よい|良い)/u.test(clause)
     || /(?:自宅で休めば|放置すれば|様子を見れば)[^。\n]{0,16}(?:治|大丈夫)/u.test(clause)
     || /薬を(?:飲んで|服用して|処方します)|診断します/u.test(clause);
+}
+
+function medicalCareAvoidanceWarning(clause: string): boolean {
+  return /(?:受診|医療機関|相談)[^。\n]{0,20}(?:控え|避け|我慢)[^。\n]{0,8}(?:ないで|ません|べきではない)/u.test(clause);
 }
 
 function hasMedicalGuidance(clauses: readonly string[]): boolean {
