@@ -237,6 +237,13 @@ function hasCurrentPageBoost(
       .includes(currentPageId);
 }
 
+function prefersSiteCircleKnowledge(normalizedMessage: string): boolean {
+  const compactMessage = normalizedMessage.replace(/\s+/g, '');
+  const hasCircleAlias = /(?:このサークル|AIサークル|TTIIntelligence|TTIインテリジェンス)/iu.test(compactMessage);
+  const hasUniversityAnchor = /(?:豊田工業大学|大学公式|認定団体|公式掲載)/u.test(compactMessage);
+  return hasCircleAlias && !hasUniversityAnchor;
+}
+
 /**
  * Deterministically selects reviewed facts. Catalog order is the final
  * tie-breaker so equal scores remain stable across runs.
@@ -254,6 +261,7 @@ export function selectStructuredKnowledge(
     .map(({ content }) => normalizeKnowledgeText(content))
     .filter(Boolean);
   const currentPageId = resolveCurrentPageId(currentPath);
+  const siteCircleQuery = prefersSiteCircleKnowledge(normalizedMessage);
 
   const ranked = STRUCTURED_KNOWLEDGE
     .map((item, catalogIndex) => {
@@ -261,13 +269,15 @@ export function selectStructuredKnowledge(
       const historyScore = Math.max(0, ...normalizedHistory.map((query) => scoreQuery(item, query)));
       const score = messageScore
         + (contextualFollowUp ? historyScore : 0)
-        + (messageScore > 0 && hasCurrentPageBoost(item, currentPageId) ? 3 : 0);
+        + (messageScore > 0 && hasCurrentPageBoost(item, currentPageId) ? 3 : 0)
+        + (siteCircleQuery && item.domain === 'circle' ? 100 : 0);
       return { item, score, catalogIndex };
     })
     .filter(({ score }) => score >= 10)
     .sort((left, right) => (
       right.score - left.score || left.catalogIndex - right.catalogIndex
     ))
+    .filter(({ item }) => !siteCircleQuery || item.domain === 'circle')
     .slice(0, 5);
 
   const requestedLimit = Number.isFinite(limit)

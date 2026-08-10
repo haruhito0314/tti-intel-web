@@ -105,6 +105,22 @@ describe('selectStructuredKnowledge', () => {
   });
 
   it.each([
+    'このサークルは？',
+    'AIサークルについて教えて',
+  ])('prioritizes TTI Intelligence knowledge for %s', (query) => {
+    const selected = selectStructuredKnowledge(query, '/', []);
+
+    expect(selected[0]?.item.id).toBe('circle-identity');
+    expect(selected.slice(0, 3).every(({ item }) => item.domain === 'circle')).toBe(true);
+  });
+
+  it('keeps the university listing for an explicit official university question', () => {
+    const selected = selectStructuredKnowledge('豊田工業大学のAIサークルは大学公式？', '/', []);
+
+    expect(selected[0]?.item.id).toBe('university-ai-circle-listing');
+  });
+
+  it.each([
     ['Codex', 'development-codex'],
     ['Vercel', 'development-vercel'],
     ['AWS', 'development-aws'],
