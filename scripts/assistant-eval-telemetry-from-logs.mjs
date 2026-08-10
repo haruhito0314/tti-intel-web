@@ -14,7 +14,7 @@ const LOG_FIELDS = new Set([
   'requestId', 'evaluationRunId', 'evaluationCaseId', 'evaluationObservedAt',
   'outcome', 'statusCode', 'durationMs', 'inputTokens', 'cachedInputTokens',
   'cacheWriteTokens', 'outputTokens', 'totalTokens', 'knowledgeCount',
-  'knowledgeDomains', 'lunaCallCount', 'webCallCount',
+  'knowledgeDomains', 'assistantScope', 'lunaCallCount', 'webCallCount',
 ]);
 
 function exactLogFields(value) {
@@ -28,7 +28,7 @@ function exactLogFields(value) {
 
 export function produceTelemetryFromJsonl(correlationValue, fixture, jsonl) {
   const correlation = validateCorrelationManifest(correlationValue, fixture);
-  const expected = new Map(correlation.cases.map((entry) => [entry.caseId, entry.serverRequestId]));
+  const expected = new Map(correlation.cases.map((entry) => [entry.caseId, entry]));
   const entries = [];
   for (const [index, line] of String(jsonl).split(/\r?\n/u).entries()) {
     if (!line.trim()) continue;
@@ -43,13 +43,17 @@ export function produceTelemetryFromJsonl(correlationValue, fixture, jsonl) {
     if (!expected.has(record.evaluationCaseId)) {
       throw new TypeError(`Evaluation log contains an extra case ${record.evaluationCaseId ?? 'missing'}`);
     }
-    if (record.requestId !== expected.get(record.evaluationCaseId)) {
+    const expectedCase = expected.get(record.evaluationCaseId);
+    if (record.requestId !== expectedCase.serverRequestId) {
       throw new TypeError(`Evaluation log request ID mismatch for ${record.evaluationCaseId}`);
     }
     entries.push({
       caseId: record.evaluationCaseId,
       serverRequestId: record.requestId,
       observedAt: record.evaluationObservedAt,
+      assistantScope: record.assistantScope,
+      expectedLunaCallCount: expectedCase.expectedLunaCallCount,
+      expectedWebCallCount: expectedCase.expectedWebCallCount,
       lunaCallCount: record.lunaCallCount,
       webCallCount: record.webCallCount,
       usage: {
@@ -62,7 +66,7 @@ export function produceTelemetryFromJsonl(correlationValue, fixture, jsonl) {
     });
   }
   const telemetry = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     runId: correlation.runId,
     startedAt: correlation.startedAt,
     completedAt: correlation.completedAt,

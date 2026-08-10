@@ -27,14 +27,14 @@ import { fileURLToPath } from 'node:url';
 
 import {
   CONFIGURATION,
-  evaluateObservation,
+  evaluateCase,
   loadFixture,
   summarizeResults,
 } from './assistant-prod-eval-core.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const FIXTURE = resolve(ROOT, 'scripts/fixtures/assistant-noise-eval-100.json');
-const EVIDENCE = resolve(ROOT, 'output/evals/assistant-luna-structured-knowledge-2026-08-03');
+const EVIDENCE = resolve(ROOT, 'output/evals/assistant-circle-site-routing-2026-08-10');
 const CORRELATION = resolve(EVIDENCE, 'correlation.json');
 const API = 'https://dfqmc56d94.execute-api.ap-northeast-1.amazonaws.com/prod/assistant';
 const ORIGIN = 'https://tti-intel.com';
@@ -44,7 +44,8 @@ const TELEMETRY_ROOT_FIELDS = new Set([
   'schemaVersion', 'runId', 'startedAt', 'completedAt', 'cases',
 ]);
 const TELEMETRY_CASE_FIELDS = new Set([
-  'caseId', 'serverRequestId', 'observedAt', 'lunaCallCount', 'webCallCount', 'usage',
+  'caseId', 'serverRequestId', 'observedAt', 'assistantScope',
+  'expectedLunaCallCount', 'expectedWebCallCount', 'lunaCallCount', 'webCallCount', 'usage',
 ]);
 const USAGE_FIELDS = new Set([
   'inputTokens', 'cachedInputTokens', 'cacheWriteTokens', 'outputTokens', 'totalTokens',
@@ -53,7 +54,8 @@ const CORRELATION_ROOT_FIELDS = new Set([
   'schemaVersion', 'runId', 'startedAt', 'completedAt', 'cases',
 ]);
 const CORRELATION_CASE_FIELDS = new Set([
-  'caseId', 'serverRequestId', 'observedAt',
+  'caseId', 'serverRequestId', 'observedAt', 'assistantScope',
+  'expectedLunaCallCount', 'expectedWebCallCount',
 ]);
 
 export function parseArgs(argv) {
@@ -105,7 +107,7 @@ function parseTime(value, label) {
 export function validateTelemetry(value, fixture, correlation) {
   correlation = validateCorrelationManifest(correlation, fixture);
   exactFields(value, TELEMETRY_ROOT_FIELDS, 'Telemetry');
-  if (value.schemaVersion !== 1) throw new TypeError('Telemetry schemaVersion must be 1');
+  if (value.schemaVersion !== 2) throw new TypeError('Telemetry schemaVersion must be 2');
   if (value.runId !== correlation.runId) throw new TypeError('Telemetry runId does not match this run');
   const startedAt = parseTime(value.startedAt, 'Telemetry startedAt');
   const completedAt = parseTime(value.completedAt, 'Telemetry completedAt');
@@ -120,7 +122,7 @@ export function validateTelemetry(value, fixture, correlation) {
   if (!Array.isArray(value.cases) || value.cases.length !== 100) {
     throw new TypeError('Telemetry must contain exactly 100 cases');
   }
-  const expected = new Map(correlation.cases.map((entry) => [entry.caseId, entry.serverRequestId]));
+  const expected = new Map(correlation.cases.map((entry) => [entry.caseId, entry]));
   const seen = new Set();
   const metrics = new Map();
   for (const entry of value.cases) {
@@ -131,7 +133,7 @@ export function validateTelemetry(value, fixture, correlation) {
     seen.add(entry.caseId);
     if (typeof entry.serverRequestId !== 'string'
       || entry.serverRequestId.length > 200
-      || entry.serverRequestId !== expected.get(entry.caseId)) {
+      || entry.serverRequestId !== expected.get(entry.caseId).serverRequestId) {
       throw new TypeError(`Telemetry serverRequestId mismatch for ${entry.caseId}`);
     }
     const observedAt = parseTime(entry.observedAt, `Telemetry ${entry.caseId} observedAt`);
@@ -143,7 +145,23 @@ export function validateTelemetry(value, fixture, correlation) {
       key,
       safeCounter(entry.usage[key], `Telemetry ${entry.caseId} ${key}`),
     ]));
+    const expectedCase = expected.get(entry.caseId);
+    if (entry.assistantScope !== expectedCase.assistantScope) {
+      throw new TypeError(`Telemetry ${entry.caseId} assistantScope mismatch`);
+    }
+    if (entry.expectedLunaCallCount !== expectedCase.expectedLunaCallCount) {
+      throw new TypeError(`Telemetry ${entry.caseId} expectedLunaCallCount mismatch`);
+    }
+    if (entry.expectedWebCallCount !== expectedCase.expectedWebCallCount) {
+      throw new TypeError(`Telemetry ${entry.caseId} expectedWebCallCount mismatch`);
+    }
+    if (entry.expectedLunaCallCount === 0 && Object.values(usage).some((value) => value !== 0)) {
+      throw new TypeError(`Telemetry ${entry.caseId} zero-call usage must be zero`);
+    }
     metrics.set(entry.caseId, {
+      assistantScope: entry.assistantScope,
+      expectedLunaCallCount: entry.expectedLunaCallCount,
+      expectedWebCallCount: entry.expectedWebCallCount,
       lunaCallCount: safeCounter(entry.lunaCallCount, `Telemetry ${entry.caseId} lunaCallCount`),
       webCallCount: safeCounter(entry.webCallCount, `Telemetry ${entry.caseId} webCallCount`),
       usage,
@@ -155,7 +173,7 @@ export function validateTelemetry(value, fixture, correlation) {
 
 export function validateCorrelationManifest(value, fixture) {
   exactFields(value, CORRELATION_ROOT_FIELDS, 'Correlation manifest');
-  if (value.schemaVersion !== 1) throw new TypeError('Correlation manifest schemaVersion must be 1');
+  if (value.schemaVersion !== 2) throw new TypeError('Correlation manifest schemaVersion must be 2');
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(value.runId ?? '')) {
     throw new TypeError('Correlation manifest runId is invalid');
   }
@@ -167,7 +185,8 @@ export function validateCorrelationManifest(value, fixture) {
   if (!Array.isArray(value.cases) || value.cases.length !== 100) {
     throw new TypeError('Correlation manifest must contain exactly 100 cases');
   }
-  const fixtureIds = new Set(fixture.cases.map(({ id }) => id));
+  const fixtureById = new Map(fixture.cases.map((evaluationCase) => [evaluationCase.id, evaluationCase]));
+  const fixtureIds = new Set(fixtureById.keys());
   const caseIds = new Set();
   const requestIds = new Set();
   for (const entry of value.cases) {
@@ -181,6 +200,16 @@ export function validateCorrelationManifest(value, fixture) {
       throw new TypeError('Correlation manifest requires 100 unique server request IDs');
     }
     requestIds.add(entry.serverRequestId);
+    const evaluationCase = fixtureById.get(entry.caseId);
+    if (entry.assistantScope !== evaluationCase.expectedScope) {
+      throw new TypeError(`Correlation ${entry.caseId} assistantScope mismatch`);
+    }
+    if (entry.expectedLunaCallCount !== evaluationCase.expectedLunaCallCount) {
+      throw new TypeError(`Correlation ${entry.caseId} expectedLunaCallCount mismatch`);
+    }
+    if (entry.expectedWebCallCount !== evaluationCase.expectedWebCallCount) {
+      throw new TypeError(`Correlation ${entry.caseId} expectedWebCallCount mismatch`);
+    }
     const observedAt = parseTime(entry.observedAt, `Correlation ${entry.caseId} observedAt`);
     if (observedAt < startedAt || observedAt > completedAt) {
       throw new TypeError(`Correlation ${entry.caseId} is outside the run time bounds`);
@@ -213,6 +242,12 @@ async function loadPostRunTelemetry(path, fixture, correlation) {
 
 async function ask(evaluationCase, sessionId, runId) {
   const startedAt = Date.now();
+  const request = {
+    message: evaluationCase.message,
+    currentPath: evaluationCase.currentPath,
+    history: evaluationCase.history,
+  };
+  if (evaluationCase.expectedLunaCallCount === 1) request.sessionId = sessionId;
   const response = await fetch(API, {
     method: 'POST',
     headers: {
@@ -221,12 +256,7 @@ async function ask(evaluationCase, sessionId, runId) {
       'x-tti-evaluation-run-id': runId,
       'x-tti-evaluation-case-id': evaluationCase.id,
     },
-    body: JSON.stringify({
-      message: evaluationCase.message,
-      currentPath: evaluationCase.currentPath,
-      history: evaluationCase.history,
-      sessionId,
-    }),
+    body: JSON.stringify(request),
   });
   const text = await response.text();
   let body;
@@ -251,8 +281,8 @@ async function ask(evaluationCase, sessionId, runId) {
 
 function resultCsv(results) {
   const rows = [[
-    'caseId', 'category', 'variant', 'expectation', 'passed', 'status',
-    'latencyMs', 'lunaCallCount', 'webCallCount', 'inputTokens',
+    'caseId', 'category', 'variant', 'expectedScope', 'assistantScope', 'passed', 'status',
+    'latencyMs', 'expectedLunaCallCount', 'lunaCallCount', 'expectedWebCallCount', 'webCallCount', 'inputTokens',
     'cachedInputTokens', 'cacheWriteTokens', 'outputTokens', 'totalTokens',
     'estimatedCostUsd', 'responseFingerprint', 'issues',
   ]];
@@ -261,11 +291,14 @@ function resultCsv(results) {
       result.caseId,
       result.category,
       result.variant,
-      result.expectation,
+      result.expectedScope,
+      String(result.assistantScope ?? ''),
       String(result.passed),
       String(result.status ?? ''),
       String(result.latencyMs ?? ''),
+      String(result.expectedLunaCallCount),
       String(result.lunaCallCount ?? ''),
+      String(result.expectedWebCallCount),
       String(result.webCallCount ?? ''),
       String(result.usage?.inputTokens ?? ''),
       String(result.usage?.cachedInputTokens ?? ''),
@@ -297,11 +330,13 @@ function writeEvidence(fixture, results, summary) {
   };
   const safeDataset = {
     metadata: fixture.metadata,
-    cases: fixture.cases.map(({ id, category, variant, expectation, linkExpectation }) => ({
+    cases: fixture.cases.map(({ id, category, variant, expectedScope, expectedLunaCallCount, expectedWebCallCount, linkExpectation }) => ({
       id,
       category,
       variant,
-      expectation,
+      expectedScope,
+      expectedLunaCallCount,
+      expectedWebCallCount,
       linkMode: linkExpectation.mode,
     })),
   };
@@ -330,6 +365,8 @@ async function main() {
       execution: 'pre-deployment local dry-run; no production or OpenAI calls',
     });
     summary.total = fixture.cases.length;
+    summary.expectedLunaCalls = fixture.cases.filter(({ expectedLunaCallCount }) => expectedLunaCallCount === 1).length;
+    summary.expectedZeroCallResponses = fixture.cases.filter(({ expectedLunaCallCount }) => expectedLunaCallCount === 0).length;
     writeEvidence(fixture, [], summary);
     console.log(`Dry run complete: 100 loaded, 0 production calls, 0 OpenAI calls.`);
     console.log(`Evidence scaffold: ${EVIDENCE}`);
@@ -341,13 +378,13 @@ async function main() {
   const runId = options.runId ?? randomUUID();
   const runStartedAt = new Date().toISOString();
   console.log(`Evaluation run ID: ${runId}`);
-  let sessionId = randomUUID();
+  let sessionId = null;
   let inSession = 0;
   for (const [index, evaluationCase] of fixture.cases.entries()) {
-    if (inSession >= 18) {
+    if (evaluationCase.expectedLunaCallCount === 1 && (sessionId === null || inSession >= 18)) {
       sessionId = randomUUID();
       inSession = 0;
-      await sleep(1_200);
+      if (index > 0) await sleep(1_200);
     }
     let response;
     try {
@@ -362,13 +399,13 @@ async function main() {
         observedAt: new Date().toISOString(),
       };
     }
-    inSession += 1;
+    if (evaluationCase.expectedLunaCallCount === 1) inSession += 1;
     observations.push({ evaluationCase, response });
     console.log(`[${index + 1}/100] ${evaluationCase.id} response received`);
     await sleep(DELAY_MS);
   }
   const correlation = writeCorrelationManifest({
-    schemaVersion: 1,
+    schemaVersion: 2,
     runId,
     startedAt: runStartedAt,
     completedAt: new Date().toISOString(),
@@ -376,13 +413,16 @@ async function main() {
       caseId: evaluationCase.id,
       serverRequestId: response.serverRequestId,
       observedAt: response.observedAt,
+      assistantScope: evaluationCase.expectedScope,
+      expectedLunaCallCount: evaluationCase.expectedLunaCallCount,
+      expectedWebCallCount: evaluationCase.expectedWebCallCount,
     })),
   }, fixture);
   console.log(`Sanitized correlation manifest: ${CORRELATION}`);
   const telemetry = await loadPostRunTelemetry(options.telemetryPath, fixture, correlation);
   for (const { evaluationCase, response } of observations) {
     const metrics = telemetry.get(evaluationCase.id);
-    results.push(evaluateObservation(evaluationCase, { ...response, ...metrics }));
+    results.push(evaluateCase(evaluationCase, response, metrics));
   }
   const summary = summarizeResults(results, {
     ...fixture.metadata,
