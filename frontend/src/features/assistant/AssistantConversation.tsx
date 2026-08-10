@@ -19,7 +19,7 @@ import {
 
 const TOO_LONG_MESSAGE = `質問は${MAX_ASSISTANT_QUESTION_LENGTH}文字以内で入力してください。`;
 const GREETING_MESSAGE =
-    'こんにちは。私はこのサイトを案内するAIアシスタントです。ページの探し方や公開コンテンツについて、気軽に聞いてください。';
+    'こんにちは！TTI Intelligenceと、このサイトについて案内できます。';
 
 export interface AssistantConversationProps {
     messages: readonly AssistantUiMessage[];

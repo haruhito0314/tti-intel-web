@@ -27,7 +27,7 @@ describe('AiAssistantProductPage', () => {
         expect(screen.queryByText('Origin allowlist')).not.toBeInTheDocument();
     });
 
-    it('回答に使う情報とリアルタイムWeb検索の制約を明示する', () => {
+    it('TTI Intelligenceとサイトに対応し、大学の一般質問は公式サイトへ案内すると明示する', () => {
         const client: AssistantClient = {
             send: async () => ({ answer: '回答です。', links: [] }),
         };
@@ -40,24 +40,27 @@ describe('AiAssistantProductPage', () => {
             </MemoryRouter>,
         );
 
-        expect(screen.getByText(/事前に用意したTTI Intelligenceのサイト情報/)).toBeInTheDocument();
-        expect(screen.getByText(/豊田工業大学の構造化資料/)).toBeInTheDocument();
-        expect(screen.getByText(/Lunaの安定した一般知識/)).toBeInTheDocument();
-        expect(screen.getByText(/質問のたびにサイトを取得したり、リアルタイムのWeb検索を行ったりはしません/)).toBeInTheDocument();
+        expect(screen.getByText(/TTI Intelligenceとこのサイトについて案内/)).toBeInTheDocument();
+        expect(screen.getByText(/豊田工業大学に関する一般的な質問には、公式サイトをご案内/)).toBeInTheDocument();
+        expect(screen.getByText(/対象外の一般的な質問にはLunaを利用しません/)).toBeInTheDocument();
         expect(screen.getByText(/現在の情報や重要な情報は公式情報源でも確認/)).toBeInTheDocument();
 
         const description = document.querySelector('meta[name="description"]');
         expect(description).toHaveAttribute(
             'content',
-            expect.stringContaining('事前に用意したTTI Intelligenceのサイト情報・豊田工業大学の構造化資料'),
+            expect.stringContaining('TTI Intelligenceとこのサイトについて案内'),
         );
         expect(description).toHaveAttribute(
             'content',
-            expect.stringContaining('質問時のサイト取得やリアルタイムWeb検索は行いません'),
+            expect.stringContaining('豊田工業大学に関する一般的な質問には、公式サイトをご案内'),
+        );
+        expect(description).toHaveAttribute(
+            'content',
+            expect.stringContaining('対象外の一般的な質問にはLunaを利用しません'),
         );
     });
 
-    it('対応範囲を示す四種類の質問例を表示する', () => {
+    it('対応範囲に沿った四種類の質問例を表示する', () => {
         const client: AssistantClient = {
             send: async () => ({ answer: '回答です。', links: [] }),
         };
@@ -70,10 +73,12 @@ describe('AiAssistantProductPage', () => {
             </MemoryRouter>,
         );
 
-        expect(screen.getAllByRole('button', { name: '豊田工業大学にはどんなサークルがありますか？' })).toHaveLength(2);
-        expect(screen.getAllByRole('button', { name: 'CodexとMCPの関係を教えて' })).toHaveLength(2);
-        expect(screen.getAllByRole('button', { name: 'Color Sortはどんなアプリ？' })).toHaveLength(2);
-        expect(screen.getAllByRole('button', { name: '光合成を簡単に説明して' })).toHaveLength(2);
+        expect(screen.getAllByRole('button', { name: 'TTI Intelligenceについて教えて' })).toHaveLength(2);
+        expect(screen.getAllByRole('button', { name: 'このサイトでできることは？' })).toHaveLength(2);
+        expect(screen.getAllByRole('button', { name: 'このサイトの使い方を教えて' })).toHaveLength(2);
+        expect(screen.getAllByRole('button', { name: '豊田工業大学の公式サイトを教えて' })).toHaveLength(2);
+        expect(screen.queryByRole('button', { name: /CodexとMCP/ })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: /光合成/ })).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: /CLI Practice/i })).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: /TOEIC/i })).not.toBeInTheDocument();
     });

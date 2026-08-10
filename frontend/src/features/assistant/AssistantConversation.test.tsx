@@ -130,7 +130,7 @@ describe('AssistantConversation', () => {
         expect(
             screen.getByRole('article', { name: 'AI Assistantの回答' }),
         ).toHaveTextContent(
-            'こんにちは。私はこのサイトを案内するAIアシスタントです。ページの探し方や公開コンテンツについて、気軽に聞いてください。',
+            'こんにちは！TTI Intelligenceと、このサイトについて案内できます。',
         );
         expect(
             screen.queryByRole('button', { name: '活動内容を知りたい' }),
@@ -174,7 +174,7 @@ describe('AssistantConversation', () => {
         expect(articles).toHaveLength(2);
         expect(articles[0]).toHaveAccessibleName('AI Assistantの回答');
         expect(articles[0]).toHaveTextContent(
-            'こんにちは。私はこのサイトを案内するAIアシスタントです。ページの探し方や公開コンテンツについて、気軽に聞いてください。',
+            'こんにちは！TTI Intelligenceと、このサイトについて案内できます。',
         );
         expect(articles[1]).toHaveAccessibleName('あなたの質問');
         expect(articles[1]).toHaveTextContent('今週の数学を見たい');
