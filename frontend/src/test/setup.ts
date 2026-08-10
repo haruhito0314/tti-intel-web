@@ -21,6 +21,17 @@ for (const name of ['localStorage', 'sessionStorage'] as const) {
     }
 }
 
+if (typeof globalThis.ResizeObserver === 'undefined') {
+    Object.defineProperty(globalThis, 'ResizeObserver', {
+        configurable: true,
+        value: class ResizeObserverMock {
+            observe() {}
+            unobserve() {}
+            disconnect() {}
+        },
+    });
+}
+
 HTMLDialogElement.prototype.showModal = function showModal() {
     this.open = true;
 };

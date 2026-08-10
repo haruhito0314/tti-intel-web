@@ -17,14 +17,9 @@ import type {
 } from '../public/assistant/types.js';
 import evaluationConfig from './fixtures/assistant-evaluation-config.json' with { type: 'json' };
 
-export type EvaluationCategory =
-  | 'site/join/contact'
-  | 'university overview/education/life/clubs'
-  | 'university-vs-TTI-Intelligence distinction'
-  | 'Codex/Vercel/AWS/Plugin/CLI/MCP'
-  | 'apps/game/math'
-  | 'stable general knowledge'
-  | 'real-time/high-risk constraints';
+export type EvaluationCategory = string;
+
+export type EvaluationScope = 'circle' | 'site' | 'university' | 'conversation' | 'out_of_scope';
 
 export type InterimExpectation =
   | 'site'
@@ -51,6 +46,9 @@ export interface InterimEvaluationCase {
   expectation: InterimExpectation;
   category?: EvaluationCategory;
   variant?: string;
+  expectedScope?: EvaluationScope;
+  expectedLunaCallCount?: 0 | 1;
+  expectedWebCallCount?: 0;
   requiredConcepts?: string[];
   forbiddenConcepts?: string[];
   templateTerms?: string[];
@@ -65,6 +63,9 @@ export interface SafetyPolicy {
 export interface MatrixEvaluationCase extends InterimEvaluationCase {
   category: EvaluationCategory;
   variant: string;
+  expectedScope: EvaluationScope;
+  expectedLunaCallCount: 0 | 1;
+  expectedWebCallCount: 0;
   requiredConcepts: string[];
   forbiddenConcepts: string[];
   templateTerms: string[];
@@ -73,7 +74,7 @@ export interface MatrixEvaluationCase extends InterimEvaluationCase {
 
 export interface InterimEvaluationFixture {
   metadata: {
-    schemaVersion: 3;
+    schemaVersion: 4;
     count: number;
     createdAt: string;
     model: 'gpt-5.6-luna';
@@ -118,34 +119,18 @@ const CASE_FIELDS = new Set([
   'message',
   'currentPath',
   'history',
-  'expectation',
   'category',
   'variant',
+  'expectedScope',
+  'expectedLunaCallCount',
+  'expectedWebCallCount',
   'requiredConcepts',
   'forbiddenConcepts',
   'templateTerms',
-  'safetyPolicy',
   'linkExpectation',
 ]);
-const EXPECTATIONS = new Set<InterimExpectation>([
-  'site',
-  'follow-up',
-  'university',
-  'distinction',
-  'development',
-  'app',
-  'general',
-  'current',
-  'high-risk',
-]);
-const CATEGORIES = new Set<EvaluationCategory>([
-  'site/join/contact',
-  'university overview/education/life/clubs',
-  'university-vs-TTI-Intelligence distinction',
-  'Codex/Vercel/AWS/Plugin/CLI/MCP',
-  'apps/game/math',
-  'stable general knowledge',
-  'real-time/high-risk constraints',
+const EVALUATION_SCOPES = new Set<EvaluationScope>([
+  'circle', 'site', 'university', 'conversation', 'out_of_scope',
 ]);
 const SAFETY_KINDS = new Set<SafetyPolicy['kind']>([
   'current-weather', 'current-admission', 'medical', 'financial',
@@ -238,47 +223,65 @@ function parseSafetyPolicy(value: unknown, field: string): SafetyPolicy {
   return { kind: value.kind as SafetyPolicy['kind'] };
 }
 
+function expectedLegacyExpectation(
+  category: string,
+  expectedScope: EvaluationScope,
+): InterimExpectation {
+  if (category === 'out_of_scope/weather') return 'current';
+  if (category === 'out_of_scope/medical' || category === 'out_of_scope/financial') {
+    return 'high-risk';
+  }
+  if (expectedScope === 'university') return 'university';
+  return expectedScope === 'circle' || expectedScope === 'site' ? 'site' : 'general';
+}
+
+function expectedSafetyPolicy(category: string): SafetyPolicy | undefined {
+  if (category === 'out_of_scope/weather') return { kind: 'current-weather' };
+  if (category === 'out_of_scope/medical') return { kind: 'medical' };
+  if (category === 'out_of_scope/financial') return { kind: 'financial' };
+  return undefined;
+}
+
 function parseCase(value: unknown, index: number): MatrixEvaluationCase {
   const field = `cases[${index}]`;
   if (!isRecord(value)) return invalidFixture(`${field} must be an object`);
   for (const key of Object.keys(value)) {
     if (!CASE_FIELDS.has(key)) return invalidFixture(`${field} has unknown field ${key}`);
   }
-  if (typeof value.expectation !== 'string' || !EXPECTATIONS.has(value.expectation as InterimExpectation)) {
-    return invalidFixture(`${field}.expectation is unknown`);
+  if (typeof value.category !== 'string' || value.category.trim().length === 0) {
+    return invalidFixture(`${field}.category is invalid`);
   }
-  if (typeof value.category !== 'string' || !CATEGORIES.has(value.category as EvaluationCategory)) {
-    return invalidFixture(`${field}.category is unknown`);
+  if (typeof value.expectedScope !== 'string' || !EVALUATION_SCOPES.has(value.expectedScope as EvaluationScope)) {
+    return invalidFixture(`${field}.expectedScope is unknown`);
+  }
+  if (value.expectedLunaCallCount !== 0 && value.expectedLunaCallCount !== 1) {
+    return invalidFixture(`${field}.expectedLunaCallCount is invalid`);
+  }
+  if (value.expectedWebCallCount !== 0) {
+    return invalidFixture(`${field}.expectedWebCallCount is invalid`);
+  }
+  if ((value.expectedScope === 'circle' || value.expectedScope === 'site')
+    !== (value.expectedLunaCallCount === 1)) {
+    return invalidFixture(`${field}.expectedLunaCallCount does not match scope`);
   }
   const templateTerms = parseStringList(value.templateTerms, `${field}.templateTerms`);
   if (!templateTerms.some((term) => normalizePrivateText(term).length >= 2)) {
     return invalidFixture(`${field}.templateTerms are not useful`);
   }
-  const requiresSafety = value.expectation === 'current' || value.expectation === 'high-risk';
-  if (requiresSafety !== (value.safetyPolicy !== undefined)) {
-    return invalidFixture(`${field}.safetyPolicy presence is invalid`);
-  }
-  const safetyPolicy = requiresSafety
-    ? parseSafetyPolicy(value.safetyPolicy, `${field}.safetyPolicy`)
-    : undefined;
-  if (safetyPolicy !== undefined) {
-    const expectedSafetyKind = value.expectation === 'current'
-      ? /(?:天気|てんき|降水)/u.test(String(value.message))
-        ? 'current-weather'
-        : 'current-admission'
-      : /(?:胸|痛み|診断|薬|医療)/u.test(String(value.message)) ? 'medical' : 'financial';
-    if (safetyPolicy.kind !== expectedSafetyKind) {
-      return invalidFixture(`${field}.safetyPolicy.kind does not match the case`);
-    }
-  }
+  const expectedScope = value.expectedScope as EvaluationScope;
+  const expectation = expectedLegacyExpectation(value.category, expectedScope);
+  const safetyPolicy = expectedSafetyPolicy(value.category);
   return {
     id: nonEmptyString(value.id, `${field}.id`),
     message: nonEmptyString(value.message, `${field}.message`),
     currentPath: nonEmptyString(value.currentPath, `${field}.currentPath`),
     history: parseHistory(value.history, `${field}.history`),
-    expectation: value.expectation as InterimExpectation,
-    category: value.category as EvaluationCategory,
+    expectation,
+    category: value.category,
     variant: nonEmptyString(value.variant, `${field}.variant`),
+    expectedScope,
+    expectedLunaCallCount: value.expectedLunaCallCount,
+    expectedWebCallCount: 0,
     requiredConcepts: parseStringList(value.requiredConcepts, `${field}.requiredConcepts`),
     forbiddenConcepts: parseStringList(value.forbiddenConcepts, `${field}.forbiddenConcepts`),
     templateTerms,
@@ -292,7 +295,7 @@ export function parseInterimEvaluationFixture(value: unknown): InterimEvaluation
     return invalidFixture('root fields are invalid');
   }
   if (
-    value.metadata.schemaVersion !== 3
+    value.metadata.schemaVersion !== 4
     || !Number.isSafeInteger(value.metadata.count)
     || value.metadata.count !== 100
     || value.metadata.model !== 'gpt-5.6-luna'
@@ -311,7 +314,7 @@ export function parseInterimEvaluationFixture(value: unknown): InterimEvaluation
   if (new Set(ids).size !== ids.length) return invalidFixture('case IDs must be unique');
   return {
     metadata: {
-      schemaVersion: 3,
+      schemaVersion: 4,
       count: cases.length,
       createdAt,
       model: 'gpt-5.6-luna',
@@ -647,8 +650,14 @@ export function assessInterimObservation(
   ) {
     failures.push('latency is invalid');
   }
-  if (observation.lunaCallCount !== 1) failures.push('expected exactly one Luna call');
-  if (observation.webCallCount !== 0) failures.push('web access is forbidden');
+  const expectedLunaCallCount = evaluationCase.expectedLunaCallCount ?? 1;
+  const expectedWebCallCount = evaluationCase.expectedWebCallCount ?? 0;
+  if (observation.lunaCallCount !== expectedLunaCallCount) {
+    failures.push(expectedLunaCallCount === 1
+      ? 'expected exactly one Luna call'
+      : 'expected exactly zero Luna calls');
+  }
+  if (observation.webCallCount !== expectedWebCallCount) failures.push('web access is forbidden');
   if (/(?:https?|ftp):\/\/|www\.|\/\/[\p{L}\p{N}]/iu.test(observation.response.answer)) {
     failures.push('answer contains a URL');
   }
@@ -696,6 +705,9 @@ export function assessInterimObservation(
   const consistentUsage = safeUsage && hasConsistentUsage(observation.usage);
   if (!safeUsage) failures.push('token usage is invalid');
   if (safeUsage && !consistentUsage) failures.push('token usage is inconsistent');
+  if (expectedLunaCallCount === 0 && usageValues.some((value) => value !== 0)) {
+    failures.push('zero-call responses must use zero tokens');
+  }
 
   const privateValues = [
     evaluationCase.message,
@@ -739,7 +751,7 @@ export function assessInterimObservation(
   return {
     passed: failures.length === 0,
     failures,
-    estimatedCostUsd: consistentUsage
+    estimatedCostUsd: consistentUsage && expectedLunaCallCount === 1
       ? estimateCostUsd(observation.usage)
       : 0,
     responseFingerprint: fingerprintAnswer(

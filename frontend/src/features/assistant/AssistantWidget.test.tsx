@@ -277,7 +277,7 @@ describe('AssistantWidget', () => {
         expect(
             screen.getByRole('article', { name: 'AI Assistantの回答' }),
         ).toHaveTextContent(
-            'こんにちは。私はこのサイトを案内するAIアシスタントです。ページの探し方や公開コンテンツについて、気軽に聞いてください。',
+            'こんにちは！TTI Intelligenceと、このサイトについて案内できます。',
         );
         expect(screen.queryByLabelText('質問の候補')).not.toBeInTheDocument();
         expect(trigger).toHaveAttribute('hidden');
