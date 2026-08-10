@@ -18,6 +18,7 @@ describe('classifyAssistantScope', () => {
     ['Vercel、AWS、Plugin、CLI、MCPを説明して', 'site'],
     ['豊田工業大学について教えて', 'university'],
     ['豊工大の学費は？', 'university'],
+    ['豊田工大の学費は？', 'university'],
     ['こんにちは', 'conversation'],
     ['ありがとう', 'conversation'],
     ['さようなら', 'conversation'],
@@ -75,6 +76,12 @@ describe('classifyAssistantScope', () => {
       scope: 'site',
     });
     expect(classifyAssistantScope('ここでできることは？', '/development', [])).toMatchObject({
+      scope: 'site',
+    });
+    expect(classifyAssistantScope('ここにあるのは？', '/development', [])).toMatchObject({
+      scope: 'site',
+    });
+    expect(classifyAssistantScope('ここを見たい', '/development', [])).toMatchObject({
       scope: 'site',
     });
   });
