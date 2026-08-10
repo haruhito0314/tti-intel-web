@@ -15,6 +15,7 @@ import {
 } from './contentSearch.js';
 import { createContentRepositories } from './contentRepos.js';
 import type { AssistantRoutingIntent } from './intent.js';
+import { localResponseFor } from './localResponses.js';
 import {
   requestOpenAI as callOpenAI,
   type RequestOpenAIInput,
@@ -37,6 +38,11 @@ import {
   createVerifiedOfficialLinks,
   KNOWN_PAGE_ROUTES,
 } from './runtimeCatalog.js';
+import {
+  classifyAssistantScope,
+  isGenerativeScope,
+  shouldSearchDynamicContent,
+} from './scope.js';
 import { selectAssistantRequestContext } from './structuredKnowledge.js';
 import type {
   AssistantLink,
@@ -439,6 +445,7 @@ export function createAssistantHandler(
     let knowledgeCount = 0;
     let knowledgeDomains = '';
     let lunaCallCount = 0;
+    let assistantScope = 'unclassified';
 
     try {
       const requestedOrigin = readOrigin(event);
@@ -480,6 +487,27 @@ export function createAssistantHandler(
         return errorResponse(500, origin, evaluationRequestId);
       }
 
+      const scopeDecision = classifyAssistantScope(
+        request.message,
+        request.currentPath,
+        request.history,
+      );
+      assistantScope = scopeDecision.scope;
+      const localResponse = localResponseFor(scopeDecision.scope, request.message);
+      if (localResponse !== null) {
+        outcome = scopeDecision.scope === 'university'
+          ? 'local_university'
+          : scopeDecision.scope === 'conversation'
+            ? 'local_conversation'
+            : 'out_of_scope';
+        statusCode = 200;
+        return jsonResponse(statusCode, localResponse, origin, evaluationRequestId);
+      }
+
+      if (!isGenerativeScope(scopeDecision.scope)) {
+        throw new Error('Non-generative assistant scope requires a local response');
+      }
+
       const reservationInput: QuotaReservationInput = {
         sessionId: request.sessionId,
         requestId,
@@ -489,13 +517,20 @@ export function createAssistantHandler(
       await dependencies.reserveQuota(reservationInput);
       dependencyStage = 'internal';
 
-      const dynamicContent = await retrieveDynamicContentSafely(
-        () => dependencies.searchContent(request.message),
-      );
+      const dynamicContent = shouldSearchDynamicContent(
+        scopeDecision.scope,
+        request.message,
+        request.currentPath,
+      )
+        ? await retrieveDynamicContentSafely(
+          () => dependencies.searchContent(request.message),
+        )
+        : { content: [], dynamicContentAvailable: true };
       const { knowledge, routingIntent } = selectAssistantRequestContext(
         request.message,
         request.currentPath,
         request.history,
+        scopeDecision.scope,
       );
       const content = dynamicContent.content.slice(0, 3);
       const allowedPageIds = createAllowedPageIds(
@@ -522,7 +557,7 @@ export function createAssistantHandler(
         dynamicContentAvailable: dynamicContent.dynamicContentAvailable,
         allowedPageIds,
         model: OPENAI_MODEL,
-        contextualFollowUp: routingIntent.requiresHistory,
+        contextualFollowUp: scopeDecision.contextualFollowUp,
       });
       dependencyStage = 'internal';
 
@@ -612,6 +647,7 @@ export function createAssistantHandler(
           knowledgeDomains,
           lunaCallCount,
           webCallCount: 0,
+          assistantScope,
           ...(evaluationCorrelation === undefined ? {} : {
             evaluationRunId: evaluationCorrelation.runId,
             evaluationCaseId: evaluationCorrelation.caseId,

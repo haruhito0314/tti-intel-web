@@ -190,14 +190,137 @@ function expectNoLunaCall(dependencies: TestDependencies): void {
   expect(dependencies.requestOpenAI).not.toHaveBeenCalled();
 }
 
+function expectNoPaidOrDataCalls(dependencies: TestDependencies): void {
+  expect(dependencies.reserveQuota).not.toHaveBeenCalled();
+  expect(dependencies.searchContent).not.toHaveBeenCalled();
+  expect(dependencies.getApiKey).not.toHaveBeenCalled();
+  expectNoLunaCall(dependencies);
+}
+
+describe('createAssistantHandler assistant scope routing', () => {
+  it('returns the fixed university response without paid or data dependencies', async () => {
+    const dependencies = createDependencies();
+
+    const response = await invoke(dependencies, eventForRequest({
+      message: '豊田工業大学について教えて',
+      history: [],
+    }));
+
+    expect(response.statusCode).toBe(200);
+    expect(parsedBody(response)).toEqual({
+      answer: '豊田工業大学については、公式サイトをご確認ください。',
+      links: [{
+        pageId: 'toyota-ti',
+        title: '豊田工業大学 公式サイト',
+        href: 'https://www.toyota-ti.ac.jp/',
+      }],
+    });
+    expectNoPaidOrDataCalls(dependencies);
+    expect(dependencies.log).toHaveBeenCalledWith(expect.objectContaining({
+      outcome: 'local_university',
+      assistantScope: 'university',
+      lunaCallCount: 0,
+    }));
+  });
+
+  it('returns the fixed out-of-scope response without paid or data dependencies', async () => {
+    const dependencies = createDependencies();
+
+    const response = await invoke(dependencies, eventForRequest({
+      message: '東京の天気は？',
+      history: [],
+    }));
+
+    expect(response.statusCode).toBe(200);
+    expect(parsedBody(response)).toEqual({
+      answer: 'TTI Intelligenceと、このサイトの内容について案内できます。',
+      links: [],
+    });
+    expectNoPaidOrDataCalls(dependencies);
+    expect(dependencies.log).toHaveBeenCalledWith(expect.objectContaining({
+      outcome: 'out_of_scope',
+      assistantScope: 'out_of_scope',
+      lunaCallCount: 0,
+    }));
+  });
+
+  it('returns the fixed conversation response without paid or data dependencies', async () => {
+    const dependencies = createDependencies();
+
+    const response = await invoke(dependencies, eventForRequest({
+      message: 'こんにちは',
+      history: [],
+    }));
+
+    expect(response.statusCode).toBe(200);
+    expect(parsedBody(response)).toEqual({
+      answer: 'こんにちは！TTI Intelligenceや、このサイトについて案内できます。',
+      links: [],
+    });
+    expectNoPaidOrDataCalls(dependencies);
+    expect(dependencies.log).toHaveBeenCalledWith(expect.objectContaining({
+      outcome: 'local_conversation',
+      assistantScope: 'conversation',
+      lunaCallCount: 0,
+    }));
+  });
+
+  it.each([
+    ['このサークルについて教えて', 'circle'],
+    ['Codexとは？', 'site'],
+  ])('runs the paid generation path once for %s', async (message, assistantScope) => {
+    const dependencies = createDependencies();
+
+    const response = await invoke(dependencies, eventForRequest({ message, history: [] }));
+
+    expect(response.statusCode).toBe(200);
+    expect(dependencies.reserveQuota).toHaveBeenCalledTimes(1);
+    expect(dependencies.getApiKey).toHaveBeenCalledTimes(1);
+    expect(dependencies.requestOpenAI).toHaveBeenCalledTimes(1);
+    expect(dependencies.log).toHaveBeenCalledWith(expect.objectContaining({
+      outcome: 'ai_success',
+      assistantScope,
+      lunaCallCount: 1,
+    }));
+  });
+
+  it('skips dynamic search for a stable site question', async () => {
+    const dependencies = createDependencies();
+
+    await invoke(dependencies, eventForRequest({
+      message: 'Codexとは？',
+      currentPath: '/development',
+      history: [],
+    }));
+
+    expect(dependencies.searchContent).not.toHaveBeenCalled();
+    expect(dependencies.requestOpenAI).toHaveBeenCalledWith(expect.objectContaining({
+      content: [],
+      dynamicContentAvailable: true,
+    }));
+  });
+
+  it('runs dynamic search once before Luna for a current-content question', async () => {
+    const order: string[] = [];
+    const dependencies = createDependencies({
+      searchContent: vi.fn(async () => { order.push('search'); return []; }),
+      requestOpenAI: vi.fn(async () => { order.push('luna'); return successfulAnswerResult; }),
+    });
+
+    await invoke(dependencies, eventForRequest({ message: '最新のお知らせは？', history: [] }));
+
+    expect(dependencies.searchContent).toHaveBeenCalledTimes(1);
+    expect(dependencies.requestOpenAI).toHaveBeenCalledTimes(1);
+    expect(order).toEqual(['search', 'luna']);
+  });
+});
+
 describe('createAssistantHandler single-Luna path', () => {
   it.each([
-    '今日の天気を教えて',
-    '京都旅行のおすすめを教えて',
-    'カレーの作り方を教えて',
-    '芸能ニュースを教えて',
-    '豊田工業大学',
-    '銀河ひつじ現象について教えて',
+    'このサークルについて教えて',
+    'Codexについて教えて',
+    '今週の数学について教えて',
+    'Color Sort Puzzleとは？',
   ])('reserves quota and calls Luna exactly once for a normal question: %s', async (message) => {
     const dependencies = createDependencies();
 
@@ -210,29 +333,6 @@ describe('createAssistantHandler single-Luna path', () => {
       answer: 'Lunaが生成した回答です。',
       links: [],
     });
-  });
-
-  it('preserves the exact Luna prose for a university question', async () => {
-    const exactAnswer = '豊田工業大学について、選択資料を踏まえてLunaが自然にまとめた固有の回答です。';
-    const dependencies = createDependencies({
-      requestOpenAI: vi.fn(async (): Promise<OpenAIResult> => ({
-        ...successfulAnswerResult,
-        output: {
-          answer: exactAnswer,
-          pageIds: [],
-          contentIds: [],
-          sourceIds: [],
-        },
-      })),
-    });
-
-    const response = await invoke(dependencies, eventForRequest({
-      message: '豊田工業大学',
-      history: [],
-    }));
-
-    expect(parsedBody(response)).toEqual({ answer: exactAnswer, links: [] });
-    expect(dependencies.requestOpenAI).toHaveBeenCalledTimes(1);
   });
 
   it.each([
@@ -264,7 +364,7 @@ describe('createAssistantHandler single-Luna path', () => {
     });
 
     const response = await invoke(dependencies, eventForRequest({
-      message: '一般的な説明をしてください',
+      message: 'Codexの説明をしてください',
       history: [],
     }));
 
@@ -326,7 +426,7 @@ describe('createAssistantHandler single-Luna path', () => {
       requestOpenAI: vi.fn(async () => { order.push('luna'); return successfulAnswerResult; }),
     });
 
-    await invoke(dependencies, eventForRequest({ message: 'こんにちは', history: [] }));
+    await invoke(dependencies, eventForRequest({ message: '最新のお知らせは？', history: [] }));
 
     expect(order).toEqual(['quota', 'content', 'secret', 'luna']);
   });
@@ -341,7 +441,7 @@ describe('createAssistantHandler single-Luna path', () => {
     });
 
     const response = await invoke(dependencies, eventForRequest({
-      message: '星雲祭2026について教えて',
+      message: 'お知らせの星雲祭2026について教えて',
       history: [],
     }));
 
@@ -358,7 +458,7 @@ describe('createAssistantHandler single-Luna path', () => {
     const dependencies = createDependencies();
 
     await invoke(dependencies, eventForRequest({
-      message: '豊田工業大学のアクセスを教えて',
+      message: 'Codexについて教えて',
       history: [],
     }));
 
@@ -386,56 +486,7 @@ describe('createAssistantHandler single-Luna path', () => {
     expect(input?.knowledge.map(({ item }) => item.id)).toContain('circle-weekly-math');
   });
 
-  it('does not send history or stale knowledge for an unrelated new topic', async () => {
-    const dependencies = createDependencies();
-
-    await invoke(dependencies, eventForRequest({
-      message: 'これから京都へ旅行します',
-      history: [{ role: 'user', content: '今週の数学について教えて' }],
-    }));
-
-    const input = vi.mocked(dependencies.requestOpenAI).mock.calls[0]?.[0];
-    expect(input?.contextualFollowUp).toBe(false);
-    expect(input?.knowledge).toEqual([]);
-  });
-
-  it('uses an explicit current university topic instead of prior Codex history', async () => {
-    const dependencies = createDependencies();
-
-    await invoke(dependencies, eventForRequest({
-      message: 'どこに豊田工業大学がありますか？',
-      history: [{ role: 'user', content: 'Codexについて教えて' }],
-    }));
-
-    const input = vi.mocked(dependencies.requestOpenAI).mock.calls[0]?.[0];
-    expect(input?.contextualFollowUp).toBe(false);
-    expect(input?.knowledge.map(({ item }) => item.id))
-      .toContain('university-identity');
-    expect(input?.knowledge.every(({ item }) => item.domain === 'university'))
-      .toBe(true);
-    expect(input?.knowledge.map(({ item }) => item.id))
-      .not.toContain('development-codex');
-  });
-
-  it('does not send prior Codex history for an explicit uncataloged Kyoto question', async () => {
-    const dependencies = createDependencies();
-
-    await invoke(dependencies, eventForRequest({
-      message: 'どこに京都がありますか？',
-      history: [{ role: 'user', content: 'Codexについて教えて' }],
-    }));
-
-    const input = vi.mocked(dependencies.requestOpenAI).mock.calls[0]?.[0];
-    expect(input?.contextualFollowUp).toBe(false);
-    expect(input?.knowledge).toEqual([]);
-  });
-
   it.each([
-    [
-      '住所を教えて',
-      '豊田工業大学について教えて',
-      'university-campus-access',
-    ],
     [
       '解答を教えて',
       '今週の数学の問題を見たい',
@@ -456,19 +507,6 @@ describe('createAssistantHandler single-Luna path', () => {
     const input = vi.mocked(dependencies.requestOpenAI).mock.calls[0]?.[0];
     expect(input?.contextualFollowUp).toBe(true);
     expect(input?.knowledge.map(({ item }) => item.id)).toContain(expectedKnowledgeId);
-  });
-
-  it('does not send prior Codex context for a different unrelated topic', async () => {
-    const dependencies = createDependencies();
-
-    await invoke(dependencies, eventForRequest({
-      message: 'カレーの作り方を教えて',
-      history: [{ role: 'user', content: 'Codexについて教えて' }],
-    }));
-
-    const input = vi.mocked(dependencies.requestOpenAI).mock.calls[0]?.[0];
-    expect(input?.contextualFollowUp).toBe(false);
-    expect(input?.knowledge).toEqual([]);
   });
 
   it('uses prior circle context instead of a generic location hit for a deictic turn', async () => {
@@ -666,7 +704,7 @@ describe('createAssistantHandler verified links', () => {
     const dependencies = createDependencies({ requestOpenAI });
 
     const response = await invoke(dependencies, eventForRequest({
-      message: 'Gitコマンドについて教えて',
+      message: 'CLIでGitコマンドについて教えて',
       history: [],
     }));
     const input = requestOpenAI.mock.calls[0]![0];
@@ -700,7 +738,7 @@ describe('createAssistantHandler verified links', () => {
     });
 
     const response = await invoke(dependencies, eventForRequest({
-      message: '豊田工業大学のアクセスと星雲祭2026について教えて',
+      message: '最新のお知らせと星雲祭2026について教えて',
       history: [],
     }));
 
@@ -712,11 +750,6 @@ describe('createAssistantHandler verified links', () => {
           pageId: 'news',
           title: '星雲祭2026 開催レポート',
           href: '/news/nebula-festival-2026',
-        },
-        {
-          pageId: 'tti-access',
-          title: '豊田工業大学 交通アクセス',
-          href: 'https://www.toyota-ti.ac.jp/access.html',
         },
       ],
     });
@@ -805,7 +838,7 @@ describe('createAssistantHandler verified links', () => {
     });
 
     const response = await invoke(dependencies, eventForRequest({
-      message: 'Discordについて教えて。リンクはいらない',
+      message: 'このサークルのDiscordについて教えて。リンクはいらない',
       history: [],
     }));
 
@@ -835,7 +868,7 @@ describe('createAssistantHandler verified links', () => {
     });
 
     const response = await invoke(dependencies, eventForRequest({
-      message: '豊田工業大学のアクセスと星雲祭2026を教えて',
+      message: '最新のお知らせと星雲祭2026を教えて',
       history: [],
     }));
     const body = parsedBody(response) as { links: Array<{ href: string }> };
@@ -875,7 +908,7 @@ describe('createAssistantHandler verified links', () => {
     });
 
     const response = await invoke(dependencies, eventForRequest({
-      message: '豊田工業大学のアクセスと星雲祭2026を教えて',
+      message: '最新のお知らせと星雲祭2026を教えて',
       history: [],
     }));
     const body = parsedBody(response) as { links: Array<{ href: string }> };
@@ -906,7 +939,7 @@ describe('createAssistantHandler error mapping', () => {
     });
 
     const response = await invoke(dependencies, eventForRequest({
-      message: '豊田工業大学とは？',
+      message: 'Codexとは？',
       history: [],
     }));
 
@@ -1124,6 +1157,7 @@ describe('createAssistantHandler privacy-safe logging', () => {
       knowledgeDomains: 'app,development',
       lunaCallCount: 1,
       webCallCount: 0,
+      assistantScope: 'site',
     });
     const serialized = JSON.stringify(log.mock.calls);
     expect(serialized).not.toContain('Color Sort Puzzle');
@@ -1146,7 +1180,7 @@ describe('createAssistantHandler privacy-safe logging', () => {
       }),
     });
 
-    await invoke(dependencies, eventForRequest({ message: '一般質問', history: [] }));
+    await invoke(dependencies, eventForRequest({ message: 'Codexについて教えて', history: [] }));
 
     expect(log).toHaveBeenCalledWith(expect.objectContaining({
       outcome: 'unsafe_model_output',

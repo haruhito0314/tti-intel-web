@@ -4,6 +4,10 @@ import {
   KNOWN_PAGE_ROUTES,
   OFFICIAL_SOURCE_LINKS,
 } from '../public/assistant/runtimeCatalog.js';
+import {
+  classifyAssistantScope,
+  isGenerativeScope,
+} from '../public/assistant/scope.js';
 import { selectAssistantRequestContext } from '../public/assistant/structuredKnowledge.js';
 import type {
   AssistantRequest,
@@ -320,10 +324,16 @@ export function parseInterimEvaluationFixture(value: unknown): InterimEvaluation
 }
 
 export function buildInterimEvaluationCase(evaluationCase: InterimEvaluationCase) {
+  const scopeDecision = classifyAssistantScope(
+    evaluationCase.message,
+    evaluationCase.currentPath,
+    evaluationCase.history,
+  );
   const { knowledge, routingIntent } = selectAssistantRequestContext(
     evaluationCase.message,
     evaluationCase.currentPath,
     evaluationCase.history,
+    isGenerativeScope(scopeDecision.scope) ? scopeDecision.scope : 'site',
   );
   const request: AssistantRequest = {
     message: evaluationCase.message,
@@ -692,10 +702,16 @@ export function assessInterimObservation(
     ...evaluationCase.history.map(({ content }) => content),
     observation.response.answer,
   ];
+  const scopeDecision = classifyAssistantScope(
+    evaluationCase.message,
+    evaluationCase.currentPath,
+    evaluationCase.history,
+  );
   const { knowledge } = selectAssistantRequestContext(
     evaluationCase.message,
     evaluationCase.currentPath,
     evaluationCase.history,
+    isGenerativeScope(scopeDecision.scope) ? scopeDecision.scope : 'site',
   );
   for (const { item } of knowledge) {
     privateValues.push(
