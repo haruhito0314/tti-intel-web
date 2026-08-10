@@ -20,8 +20,16 @@ describe('classifyAssistantScope', () => {
     ['豊工大の学費は？', 'university'],
     ['こんにちは', 'conversation'],
     ['ありがとう', 'conversation'],
+    ['さようなら', 'conversation'],
+    ['またね', 'conversation'],
+    ['今週の数学を見せて', 'site'],
+    ['カラーソートで遊びたい', 'site'],
+    ['Color Sortを遊びたい', 'site'],
+    ['卓球組み合わせを作りたい', 'site'],
+    ['AI Assistantについて教えて', 'site'],
     ['東京の天気は？', 'out_of_scope'],
     ['プログラミングを教えて', 'out_of_scope'],
+    ['難しいね', 'out_of_scope'],
   ] as const)('classifies %s as %s', (message, scope) => {
     expect(classifyAssistantScope(message, '/', [])).toEqual({
       scope,
@@ -62,6 +70,15 @@ describe('classifyAssistantScope', () => {
     });
   });
 
+  it('recognizes ordinary Japanese deictic page references without whitespace', () => {
+    expect(classifyAssistantScope('ここは何？', '/development', [])).toMatchObject({
+      scope: 'site',
+    });
+    expect(classifyAssistantScope('ここでできることは？', '/development', [])).toMatchObject({
+      scope: 'site',
+    });
+  });
+
   it('gives university officiality precedence over a circle alias', () => {
     expect(classifyAssistantScope('TTI Intelligenceは大学公認ですか？', '/', [])).toMatchObject({
       scope: 'university',
@@ -98,6 +115,14 @@ describe('shouldSearchDynamicContent', () => {
     ['university', '最新のお知らせは？', '/', false],
     ['conversation', '今週の数学は？', '/', false],
     ['out_of_scope', '/news', '/', false],
+    ['site', '確認', '/news', true],
+    ['site', '確認', '/board', true],
+    ['site', '確認', '/weekly-math', true],
+    ['site', '確認', '/news/latest', false],
+    ['site', '確認', '/board/thread-1', false],
+    ['site', '確認', '/weekly-math/2026-08-10', false],
+    ['site', '/news', '/', true],
+    ['site', '/news/latest', '/', false],
   ] as const)('returns %s for %s / %s', (scope, message, currentPath, expected) => {
     expect(shouldSearchDynamicContent(scope, message, currentPath)).toBe(expected);
   });
