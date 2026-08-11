@@ -44,6 +44,14 @@ export class OpenAiUpstreamError extends Error {
   }
 }
 
+export class AssistantPromptTooLargeError extends Error {
+  readonly name = 'AssistantPromptTooLargeError';
+
+  constructor(readonly maxBytes: number) {
+    super(`Assistant prompt exceeds ${maxBytes} bytes`);
+  }
+}
+
 export function isPlainObject(
   value: unknown,
 ): value is Record<string, unknown> {

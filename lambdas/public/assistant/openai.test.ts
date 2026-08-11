@@ -6,7 +6,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   buildResponsesPayload,
+  AssistantPromptTooLargeError,
   createApiKeyProvider,
+  MAX_ASSISTANT_OPENAI_INPUT_BYTES,
   OpenAiTimeoutError,
   OpenAiUpstreamError,
   parseResponsesEnvelope,
@@ -15,6 +17,7 @@ import {
   SYSTEM_INSTRUCTIONS,
   type SecretReader,
 } from './openai.js';
+import { buildAssistantKnowledgePack } from './knowledgePack.js';
 import type {
   AssistantRequest,
   ContentEntry,
@@ -52,6 +55,12 @@ function rankedKnowledge(
   };
 }
 
+const validationContext = {
+  allowedPageIds: ['about', 'contact'] as const,
+  allowedContentIds: [] as const,
+  allowedSourceIds: ['discord', 'youtube', 'toyota-ti'] as const,
+};
+
 function rankedContent(index: number): RankedContentEntry {
   const entry: ContentEntry = {
     id: `news:entry-${index}`,
@@ -71,6 +80,8 @@ const knowledge: RankedKnowledgeItem[] = [
 
 function completedEnvelope(
   outputTexts: readonly string[] = [JSON.stringify({
+    scope: 'circle',
+    topicLabel: '',
     answer: '豊田工業大学については、公式情報をもとにご案内します。',
     pageIds: ['about'],
     contentIds: [],
@@ -159,6 +170,35 @@ afterEach(() => {
 });
 
 describe('buildResponsesPayload', () => {
+  it('sends the complete bounded pack in the combined six-field Luna contract', () => {
+    const knowledgePack = buildAssistantKnowledgePack();
+    const payload = buildResponsesPayload({
+      request,
+      knowledgePack,
+      content: [rankedContent(0), rankedContent(1), rankedContent(2), rankedContent(3)],
+    });
+    const inputData = JSON.parse(payload.input[0]!.content[0]!.text) as {
+      knowledgePack: { entries: unknown[] };
+      history: unknown[];
+      content: unknown[];
+    };
+
+    expect(payload.model).toBe('gpt-5.6-luna');
+    expect(payload.store).toBe(false);
+    expect(payload.tools).toEqual([]);
+    expect(payload.text.format.schema.required).toEqual([
+      'scope', 'topicLabel', 'answer', 'pageIds', 'contentIds', 'sourceIds',
+    ]);
+    expect(payload.text.format.schema.additionalProperties).toBe(false);
+    expect(payload.text.format.schema.properties.scope).toEqual({
+      type: 'string',
+      enum: ['circle', 'site', 'university', 'out_of_scope'],
+    });
+    expect(inputData.knowledgePack.entries).toHaveLength(knowledgePack.entries.length);
+    expect(inputData.history.length).toBeLessThanOrEqual(1);
+    expect(inputData.content).toHaveLength(3);
+  });
+
   it('constrains pageIds to the exact locally grounded page set', () => {
     const payload = buildResponsesPayload({
       request: { ...request, message: 'Gitコマンドについて教えて' },
@@ -170,11 +210,8 @@ describe('buildResponsesPayload', () => {
       contextualFollowUp: false,
     } as Parameters<typeof buildResponsesPayload>[0]);
 
-    expect(payload.text.format.schema.properties.pageIds).toEqual({
-      type: 'array',
-      maxItems: 3,
-      items: { type: 'string', enum: ['development'] },
-    });
+    expect(payload.text.format.schema.properties.pageIds.items.enum)
+      .toContain('development');
     expect(JSON.stringify(payload.text.format.schema.properties.pageIds))
       .not.toContain('cli-practice');
   });
@@ -190,11 +227,8 @@ describe('buildResponsesPayload', () => {
       contextualFollowUp: false,
     } as Parameters<typeof buildResponsesPayload>[0]);
 
-    expect(payload.text.format.schema.properties.pageIds).toEqual({
-      type: 'array',
-      maxItems: 0,
-      items: { type: 'string' },
-    });
+    expect(payload.text.format.schema.properties.pageIds.items.enum)
+      .toContain('about');
   });
 
   it('builds one bounded Luna payload from selected knowledge and content', () => {
@@ -218,10 +252,9 @@ describe('buildResponsesPayload', () => {
       contextualFollowUp: false,
     });
     const envelope = JSON.parse(payload.input[0]!.content[0]!.text) as {
-      dynamicContentAvailable: boolean;
       history: unknown[];
-      knowledgeEntries: Array<Record<string, unknown>>;
-      contentEntries: Array<Record<string, unknown>>;
+      knowledgePack: { entries: Array<Record<string, unknown>> };
+      content: Array<Record<string, unknown>>;
     };
 
     expect(payload).toMatchObject({
@@ -236,32 +269,20 @@ describe('buildResponsesPayload', () => {
     });
     expect(payload.max_output_tokens).toBeLessThanOrEqual(450);
     expect(payload.instructions).toContain('1〜2文');
-    expect(payload.instructions).toContain('通常120文字程度');
     expect(payload.instructions).toContain('最大200文字');
-    expect(envelope.dynamicContentAvailable).toBe(false);
-    expect(envelope.history).toEqual([]);
-    expect(envelope.knowledgeEntries).toHaveLength(5);
-    expect(envelope.knowledgeEntries.map(({ id }) => id)).toEqual([
-      'knowledge-0',
-      'knowledge-1',
-      'knowledge-2',
-      'knowledge-3',
-      'knowledge-4',
-    ]);
-    expect(envelope.contentEntries).toHaveLength(3);
-    expect(envelope.contentEntries.map(({ id }) => id)).toEqual([
+    expect(envelope.history).toEqual([{ role: 'user', content: '大学との関係は？' }]);
+    expect(envelope.knowledgePack.entries).toHaveLength(
+      buildAssistantKnowledgePack().entries.length,
+    );
+    expect(envelope.content).toHaveLength(3);
+    expect(envelope.content.map(({ id }) => id)).toEqual([
       'news:entry-0',
       'news:entry-1',
       'news:entry-2',
     ]);
-    expect(payload.text.format.schema.properties.sourceIds).toEqual({
-      type: 'array',
-      maxItems: 3,
-      items: {
-        type: 'string',
-        enum: ['discord', 'youtube'],
-      },
-    });
+    expect(payload.text.format.schema.properties.sourceIds.items.enum).toEqual([
+      'discord', 'youtube', 'toyota-ti',
+    ]);
 
     const serialized = JSON.stringify(payload);
     expect(serialized).not.toContain('KNOWLEDGE_TITLE_5');
@@ -291,28 +312,23 @@ describe('buildResponsesPayload', () => {
     const generalPayload = build('三角形の面積の公式を教えて');
     const generalEnvelope = JSON.parse(
       generalPayload.input[0]!.content[0]!.text,
-    ) as { knowledgeEntries: unknown[]; dynamicContentAvailable: boolean };
+    ) as { knowledgePack: { entries: unknown[] } };
 
     expect(greetingPayload.instructions).toBe(SYSTEM_INSTRUCTIONS);
     expect(generalPayload.instructions).toBe(SYSTEM_INSTRUCTIONS);
     expect(greetingPayload.text.format.name).toBe('site_ai_response');
     expect(generalPayload.text.format.name).toBe('site_ai_response');
-    expect(generalEnvelope.knowledgeEntries).toEqual([]);
-    expect(generalEnvelope.dynamicContentAvailable).toBe(true);
+    expect(generalEnvelope.knowledgePack.entries).toHaveLength(
+      buildAssistantKnowledgePack().entries.length,
+    );
     expect(generalPayload.text.format.schema.properties.contentIds).toEqual({
-      type: 'array',
-      maxItems: 0,
-      items: { type: 'string' },
-    });
-    expect(generalPayload.text.format.schema.properties.sourceIds).toEqual({
-      type: 'array',
-      maxItems: 0,
-      items: { type: 'string' },
+      type: 'array', maxItems: 0, items: { type: 'string' },
     });
     expect(generalPayload.text.format.schema.properties.contentIds.items)
       .not.toHaveProperty('enum');
-    expect(generalPayload.text.format.schema.properties.sourceIds.items)
-      .not.toHaveProperty('enum');
+    expect(generalPayload.text.format.schema.properties.sourceIds.items).toEqual({
+      type: 'string', enum: ['discord', 'youtube', 'toyota-ti'],
+    });
   });
 
   it('forces Luna even when an untyped runtime caller supplies another model', () => {
@@ -370,7 +386,7 @@ describe('buildResponsesPayload', () => {
     }
   });
 
-  it('keeps minimal user history only for a detected continuation', () => {
+  it('keeps only the most recent optional user history turn', () => {
     const mixedHistory = [
       { role: 'user', content: '最初の質問' },
       { role: 'assistant', content: 'ASSISTANT_HISTORY_MUST_NOT_LEAK' },
@@ -402,25 +418,24 @@ describe('buildResponsesPayload', () => {
     ) as { isFollowUp: boolean; history: unknown[] };
 
     expect(continuationEnvelope).toMatchObject({
-      isFollowUp: true,
       history: [
         { role: 'user', content: '直前の質問' },
       ],
     });
-    expect(standaloneEnvelope).toMatchObject({ isFollowUp: false, history: [] });
+    expect(standaloneEnvelope).toMatchObject({
+      history: [{ role: 'user', content: '直前の質問' }],
+    });
     expect(JSON.stringify(continuation)).not.toContain('ASSISTANT_HISTORY_MUST_NOT_LEAK');
   });
 
   it('limits Luna to reviewed TTI Intelligence and site material', () => {
-    expect(SYSTEM_INSTRUCTIONS).toContain('自然な日本語で直接');
     expect(SYSTEM_INSTRUCTIONS).toContain('TTI IntelligenceとこのWebサイト');
-    expect(SYSTEM_INSTRUCTIONS).toContain('入力JSONのknowledgeEntriesとcontentEntriesだけ');
+    expect(SYSTEM_INSTRUCTIONS).toContain('質問の意味で分類');
+    expect(SYSTEM_INSTRUCTIONS).toContain('knowledgePackとcontentだけ');
     expect(SYSTEM_INSTRUCTIONS).not.toContain('一般的な質問');
     expect(SYSTEM_INSTRUCTIONS).not.toContain('安定した一般知識');
     expect(SYSTEM_INSTRUCTIONS).toContain('URL');
-    expect(SYSTEM_INSTRUCTIONS).toContain('そのまま繰り返さず');
     expect(SYSTEM_INSTRUCTIONS).toContain('最大200文字');
-    expect(SYSTEM_INSTRUCTIONS).toContain('LINEのように短く');
     expect(SYSTEM_INSTRUCTIONS).not.toContain('intentHint');
     expect(SYSTEM_INSTRUCTIONS).not.toContain('FAQ');
   });
@@ -428,8 +443,10 @@ describe('buildResponsesPayload', () => {
 
 describe('parseResponsesEnvelope', () => {
   it('parses all four output fields and cache usage details', () => {
-    expect(parseResponsesEnvelope(completedEnvelope())).toEqual({
+    expect(parseResponsesEnvelope(completedEnvelope(), validationContext)).toEqual({
       output: {
+        scope: 'circle',
+        topicLabel: '',
         answer: '豊田工業大学については、公式情報をもとにご案内します。',
         pageIds: ['about'],
         contentIds: [],
@@ -454,7 +471,7 @@ describe('parseResponsesEnvelope', () => {
       },
       output_tokens: 5,
       total_tokens: 25,
-    })).usage).toEqual({
+    }), validationContext).usage).toEqual({
       inputTokens: 20,
       cachedInputTokens: 0,
       cacheWriteTokens: 0,
@@ -466,7 +483,7 @@ describe('parseResponsesEnvelope', () => {
       input_tokens: 20,
       output_tokens: 5,
       total_tokens: 25,
-    })).usage).toEqual({
+    }), validationContext).usage).toEqual({
       inputTokens: 20,
       cachedInputTokens: 0,
       cacheWriteTokens: 0,
@@ -483,7 +500,7 @@ describe('parseResponsesEnvelope', () => {
       },
       output_tokens: unsafeInteger,
       total_tokens: unsafeInteger,
-    })).usage).toEqual({
+    }), validationContext).usage).toEqual({
       inputTokens: 0,
       cachedInputTokens: 0,
       cacheWriteTokens: 0,
@@ -495,7 +512,7 @@ describe('parseResponsesEnvelope', () => {
   it('rejects output without sourceIds and preserves complete usage', () => {
     const error = captureThrow(() => parseResponsesEnvelope(completedEnvelope([
       JSON.stringify({ answer: 'answer', pageIds: [], contentIds: [] }),
-    ])));
+    ]), validationContext));
 
     expect(error).toBeInstanceOf(UnsafeModelOutputError);
     expect(error).toMatchObject({
@@ -517,7 +534,7 @@ describe('parseResponsesEnvelope', () => {
     ])],
     ['non-object envelope', null],
   ])('rejects %s as unsafe', (_name, envelope) => {
-    expect(() => parseResponsesEnvelope(envelope)).toThrow(UnsafeModelOutputError);
+    expect(() => parseResponsesEnvelope(envelope, validationContext)).toThrow(UnsafeModelOutputError);
   });
 
   it.each([
@@ -561,7 +578,7 @@ describe('parseResponsesEnvelope', () => {
     }],
     ['invalid JSON output text', completedEnvelope(['{'])],
   ])('rejects %s and preserves normalized usage', (_name, envelope) => {
-    const error = captureThrow(() => parseResponsesEnvelope(envelope));
+    const error = captureThrow(() => parseResponsesEnvelope(envelope, validationContext));
 
     expect(error).toBeInstanceOf(UnsafeModelOutputError);
     expect(error).toMatchObject({
@@ -596,6 +613,8 @@ describe('requestOpenAI', () => {
 
     expect(result).toEqual({
       output: {
+        scope: 'circle',
+        topicLabel: '',
         answer: '豊田工業大学については、公式情報をもとにご案内します。',
         pageIds: ['about'],
         contentIds: [],
@@ -733,6 +752,25 @@ describe('requestOpenAI', () => {
     expect(receivedSignal?.aborted).toBe(true);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('rejects an oversized UTF-8 prompt before the single transport call', async () => {
+    const fetchMock = vi.fn(async () => jsonResponse(completedEnvelope()));
+    const oversizedPack = {
+      schemaVersion: 1 as const,
+      entries: [{
+        topicId: 'oversized', title: '大きなパック',
+        facts: ['😀'.repeat(MAX_ASSISTANT_OPENAI_INPUT_BYTES)],
+        pageIds: ['about'] as const, sourceIds: ['discord'] as const,
+      }],
+    };
+
+    await expect(requestOpenAI({
+      apiKey: 'sk-test', request, knowledgePack: oversizedPack,
+      content: [],
+      fetchImpl: fetchMock as typeof fetch,
+    })).rejects.toBeInstanceOf(AssistantPromptTooLargeError);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
 
