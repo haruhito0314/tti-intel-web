@@ -86,16 +86,15 @@ function ScrollToTop() {
   return null;
 }
 
-// Eager load: lightweight pages without heavy dependencies
+// Keep only the landing page in the initial bundle. Other routes load on demand.
 import { Home } from '@/pages/Home';
-import { About } from '@/pages/About';
-import { GameCommunity } from '@/pages/GameCommunity';
-import { Contact } from '@/pages/Contact';
-import { AppShowcase } from '@/pages/AppShowcase';
-import { TableTennisMatchMakerPage } from '@/pages/TableTennisMatchMaker';
-import { ColorSortPuzzlePage } from '@/pages/ColorSortPuzzle';
 
-// Lazy load: pages with Firebase SDK or heavy dependencies
+const About = lazy(() => import('@/pages/About').then(m => ({ default: m.About })));
+const GameCommunity = lazy(() => import('@/pages/GameCommunity').then(m => ({ default: m.GameCommunity })));
+const Contact = lazy(() => import('@/pages/Contact').then(m => ({ default: m.Contact })));
+const AppShowcase = lazy(() => import('@/pages/AppShowcase').then(m => ({ default: m.AppShowcase })));
+const TableTennisMatchMakerPage = lazy(() => import('@/pages/TableTennisMatchMaker').then(m => ({ default: m.TableTennisMatchMakerPage })));
+const ColorSortPuzzlePage = lazy(() => import('@/pages/ColorSortPuzzle').then(m => ({ default: m.ColorSortPuzzlePage })));
 const News = lazy(() => import('@/pages/News').then(m => ({ default: m.News })));
 const NewsDetail = lazy(() => import('@/pages/NewsDetail').then(m => ({ default: m.NewsDetail })));
 const WeeklyMath = lazy(() => import('@/pages/WeeklyMath').then(m => ({ default: m.WeeklyMath })));
@@ -270,21 +269,21 @@ function App() {
           <Routes>
             <Route path="/" element={<Layout />}>
               <Route index element={<Home />} />
-              <Route path="about" element={<About />} />
-              <Route path="game-community" element={<GameCommunity />} />
+              <Route path="about" element={<Suspense fallback={<PageLoader />}><About /></Suspense>} />
+              <Route path="game-community" element={<Suspense fallback={<PageLoader />}><GameCommunity /></Suspense>} />
               <Route path="weekly-math" element={<Suspense fallback={<PageLoader />}><WeeklyMath /></Suspense>} />
               <Route path="weekly-math/:weekKey" element={<Suspense fallback={<PageLoader />}><WeeklyMathDetail /></Suspense>} />
               <Route path="weekly-math/:weekKey/solution" element={<Suspense fallback={<PageLoader />}><WeeklyMathSolution /></Suspense>} />
               <Route path="news" element={<Suspense fallback={<PageLoader />}><News /></Suspense>} />
               <Route path="news/:slug" element={<Suspense fallback={<PageLoader />}><NewsDetail /></Suspense>} />
-              <Route path="app" element={<AppShowcase />} />
+              <Route path="app" element={<Suspense fallback={<PageLoader />}><AppShowcase /></Suspense>} />
               <Route path="development" element={<Suspense fallback={<PageLoader />}><Development /></Suspense>} />
               <Route path="app/ai-assistant" element={<Suspense fallback={<PageLoader />}><AiAssistantProduct /></Suspense>} />
-              <Route path="app/table-tennis" element={<TableTennisMatchMakerPage />} />
-              <Route path="app/color-sort" element={<ColorSortPuzzlePage />} />
+              <Route path="app/table-tennis" element={<Suspense fallback={<PageLoader />}><TableTennisMatchMakerPage /></Suspense>} />
+              <Route path="app/color-sort" element={<Suspense fallback={<PageLoader />}><ColorSortPuzzlePage /></Suspense>} />
               <Route path="board" element={<Suspense fallback={<PageLoader />}><Board /></Suspense>} />
               <Route path="board/:id" element={<Suspense fallback={<PageLoader />}><BoardDetail /></Suspense>} />
-              <Route path="contact" element={<Contact />} />
+              <Route path="contact" element={<Suspense fallback={<PageLoader />}><Contact /></Suspense>} />
               <Route path="admin" element={<Suspense fallback={<PageLoader />}><Admin /></Suspense>} />
               <Route path="admin/members" element={<Suspense fallback={<PageLoader />}><AdminMembers /></Suspense>} />
               <Route path="admin/weekly-math" element={<Suspense fallback={<PageLoader />}><AdminWeeklyMath /></Suspense>} />

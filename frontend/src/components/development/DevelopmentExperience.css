@@ -12099,6 +12099,116 @@ body:has(.development-experience) .dev-header-menu-btn:hover {
     }
 }
 
+/* Final invitation: keep the whole composition on one reliable center line.
+   Wide screens use the available space editorially; phones stay compact and centered. */
+.dx-content > .dx-cta > .dx-cta-sticky {
+    box-sizing: border-box;
+    width: 100%;
+    margin-inline: auto;
+}
+
+.dx-cta-sticky > .dx-cta-copy,
+.dx-cta-sticky > .dx-cta-actions {
+    box-sizing: border-box;
+}
+
+.dx-cta-sticky > .dx-cta-copy {
+    display: grid;
+    width: min(100%, 900px);
+    margin-inline: auto;
+    justify-items: center;
+    text-align: center;
+}
+
+.dx-cta-sticky > .dx-cta-copy h2,
+.dx-cta-sticky > .dx-cta-copy p {
+    width: 100%;
+    margin-inline: auto;
+    text-align: inherit;
+}
+
+.dx-cta-sticky > .dx-cta-copy h2 > span {
+    display: block;
+    white-space: nowrap;
+}
+
+.dx-cta-sticky > .dx-cta-actions {
+    width: min(100%, 380px);
+    margin: 2rem auto 0;
+}
+
+.dx-cta-sticky > .dx-cta-actions a {
+    width: 100%;
+}
+
+@media (min-width: 1100px) {
+    .dx-content > .dx-cta > .dx-cta-sticky {
+        display: flex;
+        padding-inline: max(4rem, calc((100vw - 1240px) / 2));
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+
+    .dx-cta-sticky > .dx-cta-copy {
+        width: min(100%, 980px);
+        margin-inline: auto;
+        justify-items: center;
+        text-align: center;
+    }
+
+    .dx-cta-sticky > .dx-cta-copy h2 {
+        max-width: 980px;
+    }
+
+    .dx-content > .dx-cta > .dx-cta-sticky > .dx-cta-actions {
+        display: flex;
+        width: min(100%, 620px);
+        margin: 2.5rem auto 0;
+        flex-direction: row;
+        gap: 0.9rem;
+    }
+
+    .dx-cta-sticky > .dx-cta-actions a {
+        min-width: 0;
+        min-height: 64px;
+        flex: 1 1 0;
+        padding-inline: 1.6rem;
+        font-size: 1.05rem;
+    }
+}
+
+@media (max-width: 1099px) {
+    .dx-content > .dx-cta > .dx-cta-sticky {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 640px) {
+    .dx-content > .dx-cta > .dx-cta-sticky {
+        width: 100%;
+        padding-left: max(1.25rem, env(safe-area-inset-left));
+        padding-right: max(1.25rem, env(safe-area-inset-right));
+    }
+
+    .dx-cta-sticky > .dx-cta-copy {
+        width: 100%;
+        max-width: 370px;
+    }
+
+    .dx-cta-sticky > .dx-cta-copy h2 {
+        font-size: clamp(2.65rem, 12.8vw, 3.55rem);
+    }
+
+    .dx-cta-sticky > .dx-cta-actions {
+        width: min(100%, 340px);
+        margin-inline: auto;
+    }
+}
+
 /* One continuous atmosphere — the header, hero, work surface, projects and
    invitation all share the same fixed sky instead of switching backdrops. */
 .development-experience {
@@ -12366,4 +12476,125 @@ body:has(.development-experience) .dev-header-mobile-link {
 body:has(.development-experience) footer {
     position: relative;
     z-index: 3;
+}
+
+/* Galaxy S26 Ultra and similarly tall Android phones: keep the workstation
+   centred in its glass frame and reserve the compact title bar for Codex. */
+@media (max-width: 800px) {
+    .dx-tool-launcher,
+    .dx-tool-launcher.is-facing,
+    .dx-tool-launcher.is-opening,
+    .dx-tool-launcher.is-hidden {
+        top: 42%;
+    }
+
+    .dx-launcher-codex-screen .dx-window-bar {
+        grid-template-columns: 42px minmax(0, 1fr) 42px;
+    }
+
+    .dx-launcher-codex-screen .dx-window-title {
+        justify-self: center;
+        max-width: 100%;
+        font-size: 0;
+        text-align: center;
+    }
+
+    .dx-launcher-codex-screen .dx-window-title::after {
+        content: "Codex";
+        font-size: 0.56rem;
+        font-weight: 650;
+        letter-spacing: -0.01em;
+    }
+
+    .dx-launcher-codex-screen .dx-window-branch {
+        visibility: hidden;
+    }
+
+    .dx-app-window-bar > p {
+        justify-content: flex-start;
+    }
+
+    .dx-app-window-bar > p > svg {
+        flex: 0 0 auto;
+    }
+
+    .dx-app-window-bar > p > span {
+        min-width: 0;
+        overflow: hidden;
+        flex: 1 1 auto;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .dx-ecosystem-scenes {
+        contain: paint;
+    }
+
+    .dx-ecosystem-scene > .dx-ecosystem-visual {
+        max-width: calc(100% - 24px);
+        max-height: calc(100% - 24px);
+    }
+
+    .dx-demo-story {
+        grid-template-columns: minmax(0, 1fr);
+        padding-inline: 1.35rem;
+    }
+
+    .dx-demo-story-index {
+        position: absolute;
+        top: 0.8rem;
+        left: 0.85rem;
+    }
+
+    .dx-demo-story-copy {
+        width: 100%;
+        padding-inline: 1.5rem;
+        text-align: center;
+    }
+
+    .dx-demo-story-copy > span,
+    .dx-demo-story-copy > strong,
+    .dx-demo-story-copy > p {
+        text-align: center;
+    }
+
+    .dx-ecosystem-mobile-copy {
+        grid-template-columns: minmax(0, 1fr);
+        padding-inline: 1.35rem;
+    }
+
+    .dx-ecosystem-mobile-title {
+        grid-column: 1;
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .dx-ecosystem-mobile-title > span {
+        position: absolute;
+        top: 0.8rem;
+        left: 0.85rem;
+    }
+
+    .dx-ecosystem-mobile-title > small,
+    .dx-ecosystem-mobile-title > strong,
+    .dx-ecosystem-mobile-body {
+        grid-column: 1;
+        width: 100%;
+        text-align: center;
+    }
+
+    .dx-ecosystem-mobile-title > strong,
+    .dx-ecosystem-mobile-body {
+        padding-inline: 1.5rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .dx-demo-story-copy,
+    .dx-ecosystem-mobile-title > strong,
+    .dx-ecosystem-mobile-body {
+        padding-inline: 1.15rem;
+    }
 }

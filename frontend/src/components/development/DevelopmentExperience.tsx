@@ -22,6 +22,7 @@ import {
 } from 'react';
 import { Link } from 'react-router-dom';
 import { siClaude, siCursor, siOpenai, siVercel, type SimpleIcon } from 'simple-icons';
+import { siteConfig } from '@/config/site';
 import {
     CODEX_LAUNCH_CLICK_MS,
     codexLaunchState,
@@ -882,7 +883,7 @@ function VercelDeploymentScene({ run }: { run: number }) {
                 <section className="dx-vercel-console-app">
                     <header className="dx-app-window-bar">
                         <span className="dx-window-controls" aria-hidden="true"><i /><i /><i /></span>
-                        <p><Globe2 /> vercel.com/tti-intelligence/web</p>
+                        <p><Globe2 /><span>vercel.com/tti-intelligence/web</span></p>
                         <i aria-hidden="true" />
                     </header>
                     <header className="dx-service-bar">
@@ -922,7 +923,7 @@ function VercelDeploymentScene({ run }: { run: number }) {
                 <section className="dx-workspace-aws-app">
                     <header className="dx-app-window-bar">
                         <span className="dx-window-controls" aria-hidden="true"><i /><i /><i /></span>
-                        <p><Globe2 /> console.aws.amazon.com/cloudformation</p>
+                        <p><Globe2 /><span>console.aws.amazon.com/cloudformation</span></p>
                         <i aria-hidden="true" />
                     </header>
                     <header className="dx-service-bar dx-service-bar--aws">
@@ -1533,13 +1534,22 @@ export function DevelopmentExperience() {
 
                 <section className="dx-cta">
                     <div className="dx-cta-sticky">
-                        <div>
-                            <h2>見るだけでなく、<br />一緒に作る。</h2>
-                            <p>経験よりも、作ってみたい気持ちから。</p>
+                        <div className="dx-cta-copy">
+                            <h2>
+                                <span>AIでの開発を、</span>
+                                <span>体験する。</span>
+                            </h2>
                         </div>
-                        <div>
+                        <div className="dx-cta-actions">
                             <Link to="/about">活動について見る <ArrowRight /></Link>
-                            <Link to="/contact" className="is-secondary">参加について聞く</Link>
+                            <a
+                                href={siteConfig.social.discord.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="is-secondary"
+                            >
+                                Discordに参加する
+                            </a>
                         </div>
                     </div>
                 </section>

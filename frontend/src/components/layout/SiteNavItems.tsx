@@ -21,11 +21,12 @@ function DesktopNavItem({
     linkClassName: (active: boolean) => string;
 }) {
     const location = useLocation();
-    const [open, setOpen] = useState(false);
+    const [openAtPath, setOpenAtPath] = useState<string | null>(null);
     const rootRef = useRef<HTMLDivElement>(null);
     const openedByHoverRef = useRef(false);
     const menuId = useId();
     const active = isNavItemActive(item, location.pathname);
+    const open = openAtPath === location.pathname;
 
     useEffect(() => {
         if (!open) return;
@@ -33,13 +34,13 @@ function DesktopNavItem({
         const onPointerDown = (event: PointerEvent) => {
             if (!rootRef.current?.contains(event.target as Node)) {
                 openedByHoverRef.current = false;
-                setOpen(false);
+                setOpenAtPath(null);
             }
         };
         const onKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
                 openedByHoverRef.current = false;
-                setOpen(false);
+                setOpenAtPath(null);
             }
         };
 
@@ -50,11 +51,6 @@ function DesktopNavItem({
             document.removeEventListener('keydown', onKeyDown);
         };
     }, [open]);
-
-    useEffect(() => {
-        openedByHoverRef.current = false;
-        setOpen(false);
-    }, [location.pathname]);
 
     if (!item.children?.length) {
         return (
@@ -70,11 +66,11 @@ function DesktopNavItem({
             className={`site-nav-dropdown ${open ? 'site-nav-dropdown--open' : ''}`}
             onMouseEnter={() => {
                 openedByHoverRef.current = true;
-                setOpen(true);
+                setOpenAtPath(location.pathname);
             }}
             onMouseLeave={() => {
                 openedByHoverRef.current = false;
-                setOpen(false);
+                setOpenAtPath(null);
             }}
         >
             <button
@@ -86,7 +82,9 @@ function DesktopNavItem({
                 onClick={() => {
                     // Hover already opened the menu; ignore the following click so it doesn't snap shut.
                     if (openedByHoverRef.current) return;
-                    setOpen((value) => !value);
+                    setOpenAtPath((currentPath) =>
+                        currentPath === location.pathname ? null : location.pathname,
+                    );
                 }}
             >
                 {item.name}
@@ -105,7 +103,7 @@ function DesktopNavItem({
                                 }
                                 onClick={() => {
                                     openedByHoverRef.current = false;
-                                    setOpen(false);
+                                    setOpenAtPath(null);
                                 }}
                             >
                                 {child.name}
