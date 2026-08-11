@@ -8,7 +8,8 @@ import { OFFICIAL_SOURCE_LINKS } from './runtimeCatalog.js';
 
 const MAX_RAW_BODY_LENGTH = 65_536;
 const MAX_MESSAGE_LENGTH = 500;
-const MAX_MODEL_ANSWER_LENGTH = 280;
+const MAX_MODEL_ANSWER_LENGTH = 200;
+const MAX_MODEL_ANSWER_CLAUSES = 3;
 const MAX_CURRENT_PATH_LENGTH = 256;
 /** Frontend sends at most 2 prior user turns; match that on the wire. */
 const MAX_HISTORY_MESSAGES = 2;
@@ -166,7 +167,17 @@ export function validateModelGuideResponse(
   }
 
   const trimmedAnswer = answer.trim();
-  if (trimmedAnswer.length === 0 || trimmedAnswer.length > MAX_MODEL_ANSWER_LENGTH) {
+  const answerLength = [...trimmedAnswer].length;
+  const clauseCount = trimmedAnswer
+    .split(/[。．.!！？?\n]+/gu)
+    .map((clause) => clause.trim())
+    .filter((clause) => clause.length > 0)
+    .length;
+  if (
+    answerLength === 0
+    || answerLength > MAX_MODEL_ANSWER_LENGTH
+    || clauseCount > MAX_MODEL_ANSWER_CLAUSES
+  ) {
     return unsafeModelOutput();
   }
 

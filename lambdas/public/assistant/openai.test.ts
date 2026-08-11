@@ -232,7 +232,12 @@ describe('buildResponsesPayload', () => {
       max_output_tokens: 450,
       tools: [],
       instructions: SYSTEM_INSTRUCTIONS,
+      text: { verbosity: 'low' },
     });
+    expect(payload.max_output_tokens).toBeLessThanOrEqual(450);
+    expect(payload.instructions).toContain('1〜2文');
+    expect(payload.instructions).toContain('通常120文字程度');
+    expect(payload.instructions).toContain('最大200文字');
     expect(envelope.dynamicContentAvailable).toBe(false);
     expect(envelope.history).toEqual([]);
     expect(envelope.knowledgeEntries).toHaveLength(5);
@@ -399,7 +404,6 @@ describe('buildResponsesPayload', () => {
     expect(continuationEnvelope).toMatchObject({
       isFollowUp: true,
       history: [
-        { role: 'user', content: '最初の質問' },
         { role: 'user', content: '直前の質問' },
       ],
     });
@@ -415,7 +419,7 @@ describe('buildResponsesPayload', () => {
     expect(SYSTEM_INSTRUCTIONS).not.toContain('安定した一般知識');
     expect(SYSTEM_INSTRUCTIONS).toContain('URL');
     expect(SYSTEM_INSTRUCTIONS).toContain('そのまま繰り返さず');
-    expect(SYSTEM_INSTRUCTIONS).toContain('280文字以内');
+    expect(SYSTEM_INSTRUCTIONS).toContain('最大200文字');
     expect(SYSTEM_INSTRUCTIONS).toContain('LINEのように短く');
     expect(SYSTEM_INSTRUCTIONS).not.toContain('intentHint');
     expect(SYSTEM_INSTRUCTIONS).not.toContain('FAQ');
