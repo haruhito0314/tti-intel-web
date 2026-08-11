@@ -7,7 +7,7 @@ export function ecosystemWindowScale(expand: number) {
 }
 
 export function ecosystemSurfaceHasFrame(sceneIndex: number) {
-    return sceneIndex >= 0;
+    return sceneIndex >= -1;
 }
 
 export function shouldShowCodexStory(contentReady: boolean, progress: number) {

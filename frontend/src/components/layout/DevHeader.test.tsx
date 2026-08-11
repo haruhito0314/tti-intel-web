@@ -44,6 +44,12 @@ function renderDevHeader() {
 }
 
 describe('DevHeader', () => {
+    it('does not render the crest in the development header', () => {
+        const { container } = renderDevHeader();
+
+        expect(container.querySelector('.dev-header-logo-mark')).not.toBeInTheDocument();
+    });
+
     it('does not render a separate bar background while the mobile menu is closed', () => {
         const { container } = renderDevHeader();
 

@@ -90,6 +90,7 @@ export type AssistantTopic =
   | 'circle_exam'
   | 'site_overview'
   | 'site_navigation'
+  | 'site_contact'
   | 'site_apps'
   | 'site_ai_assistant'
   | 'site_table_tennis'
@@ -119,10 +120,12 @@ export type LocalRouteResult =
       kind: 'ambiguous';
       candidateScopes: AssistantScope[];
       topicHints: AssistantTopic[];
+      historyEligible: boolean;
     };
 ```
 
 `reasonCode` は固定enumとして実装し、利用者の文章やモデルの自由文をログへ入れない。
+`candidateScopes` と `topicHints` はLunaへの助言でありhard allowlistではない。ローカル候補の漏れだけを理由に、Lunaの有効な5-way scope判定を拒否しない。`historyEligible` はローカルrouterだけが判定し、分類器で同じ判定を重複実装しない。
 
 ### ローカル判定
 
@@ -157,7 +160,7 @@ export type LocalRouteResult =
 
 - 現在の明示的な質問を履歴より必ず優先する。
 - ローカルの追加質問判定に使う履歴は直前の利用者発話だけとする。
-- Luna分類には最大2件の利用者発話を渡せるが、現在の質問が省略表現である場合だけ利用を許可する。
+- Luna分類・回答生成へ渡す過去の利用者発話は、現在の質問が省略表現である場合だけ直前1件を許可する。API requestは互換性のため最大2件を受け取るが、モデル入力へ2件前を渡さない。
 - 無関係な直前発話を飛び越えて、2件前の話題を復活させない。
 - 回答本文は履歴として送らない。
 
@@ -171,11 +174,11 @@ export type LocalRouteResult =
 
 - `message`
 - 正規化済みの `currentPageId`
-- 必要最小限の直近利用者発話、最大2件
+- 必要最小限の直近利用者発話、最大1件
 - 許可されたscopeとtopicの定義
 - ローカル判定が返した候補scopeとtopic hint
 
-knowledge、動的コンテンツ、session ID、request ID、API内部情報は分類へ渡さない。
+knowledge、動的コンテンツ、平文session ID、request ID、API内部情報は分類promptへ渡さない。公開サービス向けのOpenAI公式推奨に従い、検証済みUUIDv4 session IDを固定ドメイン文字列とともにSHA-256化した値だけをAPI metadataの `safety_identifier` として分類・回答の両方へ渡す。この値はpromptやログへ入れない。
 
 ### 出力
 
@@ -202,6 +205,7 @@ LunaのStructured Outputsを使い、次の厳格なJSON Schemaだけを許可�
 - `max_output_tokens: 96`
 - `tools: []`
 - `store: false`
+- `safety_identifier`: `sha256("tti-intel-assistant:v1:" + sessionId)`
 - timeout: 4.5秒
 - 自動retry: なし
 
@@ -225,6 +229,7 @@ circle/siteだけが回答生成へ進む。
 
 - model: `gpt-5.6-luna`
 - `reasoning.effort: low`
+- `text.verbosity: low`
 - `max_output_tokens: 450`
 - `tools: []`
 - `store: false`
@@ -278,7 +283,9 @@ circle/siteだけが回答生成へ進む。
 - classifier calls/day
 - classifier calls/session window
 
-Lunaの価格は実装・本番評価日に公式ページで再確認する。2026-08-10時点の公式モデルページでは、100万tokenあたりinput `$0.20`、cached input `$0.02`、output `$1.20`、cache writeはuncached inputの1.25倍である。評価設定はこの値へ更新し、価格確認日と公式URLを保存する。
+Lunaの価格は実装・本番評価日に公式ページで再確認する。2026-08-11時点の公式モデルページ実ページでは、100万tokenあたりinput `$0.20`、cached input `$0.02`、output `$1.20`、cache writeはuncached inputの1.25倍、すなわち `$0.25` である。評価設定はこの値へ更新し、価格確認日と公式URLを保存する。forecastは価格確認から24時間以内だけ有効とする。
+
+費用承認はsmokeで観測したcached料金だけに依存させない。分類の完全なclient payloadをUTF-8で8,000 bytes以下、回答生成を32,000 bytes以下に実装上で制限し、超過時はOpenAIを呼ばない。100件評価の期待値は32分類・60生成だが、誤分類時の費用上限は32件の曖昧質問がすべて生成対象になる場合の32分類・74生成・106 callで計算する。全入力をinput/cache-writeの高い方である `$0.25/M`、全出力を最大token数と `$1.20/M` で評価し、観測値からの期待費用とは別にhard upper boundを提示する。承認額がhard bound未満なら実行しない。
 
 初期リリースではアプリ独自の永続キャッシュや明示的なcache writeを追加しない。分類・生成の安定したprefixを保ち、usageのcached tokenを測定する。低トラフィックでも再利用が確認できた場合だけ、別設計としてキャッシュを検討する。
 
@@ -298,9 +305,10 @@ Lunaの価格は実装・本番評価日に公式ページで再確認する。2
 
 ## ログと監視
 
-構造化ログへ次を追加する。
+LambdaはAWSのJSON loggingを有効にし、アプリ側は文字列化せず1個のobjectを `console.info` へ渡す。CloudWatch上のapplication eventは `{ timestamp, level, requestId, message: assistantRecord }` とし、評価相関・metric filterは必ず `$.message.*` を参照する。構造化ログへ次を追加する。
 
-- `routingSource: local | luna`
+- `routingSource: none | local | luna`（CORS・validation・preflightなど未判定経路は `none`）
+- `assistantScope: circle | site | university | conversation | out_of_scope | ambiguous | unclassified`
 - `routingReasonCode`
 - `assistantScope`
 - topic ID、最大3件
@@ -314,7 +322,7 @@ Lunaの価格は実装・本番評価日に公式ページで再確認する。2
 - `dynamicContentCount`
 - `webCallCount: 0`
 
-質問、履歴、回答、knowledge本文、動的本文、平文session IDは記録しない。
+質問、履歴、回答、knowledge本文、動的本文、平文session ID、`safety_identifier` は記録しない。
 
 CloudWatchでは次を監視する。
 
@@ -396,7 +404,9 @@ fixture schemaを更新し、各caseに次を持たせる。
 
 表現軸は、通常言い換え20、主語省略・口語20、typo・記号・空白ノイズ15、省略・履歴20、大学/circle対照とhard negative 15、複合質問・prompt injection 10とする。
 
-本番runnerは全ケースへUUIDv4 `sessionId` を必ず付ける。dry-runは「fixtureを読み込めた」証拠に限定し、本番精度の証拠として表示しない。実測0件のレポートへ正答率や費用を表示しない。
+本番runnerは全ケースへUUIDv4 `sessionId` を必ず付ける。dry-runは「fixtureを読み込めた」証拠に限定し、本番精度の証拠として表示しない。実測0件のレポートへ正答率や費用を表示せず、`NOT_EVALUATED` 専用manifestとして本番PASS/FAIL manifestと型・検証経路を分離する。
+
+本番runnerは回答収集とCloudWatch回収・確定を二段階に分け、回答収集済みファイルを上書きしない。ログ伝播待ちや一時的な回収不足では質問を再送せず、固定済みcorrelationからrun ID・時刻範囲を再読込して、read-onlyログ回収、telemetry生成、zero-network finalizationだけを再開する。
 
 ## 公開条件
 
@@ -432,10 +442,12 @@ fixture schemaを更新し、各caseに次を持たせる。
 
 Lambdaだけ、またはAmplifyだけを更新した状態を完成扱いにしない。
 
+8問smokeまたは100件公開条件が失敗した場合、Amplify公開まで待たない。APIが正常で意味判定だけが不合格なら、事前承認されたCDK変更でsemantic classifierを即時無効化する。HTTP、schema、基盤、privacyの障害なら、事前に取得・checksum検証した直前CloudFormation templateとLambda assetへ戻す。100件実行直前にはJST当日のquotaをread-only取得し、最大106 call/32 classifier/74 paid-requestに安全余裕を足した残量がなければresetせず翌日へ延期する。DynamoDB BatchGetの `UnprocessedKeys` が空でない場合も実行しない。
+
 ## ロールバック
 
 - 実装前に現行CloudFormation stack、Lambda version/code hash、Amplify job ID、Git commitを記録する。
-- APIの重大障害は直前のLambda artifactまたは直前コミットをCDKで再デプロイする。
+- APIの重大障害は、デプロイ前に取得してchecksum・`CodeSha256`・template参照assetの一致を検証した直前のCloudFormation processed templateとLambda assetへ戻す。Git commitが実際のlive artifactと同じとは仮定しない。
 - UIの重大障害は直前の成功Amplify jobを再デプロイする。
 - 回答精度だけが公開条件を下回った場合は、semantic classifier経路を無効化できる環境変数を用意し、ローカル高信頼経路だけへ即時縮退する。
 - ロールバック後もWeb検索を有効化しない。
@@ -447,7 +459,7 @@ Lambdaだけ、またはAmplifyだけを更新した状態を完成扱いにし�
 - Structured Outputs: 対応
 - reasoning effort: `none`、`low`を含む設定に対応
 - tools: 本システムでは常に空配列
-- 価格基準日: 2026-08-10
+- 価格基準日: 2026-08-11
 - 公式モデルページ: `https://developers.openai.com/api/docs/models/gpt-5.6-luna`
 
 本番評価日の直前に公式ページを再確認し、価格、機能、reasoning設定が変わっていれば、コード、評価設定、PDFの3箇所を同じコミットで更新する。

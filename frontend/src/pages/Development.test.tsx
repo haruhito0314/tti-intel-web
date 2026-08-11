@@ -38,6 +38,19 @@ describe('Development page', () => {
         expect((camera as HTMLElement).style.getPropertyValue('--dx-camera-scale')).toBe('');
     });
 
+    it('uses one seasonal background system without the former sky video layers', () => {
+        const { container } = render(
+            <MemoryRouter>
+                <Development />
+            </MemoryRouter>,
+        );
+
+        expect(container.querySelectorAll('.dx-season-background')).toHaveLength(6);
+        expect(container.querySelector('.dx-atmosphere-video')).not.toBeInTheDocument();
+        expect(container.querySelector('.dx-cloud-layer')).not.toBeInTheDocument();
+        expect(container.querySelectorAll('.dx-sakura-petals > i')).toHaveLength(12);
+    });
+
     it('keeps the lower page focused on working systems and the participation path', () => {
         render(
             <MemoryRouter>
@@ -190,6 +203,7 @@ describe('Development page', () => {
     });
 
     it('keeps the shared glass frame behind every ecosystem workspace', () => {
+        expect(ecosystemSurfaceHasFrame(-1)).toBe(true);
         expect(ecosystemSurfaceHasFrame(0)).toBe(true);
         expect(ecosystemSurfaceHasFrame(1)).toBe(true);
         expect(ecosystemSurfaceHasFrame(2)).toBe(true);

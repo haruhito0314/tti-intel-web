@@ -94,7 +94,6 @@ import { Contact } from '@/pages/Contact';
 import { AppShowcase } from '@/pages/AppShowcase';
 import { TableTennisMatchMakerPage } from '@/pages/TableTennisMatchMaker';
 import { ColorSortPuzzlePage } from '@/pages/ColorSortPuzzle';
-import { CliPracticePage } from '@/pages/CliPractice';
 
 // Lazy load: pages with Firebase SDK or heavy dependencies
 const News = lazy(() => import('@/pages/News').then(m => ({ default: m.News })));
@@ -283,7 +282,6 @@ function App() {
               <Route path="app/ai-assistant" element={<Suspense fallback={<PageLoader />}><AiAssistantProduct /></Suspense>} />
               <Route path="app/table-tennis" element={<TableTennisMatchMakerPage />} />
               <Route path="app/color-sort" element={<ColorSortPuzzlePage />} />
-              <Route path="app/cli-practice" element={<CliPracticePage />} />
               <Route path="board" element={<Suspense fallback={<PageLoader />}><Board /></Suspense>} />
               <Route path="board/:id" element={<Suspense fallback={<PageLoader />}><BoardDetail /></Suspense>} />
               <Route path="contact" element={<Contact />} />

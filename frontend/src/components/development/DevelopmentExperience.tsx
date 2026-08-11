@@ -44,6 +44,12 @@ const DEMO_RESET_MS = 650;
 /** Codex and ecosystem meet at the same scroll boundary to avoid a dead gap. */
 const CODEX_PHASE_END = 0.47;
 const ECOSYSTEM_PHASE_START = 0.47;
+const SAKURA_PETALS = [
+    [6, 9.6, -2.1, 0.52], [13, 11.8, -7.4, 0.42], [21, 8.9, -4.6, 0.48],
+    [29, 12.6, -10.2, 0.38], [38, 10.8, -1.8, 0.5], [47, 13.4, -8.7, 0.34],
+    [57, 9.8, -5.5, 0.46], [65, 12.1, -11.5, 0.4], [73, 10.2, -3.4, 0.5],
+    [81, 13.1, -9.3, 0.36], [89, 9.3, -6.1, 0.46], [95, 11.2, -12.4, 0.4],
+] as const;
 
 const PROJECTS = [
     {
@@ -1282,6 +1288,7 @@ function AutomationEcosystem({
 }
 
 export function DevelopmentExperience() {
+    const experienceRef = useRef<HTMLDivElement>(null);
     const introTrackRef = useRef<HTMLElement>(null);
     const trackRef = useRef<HTMLElement>(null);
     const stageRef = useRef<HTMLDivElement>(null);
@@ -1293,28 +1300,118 @@ export function DevelopmentExperience() {
     const ecosystemProgress = clamp(
         (progress - ECOSYSTEM_PHASE_START) / (1 - ECOSYSTEM_PHASE_START),
     );
-    const introExit = easeOutCubic((introProgress - 0.22) / 0.34);
+    const introExit = easeInOutSmooth((introProgress - 0.24) / 0.6);
     const introLight = easeInOutSmooth((introProgress - 0.06) / 0.94);
     const stageRevealed = introProgress >= 0.94;
 
     useEffect(() => {
-        document.body.style.setProperty('--dx-dev-header-transition', introLight.toFixed(4));
-    }, [introLight]);
+        let frame = 0;
 
-    useEffect(() => () => {
-        document.body.style.removeProperty('--dx-dev-header-transition');
+        const updateAtmosphere = () => {
+            frame = 0;
+            const root = experienceRef.current;
+            if (!root) return;
+
+            const introTrack = introTrackRef.current;
+            const motionTrack = trackRef.current;
+            const introRect = introTrack?.getBoundingClientRect();
+            const introDistance = Math.max(
+                1,
+                (introTrack?.offsetHeight ?? window.innerHeight) - window.innerHeight,
+            );
+            const introPhase = introRect ? clamp(-introRect.top / introDistance) : 0;
+            // The seasonal background begins with the same scroll gesture that
+            // reveals the centred Codex surface, then reaches full spring before
+            // the Codex section becomes interactive.
+            const seasonReveal = easeInOutSmooth((introPhase - 0.24) / 0.6);
+            const motionRect = motionTrack?.getBoundingClientRect();
+            const motionDistance = Math.max(
+                1,
+                (motionTrack?.offsetHeight ?? window.innerHeight) - window.innerHeight,
+            );
+            const motionProgress = motionRect ? clamp(-motionRect.top / motionDistance) : 0;
+            const ecosystemPhase = clamp(
+                (motionProgress - CODEX_PHASE_END) / (1 - CODEX_PHASE_END),
+            );
+            const seasonWeights = Array.from({ length: 6 }, () => 0);
+            const setSeasonBlend = (from: number, to: number, mix: number) => {
+                const easedMix = easeInOutSmooth(mix);
+                seasonWeights[from] = 1 - easedMix;
+                seasonWeights[to] = easedMix;
+            };
+
+            // Background changes belong to the gaps between demonstrations.
+            // Each active workflow therefore keeps one stable atmosphere.
+            if (ecosystemPhase < 0.005) {
+                seasonWeights[0] = 1; // Codex: spring
+            } else if (ecosystemPhase < 0.08) {
+                setSeasonBlend(0, 1, (ecosystemPhase - 0.005) / 0.075);
+            } else if (ecosystemPhase < 0.24) {
+                seasonWeights[1] = 1; // Codex / CLI: early summer
+            } else if (ecosystemPhase < 0.325) {
+                setSeasonBlend(1, 3, (ecosystemPhase - 0.24) / 0.085);
+            } else if (ecosystemPhase < 0.565) {
+                seasonWeights[3] = 1; // Plugin + CLI: autumn
+            } else if (ecosystemPhase < 0.65) {
+                setSeasonBlend(3, 5, (ecosystemPhase - 0.565) / 0.085);
+            } else {
+                seasonWeights[5] = 1; // MCP and the following content: winter
+            }
+            const headerLight = seasonWeights[5] * 0.94;
+            const headerMain = Math.round(18 + (246 - 18) * headerLight);
+            const headerBlue = Math.round(35 + (249 - 35) * headerLight);
+            const headerMuted = (0.7 + headerLight * 0.2).toFixed(3);
+            seasonWeights.forEach((weight, index) => {
+                document.body.style.setProperty(
+                    `--dx-season-${index + 1}`,
+                    (weight * seasonReveal).toFixed(4),
+                );
+            });
+            document.body.style.setProperty(
+                '--dx-season-reveal-radius',
+                `${(-1 + seasonReveal * 79).toFixed(2)}vmax`,
+            );
+            document.body.style.setProperty('--dx-header-fg', `rgb(${headerMain} ${headerBlue} ${Math.round(headerBlue + (255 - headerBlue) * headerLight)} / ${headerMuted})`);
+            document.body.style.setProperty('--dx-header-fg-strong', `rgb(${headerMain} ${headerBlue} ${Math.round(headerBlue + (255 - headerBlue) * headerLight)} / 0.98)`);
+            document.body.style.setProperty('--dx-header-space', headerLight.toFixed(4));
+        };
+
+        const requestUpdate = () => {
+            if (!frame) frame = window.requestAnimationFrame(updateAtmosphere);
+        };
+
+        updateAtmosphere();
+        window.addEventListener('scroll', requestUpdate, { passive: true });
+        window.addEventListener('resize', requestUpdate);
+        return () => {
+            window.cancelAnimationFrame(frame);
+            window.removeEventListener('scroll', requestUpdate);
+            window.removeEventListener('resize', requestUpdate);
+            [
+                '--dx-season-1',
+                '--dx-season-2',
+                '--dx-season-3',
+                '--dx-season-4',
+                '--dx-season-5',
+                '--dx-season-6',
+                '--dx-season-reveal-radius',
+                '--dx-header-fg',
+                '--dx-header-fg-strong',
+                '--dx-header-space',
+            ].forEach((property) => document.body.style.removeProperty(property));
+        };
     }, []);
 
     const introStyle = useMemo(() => ({
-        '--dx-intro-title-opacity': (1 - introExit).toFixed(4),
-        '--dx-intro-title-y': `${(-introExit * 86).toFixed(1)}px`,
+        '--dx-intro-title-opacity': 1,
+        '--dx-intro-title-y': '0px',
+        '--dx-intro-visibility': introExit >= 0.999 ? 'hidden' : 'visible',
         '--dx-intro-light-opacity': introLight.toFixed(4),
         '--dx-intro-light-scale': (0.05 + introLight * 3.25).toFixed(4),
         '--dx-intro-cue-opacity': clamp(1 - introProgress / 0.1).toFixed(4),
     } as MotionStyle), [introExit, introLight, introProgress]);
     const heroStyle = useMemo(() => ({
         '--dx-progress': progress.toFixed(4),
-        '--dx-stage-reveal-radius': `${(introLight * 64).toFixed(2)}vmax`,
         '--dx-sky-warm-opacity': (
             easeInOutSmooth((ecosystemProgress - 0.12) / 0.24)
             * (1 - easeInOutSmooth((ecosystemProgress - 0.52) / 0.2))
@@ -1322,10 +1419,42 @@ export function DevelopmentExperience() {
         '--dx-sky-evening-opacity': easeInOutSmooth((ecosystemProgress - 0.46) / 0.42).toFixed(4),
         '--dx-sky-drift': `${(ecosystemProgress * 6).toFixed(2)}%`,
         '--dx-sky-drift-reverse': `${(-ecosystemProgress * 3.3).toFixed(2)}%`,
-    } as MotionStyle), [ecosystemProgress, introLight, progress]);
+    } as MotionStyle), [ecosystemProgress, progress]);
 
     return (
-        <div className="development-experience">
+        <div ref={experienceRef} className="development-experience">
+            <div className="dx-page-atmosphere" aria-hidden="true">
+                {[
+                    '01-spring-sakura.webp',
+                    '02-early-summer.webp',
+                    '03-summer.webp',
+                    '04-autumn.webp',
+                    '05-winter-snow.webp',
+                    '06-winter-blue-hour.webp',
+                ].map((file, index) => (
+                    <img
+                        key={file}
+                        className={`dx-season-background dx-season-background--${index + 1}`}
+                        src={`/images/development/seasons/${file}`}
+                        alt=""
+                        decoding="async"
+                    />
+                ))}
+                <div className="dx-sakura-petals">
+                    {SAKURA_PETALS.map(([x, duration, delay, opacity], index) => (
+                        <i
+                            key={`${x}-${duration}`}
+                            style={{
+                                '--dx-petal-x': `${x}%`,
+                                '--dx-petal-duration': `${duration}s`,
+                                '--dx-petal-delay': `${delay}s`,
+                                '--dx-petal-opacity': opacity,
+                                '--dx-petal-drift': `${index % 2 === 0 ? 54 : -46}px`,
+                            } as MotionStyle}
+                        />
+                    ))}
+                </div>
+            </div>
             <section ref={introTrackRef} className="dx-intro-track" aria-label="AIと作る開発への導入">
                 <div
                     className="dx-intro-section"

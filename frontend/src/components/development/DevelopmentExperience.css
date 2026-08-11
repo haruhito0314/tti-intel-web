@@ -41,7 +41,6 @@
 }
 
 body:has(.development-experience) .dev-header,
-body:has(.development-experience) .dev-header-bar-bg,
 body:has(.development-experience) .dev-header-mobile-bg {
     --dev-accent: #1d1d1f;
     background: linear-gradient(
@@ -158,7 +157,7 @@ body:has(.development-experience) .dev-header-menu-btn:hover {
 }
 
 .dx-stage {
-    --dx-stage-reveal-radius: 0vmax;
+    --dx-stage-reveal-radius: var(--dx-season-reveal-radius, -1vmax);
     position: sticky;
     top: 44px;
     height: calc(100svh - 44px);
@@ -168,13 +167,13 @@ body:has(.development-experience) .dev-header-menu-btn:hover {
     touch-action: pan-y;
     overscroll-behavior-y: auto;
     -webkit-mask-image: radial-gradient(
-        circle at 50% 50%,
+        circle at 50% calc(50% - 22px),
         #000 0,
         #000 calc(var(--dx-stage-reveal-radius) - 4vmax),
         transparent var(--dx-stage-reveal-radius)
     );
     mask-image: radial-gradient(
-        circle at 50% 50%,
+        circle at 50% calc(50% - 22px),
         #000 0,
         #000 calc(var(--dx-stage-reveal-radius) - 4vmax),
         transparent var(--dx-stage-reveal-radius)
@@ -214,9 +213,22 @@ body:has(.development-experience) .dev-header-menu-btn:hover {
     color: #102d46;
     text-align: center;
     opacity: var(--dx-intro-title-opacity, 1);
+    visibility: var(--dx-intro-visibility, visible);
     transform: translateY(var(--dx-intro-title-y, 0));
+    -webkit-mask-image: radial-gradient(
+        circle at 50% calc(50% - 22px),
+        transparent 0,
+        transparent var(--dx-season-reveal-radius, -1vmax),
+        #000 calc(var(--dx-season-reveal-radius, -1vmax) + 0.8vmax)
+    );
+    mask-image: radial-gradient(
+        circle at 50% calc(50% - 22px),
+        transparent 0,
+        transparent var(--dx-season-reveal-radius, -1vmax),
+        #000 calc(var(--dx-season-reveal-radius, -1vmax) + 0.8vmax)
+    );
     pointer-events: none;
-    will-change: opacity, transform;
+    will-change: mask-image;
 }
 
 .dx-intro-kicker,
@@ -2013,23 +2025,6 @@ body:has(.development-experience) .dev-header-menu-btn:hover {
 
 .dx-cta a svg { width: 18px; height: 18px; }
 
-body:has(.development-experience) footer {
-    border-color: #d2d2d7 !important;
-    color: #1d1d1f;
-    background: #f5f5f7 !important;
-}
-
-body:has(.development-experience) footer h3,
-body:has(.development-experience) footer a,
-body:has(.development-experience) footer address {
-    color: #424245 !important;
-}
-
-body:has(.development-experience) footer p,
-body:has(.development-experience) footer span {
-    color: #6e6e73 !important;
-}
-
 @keyframes dx-caret {
     0%, 48% { opacity: 1; }
     49%, 100% { opacity: 0; }
@@ -2629,6 +2624,10 @@ body:has(.development-experience) footer span {
         margin-top: 0;
     }
     .dx-stage {
+        -webkit-mask-image: none;
+        mask-image: none;
+    }
+    .dx-intro {
         -webkit-mask-image: none;
         mask-image: none;
     }
@@ -6055,10 +6054,10 @@ body:has(.development-experience) footer span {
 
 .dx-content > .dx-cta {
     display: block;
-    min-height: 150svh;
+    min-height: 128svh;
     padding: 0;
     overflow: visible;
-    background: #07111a;
+    background: transparent;
 }
 
 .dx-content > .dx-cta::before {
@@ -6078,25 +6077,10 @@ body:has(.development-experience) footer span {
     overflow: hidden;
     color: #f5f9fc;
     text-align: center;
-    background:
-        radial-gradient(circle at 18% 0%, rgba(111, 197, 239, 0.16), transparent 34%),
-        radial-gradient(circle at 84% 100%, rgba(61, 121, 174, 0.18), transparent 38%),
-        linear-gradient(145deg, #07111a 0%, #0a1722 54%, #0d1c28 100%);
+    background: transparent;
 }
 
-.dx-cta-sticky::before {
-    content: "";
-    position: absolute;
-    z-index: -1;
-    left: 50%;
-    bottom: -84%;
-    width: min(72vw, 920px);
-    aspect-ratio: 1;
-    border: 1px solid rgba(166, 222, 248, 0.16);
-    border-radius: 50%;
-    box-shadow: 0 -30px 110px rgba(87, 182, 225, 0.11);
-    transform: translateX(-50%);
-}
+.dx-cta-sticky::before { display: none; }
 
 .dx-cta-sticky > div:last-child {
     display: flex;
@@ -6109,7 +6093,7 @@ body:has(.development-experience) footer span {
 
 @media (max-width: 640px) {
     .dx-content > .dx-cta {
-        min-height: 128svh;
+        min-height: 114svh;
         padding: 0;
     }
 
@@ -11885,17 +11869,116 @@ body:has(.development-experience) footer span {
     }
 }
 
-/* Canonical glass material — wins over earlier per-window overrides. */
+/* Canonical glass material — the large stage and every window plate use the
+   same transparency, edge light and blur in every scene. */
+.dx-demo-camera::before,
+.dx-ecosystem-scenes {
+    border: 1px solid var(--dx-glass-border-color);
+    background: var(--dx-glass-fill);
+    box-shadow: var(--dx-glass-shadow);
+    backdrop-filter: var(--dx-glass-blur);
+    -webkit-backdrop-filter: var(--dx-glass-blur);
+}
+
+/* The former opaque handoff plate remained above every ecosystem scene and
+   hid the seasonal tree. The product windows now crossfade directly between
+   two identical glass frames, leaving exactly one frame visible at a time. */
+.dx-demo-handoff-cover {
+    display: none;
+}
+
+.dx-stage:has(.dx-tool-launcher.is-hidden) .dx-demo-camera::before {
+    border-color: transparent;
+    box-shadow: none;
+    opacity: 0;
+}
+
+/* Keep the three-window CLI workspace inside its own zooming viewport. */
+.dx-ecosystem-visual > .dx-vercel-desktop {
+    overflow: clip;
+    contain: paint;
+    border-radius: var(--dx-glass-radius);
+}
+
+.dx-vercel-console-app,
+.dx-vercel-console-app .dx-vercel-body,
+.dx-vercel-console-app .dx-deployment-card {
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.dx-vercel-console-app .dx-deployment-card {
+    display: flex;
+    overflow: hidden;
+    flex-direction: column;
+}
+
+.dx-vercel-console-app .dx-service-bar > *,
+.dx-vercel-console-app .dx-deployment-head > *,
+.dx-vercel-console-app .dx-deployment-meta > * {
+    min-width: 0;
+}
+
+.dx-vercel-console-app .dx-service-tabs {
+    overflow: hidden;
+}
+
+.dx-vercel-console-app .dx-service-tabs > * {
+    flex: 0 1 auto;
+    white-space: nowrap;
+}
+
+.dx-vercel-console-app .dx-deployment-card > a {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dx-vercel-console-app .dx-deployment-card > a svg {
+    flex: 0 0 auto;
+}
+
+.dx-vercel-console-app .dx-deployment-meta b {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dx-vercel-console-app .dx-deployment-preview {
+    min-height: 0;
+    padding: clamp(0.55rem, 1vw, 1rem);
+    flex: 1 1 auto;
+}
+
+.dx-vercel-desktop.is-selector
+    .dx-window-stage-tile--vercel
+    .dx-deployment-preview span {
+    margin-bottom: 0.3rem;
+    font-size: 0.38rem;
+}
+
+.dx-vercel-desktop.is-selector
+    .dx-window-stage-tile--vercel
+    .dx-deployment-preview b {
+    font-size: clamp(0.95rem, 1.55vw, 1.35rem);
+    line-height: 1.06;
+}
+
 .dx-window-glass,
+.dx-product-window,
+.dx-preview-window,
 .dx-tool-launcher > .dx-launcher-codex-screen.dx-product-window.dx-window-glass,
 .dx-launcher-codex-screen.dx-window-glass,
 .dx-launcher-terminal-screen.dx-window-glass,
 .dx-launcher-app-panel.dx-window-glass,
+.dx-automation-window.dx-window-glass,
 .dx-window-stage-tile.dx-window-glass,
 .dx-plugin-window.dx-window-glass,
 .dx-mcp-window.dx-window-glass {
     padding: var(--dx-glass-pad);
-    border-color: var(--dx-glass-border-color);
+    border: 1px solid var(--dx-glass-border-color);
     border-radius: var(--dx-glass-radius);
     background: var(--dx-glass-fill);
     box-shadow: var(--dx-glass-shadow);
@@ -12014,4 +12097,273 @@ body:has(.development-experience) footer span {
     .dx-project-copy {
         padding-inline: 1rem;
     }
+}
+
+/* One continuous atmosphere — the header, hero, work surface, projects and
+   invitation all share the same fixed sky instead of switching backdrops. */
+.development-experience {
+    position: relative;
+    isolation: isolate;
+    overflow: visible;
+    background: transparent;
+}
+
+body:has(.development-experience) {
+    overflow-x: clip;
+}
+
+/* The route fade leaves a transform on its wrapper, which would turn the
+   fixed seasonal backdrop into a page-sized layer below the header. */
+.animate-fade-in:has(.development-experience) {
+    animation: none !important;
+    transform: none !important;
+}
+
+.development-experience > .dx-intro-track,
+.development-experience > .dx-motion-track,
+.development-experience > .dx-content {
+    position: relative;
+    z-index: 1;
+}
+
+.dx-page-atmosphere {
+    position: fixed;
+    z-index: 0;
+    inset: 0;
+    overflow: hidden;
+    background: #f5f5f7;
+    pointer-events: none;
+}
+
+.dx-season-background {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 50%;
+    opacity: var(--dx-season-opacity, 0);
+    filter: saturate(0.88) contrast(0.96) brightness(0.98);
+    will-change: opacity;
+}
+
+.dx-season-background--1 { --dx-season-opacity: var(--dx-season-1, 1); }
+.dx-season-background--2 { --dx-season-opacity: var(--dx-season-2, 0); }
+.dx-season-background--3 { --dx-season-opacity: var(--dx-season-3, 0); }
+.dx-season-background--4 { --dx-season-opacity: var(--dx-season-4, 0); }
+.dx-season-background--5 { --dx-season-opacity: var(--dx-season-5, 0); }
+.dx-season-background--6 { --dx-season-opacity: var(--dx-season-6, 0); }
+
+.dx-season-background--1,
+.dx-sakura-petals {
+    -webkit-mask-image: radial-gradient(
+        circle at 50% 50%,
+        #000 0,
+        #000 calc(var(--dx-season-reveal-radius, -1vmax) - 5vmax),
+        transparent var(--dx-season-reveal-radius, -1vmax)
+    );
+    mask-image: radial-gradient(
+        circle at 50% 50%,
+        #000 0,
+        #000 calc(var(--dx-season-reveal-radius, -1vmax) - 5vmax),
+        transparent var(--dx-season-reveal-radius, -1vmax)
+    );
+}
+
+.dx-page-atmosphere::after {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(246, 251, 255, 0.03), rgba(25, 42, 54, 0.08));
+    pointer-events: none;
+}
+
+.dx-sakura-petals {
+    position: absolute;
+    z-index: 3;
+    inset: 0;
+    overflow: hidden;
+    opacity: var(--dx-season-1, 0);
+    pointer-events: none;
+}
+
+.dx-sakura-petals > i {
+    position: absolute;
+    left: var(--dx-petal-x);
+    top: -4vh;
+    width: 11px;
+    height: 7px;
+    border-radius: 75% 15% 70% 25%;
+    background: linear-gradient(135deg, rgba(255, 246, 249, 0.92), rgba(239, 175, 194, 0.86));
+    opacity: var(--dx-petal-opacity);
+    filter: drop-shadow(0 1px 1px rgba(126, 76, 91, 0.12));
+    animation: dx-sakura-fall var(--dx-petal-duration) linear var(--dx-petal-delay) infinite;
+}
+
+@keyframes dx-sakura-fall {
+    0% {
+        transform: translate3d(0, -5vh, 0) rotate(0deg) rotateX(0deg);
+    }
+    48% {
+        transform: translate3d(var(--dx-petal-drift), 54vh, 0) rotate(190deg) rotateX(55deg);
+    }
+    100% {
+        transform: translate3d(-18px, 112vh, 0) rotate(410deg) rotateX(120deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dx-sakura-petals { display: none; }
+
+    .dx-season-background--1 {
+        -webkit-mask-image: none;
+        mask-image: none;
+    }
+}
+
+.dx-intro-section,
+.dx-stage,
+.dx-gradient-bg,
+.dx-content,
+.dx-content > .dx-projects,
+.dx-content > .dx-cta,
+.dx-cta-sticky {
+    background: transparent;
+}
+
+.dx-intro-section {
+    isolation: isolate;
+}
+
+.dx-intro-section::before,
+.dx-intro-section::after {
+    display: none;
+}
+
+.dx-stage::before,
+.dx-stage::after,
+.dx-gradient-bg::after {
+    display: none;
+}
+
+.dx-projects-backdrop {
+    display: none;
+}
+
+.dx-projects::after {
+    background:
+        radial-gradient(circle at 14% 12%, rgba(78, 139, 204, 0.14), transparent 34%),
+        radial-gradient(circle at 88% 8%, rgba(93, 105, 177, 0.09), transparent 30%),
+        linear-gradient(180deg, rgba(1, 6, 17, 0.42), rgba(1, 5, 14, 0.7));
+}
+
+.dx-projects h2 {
+    color: #f5f8ff;
+    text-shadow: 0 3px 28px rgba(0, 0, 0, 0.28);
+}
+
+.dx-project-grid > article {
+    border: 1px solid rgba(210, 233, 255, 0.2);
+    color: #f4f7fb;
+    background:
+        linear-gradient(145deg, rgba(25, 42, 68, 0.72), rgba(8, 18, 36, 0.62)),
+        rgba(8, 18, 36, 0.52);
+    box-shadow:
+        0 24px 70px rgba(0, 0, 0, 0.22),
+        inset 0 1px rgba(255, 255, 255, 0.13);
+    backdrop-filter: blur(30px) saturate(1.2);
+    -webkit-backdrop-filter: blur(30px) saturate(1.2);
+}
+
+.dx-project-grid > article:hover {
+    border-color: rgba(222, 240, 255, 0.34);
+    background:
+        linear-gradient(145deg, rgba(35, 56, 87, 0.8), rgba(11, 24, 46, 0.72)),
+        rgba(10, 23, 45, 0.62);
+}
+
+.dx-project-copy h3 {
+    color: #f8fbff;
+}
+
+.dx-project-copy p {
+    color: rgba(224, 235, 247, 0.72);
+}
+
+.dx-project-link {
+    color: #8ed4ff;
+}
+
+/* Give the systems showcase one deliberate hold before the invitation.
+   On phones the cards remain in the normal document flow so every card stays
+   reachable without trapping the viewport. */
+@media (min-width: 801px) and (min-height: 720px) {
+    .dx-content > .dx-projects {
+        min-height: 150svh;
+        padding-block: 0;
+        overflow: clip;
+    }
+
+    .dx-projects-inner {
+        position: sticky;
+        top: 44px;
+        display: flex;
+        height: calc(100svh - 44px);
+        padding-block: clamp(2rem, 4.5vh, 3.5rem);
+        justify-content: center;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .dx-projects-inner > header {
+        margin-bottom: clamp(1.5rem, 3.5vh, 2.8rem);
+    }
+}
+
+.dx-cta-sticky::before {
+    bottom: -72%;
+    border-color: rgba(135, 211, 255, 0.18);
+    box-shadow: 0 -20px 100px rgba(81, 170, 230, 0.2);
+}
+
+body:has(.development-experience) {
+    background: #f5f5f7 !important;
+    background-attachment: fixed;
+}
+
+body:has(.development-experience) .dev-header {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+body:has(.development-experience) .dev-header-logo,
+body:has(.development-experience) .dev-header-link,
+body:has(.development-experience) .dev-header button[aria-label^="テーマを切り替え"] {
+    color: var(--dx-header-fg, rgba(18, 35, 51, 0.78));
+    text-shadow: 0 1px 12px rgba(255, 255, 255, calc((1 - var(--dx-header-space, 0)) * 0.24));
+}
+
+body:has(.development-experience) .dev-header-link:hover,
+body:has(.development-experience) .dev-header-link--active,
+body:has(.development-experience) .dev-header-menu-btn {
+    color: var(--dx-header-fg-strong, #122333);
+}
+
+body:has(.development-experience) .dev-header-mobile-bg {
+    background: rgba(4, 12, 27, calc(0.18 + var(--dx-header-space, 0) * 0.5));
+    backdrop-filter: blur(28px) saturate(1.3);
+    -webkit-backdrop-filter: blur(28px) saturate(1.3);
+}
+
+body:has(.development-experience) .dev-header-mobile-link {
+    color: var(--dx-header-fg-strong, #122333);
+}
+
+body:has(.development-experience) footer {
+    position: relative;
+    z-index: 3;
 }

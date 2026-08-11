@@ -35,13 +35,6 @@ export function DevHeader() {
                         aria-label={`${siteConfig.name} ホーム`}
                         onClick={() => setIsMobileMenuOpen(false)}
                     >
-                        <span className="dev-header-logo-mark">
-                            <img
-                                src="/load-assets/tti-crest.png"
-                                alt=""
-                                className="h-6 w-6 object-contain transition-opacity duration-300 group-hover:opacity-80"
-                            />
-                        </span>
                         <span className="dev-header-logo hidden 2xl:inline whitespace-nowrap">
                             {siteConfig.shortName}
                         </span>
