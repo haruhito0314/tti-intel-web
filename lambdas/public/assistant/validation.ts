@@ -26,14 +26,13 @@ const MODEL_PAGE_ID_PATTERN = /^[a-z0-9-]{1,64}$/;
 const MODEL_CONTENT_ID_PATTERN = /^(news|board|weekly-math):[A-Za-z0-9._~%-]{1,128}$/;
 const ASCII_CONTROL_PATTERN = /[\u0000-\u001f\u007f]/;
 const CONTROL_CHARACTER_PATTERN = /\p{Cc}/u;
-const URL_PATTERN = /(?:(?:https?|ftp):\/\/|(?:mailto|tel|javascript|data):|www\.)/iu;
-const MARKDOWN_LINK_PATTERN = /\[[^\]\r\n]*\]\([^\)\r\n]+\)/u;
-const SENTENCE_CLAUSE_PATTERN = /[。．.!！？?]+/u;
-const UNIVERSITY_OFFICIAL_SITE_PATTERN = /(?:公式(?:サイト|ウェブサイト|ホームページ)|official\s+(?:site|website))/iu;
-const UNIVERSITY_DETAIL_PATTERN = /(?:\p{N}|学部|学科|研究科|専攻|大学院|入試|入学|出願|募集|受験|学費|授業料|入学金|費用|料金|所在地|住所|愛知|名古屋|キャンパス|定員|偏差値|ランキング|就職|卒業|設立|創立|沿革|教育|研究|教員|教授|学長|学生|施設|アクセス)/u;
+const URL_PATTERN = /(?:(?:https?|ftp):\/\/|\/\/|(?:mailto|tel|javascript|data):|www\.|\b[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.[a-z]{2,63}\b)/iu;
+const MARKDOWN_PATTERN = /(?:\[[^\]\r\n]*\]\([^\)\r\n]+\)|\*\*[^*\r\n]+\*\*|__[^_\r\n]+__|~~[^~\r\n]+~~|`[^`\r\n]+`)/u;
+const SENTENCE_CLAUSE_PATTERN = /[。．.!！？?\r\n]+/u;
+const UNIVERSITY_DIRECTION_PATTERN = /^(?:豊田工業大学(?:について)?(?:は|の(?:情報|詳細)は)?[、,]?)?(?:詳しくは)?公式(?:サイト|ウェブサイト|ホームページ)(?:をご(?:確認|覧)ください|へ(?:お進み|アクセス)ください|をご利用ください)[。．!?！？]?$/u;
 const OUT_OF_SCOPE_APOLOGY_PATTERN = /(?:申し訳(?:ありません|ございません)|すみません|ごめんなさい)/u;
 const OUT_OF_SCOPE_INABILITY_PATTERN = /(?:(?:お答え|回答|案内|対応)(?:でき|しかね)|お力にな(?:れ|り)ません)/u;
-const OUT_OF_SCOPE_CONTACT_PATTERN = /(?:お問い合わせ(?:ください|を(?:ご)?利用|先|フォーム)|contact)/iu;
+const OUT_OF_SCOPE_CONTACT_PATTERN = /(?:お問い合わせ(?:ください|フォーム(?:から|をご利用ください)|先(?:へ|に)ご連絡ください)|contact\s+(?:us|form))/iu;
 
 export class RequestValidationError extends Error {
   readonly name = 'RequestValidationError';
@@ -161,7 +160,7 @@ function isModelScope(value: string): value is AssistantModelScope {
 function hasUnsafeText(value: string): boolean {
   return CONTROL_CHARACTER_PATTERN.test(value)
     || URL_PATTERN.test(value)
-    || MARKDOWN_LINK_PATTERN.test(value);
+    || MARKDOWN_PATTERN.test(value);
 }
 
 function validateIdArray(
@@ -217,8 +216,7 @@ function validateScopePolicy(
       !hasOnlyIds(pageIds, [])
       || !hasOnlyIds(contentIds, [])
       || !hasOnlyIds(sourceIds, ['toyota-ti'])
-      || !UNIVERSITY_OFFICIAL_SITE_PATTERN.test(answer)
-      || UNIVERSITY_DETAIL_PATTERN.test(answer)
+      || !UNIVERSITY_DIRECTION_PATTERN.test(answer)
     ) {
       return unsafeModelOutput();
     }

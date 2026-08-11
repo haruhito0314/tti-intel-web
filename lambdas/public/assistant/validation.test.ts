@@ -151,16 +151,25 @@ describe('validateModelGuideResponse', () => {
     expect(validateModelGuideResponse({ ...validSite, answer }, context).answer).toBe(answer);
   });
 
+  it('accepts normal Japanese punctuation in a safe answer', () => {
+    const answer = '活動内容はサイトで確認できます。詳しくはお問い合わせください！';
+    expect(validateModelGuideResponse({ ...validSite, answer }, context).answer).toBe(answer);
+  });
+
   it.each([
     ['unknown scope', { ...validSite, scope: 'other' }],
     ['extra property', { ...validSite, extra: true }],
     ['raw URL in answer', { ...validSite, answer: 'https://evil.example を見てください。' }],
     ['Markdown link in answer', { ...validSite, answer: '[外部サイト](https://evil.example)' }],
+    ['bare domain in answer', { ...validSite, answer: 'evil.example を見てください。' }],
+    ['protocol-relative URL in answer', { ...validSite, answer: '//evil.example を見てください。' }],
+    ['ordinary Markdown in answer', { ...validSite, answer: '**重要**です。' }],
     ['raw URL in topic label', { ...validOutOfScope, topicLabel: 'https://evil.example' }],
     ['Markdown link in topic label', { ...validOutOfScope, topicLabel: '[天気](https://evil.example)' }],
     ['control character in answer', { ...validSite, answer: '確認してください\u0000。' }],
     ['201 Unicode code points', { ...validSite, answer: '😀'.repeat(201) }],
     ['three sentence clauses', { ...validSite, answer: '一つ目。二つ目。三つ目。' }],
+    ['three newline-separated clauses', { ...validSite, answer: '一つ目\n二つ目\n三つ目' }],
     ['non-empty topic label for a site result', { ...validSite, topicLabel: 'サイト案内' }],
     ['blank out-of-scope topic label', { ...validOutOfScope, topicLabel: '' }],
     ['whitespace-only out-of-scope topic label', {
@@ -183,9 +192,17 @@ describe('validateModelGuideResponse', () => {
       ...validOutOfScope,
       answer: '申し訳ありませんが、東京の天気については案内できません。',
     }],
+    ['out-of-scope answer that merely says Contact', {
+      ...validOutOfScope,
+      answer: '申し訳ありませんが、東京の天気については案内できません。お問い合わせ先という言葉。',
+    }],
     ['university answer with a detailed claim', {
       ...validUniversity,
       answer: '豊田工業大学には学部があります。公式サイトをご確認ください。',
+    }],
+    ['university answer with a descriptive claim', {
+      ...validUniversity,
+      answer: '豊田工業大学は素晴らしい大学です。公式サイトをご確認ください。',
     }],
   ])('rejects %s', (_name, value) => {
     expect(() => validateModelGuideResponse(value, context)).toThrow(UnsafeModelOutputError);

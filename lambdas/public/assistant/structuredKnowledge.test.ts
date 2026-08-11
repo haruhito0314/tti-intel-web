@@ -36,12 +36,14 @@ describe('createVerifiedOfficialLinks', () => {
     const expectedCatalog = {
       discord: { title: 'TTI Intelligence Discord', href: 'https://discord.gg/DFWs8GrHxF' },
       youtube: { title: 'TTI Intelligence YouTube', href: 'https://www.youtube.com/@ttiintelligence' },
+      'toyota-ti': { title: '豊田工業大学 公式サイト', href: 'https://www.toyota-ti.ac.jp/' },
     };
 
     expect(OFFICIAL_SOURCE_LINKS).toEqual(expectedCatalog);
     expect(createVerifiedOfficialLinks([
       'discord',
       'youtube',
+      'toyota-ti',
     ]).map(({ href }) => href)).toEqual(Object.values(expectedCatalog).map(({ href }) => href));
   });
 });
