@@ -58,6 +58,7 @@ import {
 
 const OPENAI_TIMEOUT_MS = 20_000;
 const MAX_ASSISTANT_LINKS = 4;
+const UNIVERSITY_DIRECTION = '豊田工業大学については、公式サイトをご確認ください。';
 
 const ERROR_RESPONSES = {
   400: {
@@ -279,6 +280,17 @@ function hasMeaningfulModelAnswer(answer: string): boolean {
   return /[\p{L}\p{N}\p{S}]/u.test(answer);
 }
 
+function createPublicAnswer(
+  output: ModelGuideResponse,
+  modelAnswer: string,
+): string {
+  if (output.scope === 'university') return UNIVERSITY_DIRECTION;
+  if (output.scope === 'out_of_scope') {
+    return `申し訳ありませんが、${output.topicLabel}については案内できません。必要であればお問い合わせください。`;
+  }
+  return modelAnswer;
+}
+
 function createVerifiedPageLinks(
   pageIds: readonly string[],
   allowedPageIds: ReadonlySet<PageId>,
@@ -470,10 +482,11 @@ export function createAssistantHandler(
         throw new UnsafeModelOutputError('Unsafe model output', result.usage);
       }
       assistantScope = result.output.scope;
-      const answer = sanitizeModelAnswer(result.output.answer);
-      if (!hasMeaningfulModelAnswer(answer)) {
+      const modelAnswer = sanitizeModelAnswer(result.output.answer);
+      if (!hasMeaningfulModelAnswer(modelAnswer)) {
         throw new UnsafeModelOutputError('Unsafe model output', result.usage);
       }
+      const answer = createPublicAnswer(result.output, modelAnswer);
       const usage = safeUsage(result.usage);
       inputTokens = usage.inputTokens;
       cachedInputTokens = usage.cachedInputTokens;

@@ -30,10 +30,7 @@ const EMAIL_ADDRESS_PATTERN = /[a-z0-9](?:[a-z0-9.!#$%&'*+/=?^_`{|}~-]{0,62}[a-z
 const URL_PATTERN = /(?:(?:https?|ftp):\/\/|\/\/|(?:mailto|tel|javascript|data):|www\.|\b[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.[a-z]{2,63}\b)/iu;
 const MARKDOWN_PATTERN = /(?:\[[^\]\r\n]*\]\([^\)\r\n]+\)|\*\*[^*\r\n]+\*\*|__[^_\r\n]+__|~~[^~\r\n]+~~|`[^`\r\n]+`)/u;
 const SENTENCE_CLAUSE_PATTERN = /[。．.!！？?\r\n]+/u;
-const UNIVERSITY_DIRECTION_PATTERN = /^(?:豊田工業大学(?:について)?(?:は|の(?:情報|詳細)は)?[、,]?)?(?:詳しくは)?公式(?:サイト|ウェブサイト|ホームページ)(?:をご(?:確認|覧)ください|へ(?:お進み|アクセス)ください|をご利用ください)[。．!?！？]?$/u;
-const OUT_OF_SCOPE_APOLOGY_PATTERN = /(?:申し訳(?:ありません|ございません)|すみません|ごめんなさい)/u;
-const OUT_OF_SCOPE_INABILITY_PATTERN = /(?:(?:お答え|回答|案内|対応)(?:でき|しかね)|お力にな(?:れ|り)ません)/u;
-const OUT_OF_SCOPE_CONTACT_PATTERN = /(?:お問い合わせ(?:ください|フォーム(?:から|をご利用ください)|先(?:へ|に)ご連絡ください)|contact\s+(?:us|form))/iu;
+const LEADING_ACKNOWLEDGEMENT_PATTERN = /^(?:はい|もちろんです)$/u;
 
 export class RequestValidationError extends Error {
   readonly name = 'RequestValidationError';
@@ -198,7 +195,6 @@ function hasOnlyIds(ids: readonly string[], expected: readonly string[]): boolea
 function validateScopePolicy(
   scope: AssistantModelScope,
   topicLabel: string,
-  answer: string,
   pageIds: readonly string[],
   contentIds: readonly string[],
   sourceIds: readonly string[],
@@ -217,8 +213,10 @@ function validateScopePolicy(
     if (
       !hasOnlyIds(pageIds, [])
       || !hasOnlyIds(contentIds, [])
-      || !hasOnlyIds(sourceIds, ['toyota-ti'])
-      || !UNIVERSITY_DIRECTION_PATTERN.test(answer)
+      || !(
+        hasOnlyIds(sourceIds, [])
+        || hasOnlyIds(sourceIds, ['toyota-ti'])
+      )
     ) {
       return unsafeModelOutput();
     }
@@ -231,10 +229,6 @@ function validateScopePolicy(
     || !hasOnlyIds(pageIds, ['contact'])
     || !hasOnlyIds(contentIds, [])
     || !hasOnlyIds(sourceIds, [])
-    || !answer.includes(topicLabel)
-    || !OUT_OF_SCOPE_APOLOGY_PATTERN.test(answer)
-    || !OUT_OF_SCOPE_INABILITY_PATTERN.test(answer)
-    || !OUT_OF_SCOPE_CONTACT_PATTERN.test(answer)
   ) {
     return unsafeModelOutput();
   }
@@ -283,12 +277,14 @@ export function validateModelGuideResponse(
 
   const trimmedAnswer = answer.trim();
   const answerLength = [...answer].length;
-  const clauseCount = trimmedAnswer
+  const answerClauses = trimmedAnswer
     .replace(EMAIL_ADDRESS_PATTERN, 'email')
     .split(SENTENCE_CLAUSE_PATTERN)
     .map((clause) => clause.trim())
-    .filter((clause) => clause.length > 0)
-    .length;
+    .filter((clause) => clause.length > 0);
+  const clauseCount = LEADING_ACKNOWLEDGEMENT_PATTERN.test(answerClauses[0] ?? '')
+    ? answerClauses.length - 1
+    : answerClauses.length;
   if (
     trimmedAnswer.length === 0
     || answerLength > MAX_MODEL_ANSWER_LENGTH
@@ -319,7 +315,6 @@ export function validateModelGuideResponse(
   validateScopePolicy(
     scope,
     topicLabel,
-    trimmedAnswer,
     validatedPageIds,
     validatedContentIds,
     validatedSourceIds,

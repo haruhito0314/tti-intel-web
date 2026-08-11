@@ -232,7 +232,7 @@ describe('createAssistantHandler grounded scope state machine', () => {
     {
       message: '掲示板は投稿していいの？',
       scope: 'site' as const,
-      answer: '掲示板には新しいスレッドやコメントを投稿できます。',
+      answer: 'はい。掲示板は誰でも匿名で自由に書き込めます。質問や相談などを投稿できます。',
       pageIds: ['board'],
       contentIds: [],
       sourceIds: [],
@@ -241,10 +241,11 @@ describe('createAssistantHandler grounded scope state machine', () => {
     {
       message: '豊田工業大学について教えて',
       scope: 'university' as const,
-      answer: '豊田工業大学については公式サイトをご確認ください。',
+      answer: '詳しくは豊田工業大学の公式ウェブサイトをご覧ください。',
+      publicAnswer: '豊田工業大学については、公式サイトをご確認ください。',
       pageIds: [],
       contentIds: [],
-      sourceIds: ['toyota-ti'],
+      sourceIds: [],
       links: [{
         pageId: 'toyota-ti',
         title: '豊田工業大学 公式サイト',
@@ -255,7 +256,8 @@ describe('createAssistantHandler grounded scope state machine', () => {
       message: '東京の天気は？',
       scope: 'out_of_scope' as const,
       topicLabel: '東京の天気',
-      answer: '申し訳ありませんが、東京の天気は案内できません。お問い合わせフォームをご利用ください。',
+      answer: '東京の天気には対応できません。お問い合わせフォームをご利用ください。',
+      publicAnswer: '申し訳ありませんが、東京の天気については案内できません。必要であればお問い合わせください。',
       pageIds: ['contact'],
       contentIds: [],
       sourceIds: [],
@@ -266,6 +268,7 @@ describe('createAssistantHandler grounded scope state machine', () => {
     scope,
     topicLabel = '',
     answer,
+    publicAnswer = answer,
     pageIds,
     contentIds,
     sourceIds,
@@ -280,7 +283,7 @@ describe('createAssistantHandler grounded scope state machine', () => {
     const response = await invoke(dependencies, eventForRequest({ message, history: [] }));
 
     expect(response.statusCode).toBe(200);
-    expect(parsedBody(response)).toEqual({ answer, links });
+    expect(parsedBody(response)).toEqual({ answer: publicAnswer, links });
     expect(response.body).not.toContain('TTI Intelligenceと、このサイトの内容について案内できます。');
     expect(dependencies.reserveQuota).toHaveBeenCalledTimes(1);
     expect(dependencies.getApiKey).toHaveBeenCalledTimes(1);
@@ -739,7 +742,7 @@ describe('createAssistantHandler verified links', () => {
     }));
 
     expect(parsedBody(response)).toEqual({
-      answer: '豊田工業大学については公式サイトをご確認ください。',
+      answer: '豊田工業大学については、公式サイトをご確認ください。',
       links: [{
         pageId: 'toyota-ti',
         title: '豊田工業大学 公式サイト',
@@ -770,7 +773,7 @@ describe('createAssistantHandler verified links', () => {
     }));
 
     expect(parsedBody(response)).toEqual({
-      answer: '申し訳ありませんが、東京の天気は案内できません。お問い合わせください。',
+      answer: '申し訳ありませんが、東京の天気については案内できません。必要であればお問い合わせください。',
       links: [{ pageId: 'contact', title: 'お問い合わせ', href: '/contact' }],
     });
   });

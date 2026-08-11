@@ -174,6 +174,32 @@ describe('validateModelGuideResponse', () => {
   });
 
   it.each([
+    'はい。掲示板は誰でも匿名で自由に書き込めます。質問や相談などを投稿できます。',
+    'もちろんです。掲示板にはスレッドを投稿できます。コメントも書き込めます。',
+  ])('ignores one leading short acknowledgement when counting clauses: %s', (answer) => {
+    expect(validateModelGuideResponse({ ...validSite, answer }, context).answer).toBe(answer);
+  });
+
+  it('accepts a safe university direction without a source ID', () => {
+    const value = {
+      ...validUniversity,
+      answer: '詳しくは豊田工業大学の公式ウェブサイトをご覧ください。',
+      sourceIds: [],
+    };
+
+    expect(validateModelGuideResponse(value, context)).toEqual(value);
+  });
+
+  it('accepts a safe bounded out-of-scope answer without prescribed wording', () => {
+    const value = {
+      ...validOutOfScope,
+      answer: '東京の天気には対応できません。お問い合わせフォームをご利用ください。',
+    };
+
+    expect(validateModelGuideResponse(value, context)).toEqual(value);
+  });
+
+  it.each([
     'お問い合わせはtti.intel@gmail.comまでお願いします。',
     '連絡先はhello@example.orgです。',
   ])('accepts a plain-text email address in a safe answer: %s', (answer) => {
@@ -211,22 +237,6 @@ describe('validateModelGuideResponse', () => {
     ['university internal page link', { ...validUniversity, pageIds: ['about'] }],
     ['out-of-scope source link', { ...validOutOfScope, sourceIds: ['discord'] }],
     ['out-of-scope page other than Contact', { ...validOutOfScope, pageIds: ['about'] }],
-    ['out-of-scope answer without Contact recommendation', {
-      ...validOutOfScope,
-      answer: '申し訳ありませんが、東京の天気については案内できません。',
-    }],
-    ['out-of-scope answer that merely says Contact', {
-      ...validOutOfScope,
-      answer: '申し訳ありませんが、東京の天気については案内できません。お問い合わせ先という言葉。',
-    }],
-    ['university answer with a detailed claim', {
-      ...validUniversity,
-      answer: '豊田工業大学には学部があります。公式サイトをご確認ください。',
-    }],
-    ['university answer with a descriptive claim', {
-      ...validUniversity,
-      answer: '豊田工業大学は素晴らしい大学です。公式サイトをご確認ください。',
-    }],
   ])('rejects %s', (_name, value) => {
     expect(() => validateModelGuideResponse(value, context)).toThrow(UnsafeModelOutputError);
   });
