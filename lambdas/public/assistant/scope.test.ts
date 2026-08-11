@@ -115,6 +115,19 @@ describe('classifyAssistantScope', () => {
     });
   });
 
+  it.each([
+    ['このサークルは大学生向けですか？', 'circle'],
+    ['名古屋大学のこのサークルは？', 'out_of_scope'],
+  ] as const)('keeps deictic circle precedence without admitting a named university: %s', (
+    message,
+    scope,
+  ) => {
+    expect(classifyAssistantScope(message, '/', [])).toEqual({
+      scope,
+      contextualFollowUp: false,
+    });
+  });
+
   it('resolves a deictic circle follow-up from explicit history', () => {
     const history: HistoryMessage[] = [{
       role: 'user',
