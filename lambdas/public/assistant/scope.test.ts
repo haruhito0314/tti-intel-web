@@ -12,11 +12,16 @@ describe('classifyAssistantScope', () => {
     ['サークルについて教えて', 'circle'],
     ['サークルって何？', 'circle'],
     ['活動は？', 'circle'],
+    ['活動内容を教えてください', 'circle'],
     ['何してるの？', 'circle'],
     ['参加したい', 'circle'],
+    ['参加方法を教えてください', 'circle'],
     ['見学できますか？', 'circle'],
+    ['見学はできますか？', 'circle'],
     ['会費は？', 'circle'],
+    ['会費はいくらですか？', 'circle'],
     ['Discordある？', 'circle'],
+    ['わかりました、参加方法は？', 'circle'],
     ['このサークルについて教えて', 'circle'],
     ['AIサークルに参加したい', 'circle'],
     ['TTI Intelligenceの活動は？', 'circle'],
@@ -25,6 +30,7 @@ describe('classifyAssistantScope', () => {
     ['ページ一覧は？', 'site'],
     ['アプリ一覧は？', 'site'],
     ['開発について教えて', 'site'],
+    ['サイトのナビゲーションについて教えて', 'site'],
     ['このサイトは何？', 'site'],
     ['掲示板の使い方を教えて', 'site'],
     ['Codexとは？', 'site'],
@@ -50,6 +56,9 @@ describe('classifyAssistantScope', () => {
     ['就職活動について教えて', 'out_of_scope'],
     ['宮崎駿の作品は？', 'out_of_scope'],
     ['株式投資コミュニティに参加したい', 'out_of_scope'],
+    ['新薬開発について教えて', 'out_of_scope'],
+    ['カーナビゲーションについて教えて', 'out_of_scope'],
+    ['Discordでおすすめの株を教えて', 'out_of_scope'],
     ['病気の治し方は？', 'out_of_scope'],
     ['おすすめの株は？', 'out_of_scope'],
     ['プログラミングを教えて', 'out_of_scope'],
@@ -117,6 +126,8 @@ describe('classifyAssistantScope', () => {
 
   it.each([
     ['このサークルは大学生向けですか？', 'circle'],
+    ['このサークルは高校生でも参加できますか？', 'circle'],
+    ['このページは会社員向けですか？', 'site'],
     ['名古屋大学のこのサークルは？', 'out_of_scope'],
   ] as const)('keeps deictic circle precedence without admitting a named university: %s', (
     message,
@@ -124,6 +135,27 @@ describe('classifyAssistantScope', () => {
   ) => {
     expect(classifyAssistantScope(message, '/', [])).toEqual({
       scope,
+      contextualFollowUp: false,
+    });
+  });
+
+  it('uses a high-confidence circle action in the immediately previous turn as context', () => {
+    const history: HistoryMessage[] = [{ role: 'user', content: '活動は？' }];
+
+    expect(classifyAssistantScope('それは？', '/', history)).toEqual({
+      scope: 'circle',
+      contextualFollowUp: true,
+    });
+  });
+
+  it('lets a fresh high-confidence circle action win over site history', () => {
+    const history: HistoryMessage[] = [{
+      role: 'user',
+      content: 'このサイトについて教えて',
+    }];
+
+    expect(classifyAssistantScope('会費は？', '/', history)).toEqual({
+      scope: 'circle',
       contextualFollowUp: false,
     });
   });
