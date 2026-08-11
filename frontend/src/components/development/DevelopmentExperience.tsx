@@ -25,6 +25,7 @@ import { siClaude, siCursor, siOpenai, siVercel, type SimpleIcon } from 'simple-
 import {
     CODEX_LAUNCH_CLICK_MS,
     CODEX_LAUNCH_OPEN_MS,
+    codexWorkState,
     demoCursorTarget,
     ecosystemSurfaceHasFrame,
     ecosystemWindowScale,
@@ -304,15 +305,18 @@ function CodexDemo({
     const conversationRef = useRef<HTMLDivElement>(null);
     const cursorRef = useRef<HTMLSpanElement>(null);
     const step = demoStep(demoTime);
+    const {
+        planComplete,
+        firstFileReady,
+        secondFileReady,
+        agentFinished,
+    } = codexWorkState(demoTime, reducedMotion);
     const launcherOpening = reducedMotion || demoTime >= CODEX_LAUNCH_OPEN_MS;
     const contentReady = reducedMotion || demoTime >= 4_350;
     const workspaceHidden = progress >= 0.995;
     const firstPrompt = typedText(HOME_PROMPT, demoTime, 5_380, 1_250);
     const secondPrompt = typedText(SERVER_PROMPT, demoTime, 10_900, 1_150);
     const firstSent = demoTime >= 7_280;
-    const filesUpdated = reducedMotion || demoTime >= 9_450;
-    const secondFileUpdated = reducedMotion || demoTime >= 9_650;
-    const agentFinished = demoTime >= 9_850;
     const secondSent = demoTime >= 12_780;
     const serverRunning = demoTime >= 13_050;
     const serverReady = demoTime >= 14_200;
@@ -473,7 +477,7 @@ function CodexDemo({
                     <span className="dx-window-branch">codex/home-refresh</span>
                 </div>
 
-                <div className={`dx-codex-app ${step >= 3 ? 'is-review-visible' : ''}`}>
+                <div className={`dx-codex-app ${firstFileReady ? 'is-review-visible' : ''}`}>
                     <aside className="dx-codex-sidebar">
                         <strong>Codex</strong>
                         <span className="dx-side-label">PROJECT</span>
@@ -508,17 +512,17 @@ function CodexDemo({
                             </div>
 
                             <div className={`dx-plan ${step >= 3 ? 'is-visible' : ''}`}>
-                                <header><b>Implementation plan</b><span>{step >= 4 ? '3 / 3' : '2 / 3'}</span></header>
+                                <header><b>Implementation plan</b><span>{planComplete ? '3 / 3' : '2 / 3'}</span></header>
                                 <p className="is-done">Clarify the hero hierarchy</p>
                                 <p className="is-done">Refine content section flow</p>
-                                <p className={step >= 4 ? 'is-done' : 'is-active'}>Prevent viewport overflow</p>
+                                <p className={planComplete ? 'is-done' : 'is-active'}>Prevent viewport overflow</p>
                             </div>
 
-                            <div className={`dx-changed-files ${filesUpdated ? 'is-visible' : ''}`}>
-                                <span className={filesUpdated ? 'is-ready' : ''}>
+                            <div className={`dx-changed-files ${firstFileReady ? 'is-visible' : ''}`}>
+                                <span className={firstFileReady ? 'is-ready' : ''}>
                                     <b>Home.tsx</b><small>Updated</small>
                                 </span>
-                                <span className={secondFileUpdated ? 'is-ready' : ''}>
+                                <span className={secondFileReady ? 'is-ready' : ''}>
                                     <b>index.css</b><small>Updated</small>
                                 </span>
                             </div>
@@ -583,14 +587,14 @@ function CodexDemo({
                     </main>
 
                     <aside
-                        className={`dx-review ${filesUpdated ? 'is-visible' : ''}`}
-                        aria-hidden={!filesUpdated}
+                        className={`dx-review ${firstFileReady ? 'is-visible' : ''}`}
+                        aria-hidden={!firstFileReady}
                     >
-                        <header>Changed files <span>{secondFileUpdated ? '2' : '1'} files</span></header>
-                        <div className={filesUpdated ? 'is-ready' : ''}>
+                        <header>Changed files <span>{secondFileReady ? '2' : '1'} files</span></header>
+                        <div className={firstFileReady ? 'is-ready' : ''}>
                             <b>Home.tsx</b><small>Updated</small>
                         </div>
-                        <div className={secondFileUpdated ? 'is-ready' : ''}>
+                        <div className={secondFileReady ? 'is-ready' : ''}>
                             <b>index.css</b><small>Updated</small>
                         </div>
                         <p>Content hierarchy<br />Responsive layout<br />Section continuity</p>

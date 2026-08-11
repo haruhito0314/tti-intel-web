@@ -32,3 +32,15 @@ export function demoCursorTarget(time: number) {
 /** Click the Codex icon, then open the window. */
 export const CODEX_LAUNCH_CLICK_MS = 2_480;
 export const CODEX_LAUNCH_OPEN_MS = 2_660;
+export const CODEX_IMPLEMENTATION_COMPLETE_MS = 9_450;
+export const CODEX_SECOND_FILE_READY_MS = 9_650;
+export const CODEX_AGENT_FINISHED_MS = 9_850;
+
+export function codexWorkState(time: number, reducedMotion: boolean) {
+    return {
+        planComplete: reducedMotion || time >= CODEX_IMPLEMENTATION_COMPLETE_MS,
+        firstFileReady: reducedMotion || time >= CODEX_IMPLEMENTATION_COMPLETE_MS,
+        secondFileReady: reducedMotion || time >= CODEX_SECOND_FILE_READY_MS,
+        agentFinished: reducedMotion || time >= CODEX_AGENT_FINISHED_MS,
+    };
+}
