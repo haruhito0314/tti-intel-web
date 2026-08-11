@@ -92,7 +92,7 @@ export function Contact() {
         <div className="animate-fade-in">
             <PageSeo
                 title="お問い合わせ | TTI Intelligence"
-                description="TTI Intelligenceへのお問い合わせページです。参加相談、活動、企業・団体との連携に関する質問を送信できます。"
+                description="TTI Intelligenceへのお問い合わせページです。参加相談、活動、連携、AI学習に役立つ幅広い提案や依頼を送信できます。"
             />
             {/* Header */}
             <section className="about-band-hero relative overflow-hidden">
@@ -140,8 +140,12 @@ export function Contact() {
                                 <li>• イベントへの参加申し込み</li>
                                 <li>• 企業・団体との提携、共同企画、技術交流</li>
                                 <li>• 協賛・コラボレーションのご相談</li>
+                                <li>• 活動やAI学習に役立つ幅広いご提案・ご依頼</li>
                                 <li>• その他のお問い合わせ</li>
                             </ul>
+                            <p className="mt-4 text-sm text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
+                                内容を限定せず、まずはお気軽にご相談ください。
+                            </p>
                         </Card>
                     </div>
 

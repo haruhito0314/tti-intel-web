@@ -55,4 +55,15 @@ describe('buildAssistantKnowledgePack', () => {
     expect(facts).toMatch(/個人名.*一覧.*人数.*代表者.*お問い合わせ/u);
     expect(facts).toMatch(/企業.*団体.*提携.*共同企画.*技術交流.*協賛.*歓迎.*お問い合わせ/u);
   });
+
+  it('welcomes broadly beneficial proposals without promising acceptance', () => {
+    const contact = buildAssistantKnowledgePack().entries.find(
+      (entry) => entry.topicId === 'circle.contact',
+    );
+    const facts = contact?.facts.join(' ') ?? '';
+
+    expect(facts).toMatch(/活動.*プラス.*提案.*依頼.*内容を限定せず.*歓迎.*お問い合わせ/u);
+    expect(facts).toMatch(/AI.*使い方.*講師.*家庭教師/u);
+    expect(facts).toMatch(/実施.*受諾.*確約/u);
+  });
 });

@@ -198,6 +198,7 @@ describe('buildResponsesPayload', () => {
     expect(inputData.history.length).toBeLessThanOrEqual(1);
     expect(inputData.content).toHaveLength(3);
     expect(payload.instructions).toMatch(/公開資料にない.*お問い合わせ/u);
+    expect(payload.instructions).toMatch(/個別の例や語句.*限定せず.*意味.*プラス.*お問い合わせ.*確約/u);
   });
 
   it('constrains pageIds to the exact locally grounded page set', () => {

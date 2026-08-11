@@ -9,5 +9,7 @@ describe('Contact', () => {
 
         expect(screen.getByText(/企業・団体との提携、共同企画、技術交流/u)).toBeInTheDocument();
         expect(screen.getByText(/協賛・コラボレーションのご相談/u)).toBeInTheDocument();
+        expect(screen.getByText(/活動やAI学習に役立つ幅広いご提案・ご依頼/u)).toBeInTheDocument();
+        expect(screen.getByText(/内容を限定せず、まずはお気軽にご相談ください/u)).toBeInTheDocument();
     });
 });
