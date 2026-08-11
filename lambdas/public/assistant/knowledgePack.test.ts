@@ -62,8 +62,8 @@ describe('buildAssistantKnowledgePack', () => {
     );
     const facts = contact?.facts.join(' ') ?? '';
 
-    expect(facts).toMatch(/活動.*プラス.*提案.*依頼.*内容を限定せず.*歓迎.*お問い合わせ/u);
+    expect(facts).toMatch(/活動.*役立つ.*提案.*依頼.*幅広く.*歓迎.*問い合わせ/u);
     expect(facts).toMatch(/AI.*使い方.*講師.*家庭教師/u);
-    expect(facts).toMatch(/実施.*受諾.*確約/u);
+    expect(facts).toMatch(/進め方.*希望内容.*確認.*相談/u);
   });
 });

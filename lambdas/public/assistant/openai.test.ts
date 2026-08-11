@@ -199,6 +199,8 @@ describe('buildResponsesPayload', () => {
     expect(inputData.content).toHaveLength(3);
     expect(payload.instructions).toMatch(/公開資料にない.*お問い合わせ/u);
     expect(payload.instructions).toMatch(/個別の例や語句.*限定せず.*意味.*プラス.*お問い合わせ.*確約/u);
+    expect(payload.instructions).toMatch(/scope=circle.*pageIds=\["contact"\].*2文以内/u);
+    expect(payload.instructions).toMatch(/質問中の依頼.*列挙.*そういったご相談.*事務的/u);
   });
 
   it('constrains pageIds to the exact locally grounded page set', () => {

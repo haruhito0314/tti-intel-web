@@ -177,6 +177,8 @@ describe('validateModelGuideResponse', () => {
     'はい。掲示板は誰でも匿名で自由に書き込めます。質問や相談などを投稿できます。',
     'いいえ。表示名は空欄でも投稿できます。空欄の場合は匿名と表示されます。',
     'もちろんです。掲示板にはスレッドを投稿できます。コメントも書き込めます。',
+    'ご提案ありがとうございます。幅広いご相談を歓迎しています。詳しくはお問い合わせください。',
+    'ご相談ありがとうございます。内容を確認して判断します。詳しくはお問い合わせください。',
   ])('ignores one leading short acknowledgement when counting clauses: %s', (answer) => {
     expect(validateModelGuideResponse({ ...validSite, answer }, context).answer).toBe(answer);
   });
