@@ -30,7 +30,7 @@ const EMAIL_ADDRESS_PATTERN = /[a-z0-9](?:[a-z0-9.!#$%&'*+/=?^_`{|}~-]{0,62}[a-z
 const URL_PATTERN = /(?:(?:https?|ftp):\/\/|\/\/|(?:mailto|tel|javascript|data):|www\.|\b[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.[a-z]{2,63}\b)/iu;
 const MARKDOWN_PATTERN = /(?:\[[^\]\r\n]*\]\([^\)\r\n]+\)|\*\*[^*\r\n]+\*\*|__[^_\r\n]+__|~~[^~\r\n]+~~|`[^`\r\n]+`)/u;
 const SENTENCE_CLAUSE_PATTERN = /[。．.!！？?\r\n]+/u;
-const LEADING_ACKNOWLEDGEMENT_PATTERN = /^(?:はい|もちろんです)$/u;
+const LEADING_ACKNOWLEDGEMENT_PATTERN = /^(?:はい|いいえ|もちろんです)$/u;
 
 export class RequestValidationError extends Error {
   readonly name = 'RequestValidationError';

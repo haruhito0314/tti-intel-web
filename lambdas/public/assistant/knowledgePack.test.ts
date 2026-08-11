@@ -45,4 +45,14 @@ describe('buildAssistantKnowledgePack', () => {
 
     expect(serialized).not.toMatch(/星雲祭2026|参加相談のスレッド|スレッド本文|コメント本文/u);
   });
+
+  it('routes unpublished member details and organization collaboration to Contact', () => {
+    const contact = buildAssistantKnowledgePack().entries.find(
+      (entry) => entry.topicId === 'circle.contact',
+    );
+    const facts = contact?.facts.join(' ') ?? '';
+
+    expect(facts).toMatch(/個人名.*一覧.*人数.*代表者.*お問い合わせ/u);
+    expect(facts).toMatch(/企業.*団体.*提携.*共同企画.*技術交流.*協賛.*歓迎.*お問い合わせ/u);
+  });
 });

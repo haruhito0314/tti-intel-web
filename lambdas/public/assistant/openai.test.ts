@@ -197,6 +197,7 @@ describe('buildResponsesPayload', () => {
     expect(inputData.knowledgePack.entries).toHaveLength(knowledgePack.entries.length);
     expect(inputData.history.length).toBeLessThanOrEqual(1);
     expect(inputData.content).toHaveLength(3);
+    expect(payload.instructions).toMatch(/公開資料にない.*お問い合わせ/u);
   });
 
   it('constrains pageIds to the exact locally grounded page set', () => {
