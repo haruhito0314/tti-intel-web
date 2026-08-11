@@ -183,9 +183,11 @@ describe('TtiAiStack site assistant infrastructure', () => {
             'POSTS_TABLE',
         ]);
         expect(variables?.ASSISTANT_ALL_API).toBe('true');
+        expect(variables).not.toHaveProperty('WEB_SEARCH');
         expect(variables?.ASSISTANT_USAGE_TABLE).toEqual({ Ref: usageTable?.[0] });
         expect(variables?.POSTS_TABLE).toEqual({ Ref: postsTable?.[0] });
         expect(variables?.BOARD_TABLE).toEqual({ Ref: boardTable?.[0] });
+        expect(JSON.stringify(template.toJSON())).not.toMatch(/web[ _-]?search/i);
     });
 
     it('grants the assistant role quota-update, content-read, and secret-read access', () => {
