@@ -73,10 +73,10 @@ describe('AiAssistantProductPage', () => {
             </MemoryRouter>,
         );
 
-        expect(screen.getAllByRole('button', { name: 'TTI Intelligenceについて教えて' })).toHaveLength(2);
+        expect(screen.getAllByRole('button', { name: 'サークルについて教えて' })).toHaveLength(2);
+        expect(screen.getAllByRole('button', { name: '活動は？' })).toHaveLength(2);
+        expect(screen.getAllByRole('button', { name: '参加方法は？' })).toHaveLength(2);
         expect(screen.getAllByRole('button', { name: 'このサイトでできることは？' })).toHaveLength(2);
-        expect(screen.getAllByRole('button', { name: 'このサイトの使い方を教えて' })).toHaveLength(2);
-        expect(screen.getAllByRole('button', { name: '豊田工業大学の公式サイトを教えて' })).toHaveLength(2);
         expect(screen.queryByRole('button', { name: /CodexとMCP/ })).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: /光合成/ })).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: /CLI Practice/i })).not.toBeInTheDocument();

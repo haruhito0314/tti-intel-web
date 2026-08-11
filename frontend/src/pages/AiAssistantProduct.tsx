@@ -13,10 +13,10 @@ import { useAssistant } from '@/features/assistant/useAssistant';
 import './AiAssistantProduct.css';
 
 const SUGGESTED_QUESTIONS = [
-    'TTI Intelligenceについて教えて',
+    'サークルについて教えて',
+    '活動は？',
+    '参加方法は？',
     'このサイトでできることは？',
-    'このサイトの使い方を教えて',
-    '豊田工業大学の公式サイトを教えて',
 ] as const;
 
 export function AiAssistantProductPage() {

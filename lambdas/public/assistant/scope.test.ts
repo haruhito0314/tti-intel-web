@@ -9,14 +9,35 @@ import type { HistoryMessage } from './types.js';
 
 describe('classifyAssistantScope', () => {
   it.each([
+    ['サークルについて教えて', 'circle'],
+    ['サークルって何？', 'circle'],
+    ['活動は？', 'circle'],
+    ['活動内容を教えてください', 'circle'],
+    ['何してるの？', 'circle'],
+    ['参加したい', 'circle'],
+    ['参加方法を教えてください', 'circle'],
+    ['見学できますか？', 'circle'],
+    ['見学はできますか？', 'circle'],
+    ['会費は？', 'circle'],
+    ['会費はいくらですか？', 'circle'],
+    ['Discordある？', 'circle'],
+    ['わかりました、参加方法は？', 'circle'],
     ['このサークルについて教えて', 'circle'],
     ['AIサークルに参加したい', 'circle'],
     ['TTI Intelligenceの活動は？', 'circle'],
+    ['このサイトについて教えて', 'site'],
+    ['サイトマップは？', 'site'],
+    ['ページ一覧は？', 'site'],
+    ['アプリ一覧は？', 'site'],
+    ['開発について教えて', 'site'],
+    ['サイトのナビゲーションについて教えて', 'site'],
     ['このサイトは何？', 'site'],
     ['掲示板の使い方を教えて', 'site'],
     ['Codexとは？', 'site'],
     ['Vercel、AWS、Plugin、CLI、MCPを説明して', 'site'],
     ['豊田工業大学について教えて', 'university'],
+    ['豊田工業大学のサークル一覧は？', 'university'],
+    ['豊田工業大学の公式サイトは？', 'university'],
     ['豊工大の学費は？', 'university'],
     ['豊田工大の学費は？', 'university'],
     ['こんにちは', 'conversation'],
@@ -29,11 +50,112 @@ describe('classifyAssistantScope', () => {
     ['卓球組み合わせを作りたい', 'site'],
     ['AI Assistantについて教えて', 'site'],
     ['東京の天気は？', 'out_of_scope'],
+    ['名古屋大学のサークルは？', 'out_of_scope'],
+    ['名古屋大学のAIサークルは？', 'out_of_scope'],
+    ['Googleのサークルは？', 'out_of_scope'],
+    ['就職活動について教えて', 'out_of_scope'],
+    ['宮崎駿の作品は？', 'out_of_scope'],
+    ['株式投資コミュニティに参加したい', 'out_of_scope'],
+    ['新薬開発について教えて', 'out_of_scope'],
+    ['カーナビゲーションについて教えて', 'out_of_scope'],
+    ['Discordでおすすめの株を教えて', 'out_of_scope'],
+    ['病気の治し方は？', 'out_of_scope'],
+    ['おすすめの株は？', 'out_of_scope'],
     ['プログラミングを教えて', 'out_of_scope'],
     ['難しいね', 'out_of_scope'],
   ] as const)('classifies %s as %s', (message, scope) => {
     expect(classifyAssistantScope(message, '/', [])).toEqual({
       scope,
+      contextualFollowUp: false,
+    });
+  });
+
+  it.each([
+    ['circle', 'サークルについて教えて'],
+    ['site', 'このサイトについて教えて'],
+    ['university', '豊田工業大学について教えて'],
+  ] as const)('uses only the immediately previous explicit %s turn for a follow-up', (
+    scope,
+    previousMessage,
+  ) => {
+    const history: HistoryMessage[] = [
+      { role: 'user', content: '東京の天気は？' },
+      { role: 'user', content: previousMessage },
+    ];
+
+    expect(classifyAssistantScope('それは？', '/', history)).toEqual({
+      scope,
+      contextualFollowUp: true,
+    });
+  });
+
+  it('does not reuse an older explicit scope when the immediately previous turn is unrelated', () => {
+    const history: HistoryMessage[] = [
+      { role: 'user', content: 'サークルについて教えて' },
+      { role: 'user', content: '東京の天気は？' },
+    ];
+
+    expect(classifyAssistantScope('それは？', '/', history)).toEqual({
+      scope: 'out_of_scope',
+      contextualFollowUp: false,
+    });
+  });
+
+  it.each([
+    ['豊田工業大学の公式サイトは？', 'university'],
+    ['豊田工業大学のAIサークル一覧は？', 'university'],
+    ['東京の天気は？', 'out_of_scope'],
+  ] as const)('lets the explicit current question win over circle history: %s', (message, scope) => {
+    const history: HistoryMessage[] = [{
+      role: 'user',
+      content: 'サークルについて教えて',
+    }];
+
+    expect(classifyAssistantScope(message, '/', history)).toEqual({
+      scope,
+      contextualFollowUp: false,
+    });
+  });
+
+  it('strips a greeting prefix without losing the substantive circle question', () => {
+    expect(classifyAssistantScope('こんにちは、活動は？', '/', [])).toEqual({
+      scope: 'circle',
+      contextualFollowUp: false,
+    });
+  });
+
+  it.each([
+    ['このサークルは大学生向けですか？', 'circle'],
+    ['このサークルは高校生でも参加できますか？', 'circle'],
+    ['このページは会社員向けですか？', 'site'],
+    ['名古屋大学のこのサークルは？', 'out_of_scope'],
+  ] as const)('keeps deictic circle precedence without admitting a named university: %s', (
+    message,
+    scope,
+  ) => {
+    expect(classifyAssistantScope(message, '/', [])).toEqual({
+      scope,
+      contextualFollowUp: false,
+    });
+  });
+
+  it('uses a high-confidence circle action in the immediately previous turn as context', () => {
+    const history: HistoryMessage[] = [{ role: 'user', content: '活動は？' }];
+
+    expect(classifyAssistantScope('それは？', '/', history)).toEqual({
+      scope: 'circle',
+      contextualFollowUp: true,
+    });
+  });
+
+  it('lets a fresh high-confidence circle action win over site history', () => {
+    const history: HistoryMessage[] = [{
+      role: 'user',
+      content: 'このサイトについて教えて',
+    }];
+
+    expect(classifyAssistantScope('会費は？', '/', history)).toEqual({
+      scope: 'circle',
       contextualFollowUp: false,
     });
   });
@@ -90,6 +212,14 @@ describe('classifyAssistantScope', () => {
     expect(classifyAssistantScope('TTI Intelligenceは大学公認ですか？', '/', [])).toMatchObject({
       scope: 'university',
     });
+  });
+
+  it('recognizes university officiality with an ordinary possessive phrase', () => {
+    expect(classifyAssistantScope(
+      'TTI Intelligenceは大学の公式サークルですか？',
+      '/',
+      [],
+    )).toMatchObject({ scope: 'university' });
   });
 
   it('does not infer Toyoda university without an anchor or explicit history', () => {

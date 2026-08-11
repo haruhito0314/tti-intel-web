@@ -110,11 +110,61 @@ describe('validateModelGuideResponse', () => {
     });
   });
 
+  it('accepts exactly 200 Unicode code points', () => {
+    const answer = '😀'.repeat(200);
+
+    expect(validateModelGuideResponse({
+      answer,
+      pageIds: [],
+      contentIds: [],
+      sourceIds: [],
+    }).answer).toBe(answer);
+  });
+
+  it('rejects 201 Unicode code points', () => {
+    expect(() => validateModelGuideResponse({
+      answer: '😀'.repeat(201),
+      pageIds: [],
+      contentIds: [],
+      sourceIds: [],
+    })).toThrow(UnsafeModelOutputError);
+  });
+
+  it('counts surrounding whitespace toward the 200-code-point hard maximum', () => {
+    expect(() => validateModelGuideResponse({
+      answer: ` ${'a'.repeat(200)}`,
+      pageIds: [],
+      contentIds: [],
+      sourceIds: [],
+    })).toThrow(UnsafeModelOutputError);
+  });
+
+  it('accepts at most three nonempty clauses', () => {
+    expect(validateModelGuideResponse({
+      answer: '一つ目。二つ目！\n三つ目？',
+      pageIds: [],
+      contentIds: [],
+      sourceIds: [],
+    }).answer).toBe('一つ目。二つ目！\n三つ目？');
+  });
+
+  it.each([
+    ['Japanese punctuation', '一つ目。二つ目！三つ目？四つ目'],
+    ['newlines', '一つ目\n二つ目\n三つ目\n四つ目'],
+  ])('rejects four nonempty clauses separated by %s', (_name, answer) => {
+    expect(() => validateModelGuideResponse({
+      answer,
+      pageIds: [],
+      contentIds: [],
+      sourceIds: [],
+    })).toThrow(UnsafeModelOutputError);
+  });
+
   it.each([
     ['null output', null],
     ['array output', []],
     ['empty answer', { answer: '   ', pageIds: [], contentIds: [], sourceIds: [] }],
-    ['281 character answer', { answer: 'a'.repeat(281), pageIds: [], contentIds: [], sourceIds: [] }],
+    ['201 code point answer', { answer: 'a'.repeat(201), pageIds: [], contentIds: [], sourceIds: [] }],
     ['4 IDs', { answer: 'answer', pageIds: ['home', 'about', 'news', 'apps'], contentIds: [], sourceIds: [] }],
     ['duplicate ID', { answer: 'answer', pageIds: ['news', 'news'], contentIds: [], sourceIds: [] }],
     ['non-string ID', { answer: 'answer', pageIds: ['news', 1], contentIds: [], sourceIds: [] }],

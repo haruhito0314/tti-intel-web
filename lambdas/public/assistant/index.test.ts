@@ -266,7 +266,7 @@ describe('createAssistantHandler assistant scope routing', () => {
   });
 
   it.each([
-    ['このサークルについて教えて', 'circle'],
+    ['サークルについて教えて', 'circle'],
     ['Codexとは？', 'site'],
   ])('runs the paid generation path once for %s', async (message, assistantScope) => {
     const dependencies = createDependencies();
@@ -317,7 +317,7 @@ describe('createAssistantHandler assistant scope routing', () => {
 
 describe('createAssistantHandler single-Luna path', () => {
   it.each([
-    'このサークルについて教えて',
+    'サークルについて教えて',
     'Codexについて教えて',
     '今週の数学について教えて',
     'Color Sort Puzzleとは？',
