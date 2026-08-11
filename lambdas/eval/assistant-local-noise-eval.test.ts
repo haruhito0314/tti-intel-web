@@ -67,6 +67,15 @@ describe('interim evaluator fixture', () => {
 
     expect(() => parseInterimEvaluationFixture(fixture)).toThrow(/unknown field/i);
   });
+
+  it('rejects shifted scope counts that preserve the 96/4 call split', () => {
+    const fixture = JSON.parse(readFileSync(fixtureUrl, 'utf8')) as {
+      cases: Array<{ expectedScope: string }>;
+    };
+    fixture.cases[0]!.expectedScope = 'site';
+
+    expect(() => parseInterimEvaluationFixture(fixture)).toThrow(/scope matrix/i);
+  });
 });
 
 describe('buildInterimEvaluationCase', () => {

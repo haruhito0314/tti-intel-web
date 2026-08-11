@@ -316,6 +316,18 @@ export function parseInterimEvaluationFixture(value: unknown): InterimEvaluation
   if (!ids.every((id, index) => id === `L${String(index + 1).padStart(3, '0')}`)) {
     return invalidFixture('case IDs must be exactly L001-L100 in order');
   }
+  const scopeCounts = {
+    circle: cases.filter(({ expectedScope }) => expectedScope === 'circle').length,
+    site: cases.filter(({ expectedScope }) => expectedScope === 'site').length,
+    university: cases.filter(({ expectedScope }) => expectedScope === 'university').length,
+    out_of_scope: cases.filter(({ expectedScope }) => expectedScope === 'out_of_scope').length,
+    conversation: cases.filter(({ expectedScope }) => expectedScope === 'conversation').length,
+  };
+  if (scopeCounts.circle !== 32 || scopeCounts.site !== 32
+    || scopeCounts.university !== 16 || scopeCounts.out_of_scope !== 16
+    || scopeCounts.conversation !== 4) {
+    return invalidFixture('scope matrix must be 32/32/16/16/4');
+  }
   if (cases.filter(({ expectedLunaCallCount }) => expectedLunaCallCount === 1).length !== 96
     || cases.filter(({ expectedLunaCallCount }) => expectedLunaCallCount === 0).length !== 4) {
     return invalidFixture('call matrix must contain 96 one-call and 4 zero-call cases');
