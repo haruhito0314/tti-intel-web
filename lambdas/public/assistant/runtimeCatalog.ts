@@ -52,6 +52,7 @@ export const YOUTUBE_CHANNEL_URL = 'https://www.youtube.com/@ttiintelligence';
 export const OFFICIAL_SOURCE_LINKS = {
   discord: { title: 'TTI Intelligence Discord', href: DISCORD_INVITE_URL },
   youtube: { title: 'TTI Intelligence YouTube', href: YOUTUBE_CHANNEL_URL },
+  'toyota-ti': { title: '豊田工業大学 公式サイト', href: TOYOTA_TI_URL },
 } as const satisfies Record<OfficialSourceId, { title: string; href: string }>;
 
 const DYNAMIC_PAGE_PATTERNS: readonly [RegExp, PublicRouteId][] = [

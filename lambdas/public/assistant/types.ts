@@ -30,8 +30,13 @@ export type KnowledgeDomain =
   | 'site' | 'circle' | 'development'
   | 'app' | 'game' | 'math';
 
-export type OfficialSourceId =
-  | 'discord' | 'youtube';
+export const ASSISTANT_MODEL_SCOPES = [
+  'circle', 'site', 'university', 'out_of_scope',
+] as const;
+
+export type AssistantModelScope = (typeof ASSISTANT_MODEL_SCOPES)[number];
+
+export type OfficialSourceId = 'discord' | 'youtube' | 'toyota-ti';
 
 export interface KnowledgeItem {
   id: string;
@@ -90,10 +95,18 @@ export interface RankedContentEntry {
 }
 
 export interface ModelGuideResponse {
+  scope: AssistantModelScope;
+  topicLabel: string;
   answer: string;
   pageIds: string[];
   contentIds: string[];
   sourceIds: string[];
+}
+
+export interface ModelGuideValidationContext {
+  allowedPageIds: readonly AssistantPageId[];
+  allowedContentIds: readonly string[];
+  allowedSourceIds: readonly OfficialSourceId[];
 }
 
 export interface OpenAIUsage {
@@ -104,7 +117,15 @@ export interface OpenAIUsage {
   totalTokens: number;
 }
 
+/** Temporary compatibility shape for callers migrated in the later handler task. */
+interface LegacyModelGuideResponse {
+  answer: string;
+  pageIds: string[];
+  contentIds: string[];
+  sourceIds: string[];
+}
+
 export interface OpenAIResult {
-  output: ModelGuideResponse;
+  output: ModelGuideResponse | LegacyModelGuideResponse;
   usage: OpenAIUsage;
 }

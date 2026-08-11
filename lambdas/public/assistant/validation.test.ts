@@ -6,6 +6,7 @@ import {
   UnsafeModelOutputError,
   validateModelGuideResponse,
 } from './validation.js';
+import type { ModelGuideValidationContext } from './types.js';
 
 const validRequest = {
   message: '今週の数学はどこ？',
@@ -96,93 +97,97 @@ describe('parseAssistantRequest', () => {
 });
 
 describe('validateModelGuideResponse', () => {
-  it('parses and trims a valid model response', () => {
-    expect(validateModelGuideResponse({
-      answer: '  今週の数学はお知らせから確認できます。  ',
-      pageIds: ['news', 'weekly-math'],
-      contentIds: [],
-      sourceIds: ['discord'],
-    })).toEqual({
-      answer: '今週の数学はお知らせから確認できます。',
-      pageIds: ['news', 'weekly-math'],
-      contentIds: [],
-      sourceIds: ['discord'],
-    });
-  });
+  const context: ModelGuideValidationContext = {
+    allowedPageIds: ['about', 'news', 'contact'],
+    allowedContentIds: ['news:welcome'],
+    allowedSourceIds: ['discord', 'youtube', 'toyota-ti'],
+  };
+
+  const validCircle = {
+    scope: 'circle',
+    topicLabel: '',
+    answer: 'TTI Intelligenceでは開発や学習活動を行っています。詳しくはサークルについてをご覧ください。',
+    pageIds: ['about'],
+    contentIds: ['news:welcome'],
+    sourceIds: ['discord'],
+  };
+
+  const validSite = {
+    scope: 'site',
+    topicLabel: '',
+    answer: 'このサイトでは活動内容やアプリを紹介しています。お知らせページもご確認いただけます。',
+    pageIds: ['news'],
+    contentIds: [],
+    sourceIds: ['youtube'],
+  };
+
+  const validUniversity = {
+    scope: 'university',
+    topicLabel: '',
+    answer: '豊田工業大学については公式サイトをご確認ください。',
+    pageIds: [],
+    contentIds: [],
+    sourceIds: ['toyota-ti'],
+  };
+
+  const validOutOfScope = {
+    scope: 'out_of_scope',
+    topicLabel: '東京の天気',
+    answer: '申し訳ありませんが、東京の天気については案内できません。必要であればお問い合わせください。',
+    pageIds: ['contact'],
+    contentIds: [],
+    sourceIds: [],
+  };
+
+  it.each([validCircle, validSite, validUniversity, validOutOfScope])(
+    'accepts a valid $scope result',
+    (value) => {
+      expect(validateModelGuideResponse(value, context)).toEqual(value);
+    },
+  );
 
   it('accepts exactly 200 Unicode code points', () => {
     const answer = '😀'.repeat(200);
-
-    expect(validateModelGuideResponse({
-      answer,
-      pageIds: [],
-      contentIds: [],
-      sourceIds: [],
-    }).answer).toBe(answer);
-  });
-
-  it('rejects 201 Unicode code points', () => {
-    expect(() => validateModelGuideResponse({
-      answer: '😀'.repeat(201),
-      pageIds: [],
-      contentIds: [],
-      sourceIds: [],
-    })).toThrow(UnsafeModelOutputError);
-  });
-
-  it('counts surrounding whitespace toward the 200-code-point hard maximum', () => {
-    expect(() => validateModelGuideResponse({
-      answer: ` ${'a'.repeat(200)}`,
-      pageIds: [],
-      contentIds: [],
-      sourceIds: [],
-    })).toThrow(UnsafeModelOutputError);
-  });
-
-  it('accepts at most three nonempty clauses', () => {
-    expect(validateModelGuideResponse({
-      answer: '一つ目。二つ目！\n三つ目？',
-      pageIds: [],
-      contentIds: [],
-      sourceIds: [],
-    }).answer).toBe('一つ目。二つ目！\n三つ目？');
+    expect(validateModelGuideResponse({ ...validSite, answer }, context).answer).toBe(answer);
   });
 
   it.each([
-    ['Japanese punctuation', '一つ目。二つ目！三つ目？四つ目'],
-    ['newlines', '一つ目\n二つ目\n三つ目\n四つ目'],
-  ])('rejects four nonempty clauses separated by %s', (_name, answer) => {
-    expect(() => validateModelGuideResponse({
-      answer,
-      pageIds: [],
-      contentIds: [],
-      sourceIds: [],
-    })).toThrow(UnsafeModelOutputError);
-  });
-
-  it.each([
-    ['null output', null],
-    ['array output', []],
-    ['empty answer', { answer: '   ', pageIds: [], contentIds: [], sourceIds: [] }],
-    ['201 code point answer', { answer: 'a'.repeat(201), pageIds: [], contentIds: [], sourceIds: [] }],
-    ['4 IDs', { answer: 'answer', pageIds: ['home', 'about', 'news', 'apps'], contentIds: [], sourceIds: [] }],
-    ['duplicate ID', { answer: 'answer', pageIds: ['news', 'news'], contentIds: [], sourceIds: [] }],
-    ['non-string ID', { answer: 'answer', pageIds: ['news', 1], contentIds: [], sourceIds: [] }],
-    ['invalid ID format', { answer: 'answer', pageIds: ['News'], contentIds: [], sourceIds: [] }],
-    ['missing contentIds', { answer: 'answer', pageIds: [], sourceIds: [] }],
-    ['missing sourceIds', { answer: 'answer', pageIds: [], contentIds: [] }],
-    ['more than 3 source IDs', {
-      answer: 'answer', pageIds: [], contentIds: [],
-      sourceIds: ['discord', 'youtube', 'discord', 'youtube'],
+    ['unknown scope', { ...validSite, scope: 'other' }],
+    ['extra property', { ...validSite, extra: true }],
+    ['raw URL in answer', { ...validSite, answer: 'https://evil.example を見てください。' }],
+    ['Markdown link in answer', { ...validSite, answer: '[外部サイト](https://evil.example)' }],
+    ['raw URL in topic label', { ...validOutOfScope, topicLabel: 'https://evil.example' }],
+    ['Markdown link in topic label', { ...validOutOfScope, topicLabel: '[天気](https://evil.example)' }],
+    ['control character in answer', { ...validSite, answer: '確認してください\u0000。' }],
+    ['201 Unicode code points', { ...validSite, answer: '😀'.repeat(201) }],
+    ['three sentence clauses', { ...validSite, answer: '一つ目。二つ目。三つ目。' }],
+    ['non-empty topic label for a site result', { ...validSite, topicLabel: 'サイト案内' }],
+    ['blank out-of-scope topic label', { ...validOutOfScope, topicLabel: '' }],
+    ['whitespace-only out-of-scope topic label', {
+      ...validOutOfScope,
+      topicLabel: '   ',
+      answer: '申し訳ありませんが、   については案内できません。必要であればお問い合わせください。',
     }],
-    ['duplicate source ID', {
-      answer: 'answer', pageIds: [], contentIds: [], sourceIds: ['discord', 'discord'],
+    ['25-code-point out-of-scope topic label', { ...validOutOfScope, topicLabel: '😀'.repeat(25) }],
+    ['unknown page ID', { ...validSite, pageIds: ['apps'] }],
+    ['unknown content ID', { ...validCircle, contentIds: ['news:unknown'] }],
+    ['unknown source ID', { ...validSite, sourceIds: ['unknown-source'] }],
+    ['four IDs', { ...validSite, pageIds: ['about', 'news', 'contact', 'about'] }],
+    ['duplicate ID', { ...validSite, pageIds: ['news', 'news'] }],
+    ['circle Toyota link', { ...validCircle, sourceIds: ['toyota-ti'] }],
+    ['site Toyota link', { ...validSite, sourceIds: ['toyota-ti'] }],
+    ['university internal page link', { ...validUniversity, pageIds: ['about'] }],
+    ['out-of-scope source link', { ...validOutOfScope, sourceIds: ['discord'] }],
+    ['out-of-scope page other than Contact', { ...validOutOfScope, pageIds: ['about'] }],
+    ['out-of-scope answer without Contact recommendation', {
+      ...validOutOfScope,
+      answer: '申し訳ありませんが、東京の天気については案内できません。',
     }],
-    ['unknown source ID', {
-      answer: 'answer', pageIds: [], contentIds: [], sourceIds: ['https://example.com'],
+    ['university answer with a detailed claim', {
+      ...validUniversity,
+      answer: '豊田工業大学には学部があります。公式サイトをご確認ください。',
     }],
-    ['extra property', { answer: 'answer', pageIds: [], contentIds: [], sourceIds: [], extra: true }],
   ])('rejects %s', (_name, value) => {
-    expect(() => validateModelGuideResponse(value)).toThrow(UnsafeModelOutputError);
+    expect(() => validateModelGuideResponse(value, context)).toThrow(UnsafeModelOutputError);
   });
 });

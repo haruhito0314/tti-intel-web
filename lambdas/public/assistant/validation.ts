@@ -1,15 +1,17 @@
 import type {
+  AssistantModelScope,
   AssistantRequest,
   HistoryMessage,
   ModelGuideResponse,
+  ModelGuideValidationContext,
   OpenAIUsage,
 } from './types.js';
-import { OFFICIAL_SOURCE_LINKS } from './runtimeCatalog.js';
+import { ASSISTANT_MODEL_SCOPES } from './types.js';
 
 const MAX_RAW_BODY_LENGTH = 65_536;
 const MAX_MESSAGE_LENGTH = 500;
 const MAX_MODEL_ANSWER_LENGTH = 200;
-const MAX_MODEL_ANSWER_CLAUSES = 3;
+const MAX_MODEL_ANSWER_CLAUSES = 2;
 const MAX_CURRENT_PATH_LENGTH = 256;
 /** Frontend sends at most 2 prior user turns; match that on the wire. */
 const MAX_HISTORY_MESSAGES = 2;
@@ -23,6 +25,15 @@ const UUID_V4_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}
 const MODEL_PAGE_ID_PATTERN = /^[a-z0-9-]{1,64}$/;
 const MODEL_CONTENT_ID_PATTERN = /^(news|board|weekly-math):[A-Za-z0-9._~%-]{1,128}$/;
 const ASCII_CONTROL_PATTERN = /[\u0000-\u001f\u007f]/;
+const CONTROL_CHARACTER_PATTERN = /\p{Cc}/u;
+const URL_PATTERN = /(?:(?:https?|ftp):\/\/|(?:mailto|tel|javascript|data):|www\.)/iu;
+const MARKDOWN_LINK_PATTERN = /\[[^\]\r\n]*\]\([^\)\r\n]+\)/u;
+const SENTENCE_CLAUSE_PATTERN = /[。．.!！？?]+/u;
+const UNIVERSITY_OFFICIAL_SITE_PATTERN = /(?:公式(?:サイト|ウェブサイト|ホームページ)|official\s+(?:site|website))/iu;
+const UNIVERSITY_DETAIL_PATTERN = /(?:\p{N}|学部|学科|研究科|専攻|大学院|入試|入学|出願|募集|受験|学費|授業料|入学金|費用|料金|所在地|住所|愛知|名古屋|キャンパス|定員|偏差値|ランキング|就職|卒業|設立|創立|沿革|教育|研究|教員|教授|学長|学生|施設|アクセス)/u;
+const OUT_OF_SCOPE_APOLOGY_PATTERN = /(?:申し訳(?:ありません|ございません)|すみません|ごめんなさい)/u;
+const OUT_OF_SCOPE_INABILITY_PATTERN = /(?:(?:お答え|回答|案内|対応)(?:でき|しかね)|お力にな(?:れ|り)ません)/u;
+const OUT_OF_SCOPE_CONTACT_PATTERN = /(?:お問い合わせ(?:ください|を(?:ご)?利用|先|フォーム)|contact)/iu;
 
 export class RequestValidationError extends Error {
   readonly name = 'RequestValidationError';
@@ -143,16 +154,115 @@ export function parseAssistantRequest(
   };
 }
 
+function isModelScope(value: string): value is AssistantModelScope {
+  return (ASSISTANT_MODEL_SCOPES as readonly string[]).includes(value);
+}
+
+function hasUnsafeText(value: string): boolean {
+  return CONTROL_CHARACTER_PATTERN.test(value)
+    || URL_PATTERN.test(value)
+    || MARKDOWN_LINK_PATTERN.test(value);
+}
+
+function validateIdArray(
+  value: unknown,
+  allowedIds: readonly string[],
+  idPattern: RegExp,
+  maxLength: number,
+): string[] {
+  if (!Array.isArray(value) || value.length > maxLength) {
+    return unsafeModelOutput();
+  }
+
+  const allowedIdSet = new Set(allowedIds);
+  const seenIds = new Set<string>();
+  for (const id of value) {
+    if (
+      typeof id !== 'string'
+      || !idPattern.test(id)
+      || !allowedIdSet.has(id)
+      || seenIds.has(id)
+    ) {
+      return unsafeModelOutput();
+    }
+    seenIds.add(id);
+  }
+
+  return [...value];
+}
+
+function hasOnlyIds(ids: readonly string[], expected: readonly string[]): boolean {
+  return ids.length === expected.length && ids.every((id, index) => id === expected[index]);
+}
+
+function validateScopePolicy(
+  scope: AssistantModelScope,
+  topicLabel: string,
+  answer: string,
+  pageIds: readonly string[],
+  contentIds: readonly string[],
+  sourceIds: readonly string[],
+): void {
+  if (scope !== 'out_of_scope' && topicLabel !== '') {
+    return unsafeModelOutput();
+  }
+
+  if (scope === 'circle' || scope === 'site') {
+    if (sourceIds.includes('toyota-ti')) return unsafeModelOutput();
+    return;
+  }
+
+  if (scope === 'university') {
+    if (
+      !hasOnlyIds(pageIds, [])
+      || !hasOnlyIds(contentIds, [])
+      || !hasOnlyIds(sourceIds, ['toyota-ti'])
+      || !UNIVERSITY_OFFICIAL_SITE_PATTERN.test(answer)
+      || UNIVERSITY_DETAIL_PATTERN.test(answer)
+    ) {
+      return unsafeModelOutput();
+    }
+    return;
+  }
+
+  const topicLabelLength = [...topicLabel].length;
+  if (
+    topicLabelLength < 1
+    || topicLabelLength > 24
+    || topicLabel.trim().length === 0
+    || !hasOnlyIds(pageIds, ['contact'])
+    || !hasOnlyIds(contentIds, [])
+    || !hasOnlyIds(sourceIds, [])
+    || !answer.includes(topicLabel)
+    || !OUT_OF_SCOPE_APOLOGY_PATTERN.test(answer)
+    || !OUT_OF_SCOPE_INABILITY_PATTERN.test(answer)
+    || !OUT_OF_SCOPE_CONTACT_PATTERN.test(answer)
+  ) {
+    return unsafeModelOutput();
+  }
+}
+
 export function validateModelGuideResponse(
   value: unknown,
+  context: ModelGuideValidationContext,
+): ModelGuideResponse;
+/** @deprecated Supply the context; retained only until the caller migrates. */
+export function validateModelGuideResponse(value: unknown): never;
+export function validateModelGuideResponse(
+  value: unknown,
+  context?: ModelGuideValidationContext,
 ): ModelGuideResponse {
+  if (context === undefined) return unsafeModelOutput();
+
   if (!isPlainObject(value)) {
     return unsafeModelOutput();
   }
 
   const keys = Object.keys(value);
   if (
-    keys.length !== 4
+    keys.length !== 6
+    || !Object.hasOwn(value, 'scope')
+    || !Object.hasOwn(value, 'topicLabel')
     || !Object.hasOwn(value, 'answer')
     || !Object.hasOwn(value, 'pageIds')
     || !Object.hasOwn(value, 'contentIds')
@@ -161,15 +271,22 @@ export function validateModelGuideResponse(
     return unsafeModelOutput();
   }
 
-  const { answer, pageIds, contentIds, sourceIds } = value;
-  if (typeof answer !== 'string') {
+  const { scope, topicLabel, answer, pageIds, contentIds, sourceIds } = value;
+  if (
+    typeof scope !== 'string'
+    || !isModelScope(scope)
+    || typeof topicLabel !== 'string'
+    || typeof answer !== 'string'
+    || hasUnsafeText(topicLabel)
+    || hasUnsafeText(answer)
+  ) {
     return unsafeModelOutput();
   }
 
   const trimmedAnswer = answer.trim();
   const answerLength = [...answer].length;
   const clauseCount = trimmedAnswer
-    .split(/[。．.!！？?\n]+/gu)
+    .split(SENTENCE_CLAUSE_PATTERN)
     .map((clause) => clause.trim())
     .filter((clause) => clause.length > 0)
     .length;
@@ -181,58 +298,40 @@ export function validateModelGuideResponse(
     return unsafeModelOutput();
   }
 
-  if (!Array.isArray(pageIds) || pageIds.length > MAX_MODEL_PAGE_IDS) {
-    return unsafeModelOutput();
-  }
+  const validatedPageIds = validateIdArray(
+    pageIds,
+    context.allowedPageIds,
+    MODEL_PAGE_ID_PATTERN,
+    MAX_MODEL_PAGE_IDS,
+  );
+  const validatedContentIds = validateIdArray(
+    contentIds,
+    context.allowedContentIds,
+    MODEL_CONTENT_ID_PATTERN,
+    MAX_MODEL_CONTENT_IDS,
+  );
+  const validatedSourceIds = validateIdArray(
+    sourceIds,
+    context.allowedSourceIds,
+    MODEL_PAGE_ID_PATTERN,
+    MAX_MODEL_SOURCE_IDS,
+  );
 
-  const seenPageIds = new Set<string>();
-  for (const pageId of pageIds) {
-    if (
-      typeof pageId !== 'string'
-      || !MODEL_PAGE_ID_PATTERN.test(pageId)
-      || seenPageIds.has(pageId)
-    ) {
-      return unsafeModelOutput();
-    }
-    seenPageIds.add(pageId);
-  }
-
-  if (!Array.isArray(contentIds) || contentIds.length > MAX_MODEL_CONTENT_IDS) {
-    return unsafeModelOutput();
-  }
-
-  const seenContentIds = new Set<string>();
-  for (const contentId of contentIds) {
-    if (
-      typeof contentId !== 'string'
-      || !MODEL_CONTENT_ID_PATTERN.test(contentId)
-      || seenContentIds.has(contentId)
-    ) {
-      return unsafeModelOutput();
-    }
-    seenContentIds.add(contentId);
-  }
-
-  if (!Array.isArray(sourceIds) || sourceIds.length > MAX_MODEL_SOURCE_IDS) {
-    return unsafeModelOutput();
-  }
-
-  const seenSourceIds = new Set<string>();
-  for (const sourceId of sourceIds) {
-    if (
-      typeof sourceId !== 'string'
-      || !Object.hasOwn(OFFICIAL_SOURCE_LINKS, sourceId)
-      || seenSourceIds.has(sourceId)
-    ) {
-      return unsafeModelOutput();
-    }
-    seenSourceIds.add(sourceId);
-  }
+  validateScopePolicy(
+    scope,
+    topicLabel,
+    trimmedAnswer,
+    validatedPageIds,
+    validatedContentIds,
+    validatedSourceIds,
+  );
 
   return {
+    scope,
+    topicLabel,
     answer: trimmedAnswer,
-    pageIds: [...pageIds] as string[],
-    contentIds: [...contentIds] as string[],
-    sourceIds: [...sourceIds] as string[],
+    pageIds: validatedPageIds,
+    contentIds: validatedContentIds,
+    sourceIds: validatedSourceIds,
   };
 }
