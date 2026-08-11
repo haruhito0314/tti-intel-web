@@ -27,6 +27,47 @@
     "volatility": "periodic"
   },
   {
+    "id": "site-overview",
+    "domain": "site",
+    "title": "TTI Intelligence公式Webサイトの案内",
+    "summary": "このサイトは、AIサークルTTI Intelligenceの活動、制作物、参加方法を案内する公式Webサイト。",
+    "details": [
+      "主なページは、サークルについて、今週の数学、アプリ、ゲームコミュニティ、開発について、お知らせ、掲示板、お問い合わせ。",
+      "サークルの概要や参加についてはサークル紹介、公開中の制作物はアプリ、技術や制作の流れは開発について、連絡はお問い合わせから確認できる。"
+    ],
+    "keywords": ["ページ一覧", "サイトマップ", "TTI Intelligence公式Webサイト"],
+    "sourceIds": [],
+    "asOf": "2026-08-11",
+    "volatility": "periodic"
+  },
+  {
+    "id": "site-board",
+    "domain": "site",
+    "title": "掲示板の投稿機能",
+    "summary": "掲示板は誰でも匿名で自由に書き込め、質問、相談、活動に関するスレッドを作成できる。",
+    "details": [
+      "スレッドにはコメントを投稿でき、表示名を空欄にすると「匿名」と表示される。",
+      "掲示板ページの「スレッドを作成」から新しい投稿を始められる。"
+    ],
+    "keywords": ["掲示板", "投稿", "書き込み", "スレッド", "コメント", "匿名", "投稿していい", "使い方"],
+    "sourceIds": [],
+    "asOf": "2026-08-11",
+    "volatility": "periodic"
+  },
+  {
+    "id": "site-news",
+    "domain": "site",
+    "title": "お知らせ",
+    "summary": "お知らせページでは、TTI Intelligenceからの告知やサイト更新などの公開記事を確認できる。",
+    "details": [
+      "個別の記事を選ぶと詳しい内容を読める。最新の掲載内容は公開中の記事データから案内する。"
+    ],
+    "keywords": ["お知らせ", "ニュース", "告知", "更新情報", "最新情報", "記事"],
+    "sourceIds": [],
+    "asOf": "2026-08-11",
+    "volatility": "periodic"
+  },
+  {
     "id": "site-public-contact",
     "domain": "site",
     "title": "公開問い合わせ先",

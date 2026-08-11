@@ -20,7 +20,8 @@ const AI_CIRCLE_ALIAS = /aiサークル/;
 const UNIVERSITY_ALIAS = /豊田工業大学|豊工大|豊田工大|toyota technological institute/;
 const UNIVERSITY_OFFICIALITY = /大学(?:の)?公式|大学(?:に)?公認|大学.*認定|大学(?:が|の)?運営/;
 const OTHER_ORGANIZATION = /大学(?!院?生)|university|株式会社|会社|企業|協会|財団|法人|学校|高校|研究所|クラブ|チーム/;
-const OTHER_NAMED_CIRCLE = /^.+の(?:サークル|部活|同好会)/;
+const OTHER_NAMED_CIRCLE = /^(?!aiサークル).+(?:サークル|部活|同好会)/;
+const CLEAR_OUT_OF_SCOPE_TOPIC = /天気|天候|気温|降水|株式?|投資|病気|治療|新薬|料理|レシピ/;
 const CIRCLE_NOUN_OR_ANCHOR = /サークル|同好会|部活/;
 const DISCORD_CIRCLE_INTENT = /^discord(?:(?:は|って)?(?:ある|ありますか)|について|の(?:招待|リンク|url|サーバー)|に(?:参加|入りたい)|招待|リンク|url|サーバー)/;
 const CIRCLE_ACTIONS = [
@@ -64,6 +65,9 @@ function classifyContextFreeScope(message: string): AssistantScope | null {
   const normalized = stripConversationPrefix(message);
   const phrase = normalizeScopePhrase(message);
 
+  if (CLEAR_OUT_OF_SCOPE_TOPIC.test(normalized)) {
+    return 'out_of_scope';
+  }
   if (
     UNIVERSITY_OFFICIALITY.test(normalized)
     && (

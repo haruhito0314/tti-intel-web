@@ -50,6 +50,8 @@ describe('classifyAssistantScope', () => {
     ['卓球組み合わせを作りたい', 'site'],
     ['AI Assistantについて教えて', 'site'],
     ['東京の天気は？', 'out_of_scope'],
+    ['このサイトで東京の天気を教えて', 'out_of_scope'],
+    ['テニスサークルについて教えて', 'out_of_scope'],
     ['名古屋大学のサークルは？', 'out_of_scope'],
     ['名古屋大学のAIサークルは？', 'out_of_scope'],
     ['Googleのサークルは？', 'out_of_scope'],

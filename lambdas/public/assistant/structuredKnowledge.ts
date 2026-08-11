@@ -301,6 +301,38 @@ export interface AssistantRequestContext {
   routingIntent: AssistantRoutingIntent;
 }
 
+const DEFAULT_KNOWLEDGE_ID_BY_SCOPE = {
+  circle: 'circle-identity',
+  site: 'site-overview',
+} as const satisfies Readonly<Record<GenerativeAssistantScope, string>>;
+
+const GENERIC_CIRCLE_OVERVIEW = /^(?:サークル(?:(?:について)?(?:教えて|案内して|説明して|知りたい)|って何|は何)?|活動(?:内容)?(?:は|って|について|を(?:教えて|知りたい))?|(?:何|なに)してる(?:の)?)$/u;
+const GENERIC_SITE_OVERVIEW = /^(?:(?:このサイト|このページ)(?:(?:について)?(?:教えて|案内して|説明して|知りたい)|(?:は|って)(?:何|どんな(?:サイト|ページ)?)|で(?:何が)?できる(?:ことは)?)?|ここ(?:(?:について)?(?:教えて|案内して)|(?:は|って)何|で(?:何が)?できる(?:ことは)?|にあるのは|を見たい)|サイト(?:について)?(?:教えて|案内して)|サイトマップ(?:は)?|ページ一覧(?:は)?)$/u;
+
+function shouldUseDefaultKnowledge(
+  scope: GenerativeAssistantScope,
+  message: string,
+): boolean {
+  const normalizedMessage = normalizeKnowledgeText(message)
+    .replace(/[!！?？。．、,，〜~…・]/g, '')
+    .replace(/\s+/g, '');
+  return scope === 'circle'
+    ? GENERIC_CIRCLE_OVERVIEW.test(normalizedMessage)
+    : GENERIC_SITE_OVERVIEW.test(normalizedMessage);
+}
+
+function defaultKnowledgeForScope(
+  scope: GenerativeAssistantScope,
+  message: string,
+  limit: number,
+): RankedKnowledgeItem[] {
+  if (limit <= 0 || !shouldUseDefaultKnowledge(scope, message)) return [];
+  const item = STRUCTURED_KNOWLEDGE.find(
+    ({ id }) => id === DEFAULT_KNOWLEDGE_ID_BY_SCOPE[scope],
+  );
+  return item === undefined ? [] : [{ item, score: 10 }];
+}
+
 const CONTEXT_DEPENDENT_KEYWORDS = new Set([
   '場所',
   '住所',
@@ -355,7 +387,7 @@ export function selectAssistantRequestContext(
   scope: GenerativeAssistantScope,
   limit = 5,
 ): AssistantRequestContext {
-  const currentKnowledge = selectStructuredKnowledge(
+  const selectedCurrentKnowledge = selectStructuredKnowledge(
     message,
     currentPath,
     [],
@@ -363,6 +395,9 @@ export function selectAssistantRequestContext(
     false,
     scope,
   );
+  const currentKnowledge = selectedCurrentKnowledge.length > 0
+    ? selectedCurrentKnowledge
+    : defaultKnowledgeForScope(scope, message, limit);
   let followUpKnowledge: RankedKnowledgeItem[] = [];
   let resolvedFollowUp = false;
 

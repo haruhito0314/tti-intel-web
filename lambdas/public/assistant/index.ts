@@ -65,6 +65,9 @@ const MAX_ASSISTANT_LINKS = 4;
 const KNOWLEDGE_ALLOWED_PAGE_IDS = {
   'circle-identity': ['about'],
   'circle-participation': ['about', 'contact'],
+  'site-overview': ['home', 'about', 'weekly-math', 'apps', 'game-community', 'development', 'news', 'board', 'contact'],
+  'site-board': ['board'],
+  'site-news': ['news'],
   'site-public-contact': ['contact'],
   'circle-discord-youtube': ['about'],
   'app-ai-assistant': ['apps'],

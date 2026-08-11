@@ -252,6 +252,32 @@ describe('scope-aware assistant context', () => {
     expect(result.knowledge.every(({ item }) => ['circle', 'game', 'math'].includes(item.domain))).toBe(true);
   });
 
+  it.each([
+    ['サークルについて教えて', 'circle', 'circle-identity'],
+    ['活動は？', 'circle', 'circle-identity'],
+    ['このサイトについて教えて', 'site', 'site-overview'],
+    ['掲示板は投稿していいの？', 'site', 'site-board'],
+  ] as const)(
+    'grounds a natural scope question in reviewed knowledge: %s',
+    (message, scope, expectedKnowledgeId) => {
+      const result = selectAssistantRequestContext(message, '/', [], scope);
+
+      expect(result.knowledge.map(({ item }) => item.id)).toContain(expectedKnowledgeId);
+    },
+  );
+
+  it.each([
+    ['テニスサークルについて教えて', 'circle'],
+    ['このサイトで東京の天気を教えて', 'site'],
+  ] as const)(
+    'does not inject default knowledge into an unrelated compound question: %s',
+    (message, scope) => {
+      const result = selectAssistantRequestContext(message, '/', [], scope);
+
+      expect(result.knowledge).toEqual([]);
+    },
+  );
+
   it.each(['Codex', 'Vercel', 'AWS', 'Plugin', 'CLI', 'MCP'])('keeps %s available in site scope', (tool) => {
     expect(selectAssistantRequestContext(tool, '/', [], 'site').knowledge.length).toBeGreaterThan(0);
   });
