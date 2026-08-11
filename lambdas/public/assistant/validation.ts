@@ -167,14 +167,14 @@ export function validateModelGuideResponse(
   }
 
   const trimmedAnswer = answer.trim();
-  const answerLength = [...trimmedAnswer].length;
+  const answerLength = [...answer].length;
   const clauseCount = trimmedAnswer
     .split(/[。．.!！？?\n]+/gu)
     .map((clause) => clause.trim())
     .filter((clause) => clause.length > 0)
     .length;
   if (
-    answerLength === 0
+    trimmedAnswer.length === 0
     || answerLength > MAX_MODEL_ANSWER_LENGTH
     || clauseCount > MAX_MODEL_ANSWER_CLAUSES
   ) {

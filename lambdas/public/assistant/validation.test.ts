@@ -130,6 +130,15 @@ describe('validateModelGuideResponse', () => {
     })).toThrow(UnsafeModelOutputError);
   });
 
+  it('counts surrounding whitespace toward the 200-code-point hard maximum', () => {
+    expect(() => validateModelGuideResponse({
+      answer: ` ${'a'.repeat(200)}`,
+      pageIds: [],
+      contentIds: [],
+      sourceIds: [],
+    })).toThrow(UnsafeModelOutputError);
+  });
+
   it('accepts at most three nonempty clauses', () => {
     expect(validateModelGuideResponse({
       answer: '一つ目。二つ目！\n三つ目？',

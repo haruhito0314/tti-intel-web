@@ -45,7 +45,11 @@ describe('classifyAssistantScope', () => {
     ['AI Assistantについて教えて', 'site'],
     ['東京の天気は？', 'out_of_scope'],
     ['名古屋大学のサークルは？', 'out_of_scope'],
+    ['名古屋大学のAIサークルは？', 'out_of_scope'],
     ['Googleのサークルは？', 'out_of_scope'],
+    ['就職活動について教えて', 'out_of_scope'],
+    ['宮崎駿の作品は？', 'out_of_scope'],
+    ['株式投資コミュニティに参加したい', 'out_of_scope'],
     ['病気の治し方は？', 'out_of_scope'],
     ['おすすめの株は？', 'out_of_scope'],
     ['プログラミングを教えて', 'out_of_scope'],
@@ -90,6 +94,7 @@ describe('classifyAssistantScope', () => {
 
   it.each([
     ['豊田工業大学の公式サイトは？', 'university'],
+    ['豊田工業大学のAIサークル一覧は？', 'university'],
     ['東京の天気は？', 'out_of_scope'],
   ] as const)('lets the explicit current question win over circle history: %s', (message, scope) => {
     const history: HistoryMessage[] = [{
