@@ -27,7 +27,7 @@ describe('AiAssistantProductPage', () => {
         expect(screen.queryByText('Origin allowlist')).not.toBeInTheDocument();
     });
 
-    it('TTI Intelligenceとサイトに対応し、大学の一般質問は公式サイトへ案内すると明示する', () => {
+    it('公開済みのTTI Intelligenceとサイト情報を短く案内し、大学の質問は公式サイトへ案内すると明示する', () => {
         const client: AssistantClient = {
             send: async () => ({ answer: '回答です。', links: [] }),
         };
@@ -40,15 +40,15 @@ describe('AiAssistantProductPage', () => {
             </MemoryRouter>,
         );
 
-        expect(screen.getByText(/TTI Intelligenceとこのサイトについて案内/)).toBeInTheDocument();
+        expect(screen.getByText(/公開されているTTI Intelligenceとこのサイトの情報をもとに、短くお答え/)).toBeInTheDocument();
         expect(screen.getByText(/豊田工業大学に関する一般的な質問には、公式サイトをご案内/)).toBeInTheDocument();
-        expect(screen.getByText(/対象外の一般的な質問にはLunaを利用しません/)).toBeInTheDocument();
+        expect(screen.getByText(/対応していない内容はContactからお問い合わせ/)).toBeInTheDocument();
         expect(screen.getByText(/現在の情報や重要な情報は公式情報源でも確認/)).toBeInTheDocument();
 
         const description = document.querySelector('meta[name="description"]');
         expect(description).toHaveAttribute(
             'content',
-            expect.stringContaining('TTI Intelligenceとこのサイトについて案内'),
+            expect.stringContaining('公開されているTTI Intelligenceとこのサイトの情報をもとに、短くお答え'),
         );
         expect(description).toHaveAttribute(
             'content',
@@ -56,7 +56,7 @@ describe('AiAssistantProductPage', () => {
         );
         expect(description).toHaveAttribute(
             'content',
-            expect.stringContaining('対象外の一般的な質問にはLunaを利用しません'),
+            expect.stringContaining('対応していない内容はContactからお問い合わせ'),
         );
     });
 
@@ -73,10 +73,10 @@ describe('AiAssistantProductPage', () => {
             </MemoryRouter>,
         );
 
-        expect(screen.getAllByRole('button', { name: 'サークルについて教えて' })).toHaveLength(2);
-        expect(screen.getAllByRole('button', { name: '活動は？' })).toHaveLength(2);
-        expect(screen.getAllByRole('button', { name: '参加方法は？' })).toHaveLength(2);
-        expect(screen.getAllByRole('button', { name: 'このサイトでできることは？' })).toHaveLength(2);
+        expect(screen.getAllByRole('button', { name: 'このサークルって普段何をしてる？' })).toHaveLength(2);
+        expect(screen.getAllByRole('button', { name: 'このサイトでは何があるの？' })).toHaveLength(2);
+        expect(screen.getAllByRole('button', { name: '掲示板は投稿していいの？' })).toHaveLength(2);
+        expect(screen.getAllByRole('button', { name: 'お問い合わせってしていいの？' })).toHaveLength(2);
         expect(screen.queryByRole('button', { name: /CodexとMCP/ })).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: /光合成/ })).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: /CLI Practice/i })).not.toBeInTheDocument();

@@ -13,11 +13,13 @@ import { useAssistant } from '@/features/assistant/useAssistant';
 import './AiAssistantProduct.css';
 
 const SUGGESTED_QUESTIONS = [
-    'サークルについて教えて',
-    '活動は？',
-    '参加方法は？',
-    'このサイトでできることは？',
+    'このサークルって普段何をしてる？',
+    'このサイトでは何があるの？',
+    '掲示板は投稿していいの？',
+    'お問い合わせってしていいの？',
 ] as const;
+
+const ASSISTANT_GUIDANCE = '公開されているTTI Intelligenceとこのサイトの情報をもとに、短くお答えします。豊田工業大学に関する一般的な質問には、公式サイトをご案内します。対応していない内容はContactからお問い合わせください。';
 
 export function AiAssistantProductPage() {
     const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -43,7 +45,7 @@ export function AiAssistantProductPage() {
         <div className="assistant-app-page">
             <PageSeo
                 title="AI Assistant | TTI Intelligence"
-                description="TTI Intelligenceとこのサイトについて案内するAI Assistantです。豊田工業大学に関する一般的な質問には、公式サイトをご案内します。対象外の一般的な質問にはLunaを利用しません。"
+                description={ASSISTANT_GUIDANCE}
             />
 
             <aside className="assistant-app-sidebar">
@@ -81,7 +83,7 @@ export function AiAssistantProductPage() {
 
                 <div className="assistant-app-sidebar-footer">
                     <ShieldCheck />
-                    <p>TTI Intelligenceとこのサイトについて案内します。豊田工業大学に関する一般的な質問には、公式サイトをご案内します。対象外の一般的な質問にはLunaを利用しません。</p>
+                    <p>{ASSISTANT_GUIDANCE}</p>
                 </div>
             </aside>
 
