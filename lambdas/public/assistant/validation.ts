@@ -26,6 +26,7 @@ const MODEL_PAGE_ID_PATTERN = /^[a-z0-9-]{1,64}$/;
 const MODEL_CONTENT_ID_PATTERN = /^(news|board|weekly-math):[A-Za-z0-9._~%-]{1,128}$/;
 const ASCII_CONTROL_PATTERN = /[\u0000-\u001f\u007f]/;
 const CONTROL_CHARACTER_PATTERN = /\p{Cc}/u;
+const EMAIL_ADDRESS_PATTERN = /[a-z0-9](?:[a-z0-9.!#$%&'*+/=?^_`{|}~-]{0,62}[a-z0-9])?@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z]{2,63})+/giu;
 const URL_PATTERN = /(?:(?:https?|ftp):\/\/|\/\/|(?:mailto|tel|javascript|data):|www\.|\b[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.[a-z]{2,63}\b)/iu;
 const MARKDOWN_PATTERN = /(?:\[[^\]\r\n]*\]\([^\)\r\n]+\)|\*\*[^*\r\n]+\*\*|__[^_\r\n]+__|~~[^~\r\n]+~~|`[^`\r\n]+`)/u;
 const SENTENCE_CLAUSE_PATTERN = /[。．.!！？?\r\n]+/u;
@@ -159,7 +160,7 @@ function isModelScope(value: string): value is AssistantModelScope {
 
 function hasUnsafeText(value: string): boolean {
   return CONTROL_CHARACTER_PATTERN.test(value)
-    || URL_PATTERN.test(value)
+    || URL_PATTERN.test(value.replace(EMAIL_ADDRESS_PATTERN, ''))
     || MARKDOWN_PATTERN.test(value);
 }
 
@@ -284,6 +285,7 @@ export function validateModelGuideResponse(
   const trimmedAnswer = answer.trim();
   const answerLength = [...answer].length;
   const clauseCount = trimmedAnswer
+    .replace(EMAIL_ADDRESS_PATTERN, 'email')
     .split(SENTENCE_CLAUSE_PATTERN)
     .map((clause) => clause.trim())
     .filter((clause) => clause.length > 0)

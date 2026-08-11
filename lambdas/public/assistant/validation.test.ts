@@ -157,12 +157,20 @@ describe('validateModelGuideResponse', () => {
   });
 
   it.each([
+    'お問い合わせはtti.intel@gmail.comまでお願いします。',
+    '連絡先はhello@example.orgです。',
+  ])('accepts a plain-text email address in a safe answer: %s', (answer) => {
+    expect(validateModelGuideResponse({ ...validSite, answer }, context).answer).toBe(answer);
+  });
+
+  it.each([
     ['unknown scope', { ...validSite, scope: 'other' }],
     ['extra property', { ...validSite, extra: true }],
-    ['raw URL in answer', { ...validSite, answer: 'https://evil.example を見てください。' }],
-    ['Markdown link in answer', { ...validSite, answer: '[外部サイト](https://evil.example)' }],
-    ['bare domain in answer', { ...validSite, answer: 'evil.example を見てください。' }],
-    ['protocol-relative URL in answer', { ...validSite, answer: '//evil.example を見てください。' }],
+    ['raw URL in answer', { ...validSite, answer: 'https://example.com を見てください。' }],
+    ['Markdown link in answer', { ...validSite, answer: '[外部サイト](https://example.com)' }],
+    ['bare domain in answer', { ...validSite, answer: 'example.com を見てください。' }],
+    ['protocol-relative URL in answer', { ...validSite, answer: '//example.com を見てください。' }],
+    ['www URL in answer', { ...validSite, answer: 'www.example.com を見てください。' }],
     ['ordinary Markdown in answer', { ...validSite, answer: '**重要**です。' }],
     ['raw URL in topic label', { ...validOutOfScope, topicLabel: 'https://evil.example' }],
     ['Markdown link in topic label', { ...validOutOfScope, topicLabel: '[天気](https://evil.example)' }],
