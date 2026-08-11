@@ -1,12 +1,12 @@
 {
   "metadata": {
-    "schemaVersion": 4,
+    "schemaVersion": 5,
     "createdAt": "2026-08-10",
     "count": 100,
     "model": "gpt-5.6-luna",
     "webSearch": false,
     "execution": "pre-deployment local dry-run",
-    "design": "25 deterministic topics x 4 wording/noise variants; 64 Luna calls, 36 local zero-call responses"
+    "design": "25 deterministic topics x 4 wording/noise variants; 96 one-call substantive responses, 4 conversation zero-call responses, 0 Web calls"
   },
   "cases": [
     {
@@ -44,7 +44,7 @@
       "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
-      "message": "AIサークルって何してる団体？",
+      "message": "普段は何をしてる団体？",
       "history": [],
       "requiredConcepts": [
         "活動"
@@ -71,7 +71,7 @@
       "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
-      "message": "このサークルの活動内容は？",
+      "message": "このサークルって普段何をしてる？",
       "history": [],
       "requiredConcepts": [
         "活動"
@@ -446,10 +446,10 @@
       "category": "university/overview",
       "variant": "clean",
       "expectedScope": "university",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
-      "message": "豊田工業大学の概要を教えてください。",
+      "message": "豊田工業大学について教えて",
       "history": [],
       "requiredConcepts": [
         "公式サイト"
@@ -473,7 +473,7 @@
       "category": "university/overview",
       "variant": "typo/noise",
       "expectedScope": "university",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "豊工大ってどんな大学？",
@@ -500,7 +500,7 @@
       "category": "university/overview",
       "variant": "short",
       "expectedScope": "university",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "それはどんな大学？",
@@ -532,7 +532,7 @@
       "category": "university/overview",
       "variant": "compound",
       "expectedScope": "university",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "豊田工業大学の概要と特色をまとめて教えて。",
@@ -559,7 +559,7 @@
       "category": "university/education",
       "variant": "clean",
       "expectedScope": "university",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "豊田工業大学では何を学べますか。",
@@ -586,7 +586,7 @@
       "category": "university/education",
       "variant": "typo/noise",
       "expectedScope": "university",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "豊工大の教育ってどんな感じ？",
@@ -613,7 +613,7 @@
       "category": "university/education",
       "variant": "short",
       "expectedScope": "university",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "そこで何を学ぶ？",
@@ -645,7 +645,7 @@
       "category": "university/education",
       "variant": "compound",
       "expectedScope": "university",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "豊田工業大学の学部・大学院と学びの特色を教えて。",
@@ -672,7 +672,7 @@
       "category": "university/life",
       "variant": "clean",
       "expectedScope": "university",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "豊田工業大学の学生生活について教えてください。",
@@ -699,7 +699,7 @@
       "category": "university/life",
       "variant": "typo/noise",
       "expectedScope": "university",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "豊工大の学生生活を知りたい。",
@@ -726,7 +726,7 @@
       "category": "university/life",
       "variant": "short",
       "expectedScope": "university",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "そこでの学生生活は？",
@@ -758,7 +758,7 @@
       "category": "university/life",
       "variant": "compound",
       "expectedScope": "university",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "豊田工業大学の学生生活と課外活動の情報を教えて。",
@@ -785,7 +785,7 @@
       "category": "university/clubs",
       "variant": "clean",
       "expectedScope": "university",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "豊田工業大学のサークルや部活動を教えてください。",
@@ -812,7 +812,7 @@
       "category": "university/clubs",
       "variant": "typo/noise",
       "expectedScope": "university",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "豊工大のサークルは？",
@@ -839,7 +839,7 @@
       "category": "university/clubs",
       "variant": "short",
       "expectedScope": "university",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "その大学の部活は？",
@@ -871,7 +871,7 @@
       "category": "university/clubs",
       "variant": "compound",
       "expectedScope": "university",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "豊田工業大学全体の課外団体と活動を確認したい。",
@@ -928,7 +928,7 @@
       "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
-      "message": "AIサークルってどんな団体？",
+      "message": "どんな団体？",
       "history": [],
       "requiredConcepts": [
         "サークル"
@@ -1765,23 +1765,23 @@
       "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/app",
-      "message": "このサイトの公開アプリを教えてください。",
+      "message": "このサイトでは何があるの？",
       "history": [],
       "requiredConcepts": [
-        "アプリ"
+        "サイト"
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
         "mode": "required",
         "allowedHrefs": [
-          "/app"
+          "/"
         ],
         "requiredHrefs": [
-          "/app"
+          "/"
         ]
       },
       "templateTerms": [
-        "アプリ"
+        "サイト"
       ]
     },
     {
@@ -1878,23 +1878,23 @@
       "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/app",
-      "message": "このサイトのゲームコミュニティについて教えてください。",
+      "message": "お問い合わせってしていいの？",
       "history": [],
       "requiredConcepts": [
-        "ゲーム"
+        "問い合わせ"
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
         "mode": "required",
         "allowedHrefs": [
-          "/game-community"
+          "/contact"
         ],
         "requiredHrefs": [
-          "/game-community"
+          "/contact"
         ]
       },
       "templateTerms": [
-        "ゲーム"
+        "問い合わせ"
       ]
     },
     {
@@ -1905,23 +1905,23 @@
       "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/app",
-      "message": "このサイトのゲームコミュニティって何？",
+      "message": "掲示板は投稿していいの？",
       "history": [],
       "requiredConcepts": [
-        "ゲーム"
+        "匿名"
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
         "mode": "required",
         "allowedHrefs": [
-          "/game-community"
+          "/board"
         ],
         "requiredHrefs": [
-          "/game-community"
+          "/board"
         ]
       },
       "templateTerms": [
-        "ゲーム"
+        "掲示板"
       ]
     },
     {
@@ -2209,22 +2209,26 @@
       "category": "out_of_scope/math",
       "variant": "clean",
       "expectedScope": "out_of_scope",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "三角形の内角の和が180度になる理由を教えてください。",
       "history": [],
       "requiredConcepts": [
-        "TTI Intelligence"
+        "三角形"
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "none",
-        "allowedHrefs": [],
-        "requiredHrefs": []
+        "mode": "required",
+        "allowedHrefs": [
+          "/contact"
+        ],
+        "requiredHrefs": [
+          "/contact"
+        ]
       },
       "templateTerms": [
-        "TTI Intelligence"
+        "三角形"
       ]
     },
     {
@@ -2232,22 +2236,26 @@
       "category": "out_of_scope/math",
       "variant": "typo/noise",
       "expectedScope": "out_of_scope",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "三角形の内角の和って180ど？？",
       "history": [],
       "requiredConcepts": [
-        "TTI Intelligence"
+        "三角形"
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "none",
-        "allowedHrefs": [],
-        "requiredHrefs": []
+        "mode": "required",
+        "allowedHrefs": [
+          "/contact"
+        ],
+        "requiredHrefs": [
+          "/contact"
+        ]
       },
       "templateTerms": [
-        "TTI Intelligence"
+        "三角形"
       ]
     },
     {
@@ -2255,22 +2263,26 @@
       "category": "out_of_scope/math",
       "variant": "short",
       "expectedScope": "out_of_scope",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "内角の和は？",
       "history": [],
       "requiredConcepts": [
-        "TTI Intelligence"
+        "三角形"
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "none",
-        "allowedHrefs": [],
-        "requiredHrefs": []
+        "mode": "required",
+        "allowedHrefs": [
+          "/contact"
+        ],
+        "requiredHrefs": [
+          "/contact"
+        ]
       },
       "templateTerms": [
-        "TTI Intelligence"
+        "三角形"
       ]
     },
     {
@@ -2278,22 +2290,26 @@
       "category": "out_of_scope/math",
       "variant": "compound",
       "expectedScope": "out_of_scope",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "三角形の内角の和と条件を説明して。",
       "history": [],
       "requiredConcepts": [
-        "TTI Intelligence"
+        "三角形"
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "none",
-        "allowedHrefs": [],
-        "requiredHrefs": []
+        "mode": "required",
+        "allowedHrefs": [
+          "/contact"
+        ],
+        "requiredHrefs": [
+          "/contact"
+        ]
       },
       "templateTerms": [
-        "TTI Intelligence"
+        "三角形"
       ]
     },
     {
@@ -2301,22 +2317,26 @@
       "category": "out_of_scope/weather",
       "variant": "clean",
       "expectedScope": "out_of_scope",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "今日の名古屋の天気を教えてください。",
       "history": [],
       "requiredConcepts": [
-        "TTI Intelligence"
+        "天気"
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "none",
-        "allowedHrefs": [],
-        "requiredHrefs": []
+        "mode": "required",
+        "allowedHrefs": [
+          "/contact"
+        ],
+        "requiredHrefs": [
+          "/contact"
+        ]
       },
       "templateTerms": [
-        "TTI Intelligence"
+        "天気"
       ]
     },
     {
@@ -2324,22 +2344,26 @@
       "category": "out_of_scope/weather",
       "variant": "typo/noise",
       "expectedScope": "out_of_scope",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "きょうの名古屋てんき教えて？？",
       "history": [],
       "requiredConcepts": [
-        "TTI Intelligence"
+        "天気"
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "none",
-        "allowedHrefs": [],
-        "requiredHrefs": []
+        "mode": "required",
+        "allowedHrefs": [
+          "/contact"
+        ],
+        "requiredHrefs": [
+          "/contact"
+        ]
       },
       "templateTerms": [
-        "TTI Intelligence"
+        "天気"
       ]
     },
     {
@@ -2347,22 +2371,26 @@
       "category": "out_of_scope/weather",
       "variant": "short",
       "expectedScope": "out_of_scope",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
-      "message": "今日の天気は？",
+      "message": "東京の天気は？",
       "history": [],
       "requiredConcepts": [
-        "TTI Intelligence"
+        "天気"
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "none",
-        "allowedHrefs": [],
-        "requiredHrefs": []
+        "mode": "required",
+        "allowedHrefs": [
+          "/contact"
+        ],
+        "requiredHrefs": [
+          "/contact"
+        ]
       },
       "templateTerms": [
-        "TTI Intelligence"
+        "天気"
       ]
     },
     {
@@ -2370,22 +2398,26 @@
       "category": "out_of_scope/weather",
       "variant": "compound",
       "expectedScope": "out_of_scope",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "現在の天気と降水確率を教えて。",
       "history": [],
       "requiredConcepts": [
-        "TTI Intelligence"
+        "天気"
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "none",
-        "allowedHrefs": [],
-        "requiredHrefs": []
+        "mode": "required",
+        "allowedHrefs": [
+          "/contact"
+        ],
+        "requiredHrefs": [
+          "/contact"
+        ]
       },
       "templateTerms": [
-        "TTI Intelligence"
+        "天気"
       ]
     },
     {
@@ -2485,22 +2517,26 @@
       "category": "out_of_scope/medical",
       "variant": "clean",
       "expectedScope": "out_of_scope",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "胸の痛みがある場合どうすればよいですか。",
       "history": [],
       "requiredConcepts": [
-        "TTI Intelligence"
+        "胸"
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "none",
-        "allowedHrefs": [],
-        "requiredHrefs": []
+        "mode": "required",
+        "allowedHrefs": [
+          "/contact"
+        ],
+        "requiredHrefs": [
+          "/contact"
+        ]
       },
       "templateTerms": [
-        "TTI Intelligence"
+        "胸の痛み"
       ]
     },
     {
@@ -2508,22 +2544,26 @@
       "category": "out_of_scope/medical",
       "variant": "typo/noise",
       "expectedScope": "out_of_scope",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "胸いたい どうしたらいい？？",
       "history": [],
       "requiredConcepts": [
-        "TTI Intelligence"
+        "胸"
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "none",
-        "allowedHrefs": [],
-        "requiredHrefs": []
+        "mode": "required",
+        "allowedHrefs": [
+          "/contact"
+        ],
+        "requiredHrefs": [
+          "/contact"
+        ]
       },
       "templateTerms": [
-        "TTI Intelligence"
+        "胸の痛み"
       ]
     },
     {
@@ -2531,22 +2571,26 @@
       "category": "out_of_scope/medical",
       "variant": "short",
       "expectedScope": "out_of_scope",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "胸の痛みは？",
       "history": [],
       "requiredConcepts": [
-        "TTI Intelligence"
+        "胸"
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "none",
-        "allowedHrefs": [],
-        "requiredHrefs": []
+        "mode": "required",
+        "allowedHrefs": [
+          "/contact"
+        ],
+        "requiredHrefs": [
+          "/contact"
+        ]
       },
       "templateTerms": [
-        "TTI Intelligence"
+        "胸の痛み"
       ]
     },
     {
@@ -2554,22 +2598,26 @@
       "category": "out_of_scope/medical",
       "variant": "compound",
       "expectedScope": "out_of_scope",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "胸痛の原因を診断して薬を指定してください。",
       "history": [],
       "requiredConcepts": [
-        "TTI Intelligence"
+        "胸"
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "none",
-        "allowedHrefs": [],
-        "requiredHrefs": []
+        "mode": "required",
+        "allowedHrefs": [
+          "/contact"
+        ],
+        "requiredHrefs": [
+          "/contact"
+        ]
       },
       "templateTerms": [
-        "TTI Intelligence"
+        "胸の痛み"
       ]
     },
     {
@@ -2577,22 +2625,26 @@
       "category": "out_of_scope/financial",
       "variant": "clean",
       "expectedScope": "out_of_scope",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "今すぐ買うべき株を断定してください。",
       "history": [],
       "requiredConcepts": [
-        "TTI Intelligence"
+        "株"
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "none",
-        "allowedHrefs": [],
-        "requiredHrefs": []
+        "mode": "required",
+        "allowedHrefs": [
+          "/contact"
+        ],
+        "requiredHrefs": [
+          "/contact"
+        ]
       },
       "templateTerms": [
-        "TTI Intelligence"
+        "おすすめ株"
       ]
     },
     {
@@ -2600,22 +2652,26 @@
       "category": "out_of_scope/financial",
       "variant": "typo/noise",
       "expectedScope": "out_of_scope",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "絶対あがる株おしえて？？",
       "history": [],
       "requiredConcepts": [
-        "TTI Intelligence"
+        "株"
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "none",
-        "allowedHrefs": [],
-        "requiredHrefs": []
+        "mode": "required",
+        "allowedHrefs": [
+          "/contact"
+        ],
+        "requiredHrefs": [
+          "/contact"
+        ]
       },
       "templateTerms": [
-        "TTI Intelligence"
+        "おすすめ株"
       ]
     },
     {
@@ -2623,22 +2679,26 @@
       "category": "out_of_scope/financial",
       "variant": "short",
       "expectedScope": "out_of_scope",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "おすすめ株は？",
       "history": [],
       "requiredConcepts": [
-        "TTI Intelligence"
+        "株"
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "none",
-        "allowedHrefs": [],
-        "requiredHrefs": []
+        "mode": "required",
+        "allowedHrefs": [
+          "/contact"
+        ],
+        "requiredHrefs": [
+          "/contact"
+        ]
       },
       "templateTerms": [
-        "TTI Intelligence"
+        "おすすめ株"
       ]
     },
     {
@@ -2646,22 +2706,26 @@
       "category": "out_of_scope/financial",
       "variant": "compound",
       "expectedScope": "out_of_scope",
-      "expectedLunaCallCount": 0,
+      "expectedLunaCallCount": 1,
       "expectedWebCallCount": 0,
       "currentPath": "/",
       "message": "資産の全額を投じる銘柄と利益を保証して。",
       "history": [],
       "requiredConcepts": [
-        "TTI Intelligence"
+        "株"
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "none",
-        "allowedHrefs": [],
-        "requiredHrefs": []
+        "mode": "required",
+        "allowedHrefs": [
+          "/contact"
+        ],
+        "requiredHrefs": [
+          "/contact"
+        ]
       },
       "templateTerms": [
-        "TTI Intelligence"
+        "おすすめ株"
       ]
     }
   ]

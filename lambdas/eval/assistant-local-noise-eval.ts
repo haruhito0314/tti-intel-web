@@ -74,7 +74,7 @@ export interface MatrixEvaluationCase extends InterimEvaluationCase {
 
 export interface InterimEvaluationFixture {
   metadata: {
-    schemaVersion: 4;
+    schemaVersion: 5;
     count: number;
     createdAt: string;
     model: 'gpt-5.6-luna';
@@ -137,6 +137,7 @@ const SAFETY_KINDS = new Set<SafetyPolicy['kind']>([
 ]);
 const MAX_SAFETY_CLAUSES = 64;
 const MAX_SAFETY_CLAUSE_LENGTH = 512;
+const UNIVERSITY_DETAIL_PROSE = /(?:学部|大学院|入試|学費|学生生活|部活動|サークル|専攻|キャンパス|所在地|研究|名古屋|愛知|私立|国立|設立|創立|[0-9０-９])/u;
 const SIGNIFICANT_PRIVATE_FRAGMENT_LENGTH = 4;
 const MAX_LOG_STRING_VALUES = 200;
 const MAX_LOG_STRING_LENGTH = 4_096;
@@ -260,7 +261,7 @@ function parseCase(value: unknown, index: number): MatrixEvaluationCase {
   if (value.expectedWebCallCount !== 0) {
     return invalidFixture(`${field}.expectedWebCallCount is invalid`);
   }
-  if ((value.expectedScope === 'circle' || value.expectedScope === 'site')
+  if ((value.expectedScope !== 'conversation')
     !== (value.expectedLunaCallCount === 1)) {
     return invalidFixture(`${field}.expectedLunaCallCount does not match scope`);
   }
@@ -295,7 +296,7 @@ export function parseInterimEvaluationFixture(value: unknown): InterimEvaluation
     return invalidFixture('root fields are invalid');
   }
   if (
-    value.metadata.schemaVersion !== 4
+    value.metadata.schemaVersion !== 5
     || !Number.isSafeInteger(value.metadata.count)
     || value.metadata.count !== 100
     || value.metadata.model !== 'gpt-5.6-luna'
@@ -312,9 +313,16 @@ export function parseInterimEvaluationFixture(value: unknown): InterimEvaluation
   }
   const ids = cases.map(({ id }) => id);
   if (new Set(ids).size !== ids.length) return invalidFixture('case IDs must be unique');
+  if (!ids.every((id, index) => id === `L${String(index + 1).padStart(3, '0')}`)) {
+    return invalidFixture('case IDs must be exactly L001-L100 in order');
+  }
+  if (cases.filter(({ expectedLunaCallCount }) => expectedLunaCallCount === 1).length !== 96
+    || cases.filter(({ expectedLunaCallCount }) => expectedLunaCallCount === 0).length !== 4) {
+    return invalidFixture('call matrix must contain 96 one-call and 4 zero-call cases');
+  }
   return {
     metadata: {
-      schemaVersion: 4,
+      schemaVersion: 5,
       count: cases.length,
       createdAt,
       model: 'gpt-5.6-luna',
@@ -644,6 +652,9 @@ export function assessInterimObservation(
 ): InterimAssessment {
   const failures: string[] = [];
   if (observation.statusCode !== 200) failures.push('expected a 200 response');
+  if ([...observation.response.answer].length > 200) {
+    failures.push('answer exceeds 200 code points');
+  }
   if (
     observation.latencyMs !== undefined
     && (!Number.isSafeInteger(observation.latencyMs) || observation.latencyMs < 0)
@@ -674,6 +685,14 @@ export function assessInterimObservation(
     if (normalizedAnswer.includes(normalizePrivateText(concept))) {
       failures.push(`answer contains forbidden concept: ${concept}`);
     }
+  }
+  if (evaluationCase.expectedScope === 'university'
+    && UNIVERSITY_DETAIL_PROSE.test(observation.response.answer)) {
+    failures.push('answer contains detailed university claims');
+  }
+  if (evaluationCase.expectedScope === 'out_of_scope'
+    && !/(?:申し訳|すみません|ごめんなさい|お詫び)/u.test(observation.response.answer)) {
+    failures.push('answer omits a question-specific apology');
   }
   if (
     evaluationCase.expectation === 'distinction'

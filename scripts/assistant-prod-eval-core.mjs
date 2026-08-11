@@ -44,7 +44,7 @@ function validateStringArray(value, field, { nonEmpty = false } = {}) {
 
 export function validateFixture(value) {
   assert(value && typeof value === 'object' && !Array.isArray(value), 'root must be an object');
-  assert(value.metadata?.schemaVersion === 4, 'schemaVersion must be 4');
+  assert(value.metadata?.schemaVersion === 5, 'schemaVersion must be 5');
   assert(value.metadata?.count === 100 && value.cases?.length === 100, 'exactly 100 cases are required');
   assert(value.metadata?.model === MODEL, 'model must be gpt-5.6-luna');
   assert(value.metadata?.webSearch === false, 'web search must be disabled');
@@ -65,7 +65,7 @@ export function validateFixture(value) {
     assert(SCOPES.has(evaluationCase.expectedScope), `${field}.expectedScope is unknown`);
     assert([0, 1].includes(evaluationCase.expectedLunaCallCount), `${field}.expectedLunaCallCount must be 0 or 1`);
     assert(evaluationCase.expectedWebCallCount === 0, `${field}.expectedWebCallCount must be 0`);
-    assert(['circle', 'site'].includes(evaluationCase.expectedScope)
+    assert((evaluationCase.expectedScope !== 'conversation')
       === (evaluationCase.expectedLunaCallCount === 1), `${field}.expectedLunaCallCount does not match scope`);
     assert(typeof evaluationCase.message === 'string' && evaluationCase.message.trim(), `${field}.message is required`);
     assert(typeof evaluationCase.currentPath === 'string' && evaluationCase.currentPath.startsWith('/'), `${field}.currentPath is invalid`);
@@ -83,15 +83,21 @@ export function validateFixture(value) {
       assert(links.mode === 'required', `${field} university link must be required`);
       assert(links.allowedHrefs.length === 1 && links.allowedHrefs[0] === 'https://www.toyota-ti.ac.jp/', `${field} university link must be the exact root`);
     }
-    if (['out_of_scope', 'conversation'].includes(evaluationCase.expectedScope)) {
-      assert(links.mode === 'none' && links.allowedHrefs.length === 0 && links.requiredHrefs.length === 0, `${field} local response must be link-free`);
+    if (evaluationCase.expectedScope === 'conversation') {
+      assert(links.mode === 'none' && links.allowedHrefs.length === 0 && links.requiredHrefs.length === 0, `${field} conversation response must be link-free`);
+    }
+    if (evaluationCase.expectedScope === 'out_of_scope') {
+      assert(links.mode === 'required' && links.allowedHrefs.length === 1
+        && links.allowedHrefs[0] === '/contact', `${field} out-of-scope response must require Contact`);
     }
   }
   assert(categories.size === 25 && [...categories.values()].every((count) => count === 4), 'exactly 25 topics x 4 variants are required');
   assert([...variantsByCategory.values()].every((variants) => variants.size === 4), 'each topic must have four variants');
   const count = (scope) => value.cases.filter(({ expectedScope }) => expectedScope === scope).length;
   assert(count('circle') === 32 && count('site') === 32 && count('university') === 16 && count('out_of_scope') === 16 && count('conversation') === 4, 'scope matrix must be 32/32/16/16/4');
-  assert(value.cases.filter(({ expectedLunaCallCount }) => expectedLunaCallCount === 1).length === 64, 'exactly 64 Luna calls are required');
+  assert(value.cases.map(({ id }) => id).every((id, index) => id === `L${String(index + 1).padStart(3, '0')}`), 'case IDs must be exactly L001-L100 in order');
+  assert(value.cases.filter(({ expectedLunaCallCount }) => expectedLunaCallCount === 1).length === 96, 'exactly 96 Luna calls are required');
+  assert(value.cases.filter(({ expectedLunaCallCount }) => expectedLunaCallCount === 0).length === 4, 'exactly 4 zero-call responses are required');
   assert(value.cases.every(({ expectedWebCallCount }) => expectedWebCallCount === 0), 'all web call expectations must be zero');
   for (const tool of ['Codex', 'Vercel', 'AWS', 'Plugin', 'CLI', 'MCP']) {
     assert(value.cases.filter((evaluationCase) => evaluationCase.expectedScope === 'site'
@@ -216,6 +222,7 @@ export function evaluateCase(evaluationCase, response, metrics = {}) {
   const hrefs = links.map(({ href }) => href);
   if (response?.status !== 200) issues.push(`http_${response?.status ?? 'missing'}`);
   if (!answer.trim()) issues.push('empty_answer');
+  if ([...answer].length > 200) issues.push('answer_too_long');
   if (!safeInteger(response?.latencyMs)) issues.push('invalid_latency');
   if (metrics.assistantScope !== evaluationCase.expectedScope) issues.push('assistant_scope');
   if (metrics.lunaCallCount !== evaluationCase.expectedLunaCallCount) issues.push('luna_call_count');
@@ -232,7 +239,13 @@ export function evaluateCase(evaluationCase, response, metrics = {}) {
     if (normalize(answer).includes(normalize(concept))) issues.push(`forbidden_concept:${concept}`);
   }
   if (evaluationCase.expectedScope === 'university' && hasDetailedUniversityProse(answer)) issues.push('detailed_university_prose');
-  if (evaluationCase.expectedLunaCallCount === 0) issues.push(...localSafetyIssues(evaluationCase, answer));
+  if (evaluationCase.expectedScope === 'out_of_scope') {
+    if (!/(?:申し訳|すみません|ごめんなさい|お詫び)/u.test(answer)) issues.push('missing_out_of_scope_apology');
+    if (!evaluationCase.requiredConcepts.some((concept) => normalize(answer).includes(normalize(concept)))) {
+      issues.push('missing_out_of_scope_topic');
+    }
+    issues.push(...localSafetyIssues(evaluationCase, answer));
+  }
   const expected = evaluationCase.linkExpectation;
   if (expected.mode === 'none' && hrefs.length) issues.push('unexpected_link');
   if (hrefs.some((href) => !expected.allowedHrefs.includes(href))) issues.push('link_outside_case_allowlist');
@@ -283,7 +296,7 @@ export function summarizeResults(results, fixtureMetadata) {
     .map(([fingerprint]) => fingerprint).sort();
   const measured = results.filter(({ status }) => status !== null);
   return {
-    schemaVersion: 4,
+    schemaVersion: 5,
     generatedAt: new Date().toISOString(),
     execution: fixtureMetadata.execution,
     model: CONFIGURATION.model,

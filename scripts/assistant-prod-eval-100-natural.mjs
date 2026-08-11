@@ -240,14 +240,18 @@ async function loadPostRunTelemetry(path, fixture, correlation) {
   return loadTelemetry(resolvedPath, fixture, correlation);
 }
 
-async function ask(evaluationCase, sessionId, runId) {
-  const startedAt = Date.now();
-  const request = {
+export function buildRequest(evaluationCase, sessionId) {
+  return {
     message: evaluationCase.message,
     currentPath: evaluationCase.currentPath,
     history: evaluationCase.history,
+    sessionId,
   };
-  if (evaluationCase.expectedLunaCallCount === 1) request.sessionId = sessionId;
+}
+
+async function ask(evaluationCase, sessionId, runId) {
+  const startedAt = Date.now();
+  const request = buildRequest(evaluationCase, sessionId);
   const response = await fetch(API, {
     method: 'POST',
     headers: {
@@ -378,10 +382,10 @@ async function main() {
   const runId = options.runId ?? randomUUID();
   const runStartedAt = new Date().toISOString();
   console.log(`Evaluation run ID: ${runId}`);
-  let sessionId = null;
+  let sessionId = randomUUID();
   let inSession = 0;
   for (const [index, evaluationCase] of fixture.cases.entries()) {
-    if (evaluationCase.expectedLunaCallCount === 1 && (sessionId === null || inSession >= 18)) {
+    if (inSession >= 18) {
       sessionId = randomUUID();
       inSession = 0;
       if (index > 0) await sleep(1_200);
@@ -399,7 +403,7 @@ async function main() {
         observedAt: new Date().toISOString(),
       };
     }
-    if (evaluationCase.expectedLunaCallCount === 1) inSession += 1;
+    inSession += 1;
     observations.push({ evaluationCase, response });
     console.log(`[${index + 1}/100] ${evaluationCase.id} response received`);
     await sleep(DELAY_MS);
