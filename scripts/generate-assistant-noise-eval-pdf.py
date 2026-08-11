@@ -46,8 +46,8 @@ if scope_counts != {"circle": 32, "site": 32, "university": 16, "out_of_scope": 
     raise SystemExit("scope count contract mismatch")
 if len(topic_counts) != 25 or any(count != 4 for count in topic_counts.values()):
     raise SystemExit("25 topic x 4 variant contract mismatch")
-if (luna_calls, zero_calls, web_calls) != (64, 36, 0):
-    raise SystemExit("64/36/0 call contract mismatch")
+if (luna_calls, zero_calls, web_calls) != (96, 4, 0):
+    raise SystemExit("96/4/0 call contract mismatch")
 
 font_path = Path("/System/Library/Fonts/Supplemental/Arial Unicode.ttf")
 if not font_path.exists():
@@ -81,13 +81,13 @@ story = [
     P("サークル・サイト範囲ルーティング 100問評価 / デプロイ前ドライラン", "SubJP"), Spacer(1, 8 * mm),
     P("結論", "HeadJP"),
     P("<b>100件の固定評価は、Lunaを使う範囲とローカル応答の範囲を分離して検証します。</b> このPDFはローカルdry-runであり、production endpoint、OpenAI API、AWS環境にはアクセスしていません。"),
-    P("<b>64 Luna calls / 36 zero-call responses / 0 web calls</b> を固定契約として、ケースごとのscope、呼出し数、利用量、リンク、プライバシー境界を判定します。"),
+    P("<b>96 Luna calls / 4 zero-call responses / 0 web calls</b> を固定契約として、ケースごとのscope、呼出し数、利用量、リンク、プライバシー境界を判定します。"),
     table([
         ["指標", "値", "意味"],
         ["固定ケース", "100", "25テーマ x 4表現ゆれ"],
         ["モデル", "gpt-5.6-luna", "評価対象モデル"],
-        ["Luna呼出し", "64", "circle / site のみ、各1回"],
-        ["ローカル応答", "36", "university / conversation / out_of_scope は0回"],
+        ["Luna呼出し", "96", "conversation以外の各scopeで1回"],
+        ["ローカル応答", "4", "conversationのみ0回"],
         ["Web呼出し", "0", "全ケースでツール無効"],
         ["本番実測", str(measured), "このPDFはローカルdry-run"],
     ], [44 * mm, 32 * mm, 90 * mm]),
@@ -96,8 +96,8 @@ story = [
         ["scope", "ケース", "Luna", "リンク・応答境界"],
         ["circle", 32, "1", "TTI Intelligenceの活動・参加・作品"],
         ["site", 32, "1", "サイト内容とCodex/Vercel/AWS/Plugin/CLI/MCP"],
-        ["university", 16, "0", "公式サイト root URL のみ"],
-        ["out_of_scope", 16, "0", "短い案内、リンクなし"],
+        ["university", 16, "1", "公式サイト root URL のみ"],
+        ["out_of_scope", 16, "1", "短い案内、Contactリンクのみ"],
         ["conversation", 4, "0", "短い会話応答、リンクなし"],
     ], [35 * mm, 25 * mm, 22 * mm, 84 * mm], "#0B6B62"),
     Spacer(1, 6 * mm), P("判定すること", "HeadJP"),
@@ -109,15 +109,15 @@ story = [
         ["run", "UUID、開始/終了時刻、100件のcase IDを完全一致"],
         ["request", "100個の一意なserver request IDを完全一致"],
         ["telemetry", "scopeと期待/観測呼出し数、ゼロ呼出しusageを検証"],
-        ["links", "大学rootのみ、会話・範囲外はリンクなし"],
+        ["links", "大学rootのみ、範囲外はContact、会話はリンクなし"],
     ], [45 * mm, 121 * mm]),
     Spacer(1, 6 * mm), P("ローカル実行の境界", "HeadJP"),
-    P("dry-runはfixtureと評価器、証跡ファイルの整合性だけを確認します。Luna payloadを構築せず、production/OpenAI呼出しを行いません。本番評価を認可した場合も、ローカルscopeのリクエストはsession IDを送らず、テレメトリーでゼロusageを要求します。"),
+    P("dry-runはfixtureと評価器、証跡ファイルの整合性だけを確認します。Luna payloadを構築せず、production/OpenAI呼出しを行いません。本番評価を認可した場合も、すべての評価リクエストは有効なsession IDを含めます。一方で、証跡とテレメトリーにはsession ID、質問文、履歴、回答本文を保存しません。"),
     PageBreak(), P("再現性と次の手順", "HeadJP"),
     P("dataset.json、results.json、results.csv、summary.jsonはmanifest.jsonのSHA-256で照合してからPDFを生成します。モデル、ツール無効、評価用の単価設定、実行状態はsummary.jsonに固定します。"),
     P("本番未実行のため、正答率・遅延・token・費用は未測定です。デプロイ許可後に同じ凍結データセットを1回実行し、privacy-safe telemetryを照合してこのPDFを再生成します。"),
     P("合格条件", "HeadJP"),
-    P("100件のscope、case ID、server request ID、時刻範囲を一致させ、64件のcircle/siteでLuna 1回、36件のlocal scopeでLuna 0回かつ5つのusage counterがすべて0、全100件でWeb 0回を確認します。"),
+    P("100件のscope、case ID、server request ID、時刻範囲を一致させ、96件のsubstantive scopeでLuna 1回、4件のconversationでLuna 0回かつ5つのusage counterがすべて0、全100件でWeb 0回を確認します。"),
 ]
 
 def footer(canvas, document):
@@ -137,7 +137,7 @@ if len(reader.pages) != 4:
     raise SystemExit(f"unexpected page count: {len(reader.pages)}")
 with pdfplumber.open(OUTPUT) as document_check:
     extracted = "\n".join(page.extract_text() or "" for page in document_check.pages)
-for required in ("gpt-5.6-luna", "100", "64 Luna calls / 36 zero-call responses / 0 web calls", "本番未実行", "assistantScope"):
+for required in ("gpt-5.6-luna", "100", "96 Luna calls / 4 zero-call responses / 0 web calls", "本番未実行", "assistantScope"):
     if required not in extracted:
         raise SystemExit(f"missing report text: {required}")
 print(OUTPUT)
