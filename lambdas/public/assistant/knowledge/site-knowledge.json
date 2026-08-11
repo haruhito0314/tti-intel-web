@@ -290,5 +290,210 @@
     "sourceIds": [],
     "asOf": "2026-08-03",
     "volatility": "periodic"
+  },
+  {
+    "id": "circle-activities",
+    "domain": "circle",
+    "title": "TTI Intelligenceの活動",
+    "summary": "TTI Intelligenceは、解説動画、開発、ゲーム交流、今週の数学を公開中の主な活動として紹介している。",
+    "details": [
+      "開発ではAIモデルやMCPを活用したWeb・アプリ・ゲーム開発に取り組む。",
+      "各活動の詳しい内容はサークル紹介ページから対応するページへ進める。"
+    ],
+    "keywords": ["解説動画", "開発活動", "ゲーム交流", "今週の数学"],
+    "sourceIds": [],
+    "volatility": "stable"
+  },
+  {
+    "id": "circle-eligibility",
+    "domain": "circle",
+    "title": "TTI Intelligenceの参加対象",
+    "summary": "プログラミング未経験者も基礎から支援され、学部1年生から大学院生まで、他大学の学生も歓迎している。",
+    "details": [
+      "学部や学年による参加制限はないと案内している。"
+    ],
+    "keywords": ["参加条件", "未経験", "学部", "学年", "他大学"],
+    "sourceIds": [],
+    "volatility": "periodic"
+  },
+  {
+    "id": "circle-schedule",
+    "domain": "circle",
+    "title": "TTI Intelligenceの活動日",
+    "summary": "主な活動日は土日で、都合のよいときに自由に参加できる。",
+    "details": [
+      "参加者は自分のペースで無理なく続けられる環境として案内されている。"
+    ],
+    "keywords": ["活動日", "土日", "頻度", "いつ", "予定"],
+    "sourceIds": [],
+    "volatility": "periodic"
+  },
+  {
+    "id": "circle-fees",
+    "domain": "circle",
+    "title": "TTI Intelligenceの費用",
+    "summary": "サークルの参加費用は無料で、AIツールのサブスクリプションなど個人で利用するサービスの費用は各自負担となる。",
+    "details": [
+      "費用に関する案内はサークル紹介ページで確認できる。"
+    ],
+    "keywords": ["費用", "無料", "参加費", "会費", "サブスクリプション"],
+    "sourceIds": [],
+    "volatility": "periodic"
+  },
+  {
+    "id": "circle-contact",
+    "domain": "circle",
+    "title": "TTI Intelligenceへの連絡",
+    "summary": "参加相談や活動に関する質問は、お問い合わせページから送信できる。",
+    "details": [
+      "公開連絡先メールアドレスもお問い合わせページに掲載されている。"
+    ],
+    "keywords": ["連絡", "問い合わせ", "参加相談", "質問", "メール"],
+    "sourceIds": [],
+    "volatility": "periodic"
+  },
+  {
+    "id": "circle-discord",
+    "domain": "circle",
+    "title": "TTI IntelligenceのDiscord",
+    "summary": "TTI Intelligenceは参加・交流用のDiscordを案内している。",
+    "details": [
+      "ゲームコミュニティの参加導線からDiscordに進める。"
+    ],
+    "keywords": ["Discord", "ディスコード", "参加", "交流"],
+    "sourceIds": ["discord"],
+    "volatility": "periodic"
+  },
+  {
+    "id": "circle-youtube",
+    "domain": "circle",
+    "title": "TTI IntelligenceのYouTube",
+    "summary": "TTI Intelligenceは解説動画を公開するYouTubeチャンネルを案内している。",
+    "details": [
+      "サークル紹介ページの解説動画からYouTubeチャンネルに進める。"
+    ],
+    "keywords": ["YouTube", "ユーチューブ", "解説動画", "動画", "チャンネル"],
+    "sourceIds": ["youtube"],
+    "volatility": "periodic"
+  },
+  {
+    "id": "site-about",
+    "domain": "site",
+    "title": "サークル紹介ページ",
+    "summary": "サークル紹介ページでは、TTI Intelligenceの活動内容、参加条件、開催予定、よくある質問を確認できる。",
+    "details": [
+      "解説動画、開発、ゲーム交流、今週の数学の紹介から各ページへ進める。"
+    ],
+    "keywords": ["サークル紹介", "about", "活動内容", "参加条件", "よくある質問"],
+    "sourceIds": [],
+    "volatility": "periodic"
+  },
+  {
+    "id": "site-apps",
+    "domain": "site",
+    "title": "アプリページ",
+    "summary": "アプリページでは、メンバーが開発したアプリケーションやプロジェクトを紹介している。",
+    "details": [
+      "AI Assistant、卓球組み合わせ表ジェネレーター、カラーソートパズルが公開中のアプリとして掲載されている。"
+    ],
+    "keywords": ["apps", "プロジェクト", "制作物"],
+    "sourceIds": [],
+    "volatility": "periodic"
+  },
+  {
+    "id": "site-development",
+    "domain": "site",
+    "title": "開発についてページ",
+    "summary": "開発についてページでは、AIとともに構想、実装、確認、公開へ進む開発の流れを紹介している。",
+    "details": [
+      "Codex、Vercel、AWS、Plugin、CLI、MCPを使う制作例を確認できる。"
+    ],
+    "keywords": ["開発について", "development", "開発ページ", "開発の流れ"],
+    "sourceIds": [],
+    "volatility": "periodic"
+  },
+  {
+    "id": "site-contact",
+    "domain": "site",
+    "title": "お問い合わせページ",
+    "summary": "お問い合わせページでは、サークルへの入会、イベント参加、その他の問い合わせを送信できる。",
+    "details": [
+      "名前、メールアドレス、件名、問い合わせ内容を入力するフォームと公開メールアドレスがある。"
+    ],
+    "keywords": ["お問い合わせ", "contact", "問い合わせフォーム", "メールアドレス", "連絡先"],
+    "sourceIds": [],
+    "volatility": "periodic"
+  },
+  {
+    "id": "site-game-community",
+    "domain": "game",
+    "title": "ゲームコミュニティページ",
+    "summary": "ゲームコミュニティページでは、オンラインでのゲーム交流活動と参加方法を紹介している。",
+    "details": [
+      "Discordへの参加導線とお問い合わせページへの案内がある。"
+    ],
+    "keywords": ["ゲームコミュニティ", "ゲームページ", "オンライン交流", "Discord"],
+    "sourceIds": ["discord"],
+    "volatility": "periodic"
+  },
+  {
+    "id": "site-weekly-math",
+    "domain": "site",
+    "title": "今週の数学ページ",
+    "summary": "今週の数学ページでは、公開済みの数学問題一覧を確認できる。",
+    "details": [
+      "各問題のページでは問題文と、公開されている場合の解答・解説を確認できる。"
+    ],
+    "keywords": ["今週の数学", "数学ページ", "問題一覧", "解答", "解説"],
+    "sourceIds": [],
+    "volatility": "periodic"
+  },
+  {
+    "id": "board-posting",
+    "domain": "site",
+    "title": "掲示板への投稿",
+    "summary": "掲示板では誰でも匿名で自由に書き込める。",
+    "details": [
+      "質問、相談、活動に関する投稿を確認できる。"
+    ],
+    "keywords": ["掲示板", "投稿", "書き込み", "質問", "相談"],
+    "sourceIds": [],
+    "volatility": "periodic"
+  },
+  {
+    "id": "board-anonymous-name",
+    "domain": "site",
+    "title": "掲示板の表示名",
+    "summary": "掲示板の表示名を空欄にすると「匿名」と表示される。",
+    "details": [
+      "スレッド作成とコメント投稿のどちらでも表示名を入力できる。"
+    ],
+    "keywords": ["表示名", "匿名", "名前", "空欄"],
+    "sourceIds": [],
+    "volatility": "periodic"
+  },
+  {
+    "id": "board-threads",
+    "domain": "site",
+    "title": "掲示板のスレッド",
+    "summary": "掲示板ページの「スレッドを作成」から新しいスレッドを作成できる。",
+    "details": [
+      "作成したスレッドは掲示板の一覧から開ける。"
+    ],
+    "keywords": ["スレッド", "スレッドを作成", "新しい投稿", "掲示板一覧"],
+    "sourceIds": [],
+    "volatility": "periodic"
+  },
+  {
+    "id": "board-comments",
+    "domain": "site",
+    "title": "掲示板のコメント",
+    "summary": "各スレッドにはコメントを投稿できる。",
+    "details": [
+      "コメント画面には表示名と内容の入力欄がある。"
+    ],
+    "keywords": ["コメント", "コメントを投稿", "返信", "スレッド"],
+    "sourceIds": [],
+    "volatility": "periodic"
   }
 ]

@@ -137,7 +137,11 @@ function parseKnowledgeItem(
   };
 }
 
-function parseKnowledgeCatalog(value: unknown, catalog: string): readonly KnowledgeItem[] {
+/** Validate a reviewed static catalog before exposing it to either retrieval path. */
+export function loadStructuredKnowledgeCatalog(
+  value: unknown,
+  catalog: string,
+): readonly KnowledgeItem[] {
   if (!Array.isArray(value) || value.length === 0) {
     return invalidCatalog(catalog, 'catalog must be a non-empty array');
   }
@@ -152,7 +156,7 @@ function parseKnowledgeCatalog(value: unknown, catalog: string): readonly Knowle
   return items;
 }
 
-export const SITE_KNOWLEDGE = parseKnowledgeCatalog(rawSiteKnowledge, 'site');
+export const SITE_KNOWLEDGE = loadStructuredKnowledgeCatalog(rawSiteKnowledge, 'site');
 export const STRUCTURED_KNOWLEDGE: readonly KnowledgeItem[] = SITE_KNOWLEDGE;
 
 const allKnowledgeIds = new Set<string>();

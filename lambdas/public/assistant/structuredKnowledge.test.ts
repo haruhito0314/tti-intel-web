@@ -7,6 +7,7 @@ import {
 import {
   SITE_KNOWLEDGE,
   STRUCTURED_KNOWLEDGE,
+  loadStructuredKnowledgeCatalog,
   selectAssistantRequestContext,
   selectStructuredKnowledge,
 } from './structuredKnowledge.js';
@@ -241,6 +242,16 @@ describe('reviewed structured knowledge catalogs', () => {
   it('contains no university domain or detailed university source IDs', () => {
     expect(JSON.stringify(STRUCTURED_KNOWLEDGE)).not.toContain('"domain":"university"');
     expect(JSON.stringify(STRUCTURED_KNOWLEDGE)).not.toMatch(/tti-(?:overview|features|academics|program|student-activity|clubs|access)/);
+  });
+
+  it('rejects an incomplete catalog entry through the reusable validated loader', () => {
+    expect(() => loadStructuredKnowledgeCatalog([{
+      id: 'incomplete',
+      domain: 'site',
+      title: 'Incomplete',
+      summary: 'Missing reviewed fields.',
+      volatility: 'stable',
+    }], 'test')).toThrow(/details must be a non-empty array/u);
   });
 });
 
