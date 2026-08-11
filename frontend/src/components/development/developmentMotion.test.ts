@@ -2,9 +2,24 @@ import { describe, expect, it } from 'vitest';
 import {
     CODEX_AGENT_FINISHED_MS,
     CODEX_IMPLEMENTATION_COMPLETE_MS,
+    CODEX_LAUNCH_OPEN_MS,
     CODEX_SECOND_FILE_READY_MS,
+    codexLaunchState,
     codexWorkState,
 } from './developmentMotion';
+
+describe('codexLaunchState', () => {
+    it('keeps the same Codex content visible throughout launch', () => {
+        expect(codexLaunchState(CODEX_LAUNCH_OPEN_MS - 1, false)).toEqual({
+            opening: false,
+            contentVisible: true,
+        });
+        expect(codexLaunchState(CODEX_LAUNCH_OPEN_MS + 100, false)).toEqual({
+            opening: true,
+            contentVisible: true,
+        });
+    });
+});
 
 describe('codexWorkState', () => {
     it('opens the file panel with the completed plan, then adds the second file and reply', () => {

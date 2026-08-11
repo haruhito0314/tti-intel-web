@@ -36,6 +36,13 @@ export const CODEX_IMPLEMENTATION_COMPLETE_MS = 9_450;
 export const CODEX_SECOND_FILE_READY_MS = 9_650;
 export const CODEX_AGENT_FINISHED_MS = 9_850;
 
+export function codexLaunchState(time: number, reducedMotion: boolean) {
+    return {
+        opening: reducedMotion || time >= CODEX_LAUNCH_OPEN_MS,
+        contentVisible: true as const,
+    };
+}
+
 export function codexWorkState(time: number, reducedMotion: boolean) {
     return {
         planComplete: reducedMotion || time >= CODEX_IMPLEMENTATION_COMPLETE_MS,

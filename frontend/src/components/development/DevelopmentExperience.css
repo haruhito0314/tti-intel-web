@@ -11903,19 +11903,6 @@ body:has(.development-experience) footer span {
     -webkit-backdrop-filter: var(--dx-glass-blur);
 }
 
-/* Do not reflow visible copy while the opening window changes size. The same
-   Codex surface remains in place; its contents return after the frame settles. */
-.dx-tool-launcher.is-opening
-    > .dx-launcher-codex-screen.dx-product-window:not(.is-content-ready)
-    > .dx-window-bar,
-.dx-tool-launcher.is-opening
-    > .dx-launcher-codex-screen.dx-product-window:not(.is-content-ready)
-    > .dx-codex-app {
-    opacity: 0;
-    transform: none;
-    transition: none;
-}
-
 /* Animate one coordinate system. Combining a moving left edge with
    translate(-50%) made the pane reverse direction briefly on launch. */
 .dx-tool-launcher.is-opening > .dx-launcher-codex-screen.dx-product-window {

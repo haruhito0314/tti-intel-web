@@ -24,7 +24,7 @@ import { Link } from 'react-router-dom';
 import { siClaude, siCursor, siOpenai, siVercel, type SimpleIcon } from 'simple-icons';
 import {
     CODEX_LAUNCH_CLICK_MS,
-    CODEX_LAUNCH_OPEN_MS,
+    codexLaunchState,
     codexWorkState,
     demoCursorTarget,
     ecosystemSurfaceHasFrame,
@@ -311,7 +311,7 @@ function CodexDemo({
         secondFileReady,
         agentFinished,
     } = codexWorkState(demoTime, reducedMotion);
-    const launcherOpening = reducedMotion || demoTime >= CODEX_LAUNCH_OPEN_MS;
+    const { opening: launcherOpening } = codexLaunchState(demoTime, reducedMotion);
     const contentReady = reducedMotion || demoTime >= 4_350;
     const workspaceHidden = progress >= 0.995;
     const firstPrompt = typedText(HOME_PROMPT, demoTime, 5_380, 1_250);
@@ -464,7 +464,7 @@ function CodexDemo({
             <div className="dx-demo-camera" style={cameraStyle}>
             <ToolLauncher hidden={workspaceHidden} codexOpen={launcherOpening}>
             <div
-                className={`dx-launcher-codex-screen dx-product-window dx-window-glass ${!launcherOpening || contentReady ? 'is-content-ready' : ''} ${previewVisible ? 'is-preview-behind' : ''} ${handoffComplete ? 'is-handoff-complete' : ''}`}
+                className={`dx-launcher-codex-screen dx-product-window dx-window-glass is-content-ready ${previewVisible ? 'is-preview-behind' : ''} ${handoffComplete ? 'is-handoff-complete' : ''}`}
                 data-dx-codex-window="primary"
                 data-dx-cursor-target="codex-window"
                 data-dx-cursor-y="0.04"
