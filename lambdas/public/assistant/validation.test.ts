@@ -146,6 +146,23 @@ describe('validateModelGuideResponse', () => {
     },
   );
 
+  it('accepts a valid site result with a safe non-empty topic label', () => {
+    const value = { ...validSite, topicLabel: 'サイトの内容' };
+
+    expect(validateModelGuideResponse(value, context)).toEqual(value);
+  });
+
+  it.each(
+    [validCircle, validSite, validUniversity, validOutOfScope].flatMap((value) => [
+      ['control character', value.scope, { ...value, topicLabel: 'サイト\u0000' }],
+      ['raw URL', value.scope, { ...value, topicLabel: 'https://example.com' }],
+      ['Markdown', value.scope, { ...value, topicLabel: '**サイト**' }],
+      ['25 code points', value.scope, { ...value, topicLabel: '😀'.repeat(25) }],
+    ]),
+  )('rejects a %s topic label for %s', (_kind, _scope, value) => {
+    expect(() => validateModelGuideResponse(value, context)).toThrow(UnsafeModelOutputError);
+  });
+
   it('accepts exactly 200 Unicode code points', () => {
     const answer = '😀'.repeat(200);
     expect(validateModelGuideResponse({ ...validSite, answer }, context).answer).toBe(answer);
@@ -178,14 +195,12 @@ describe('validateModelGuideResponse', () => {
     ['201 Unicode code points', { ...validSite, answer: '😀'.repeat(201) }],
     ['three sentence clauses', { ...validSite, answer: '一つ目。二つ目。三つ目。' }],
     ['three newline-separated clauses', { ...validSite, answer: '一つ目\n二つ目\n三つ目' }],
-    ['non-empty topic label for a site result', { ...validSite, topicLabel: 'サイト案内' }],
     ['blank out-of-scope topic label', { ...validOutOfScope, topicLabel: '' }],
     ['whitespace-only out-of-scope topic label', {
       ...validOutOfScope,
       topicLabel: '   ',
       answer: '申し訳ありませんが、   については案内できません。必要であればお問い合わせください。',
     }],
-    ['25-code-point out-of-scope topic label', { ...validOutOfScope, topicLabel: '😀'.repeat(25) }],
     ['unknown page ID', { ...validSite, pageIds: ['apps'] }],
     ['unknown content ID', { ...validCircle, contentIds: ['news:unknown'] }],
     ['unknown source ID', { ...validSite, sourceIds: ['unknown-source'] }],

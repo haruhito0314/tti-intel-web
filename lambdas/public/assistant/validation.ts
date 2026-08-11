@@ -203,7 +203,8 @@ function validateScopePolicy(
   contentIds: readonly string[],
   sourceIds: readonly string[],
 ): void {
-  if (scope !== 'out_of_scope' && topicLabel !== '') {
+  const topicLabelLength = [...topicLabel].length;
+  if (topicLabelLength > 24) {
     return unsafeModelOutput();
   }
 
@@ -224,10 +225,8 @@ function validateScopePolicy(
     return;
   }
 
-  const topicLabelLength = [...topicLabel].length;
   if (
     topicLabelLength < 1
-    || topicLabelLength > 24
     || topicLabel.trim().length === 0
     || !hasOnlyIds(pageIds, ['contact'])
     || !hasOnlyIds(contentIds, [])
