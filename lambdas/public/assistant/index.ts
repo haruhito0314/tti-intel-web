@@ -14,11 +14,14 @@ import {
   type ContentRepositories,
 } from './contentSearch.js';
 import { createContentRepositories } from './contentRepos.js';
-import type { AssistantRoutingIntent } from './intent.js';
-import { localResponseFor } from './localResponses.js';
+import {
+  buildAssistantKnowledgePack,
+  type AssistantKnowledgePack,
+} from './knowledgePack.js';
+import { localConversationResponseFor } from './localResponses.js';
 import {
   requestOpenAI as callOpenAI,
-  type RequestOpenAIInput,
+  type GroundedRequestOpenAIInput,
 } from './openai.js';
 import {
   createApiKeyProvider,
@@ -38,19 +41,14 @@ import {
   createVerifiedOfficialLinks,
   KNOWN_PAGE_ROUTES,
 } from './runtimeCatalog.js';
-import {
-  classifyAssistantScope,
-  isGenerativeScope,
-  shouldSearchDynamicContent,
-} from './scope.js';
-import { selectAssistantRequestContext } from './structuredKnowledge.js';
+import { shouldSearchDynamicContent } from './scope.js';
 import type {
   AssistantLink,
+  ModelGuideResponse,
   OpenAIResult,
   OpenAIUsage,
   PageId,
   RankedContentEntry,
-  RankedKnowledgeItem,
 } from './types.js';
 import {
   parseAssistantRequest,
@@ -59,32 +57,7 @@ import {
 } from './validation.js';
 
 const OPENAI_TIMEOUT_MS = 20_000;
-const OPENAI_MODEL = 'gpt-5.6-luna' as const;
 const MAX_ASSISTANT_LINKS = 4;
-
-const KNOWLEDGE_ALLOWED_PAGE_IDS = {
-  'circle-identity': ['about'],
-  'circle-participation': ['about', 'contact'],
-  'site-overview': ['home', 'about', 'weekly-math', 'apps', 'game-community', 'development', 'news', 'board', 'contact'],
-  'site-board': ['board'],
-  'site-news': ['news'],
-  'site-public-contact': ['contact'],
-  'circle-discord-youtube': ['about'],
-  'app-ai-assistant': ['apps'],
-  'app-table-tennis': ['apps', 'table-tennis'],
-  'app-color-sort': ['apps', 'color-sort'],
-  'circle-game-activity': ['game-community'],
-  'circle-weekly-math': ['weekly-math'],
-  'circle-ap-exam-schedule': ['about'],
-  'development-codex': ['development'],
-  'development-vercel': ['development'],
-  'development-aws': ['development'],
-  'development-plugin': ['development'],
-  'development-cli': ['development'],
-  'development-mcp': ['development'],
-  'development-combined-workflow': ['development'],
-  'development-project-examples': ['development'],
-} as const satisfies Readonly<Record<string, readonly PageId[]>>;
 
 const ERROR_RESPONSES = {
   400: {
@@ -123,7 +96,7 @@ export interface AssistantHandlerDependencies {
   getApiKey(): Promise<string>;
   reserveQuota(input: QuotaReservationInput): Promise<void>;
   searchContent(message: string): Promise<RankedContentEntry[]>;
-  requestOpenAI(input: RequestOpenAIInput): Promise<OpenAIResult>;
+  requestOpenAI(input: GroundedRequestOpenAIInput): Promise<OpenAIResult>;
   log(record: Record<string, string | number>): void;
 }
 
@@ -306,35 +279,10 @@ function hasMeaningfulModelAnswer(answer: string): boolean {
   return /[\p{L}\p{N}\p{S}]/u.test(answer);
 }
 
-function createAllowedPageIds(
-  knowledge: readonly RankedKnowledgeItem[],
-  content: readonly RankedContentEntry[],
-  routingIntent: AssistantRoutingIntent,
-): PageId[] {
-  if (routingIntent.suppressLinks) return [];
-
-  const excluded = new Set<PageId>(routingIntent.excludedPageIds);
-  const allowed = new Set<PageId>();
-  for (const { item } of knowledge) {
-    const pageIds = Object.hasOwn(KNOWLEDGE_ALLOWED_PAGE_IDS, item.id)
-      ? KNOWLEDGE_ALLOWED_PAGE_IDS[item.id as keyof typeof KNOWLEDGE_ALLOWED_PAGE_IDS]
-      : [];
-    for (const pageId of pageIds) {
-      if (!excluded.has(pageId)) allowed.add(pageId);
-    }
-  }
-  for (const { entry } of content) {
-    if (!excluded.has(entry.parentPageId)) allowed.add(entry.parentPageId);
-  }
-  return [...allowed];
-}
-
 function createVerifiedPageLinks(
   pageIds: readonly string[],
   allowedPageIds: ReadonlySet<PageId>,
-  excludedPageIds: readonly PageId[],
 ): AssistantLink[] {
-  const excluded = new Set<PageId>(excludedPageIds);
   const seen = new Set<PageId>();
   const links: AssistantLink[] = [];
 
@@ -344,7 +292,6 @@ function createVerifiedPageLinks(
     if (
       seen.has(verifiedPageId)
       || !allowedPageIds.has(verifiedPageId)
-      || excluded.has(verifiedPageId)
     ) {
       continue;
     }
@@ -360,31 +307,24 @@ function createVerifiedPageLinks(
   return links;
 }
 
-function sourceIsExcluded(
-  sourceId: string,
-  routingIntent: AssistantRoutingIntent,
-): boolean {
-  if (sourceId === 'discord' || sourceId === 'youtube') {
-    return routingIntent.excludedExternalLinks.includes(sourceId);
-  }
-  return sourceId.startsWith('tti-')
-    && routingIntent.excludedExternalLinks.includes('toyota-ti');
-}
-
-function createFinalLinks(
-  output: OpenAIResult['output'],
-  knowledge: readonly RankedKnowledgeItem[],
+function createScopeAwareLinks(
+  output: ModelGuideResponse,
+  knowledgePack: AssistantKnowledgePack,
   content: readonly RankedContentEntry[],
-  allowedPageIds: readonly PageId[],
-  routingIntent: AssistantRoutingIntent,
 ): AssistantLink[] {
-  if (routingIntent.suppressLinks) return [];
+  if (output.scope === 'university') {
+    return createVerifiedOfficialLinks(['toyota-ti']);
+  }
+  if (output.scope === 'out_of_scope') {
+    return createVerifiedPageLinks(['contact'], new Set<PageId>(['contact']));
+  }
 
-  const allowedPageIdSet = new Set<PageId>(allowedPageIds);
+  const allowedPageIdSet = new Set<PageId>(
+    knowledgePack.entries.flatMap((entry) => entry.pageIds),
+  );
   const pageLinks = createVerifiedPageLinks(
     output.pageIds,
     allowedPageIdSet,
-    routingIntent.excludedPageIds,
   );
 
   const contentById = new Map<string, RankedContentEntry>();
@@ -395,24 +335,13 @@ function createFinalLinks(
   }
   const returnedContent = output.contentIds
     .map((contentId) => contentById.get(contentId))
-    .filter((entry): entry is RankedContentEntry => (
-      entry !== undefined
-      && !routingIntent.excludedPageIds.includes(entry.entry.parentPageId)
-    ));
+    .filter((entry): entry is RankedContentEntry => entry !== undefined);
   const contentLinks = createVerifiedContentLinks(
     returnedContent,
     MAX_ASSISTANT_LINKS,
   );
 
-  const allowedSourceIds: ReadonlySet<string> = new Set<string>(
-    knowledge.flatMap(({ item }) => item.sourceIds),
-  );
-  const sourceLinks = createVerifiedOfficialLinks(
-    output.sourceIds.filter((sourceId) => (
-      allowedSourceIds.has(sourceId)
-      && !sourceIsExcluded(sourceId, routingIntent)
-    )),
-  );
+  const sourceLinks = createVerifiedOfficialLinks(output.sourceIds);
 
   const links: AssistantLink[] = [];
   const seenHrefs = new Set<string>();
@@ -490,25 +419,12 @@ export function createAssistantHandler(
         return errorResponse(500, origin, evaluationRequestId);
       }
 
-      const scopeDecision = classifyAssistantScope(
-        request.message,
-        request.currentPath,
-        request.history,
-      );
-      assistantScope = scopeDecision.scope;
-      const localResponse = localResponseFor(scopeDecision.scope, request.message);
+      const localResponse = localConversationResponseFor(request.message);
       if (localResponse !== null) {
-        outcome = scopeDecision.scope === 'university'
-          ? 'local_university'
-          : scopeDecision.scope === 'conversation'
-            ? 'local_conversation'
-            : 'out_of_scope';
+        assistantScope = 'conversation';
+        outcome = 'local_conversation';
         statusCode = 200;
         return jsonResponse(statusCode, localResponse, origin, evaluationRequestId);
-      }
-
-      if (!isGenerativeScope(scopeDecision.scope)) {
-        throw new Error('Non-generative assistant scope requires a local response');
       }
 
       const reservationInput: QuotaReservationInput = {
@@ -520,50 +436,40 @@ export function createAssistantHandler(
       await dependencies.reserveQuota(reservationInput);
       dependencyStage = 'internal';
 
+      dependencyStage = 'secret';
+      const apiKey = await dependencies.getApiKey();
+      dependencyStage = 'internal';
+
+      const knowledgePack = buildAssistantKnowledgePack();
+      knowledgeCount = knowledgePack.entries.length;
+      knowledgeDomains = [...new Set(
+        knowledgePack.entries.map((entry) => entry.topicId.split('.')[0] ?? ''),
+      )].join(',');
+
       const dynamicContent = shouldSearchDynamicContent(
-        scopeDecision.scope,
         request.message,
         request.currentPath,
       )
         ? await retrieveDynamicContentSafely(
           () => dependencies.searchContent(request.message),
         )
-        : { content: [], dynamicContentAvailable: true };
-      const { knowledge, routingIntent } = selectAssistantRequestContext(
-        request.message,
-        request.currentPath,
-        request.history,
-        scopeDecision.scope,
-      );
+        : { content: [] };
       const content = dynamicContent.content.slice(0, 3);
-      const allowedPageIds = createAllowedPageIds(
-        knowledge,
-        content,
-        routingIntent,
-      );
-      knowledgeCount = knowledge.length;
-      knowledgeDomains = [...new Set(
-        knowledge.map(({ item }) => item.domain),
-      )].join(',');
-
-      dependencyStage = 'secret';
-      const apiKey = await dependencies.getApiKey();
-      dependencyStage = 'internal';
 
       dependencyStage = 'openai';
       lunaCallCount += 1;
       const result = await dependencies.requestOpenAI({
         apiKey,
         request,
-        knowledge,
+        knowledgePack,
         content,
-        dynamicContentAvailable: dynamicContent.dynamicContentAvailable,
-        allowedPageIds,
-        model: OPENAI_MODEL,
-        contextualFollowUp: scopeDecision.contextualFollowUp,
       });
       dependencyStage = 'internal';
 
+      if (!('scope' in result.output) || !('topicLabel' in result.output)) {
+        throw new UnsafeModelOutputError('Unsafe model output', result.usage);
+      }
+      assistantScope = result.output.scope;
       const answer = sanitizeModelAnswer(result.output.answer);
       if (!hasMeaningfulModelAnswer(answer)) {
         throw new UnsafeModelOutputError('Unsafe model output', result.usage);
@@ -579,12 +485,10 @@ export function createAssistantHandler(
       statusCode = 200;
       return jsonResponse(statusCode, {
         answer,
-        links: createFinalLinks(
+        links: createScopeAwareLinks(
           result.output,
-          knowledge,
+          knowledgePack,
           content,
-          allowedPageIds,
-          routingIntent,
         ),
       }, origin, evaluationRequestId);
     } catch (error) {

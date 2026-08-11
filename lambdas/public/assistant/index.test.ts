@@ -10,6 +10,7 @@ import {
   createRuntimeDependencies,
   type AssistantHandlerDependencies,
 } from './index.js';
+import { buildAssistantKnowledgePack } from './knowledgePack.js';
 import {
   OpenAiTimeoutError,
   OpenAiUpstreamError,
@@ -39,8 +40,10 @@ const validRequest: AssistantRequest = {
   history: [{ role: 'user', content: '直前の質問です' }],
 };
 
-const successfulAnswerResult: OpenAIResult = {
+const successfulAnswerResult = {
   output: {
+    scope: 'site',
+    topicLabel: '',
     answer: 'Lunaが生成した回答です。',
     pageIds: [],
     contentIds: [],
@@ -53,7 +56,7 @@ const successfulAnswerResult: OpenAIResult = {
     outputTokens: 20,
     totalTokens: 220,
   },
-};
+} satisfies OpenAIResult;
 
 type TestDependencies = AssistantHandlerDependencies;
 
@@ -197,121 +200,122 @@ function expectNoPaidOrDataCalls(dependencies: TestDependencies): void {
   expectNoLunaCall(dependencies);
 }
 
-describe('createAssistantHandler assistant scope routing', () => {
-  it('returns the fixed university response without paid or data dependencies', async () => {
-    const dependencies = createDependencies();
-
-    const response = await invoke(dependencies, eventForRequest({
+describe('createAssistantHandler grounded scope state machine', () => {
+  it.each([
+    {
+      message: 'このサイトでは何があるの？',
+      scope: 'site' as const,
+      answer: 'このサイトでは、サークル紹介やアプリ、お知らせなどを案内しています。',
+      pageIds: ['home'],
+      contentIds: [],
+      sourceIds: [],
+      links: [{ pageId: 'home', title: 'ホーム', href: '/' }],
+    },
+    {
+      message: 'お問い合わせってしていいの？',
+      scope: 'site' as const,
+      answer: 'お問い合わせフォームからご連絡いただけます。',
+      pageIds: ['contact'],
+      contentIds: [],
+      sourceIds: [],
+      links: [{ pageId: 'contact', title: 'お問い合わせ', href: '/contact' }],
+    },
+    {
+      message: 'このサークルって普段何をしてる？',
+      scope: 'circle' as const,
+      answer: 'AIやアプリ開発など、興味のある活動に取り組んでいます。',
+      pageIds: ['about'],
+      contentIds: [],
+      sourceIds: [],
+      links: [{ pageId: 'about', title: 'サークルについて', href: '/about' }],
+    },
+    {
+      message: '掲示板は投稿していいの？',
+      scope: 'site' as const,
+      answer: '掲示板には新しいスレッドやコメントを投稿できます。',
+      pageIds: ['board'],
+      contentIds: [],
+      sourceIds: [],
+      links: [{ pageId: 'board', title: '掲示板', href: '/board' }],
+    },
+    {
       message: '豊田工業大学について教えて',
-      history: [],
-    }));
-
-    expect(response.statusCode).toBe(200);
-    expect(parsedBody(response)).toEqual({
-      answer: '豊田工業大学については、公式サイトをご確認ください。',
+      scope: 'university' as const,
+      answer: '豊田工業大学については公式サイトをご確認ください。',
+      pageIds: [],
+      contentIds: [],
+      sourceIds: ['toyota-ti'],
       links: [{
         pageId: 'toyota-ti',
         title: '豊田工業大学 公式サイト',
         href: 'https://www.toyota-ti.ac.jp/',
       }],
-    });
-    expectNoPaidOrDataCalls(dependencies);
-    expect(dependencies.log).toHaveBeenCalledWith(expect.objectContaining({
-      outcome: 'local_university',
-      assistantScope: 'university',
-      lunaCallCount: 0,
-    }));
-  });
-
-  it('returns the fixed out-of-scope response without paid or data dependencies', async () => {
-    const dependencies = createDependencies();
-
-    const response = await invoke(dependencies, eventForRequest({
+    },
+    {
       message: '東京の天気は？',
-      history: [],
+      scope: 'out_of_scope' as const,
+      topicLabel: '東京の天気',
+      answer: '申し訳ありませんが、東京の天気は案内できません。お問い合わせフォームをご利用ください。',
+      pageIds: ['contact'],
+      contentIds: [],
+      sourceIds: [],
+      links: [{ pageId: 'contact', title: 'お問い合わせ', href: '/contact' }],
+    },
+  ])('uses one grounded Luna result for $message', async ({
+    message,
+    scope,
+    topicLabel = '',
+    answer,
+    pageIds,
+    contentIds,
+    sourceIds,
+    links,
+  }) => {
+    const requestOpenAI = vi.fn(async (): Promise<OpenAIResult> => ({
+      ...successfulAnswerResult,
+      output: { scope, topicLabel, answer, pageIds, contentIds, sourceIds },
     }));
+    const dependencies = createDependencies({ requestOpenAI });
+
+    const response = await invoke(dependencies, eventForRequest({ message, history: [] }));
 
     expect(response.statusCode).toBe(200);
-    expect(parsedBody(response)).toEqual({
-      answer: 'TTI Intelligenceと、このサイトの内容について案内できます。',
-      links: [],
+    expect(parsedBody(response)).toEqual({ answer, links });
+    expect(response.body).not.toContain('TTI Intelligenceと、このサイトの内容について案内できます。');
+    expect(dependencies.reserveQuota).toHaveBeenCalledTimes(1);
+    expect(dependencies.getApiKey).toHaveBeenCalledTimes(1);
+    expect(requestOpenAI).toHaveBeenCalledTimes(1);
+    expect(requestOpenAI).toHaveBeenCalledWith({
+      apiKey: 'sk-test',
+      request: expect.objectContaining({ message }),
+      knowledgePack: buildAssistantKnowledgePack(),
+      content: [],
     });
-    expectNoPaidOrDataCalls(dependencies);
     expect(dependencies.log).toHaveBeenCalledWith(expect.objectContaining({
-      outcome: 'out_of_scope',
-      assistantScope: 'out_of_scope',
-      lunaCallCount: 0,
-    }));
-  });
-
-  it('returns the fixed conversation response without paid or data dependencies', async () => {
-    const dependencies = createDependencies();
-
-    const response = await invoke(dependencies, eventForRequest({
-      message: 'こんにちは',
-      history: [],
-    }));
-
-    expect(response.statusCode).toBe(200);
-    expect(parsedBody(response)).toEqual({
-      answer: 'こんにちは！TTI Intelligenceや、このサイトについて案内できます。',
-      links: [],
-    });
-    expectNoPaidOrDataCalls(dependencies);
-    expect(dependencies.log).toHaveBeenCalledWith(expect.objectContaining({
-      outcome: 'local_conversation',
-      assistantScope: 'conversation',
-      lunaCallCount: 0,
+      assistantScope: scope,
+      lunaCallCount: 1,
+      webCallCount: 0,
     }));
   });
 
   it.each([
-    ['サークルについて教えて', 'circle'],
-    ['Codexとは？', 'site'],
-  ])('runs the paid generation path once for %s', async (message, assistantScope) => {
+    ['こんにちは', 'こんにちは！TTI Intelligenceや、このサイトについて案内できます。'],
+    ['ありがとう', 'どういたしまして！'],
+    ['了解', '了解です！'],
+    ['またね', 'またいつでも聞いてください。'],
+  ])('handles simple conversation locally without paid work: %s', async (message, answer) => {
     const dependencies = createDependencies();
 
     const response = await invoke(dependencies, eventForRequest({ message, history: [] }));
 
     expect(response.statusCode).toBe(200);
-    expect(dependencies.reserveQuota).toHaveBeenCalledTimes(1);
-    expect(dependencies.getApiKey).toHaveBeenCalledTimes(1);
-    expect(dependencies.requestOpenAI).toHaveBeenCalledTimes(1);
+    expect(parsedBody(response)).toEqual({ answer, links: [] });
+    expectNoPaidOrDataCalls(dependencies);
     expect(dependencies.log).toHaveBeenCalledWith(expect.objectContaining({
-      outcome: 'ai_success',
-      assistantScope,
-      lunaCallCount: 1,
+      assistantScope: 'conversation',
+      lunaCallCount: 0,
+      webCallCount: 0,
     }));
-  });
-
-  it('skips dynamic search for a stable site question', async () => {
-    const dependencies = createDependencies();
-
-    await invoke(dependencies, eventForRequest({
-      message: 'Codexとは？',
-      currentPath: '/development',
-      history: [],
-    }));
-
-    expect(dependencies.searchContent).not.toHaveBeenCalled();
-    expect(dependencies.requestOpenAI).toHaveBeenCalledWith(expect.objectContaining({
-      content: [],
-      dynamicContentAvailable: true,
-    }));
-  });
-
-  it('runs dynamic search once before Luna for a current-content question', async () => {
-    const order: string[] = [];
-    const dependencies = createDependencies({
-      searchContent: vi.fn(async () => { order.push('search'); return []; }),
-      requestOpenAI: vi.fn(async () => { order.push('luna'); return successfulAnswerResult; }),
-    });
-
-    await invoke(dependencies, eventForRequest({ message: '最新のお知らせは？', history: [] }));
-
-    expect(dependencies.searchContent).toHaveBeenCalledTimes(1);
-    expect(dependencies.requestOpenAI).toHaveBeenCalledTimes(1);
-    expect(order).toEqual(['search', 'luna']);
   });
 });
 
@@ -355,6 +359,7 @@ describe('createAssistantHandler single-Luna path', () => {
       requestOpenAI: vi.fn(async (): Promise<OpenAIResult> => ({
         ...successfulAnswerResult,
         output: {
+          ...successfulAnswerResult.output,
           answer,
           pageIds: [],
           contentIds: [],
@@ -389,6 +394,7 @@ describe('createAssistantHandler single-Luna path', () => {
       requestOpenAI: vi.fn(async (): Promise<OpenAIResult> => ({
         ...successfulAnswerResult,
         output: {
+          ...successfulAnswerResult.output,
           answer,
           pageIds: [],
           contentIds: [],
@@ -408,7 +414,7 @@ describe('createAssistantHandler single-Luna path', () => {
     const dependencies = createDependencies({
       requestOpenAI: vi.fn(async (): Promise<OpenAIResult> => ({
         ...successfulAnswerResult,
-        output: { answer, pageIds: [], contentIds: [], sourceIds: [] },
+        output: { ...successfulAnswerResult.output, answer },
       })),
     });
 
@@ -417,7 +423,7 @@ describe('createAssistantHandler single-Luna path', () => {
     expect(parsedBody(response)).toEqual({ answer, links: [] });
   });
 
-  it('runs quota, dynamic retrieval, secret, then one Luna call', async () => {
+  it('runs quota, secret, dynamic retrieval, then one Luna call', async () => {
     const order: string[] = [];
     const dependencies = createDependencies({
       reserveQuota: vi.fn(async () => { order.push('quota'); }),
@@ -428,7 +434,7 @@ describe('createAssistantHandler single-Luna path', () => {
 
     await invoke(dependencies, eventForRequest({ message: '最新のお知らせは？', history: [] }));
 
-    expect(order).toEqual(['quota', 'content', 'secret', 'luna']);
+    expect(order).toEqual(['quota', 'secret', 'content', 'luna']);
   });
 
   it('degrades a dynamic-content failure and still calls Luna once', async () => {
@@ -449,103 +455,23 @@ describe('createAssistantHandler single-Luna path', () => {
     expect(requestOpenAI).toHaveBeenCalledTimes(1);
     expect(requestOpenAI).toHaveBeenCalledWith(expect.objectContaining({
       content: [],
-      dynamicContentAvailable: false,
+      knowledgePack: buildAssistantKnowledgePack(),
     }));
     expect(JSON.stringify(response)).not.toContain('PRIVATE_DYNAMIC_BODY');
   });
 
-  it('passes bounded structured knowledge and the Luna literal to the request boundary', async () => {
+  it('passes the request history unchanged with the complete pack', async () => {
     const dependencies = createDependencies();
-
-    await invoke(dependencies, eventForRequest({
-      message: 'Codexについて教えて',
-      history: [],
-    }));
-
-    const input = vi.mocked(dependencies.requestOpenAI).mock.calls[0]?.[0];
-    expect(input).toMatchObject({
-      apiKey: 'sk-test',
-      model: 'gpt-5.6-luna',
-      dynamicContentAvailable: true,
-      contextualFollowUp: false,
-    });
-    expect(input?.knowledge.length).toBeGreaterThan(0);
-    expect(input?.knowledge.length).toBeLessThanOrEqual(5);
-  });
-
-  it('sends history and matching local knowledge for a resolved follow-up search', async () => {
-    const dependencies = createDependencies();
+    const history = [{ role: 'user' as const, content: '今週の数学について教えて' }];
 
     await invoke(dependencies, eventForRequest({
       message: 'どこから見るの？',
-      history: [{ role: 'user', content: '今週の数学について教えて' }],
+      history,
     }));
 
     const input = vi.mocked(dependencies.requestOpenAI).mock.calls[0]?.[0];
-    expect(input?.contextualFollowUp).toBe(true);
-    expect(input?.knowledge.map(({ item }) => item.id)).toContain('circle-weekly-math');
-  });
-
-  it.each([
-    [
-      '解答を教えて',
-      '今週の数学の問題を見たい',
-      'circle-weekly-math',
-    ],
-  ])('sends compatible prior context for a natural probe: %s', async (
-    message,
-    priorMessage,
-    expectedKnowledgeId,
-  ) => {
-    const dependencies = createDependencies();
-
-    await invoke(dependencies, eventForRequest({
-      message,
-      history: [{ role: 'user', content: priorMessage }],
-    }));
-
-    const input = vi.mocked(dependencies.requestOpenAI).mock.calls[0]?.[0];
-    expect(input?.contextualFollowUp).toBe(true);
-    expect(input?.knowledge.map(({ item }) => item.id)).toContain(expectedKnowledgeId);
-  });
-
-  it('uses prior circle context instead of a generic location hit for a deictic turn', async () => {
-    const dependencies = createDependencies();
-
-    await invoke(dependencies, eventForRequest({
-      message: 'その場所は？',
-      history: [{ role: 'user', content: 'TTI Intelligenceについて教えて' }],
-    }));
-
-    const input = vi.mocked(dependencies.requestOpenAI).mock.calls[0]?.[0];
-    expect(input?.contextualFollowUp).toBe(true);
-    expect(input?.knowledge.map(({ item }) => item.id)).toContain('circle-identity');
-    expect(input?.knowledge.map(({ item }) => item.id))
-      .not.toContain('university-campus-access');
-  });
-
-  it('keeps acknowledgement links suppressed even when knowledge is selected', async () => {
-    const dependencies = createDependencies({
-      requestOpenAI: vi.fn(async (): Promise<OpenAIResult> => ({
-        ...successfulAnswerResult,
-        output: {
-          answer: '了解です。',
-          pageIds: ['development'],
-          contentIds: [],
-          sourceIds: [],
-        },
-      })),
-    });
-
-    const response = await invoke(dependencies, eventForRequest({
-      message: 'Codex わかりました',
-      history: [],
-    }));
-    const input = vi.mocked(dependencies.requestOpenAI).mock.calls[0]?.[0];
-
-    expect(input?.knowledge.map(({ item }) => item.id)).toContain('development-codex');
-    expect(input?.allowedPageIds).toEqual([]);
-    expect(parsedBody(response)).toEqual({ answer: '了解です。', links: [] });
+    expect(input?.request.history).toEqual(history);
+    expect(input?.knowledgePack).toEqual(buildAssistantKnowledgePack());
   });
 });
 
@@ -652,7 +578,7 @@ describe('createAssistantHandler zero-call exits', () => {
 
     expect(response.statusCode).toBe(502);
     expect(dependencies.reserveQuota).toHaveBeenCalledTimes(1);
-    expect(dependencies.searchContent).toHaveBeenCalledTimes(1);
+    expect(dependencies.searchContent).not.toHaveBeenCalled();
     expectNoLunaCall(dependencies);
   });
 
@@ -689,12 +615,13 @@ describe('createAssistantHandler zero-call exits', () => {
 });
 
 describe('createAssistantHandler verified links', () => {
-  it('grounds CLI development to development and never authorizes CLI Practice', async () => {
+  it('authorizes pack page IDs and never exposes a non-Assistant route', async () => {
     const requestOpenAI = vi.fn(async (
       _input: Parameters<AssistantHandlerDependencies['requestOpenAI']>[0],
     ): Promise<OpenAIResult> => ({
       ...successfulAnswerResult,
       output: {
+        ...successfulAnswerResult.output,
         answer: 'CLIを使った開発について説明します。',
         pageIds: ['development', 'cli-practice'],
         contentIds: [],
@@ -709,8 +636,8 @@ describe('createAssistantHandler verified links', () => {
     }));
     const input = requestOpenAI.mock.calls[0]![0];
 
-    expect(input.knowledge.map(({ item }) => item.id)).toContain('development-cli');
-    expect(input.allowedPageIds).toEqual(['development']);
+    expect(input.knowledgePack.entries.map(({ topicId }) => topicId))
+      .toContain('development.cli');
     expect(parsedBody(response)).toEqual({
       answer: 'CLIを使った開発について説明します。',
       links: [{
@@ -722,17 +649,18 @@ describe('createAssistantHandler verified links', () => {
     expect(response.body).not.toContain('cli-practice');
   });
 
-  it('intersects model IDs with server page, selected content, and selected source IDs', async () => {
+  it('intersects model IDs with pack pages, selected content, and reviewed sources', async () => {
     const selectedContent = contentResult();
     const dependencies = createDependencies({
       searchContent: vi.fn(async () => [selectedContent]),
       requestOpenAI: vi.fn(async (): Promise<OpenAIResult> => ({
         ...successfulAnswerResult,
         output: {
+          ...successfulAnswerResult.output,
           answer: '確認済みリンクだけを返します。',
           pageIds: ['news', 'cli-practice', 'not-a-page'],
           contentIds: [selectedContent.entry.id, 'news:not-selected'],
-          sourceIds: ['tti-access', 'tti-clubs'],
+          sourceIds: ['discord'],
         },
       })),
     });
@@ -751,15 +679,21 @@ describe('createAssistantHandler verified links', () => {
           title: '星雲祭2026 開催レポート',
           href: '/news/nebula-festival-2026',
         },
+        {
+          pageId: 'discord',
+          title: 'TTI Intelligence Discord',
+          href: 'https://discord.gg/DFWs8GrHxF',
+        },
       ],
     });
   });
 
-  it('drops a catalog-valid page ID that local routing did not allow', async () => {
+  it('uses complete-pack authorization without local substantive routing', async () => {
     const dependencies = createDependencies({
       requestOpenAI: vi.fn(async (): Promise<OpenAIResult> => ({
         ...successfulAnswerResult,
         output: {
+          ...successfulAnswerResult.output,
           answer: '数学ページを案内します。',
           pageIds: ['weekly-math', 'cli-practice'],
           contentIds: [],
@@ -784,52 +718,45 @@ describe('createAssistantHandler verified links', () => {
     expect(response.body).not.toContain('cli-practice');
   });
 
-  it('honors page and official-source exclusions before mapping IDs', async () => {
-    const boardContent = contentResult({
-      id: 'board:nebula-festival',
-      kind: 'board',
-      title: '星雲祭について',
-      href: '/board/nebula-festival',
-      parentPageId: 'board',
-    });
+  it('ignores all model IDs for university scope and emits only the official university link', async () => {
     const dependencies = createDependencies({
-      searchContent: vi.fn(async () => [boardContent]),
       requestOpenAI: vi.fn(async (): Promise<OpenAIResult> => ({
         ...successfulAnswerResult,
         output: {
-          answer: '除外指定を反映しました。',
-          pageIds: ['board', 'contact'],
-          contentIds: [boardContent.entry.id],
-          sourceIds: ['youtube', 'discord'],
+          ...successfulAnswerResult.output,
+          scope: 'university',
+          answer: '豊田工業大学については公式サイトをご確認ください。',
+          pageIds: ['about'],
+          contentIds: ['news:not-selected'],
+          sourceIds: ['discord'],
         },
       })),
     });
 
     const response = await invoke(dependencies, eventForRequest({
-      message: '掲示板とYouTubeはいらない。Discordと問い合わせを教えて',
+      message: '豊田工業大学について教えて',
       history: [],
     }));
 
     expect(parsedBody(response)).toEqual({
-      answer: '除外指定を反映しました。',
-      links: [
-        { pageId: 'contact', title: 'お問い合わせ', href: '/contact' },
-        {
-          pageId: 'discord',
-          title: 'TTI Intelligence Discord',
-          href: 'https://discord.gg/DFWs8GrHxF',
-        },
-      ],
+      answer: '豊田工業大学については公式サイトをご確認ください。',
+      links: [{
+        pageId: 'toyota-ti',
+        title: '豊田工業大学 公式サイト',
+        href: 'https://www.toyota-ti.ac.jp/',
+      }],
     });
   });
 
-  it('suppresses every link when the latest request rejects links', async () => {
+  it('ignores all model IDs for out-of-scope answers and emits only contact', async () => {
     const dependencies = createDependencies({
-      searchContent: vi.fn(async () => [contentResult()]),
       requestOpenAI: vi.fn(async (): Promise<OpenAIResult> => ({
         ...successfulAnswerResult,
         output: {
-          answer: '本文だけで回答します。',
+          ...successfulAnswerResult.output,
+          scope: 'out_of_scope',
+          topicLabel: '東京の天気',
+          answer: '申し訳ありませんが、東京の天気は案内できません。お問い合わせください。',
           pageIds: ['about'],
           contentIds: ['news:nebula-festival-2026'],
           sourceIds: ['discord'],
@@ -838,13 +765,13 @@ describe('createAssistantHandler verified links', () => {
     });
 
     const response = await invoke(dependencies, eventForRequest({
-      message: 'このサークルのDiscordについて教えて。リンクはいらない',
+      message: '東京の天気は？',
       history: [],
     }));
 
     expect(parsedBody(response)).toEqual({
-      answer: '本文だけで回答します。',
-      links: [],
+      answer: '申し訳ありませんが、東京の天気は案内できません。お問い合わせください。',
+      links: [{ pageId: 'contact', title: 'お問い合わせ', href: '/contact' }],
     });
   });
 
@@ -859,6 +786,7 @@ describe('createAssistantHandler verified links', () => {
       requestOpenAI: vi.fn(async (): Promise<OpenAIResult> => ({
         ...successfulAnswerResult,
         output: {
+          ...successfulAnswerResult.output,
           answer: '最大件数を守ります。',
           pageIds: [],
           contentIds: [selectedContent.entry.id, duplicateHref.entry.id],
@@ -899,6 +827,7 @@ describe('createAssistantHandler verified links', () => {
       requestOpenAI: vi.fn(async (): Promise<OpenAIResult> => ({
         ...successfulAnswerResult,
         output: {
+          ...successfulAnswerResult.output,
           answer: '最大件数を守ります。',
           pageIds: ['news'],
           contentIds: [news.entry.id, board.entry.id, math.entry.id],
@@ -957,6 +886,7 @@ describe('createAssistantHandler error mapping', () => {
       requestOpenAI: vi.fn(async (): Promise<OpenAIResult> => ({
         ...successfulAnswerResult,
         output: {
+          ...successfulAnswerResult.output,
           answer: 'https://evil.example/private',
           pageIds: [],
           contentIds: [],
@@ -983,7 +913,7 @@ describe('createAssistantHandler error mapping', () => {
     const dependencies = createDependencies({
       requestOpenAI: vi.fn(async (): Promise<OpenAIResult> => ({
         ...successfulAnswerResult,
-        output: { answer, pageIds: [], contentIds: [], sourceIds: [] },
+        output: { ...successfulAnswerResult.output, answer },
       })),
     });
 
@@ -1005,7 +935,7 @@ describe('createAssistantHandler error mapping', () => {
     const dependencies = createDependencies({
       requestOpenAI: vi.fn(async (): Promise<OpenAIResult> => ({
         ...successfulAnswerResult,
-        output: { answer, pageIds: [], contentIds: [], sourceIds: [] },
+        output: { ...successfulAnswerResult.output, answer },
       })),
     });
 
@@ -1153,8 +1083,8 @@ describe('createAssistantHandler privacy-safe logging', () => {
       cacheWriteTokens: 12,
       outputTokens: 20,
       totalTokens: 220,
-      knowledgeCount: 2,
-      knowledgeDomains: 'app,development',
+      knowledgeCount: 30,
+      knowledgeDomains: 'circle,site,board,development',
       lunaCallCount: 1,
       webCallCount: 0,
       assistantScope: 'site',

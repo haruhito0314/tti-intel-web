@@ -65,9 +65,7 @@ function classifyContextFreeScope(message: string): AssistantScope | null {
   const normalized = stripConversationPrefix(message);
   const phrase = normalizeScopePhrase(message);
 
-  if (CLEAR_OUT_OF_SCOPE_TOPIC.test(normalized)) {
-    return 'out_of_scope';
-  }
+  if (CLEAR_OUT_OF_SCOPE_TOPIC.test(normalized)) return 'out_of_scope';
   if (
     UNIVERSITY_OFFICIALITY.test(normalized)
     && (
@@ -75,56 +73,26 @@ function classifyContextFreeScope(message: string): AssistantScope | null {
       || DEICTIC_CIRCLE_ALIAS.test(normalized)
       || AI_CIRCLE_ALIAS.test(normalized)
     )
-  ) {
-    return 'university';
-  }
-  if (TTI_INTELLIGENCE_ALIAS.test(normalized)) {
-    return 'circle';
-  }
-  if (UNIVERSITY_ALIAS.test(normalized)) {
-    return 'university';
-  }
-  if (DEICTIC_CIRCLE_ALIAS.test(normalized)) {
-    return 'circle';
-  }
-  if (DEICTIC_SITE_ALIAS.test(normalized)) {
-    return 'site';
-  }
-  if (OTHER_ORGANIZATION.test(normalized)) {
-    return 'out_of_scope';
-  }
-  if (OTHER_NAMED_CIRCLE.test(normalized)) {
-    return 'out_of_scope';
-  }
-  if (AI_CIRCLE_ALIAS.test(normalized)) {
-    return 'circle';
-  }
-  if (CIRCLE_NOUN_OR_ANCHOR.test(normalized)) {
-    return 'circle';
-  }
-  if (DISCORD_CIRCLE_INTENT.test(phrase)) {
-    return 'circle';
-  }
-  if (SITE_ALIAS.test(normalized)) {
-    return 'site';
-  }
-  if (isCircleAction(message)) {
-    return 'circle';
-  }
-  if (isCasualConversation(message) && !isBareEmpathyRemark(message)) {
-    return 'conversation';
-  }
-  if (FAREWELL.test(normalized.replace(/[!！?？。．、,，〜~…・]/g, ''))) {
-    return 'conversation';
-  }
+  ) return 'university';
+  if (TTI_INTELLIGENCE_ALIAS.test(normalized)) return 'circle';
+  if (UNIVERSITY_ALIAS.test(normalized)) return 'university';
+  if (DEICTIC_CIRCLE_ALIAS.test(normalized)) return 'circle';
+  if (DEICTIC_SITE_ALIAS.test(normalized)) return 'site';
+  if (OTHER_ORGANIZATION.test(normalized)) return 'out_of_scope';
+  if (OTHER_NAMED_CIRCLE.test(normalized)) return 'out_of_scope';
+  if (AI_CIRCLE_ALIAS.test(normalized)) return 'circle';
+  if (CIRCLE_NOUN_OR_ANCHOR.test(normalized)) return 'circle';
+  if (DISCORD_CIRCLE_INTENT.test(phrase)) return 'circle';
+  if (SITE_ALIAS.test(normalized)) return 'site';
+  if (isCircleAction(message)) return 'circle';
+  if (isCasualConversation(message) && !isBareEmpathyRemark(message)) return 'conversation';
+  if (FAREWELL.test(normalized.replace(/[!！?？。．、,，〜~…・]/g, ''))) return 'conversation';
   return null;
 }
 
 function scopeFromHistory(history: readonly HistoryMessage[]): AssistantScope | null {
   const previousUserTurn = history.at(-1);
-  if (previousUserTurn === undefined) {
-    return null;
-  }
+  if (previousUserTurn === undefined) return null;
   const scope = classifyContextFreeScope(previousUserTurn.content);
   return scope === 'circle' || scope === 'site' || scope === 'university'
     ? scope
@@ -137,39 +105,31 @@ function isScopeFollowUp(message: string): boolean {
     || SCOPE_FOLLOW_UP.test(normalizeSearchText(withoutPunctuation));
 }
 
+/** @deprecated Evaluator compatibility only; production routing is model-owned. */
 export function classifyAssistantScope(
   message: string,
-  currentPath: string,
+  _currentPath: string,
   history: readonly HistoryMessage[],
 ): AssistantScopeDecision {
   const explicitScope = classifyContextFreeScope(message);
-  if (explicitScope !== null) {
-    return { scope: explicitScope, contextualFollowUp: false };
-  }
-
+  if (explicitScope !== null) return { scope: explicitScope, contextualFollowUp: false };
   if (isScopeFollowUp(message)) {
     const historyScope = scopeFromHistory(history);
-    if (historyScope !== null) {
-      return { scope: historyScope, contextualFollowUp: true };
-    }
+    if (historyScope !== null) return { scope: historyScope, contextualFollowUp: true };
   }
-
   return { scope: 'out_of_scope', contextualFollowUp: false };
 }
 
+/** @deprecated Evaluator compatibility only; production routing is model-owned. */
 export function isGenerativeScope(scope: AssistantScope): scope is 'circle' | 'site' {
   return scope === 'circle' || scope === 'site';
 }
 
+/** Dynamic lookup is optional context and must never pre-classify the answer scope. */
 export function shouldSearchDynamicContent(
-  scope: AssistantScope,
   message: string,
   currentPath: string,
 ): boolean {
-  if (!isGenerativeScope(scope)) {
-    return false;
-  }
-
   const normalizedMessage = normalizeSearchText(message);
   return DYNAMIC_CONTENT_TEXT_ALIAS.test(normalizedMessage)
     || DYNAMIC_PATH_ALIASES.has(normalizedMessage)
