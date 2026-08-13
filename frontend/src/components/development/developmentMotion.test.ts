@@ -1,14 +1,28 @@
 import { describe, expect, it } from 'vitest';
 import {
     CODEX_AGENT_FINISHED_MS,
+    CODEX_CURSOR_DEPART_MS,
+    CODEX_LAUNCH_CLICK_MS,
     CODEX_IMPLEMENTATION_COMPLETE_MS,
     CODEX_LAUNCH_OPEN_MS,
     CODEX_SECOND_FILE_READY_MS,
     codexLaunchState,
     codexWorkState,
+    demoCursorTarget,
 } from './developmentMotion';
 
 describe('codexLaunchState', () => {
+    it('moves the cursor promptly, then leaves a readable beat before clicking Codex', () => {
+        expect(demoCursorTarget(CODEX_CURSOR_DEPART_MS - 1)).toBe('origin');
+        expect(demoCursorTarget(CODEX_CURSOR_DEPART_MS)).toBe('codex-window');
+        expect(demoCursorTarget(3_199)).toBe('codex-window');
+        expect(demoCursorTarget(3_200)).toBe('input');
+        expect(demoCursorTarget(5_049)).toBe('input');
+        expect(demoCursorTarget(5_050)).toBe('send');
+        expect(CODEX_LAUNCH_CLICK_MS - CODEX_CURSOR_DEPART_MS).toBeGreaterThanOrEqual(800);
+        expect(CODEX_LAUNCH_OPEN_MS - CODEX_LAUNCH_CLICK_MS).toBe(180);
+    });
+
     it('keeps the same Codex content visible throughout launch', () => {
         expect(codexLaunchState(CODEX_LAUNCH_OPEN_MS - 1, false)).toEqual({
             opening: false,

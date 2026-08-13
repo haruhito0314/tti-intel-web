@@ -14,12 +14,14 @@ export function shouldShowCodexStory(contentReady: boolean, progress: number) {
     return contentReady && progress < 0.84;
 }
 
+export const CODEX_CURSOR_DEPART_MS = 500;
+
 export function demoCursorTarget(time: number) {
-    if (time < 1_700) return 'origin';
+    if (time < CODEX_CURSOR_DEPART_MS) return 'origin';
     // Approach the Codex icon shortly before the click — don't hover for seconds.
-    if (time < 4_800) return 'codex-window';
-    if (time < 6_650) return 'input';
-    if (time < 7_500) return 'send';
+    if (time < 3_200) return 'codex-window';
+    if (time < 5_050) return 'input';
+    if (time < 5_750) return 'send';
     // Hide while the agent works so the cursor doesn't idle on the pane.
     if (time < 10_200) return null;
     if (time < 12_150) return 'input';
@@ -30,8 +32,8 @@ export function demoCursorTarget(time: number) {
 }
 
 /** Click the Codex icon, then open the window. */
-export const CODEX_LAUNCH_CLICK_MS = 2_480;
-export const CODEX_LAUNCH_OPEN_MS = 2_660;
+export const CODEX_LAUNCH_CLICK_MS = 1_900;
+export const CODEX_LAUNCH_OPEN_MS = 2_080;
 export const CODEX_IMPLEMENTATION_COMPLETE_MS = 9_450;
 export const CODEX_SECOND_FILE_READY_MS = 9_650;
 export const CODEX_AGENT_FINISHED_MS = 9_850;

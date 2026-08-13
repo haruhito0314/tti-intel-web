@@ -212,8 +212,8 @@ function typedText(text: string, time: number, start: number, duration: number) 
 }
 
 function demoStep(time: number) {
-    if (time < 7_280) return 1;
-    if (time < 8_250) return 2;
+    if (time < 5_600) return 1;
+    if (time < 6_500) return 2;
     if (time < 13_050) return 3;
     if (time < 15_720) return 4;
     return 5;
@@ -221,7 +221,7 @@ function demoStep(time: number) {
 
 function isCursorClicking(time: number) {
     // Dwell briefly after the cursor settles, especially on Send.
-    return [CODEX_LAUNCH_CLICK_MS, 5_250, 7_220, 10_700, 12_700, 15_350]
+    return [CODEX_LAUNCH_CLICK_MS, 3_650, 5_500, 10_700, 12_700, 15_350]
         .some((point) => Math.abs(time - point) < 120);
 }
 
@@ -319,11 +319,11 @@ function CodexDemo({
         agentFinished,
     } = codexWorkState(demoTime, reducedMotion);
     const { opening: launcherOpening } = codexLaunchState(demoTime, reducedMotion);
-    const contentReady = reducedMotion || demoTime >= 4_350;
+    const contentReady = reducedMotion || demoTime >= 2_700;
     const workspaceHidden = progress >= 0.995;
-    const firstPrompt = typedText(HOME_PROMPT, demoTime, 5_380, 1_250);
+    const firstPrompt = typedText(HOME_PROMPT, demoTime, 3_820, 1_150);
     const secondPrompt = typedText(SERVER_PROMPT, demoTime, 10_900, 1_150);
-    const firstSent = demoTime >= 7_280;
+    const firstSent = demoTime >= 5_600;
     const secondSent = demoTime >= 12_780;
     const serverRunning = demoTime >= 13_050;
     const serverReady = demoTime >= 14_200;
@@ -340,10 +340,10 @@ function CodexDemo({
                 ? '0.32s'
                 : cursor === 'runtime'
                     ? '0.55s'
-                    : '0.55s';
+                    : '0.9s';
     const activePrompt = secondSent ? '' : agentFinished ? secondPrompt : firstSent ? '' : firstPrompt;
     const composerFocused = (
-        demoTime >= 5_100 && demoTime < 7_280
+        demoTime >= 3_500 && demoTime < 5_600
     ) || (
         demoTime >= 10_550 && demoTime < 12_780
     );
@@ -364,7 +364,7 @@ function CodexDemo({
         '--dx-handoff-cover-opacity': handoffCover.toFixed(4),
         '--dx-window-fade': windowFade.toFixed(4),
     } as MotionStyle;
-    const story = demoTime < 7_280
+    const story = demoTime < 5_600
         ? {
             number: '01',
             label: '意図を伝える',
@@ -705,19 +705,16 @@ function useAutoScrollLog(scrollKey: string) {
 
 const AUTOMATION_SCENES = [
     {
-        number: '01',
         label: 'Codex / CLI連携',
         title: 'AIの指示から、公開とクラウドへ。',
         body: 'AIやCLIからVercel・AWSへつなぎ、\n公開とクラウド構築を一つの流れで進めます。',
     },
     {
-        number: '02',
         label: 'Plugin + CLI',
         title: 'よい手順を、何度でも使える形に。',
         body: '検証や公開の決まりをプラグインにまとめ、CLIの実行まで一貫した手順にします。',
     },
     {
-        number: '03',
         label: 'MCP',
         title: '必要な情報と道具を、開発につなぐ。',
         body: 'MCPを通じてデザインとリポジトリへ接続し、確認に必要な情報をCodex上で扱います。',
@@ -852,10 +849,11 @@ function useScenePlayback(activeIndex: number, reducedMotion: boolean) {
 
 function VercelDeploymentScene({ run }: { run: number }) {
     const codexCommand = typedText('codex', run, 0.2, 0.035);
-    const vercelPrompt = typedText(VERCEL_AUTOMATION_PROMPT, run, 0.4, 0.065);
-    const awsPrompt = typedText(AWS_AUTOMATION_PROMPT, run, 0.78, 0.065);
+    const vercelPrompt = typedText(VERCEL_AUTOMATION_PROMPT, run, 0.42, 0.05);
+    const awsPrompt = typedText(AWS_AUTOMATION_PROMPT, run, 0.8, 0.045);
     const cliReady = run >= 0.27;
     const requestSent = run >= 0.47;
+    const vercelBuilding = requestSent && run < 0.58;
     const deployed = run >= 0.52;
     const productionReady = run >= 0.58;
     const awsPromptReady = run >= 0.65;
@@ -898,16 +896,15 @@ function VercelDeploymentScene({ run }: { run: number }) {
                         <section className="dx-deployment-card">
                             <div className="dx-deployment-head">
                                 <span><i /> Production</span>
-                                <b className={productionReady ? 'is-ready' : 'is-building'}>
-                                    {productionReady ? <CheckCircle2 /> : <i />}
-                                    {productionReady ? 'Ready' : 'Building'}
+                                <b className={vercelBuilding ? 'is-building' : 'is-ready'}>
+                                    {vercelBuilding ? <i /> : <CheckCircle2 />}
+                                    {vercelBuilding ? 'Building' : 'Ready'}
                                 </b>
                             </div>
                             <h3>tti-web</h3>
                             <a href="#vercel-deployment" tabIndex={-1}>tti-web.vercel.app <ArrowUpRight /></a>
                             <div className="dx-deployment-meta">
-                                <span><small>Branch</small><b>main</b></span>
-                                <span><small>Build</small><b>{productionReady ? '42s' : 'Running'}</b></span>
+                                <span><small>Build</small><b>{vercelBuilding ? 'Running' : productionReady ? '42s' : 'Previous'}</b></span>
                                 <span><small>Region</small><b>Tokyo</b></span>
                             </div>
                             <div className="dx-deployment-preview" aria-hidden="true">
@@ -933,19 +930,26 @@ function VercelDeploymentScene({ run }: { run: number }) {
                     </header>
                     <div className="dx-workspace-aws-body">
                         <div className="dx-aws-heading">
-                            <div><small>Stack</small><h3>tti-assistant</h3></div>
-                            <span className={stackReady ? 'is-ready' : 'is-building'}>
-                                {stackReady ? <CheckCircle2 /> : <i />}
-                                {stackReady ? 'CREATE_COMPLETE' : 'CREATE_IN_PROGRESS'}
+                            <div>
+                                <small>Stack</small>
+                                {awsSubmitted ? <h3>tti-assistant</h3> : <p>スタックを選択してください</p>}
+                            </div>
+                            <span className={stackReady ? 'is-ready' : awsSubmitted ? 'is-building' : 'is-idle'}>
+                                {stackReady ? <CheckCircle2 /> : awsSubmitted ? <i /> : null}
+                                {stackReady ? 'CREATE_COMPLETE' : awsSubmitted ? 'CREATE_IN_PROGRESS' : 'スタック未選択'}
                             </span>
                         </div>
-                        <div className="dx-cloud-map" aria-label="AWSの構成">
-                            <span className={awsSubmitted ? 'is-live' : ''}><Globe2 /><b>API Gateway</b></span>
-                            <i />
-                            <span className={stackReady ? 'is-live' : ''}><Cloud /><b>Lambda</b></span>
-                            <i />
-                            <span className={stackReady ? 'is-live' : ''}><Database /><b>DynamoDB</b></span>
-                        </div>
+                        {awsSubmitted ? (
+                            <div className="dx-cloud-map" aria-label="AWSの構成">
+                                <span className="is-live"><Globe2 /><b>API Gateway</b></span>
+                                <i />
+                                <span className={stackReady ? 'is-live' : ''}><Cloud /><b>Lambda</b></span>
+                                <i />
+                                <span className={stackReady ? 'is-live' : ''}><Database /><b>DynamoDB</b></span>
+                            </div>
+                        ) : (
+                            <div className="dx-aws-empty-state">デプロイ後に構成が表示されます</div>
+                        )}
                     </div>
                     <WindowSelectionCursor run={run} start={0.905} />
                 </section>
@@ -972,7 +976,7 @@ function VercelDeploymentScene({ run }: { run: number }) {
                             </code>
                         </div>
                         <header className={cliReady ? 'is-shown' : ''}>
-                            <BrandIcon icon={siOpenai} /> <b>Codex CLI</b><small>web / main</small>
+                            <BrandIcon icon={siOpenai} /> <b>Codex CLI</b><small>web</small>
                         </header>
                         <code className={`dx-cli-launch-history ${cliReady ? 'is-shown' : ''}`}>
                             <span>$</span> {codexCommand}
@@ -991,7 +995,7 @@ function VercelDeploymentScene({ run }: { run: number }) {
                             {vercelPrompt || (vercelPromptActive
                                 ? <em className="dx-cli-prompt-placeholder">Codexに指示を送る</em>
                                 : null)}
-                            {run >= 0.4 && run < 0.47 ? <i className="dx-terminal-type-caret" aria-hidden="true" /> : null}
+                            {run >= 0.42 && run < 0.47 ? <i className="dx-terminal-type-caret" aria-hidden="true" /> : null}
                             <CliInputCursor run={run} start={0.325} />
                         </p>
                         <p className={`dx-codex-cli-agent ${requestSent ? 'is-shown' : ''}`}>
@@ -1011,14 +1015,14 @@ function VercelDeploymentScene({ run }: { run: number }) {
                             {awsPrompt || (awsPromptActive
                                 ? <em className="dx-cli-prompt-placeholder">Codexに指示を送る</em>
                                 : null)}
-                            {run >= 0.78 && run < 0.85 ? <i className="dx-terminal-type-caret" aria-hidden="true" /> : null}
+                            {run >= 0.8 && run < 0.85 ? <i className="dx-terminal-type-caret" aria-hidden="true" /> : null}
                             <CliInputCursor run={run} start={0.705} />
                         </p>
                         <p className={`dx-codex-cli-agent ${awsRequestSent ? 'is-shown' : ''}`}>
                             AWSへバックエンドをデプロイします。
                         </p>
-                        <code className={`dx-agent-command ${awsRequestSent ? 'is-shown' : ''}`} aria-label="sam deploy --guided">
-                            <span>→</span> sam deploy --guided
+                        <code className={`dx-agent-command ${awsRequestSent ? 'is-shown' : ''}`} aria-label="sam deploy --config-env production">
+                            <span>→</span> sam deploy --config-env production
                         </code>
                         <p className={`dx-cli-success ${awsSubmitted ? 'is-shown' : ''}`}>✓ Stack tti-assistant submitted</p>
                     </div>
@@ -1033,22 +1037,22 @@ function VercelDeploymentScene({ run }: { run: number }) {
 function PluginAutomationScene({ run }: { run: number }) {
     const pluginCommand = typedText('/plugins', run, 0.2, 0.08);
     const pluginSubmitted = run >= 0.3;
-    const installed = run >= 0.43;
-    const enabled = run >= 0.53;
+    const installed = run >= 0.46;
+    const enabled = run >= 0.57;
     const skillPrompt = typedText(
         '$release-workflow を使って、変更を公開前まで確認して',
         run,
-        0.62,
+        0.64,
         0.14,
     );
-    const skillSubmitted = run >= 0.79;
-    const skillLoaded = run >= 0.85;
-    const checksComplete = run >= 0.95;
+    const skillSubmitted = run >= 0.81;
+    const skillLoaded = run >= 0.87;
+    const checksComplete = run >= 0.96;
     const activeInput = skillSubmitted ? '' : pluginSubmitted ? skillPrompt : pluginCommand;
     const inputFocused = (
         run >= 0.155 && run < 0.3
     ) || (
-        run >= 0.575 && run < 0.79
+        run >= 0.575 && run < 0.81
     );
     const logRef = useAutoScrollLog(
         `${pluginSubmitted}:${skillSubmitted}:${skillLoaded}:${checksComplete}`,
@@ -1060,11 +1064,10 @@ function PluginAutomationScene({ run }: { run: number }) {
                 <header className="dx-shell-window-bar">
                     <span className="dx-window-controls" aria-hidden="true"><i /><i /><i /></span>
                     <b>Codex CLI — web</b>
-                    <small>same terminal session</small>
                 </header>
 
                 <div className="dx-cli-continuous">
-                    <header><BrandIcon icon={siOpenai} /><b>Codex</b><small>web / main</small></header>
+                    <header><BrandIcon icon={siOpenai} /><b>Codex</b><small>web</small></header>
                     <div className="dx-cli-continuous-log" ref={logRef}>
                         <div className="dx-cli-log-track">
                         <p className={`dx-cli-user-prompt ${pluginSubmitted ? 'is-visible' : ''}`}>
@@ -1082,13 +1085,15 @@ function PluginAutomationScene({ run }: { run: number }) {
                                 <article className="is-selected">
                                     <span>›</span>
                                     <div><b>Release Workflow</b><small>Reusable checks for this website</small></div>
-                                    <em className={installed ? 'is-ready' : ''} aria-label={installed ? 'Installed' : 'Install'}>
+                                    <em className={`dx-plugin-action dx-plugin-action--install ${installed ? 'is-ready' : ''}`} aria-label={installed ? 'Installed' : 'Install'}>
                                         <span className={installed ? 'is-visible' : ''}>Installed</span>
                                         <span className={!installed ? 'is-visible' : ''}>Install</span>
+                                        <WindowSelectionCursor run={run} start={0.37} />
                                     </em>
-                                    <em className={enabled ? 'is-ready' : ''} aria-label={enabled ? 'Enabled' : 'Disabled'}>
+                                    <em className={`dx-plugin-action dx-plugin-action--enable ${enabled ? 'is-ready' : ''}`} aria-label={enabled ? 'Enabled' : 'Enable'}>
                                         <span className={enabled ? 'is-visible' : ''}>Enabled</span>
-                                        <span className={!enabled ? 'is-visible' : ''}>Disabled</span>
+                                        <span className={!enabled ? 'is-visible' : ''}>{installed ? 'Enable' : 'Not enabled'}</span>
+                                        {installed ? <WindowSelectionCursor run={run} start={0.48} /> : null}
                                     </em>
                                 </article>
                             </div>
@@ -1127,23 +1132,24 @@ function PluginAutomationScene({ run }: { run: number }) {
 }
 
 function McpConnectionScene({ run }: { run: number }) {
-    const statusPrompt = typedText('MCPの接続状況を確認して', run, 0.2, 0.09);
-    const statusSubmitted = run >= 0.3;
+    const statusPrompt = typedText('MCPの接続状況を確認して', run, 0.22, 0.08);
+    const statusSubmitted = run >= 0.32;
+    const statusResult = run >= 0.4;
     const mcpPrompt = typedText(
         'FigmaのデザインとGitHubのIssueを確認して、実装との差をまとめて',
         run,
-        0.55,
-        0.13,
+        0.57,
+        0.12,
     );
-    const mcpSubmitted = run >= 0.7;
-    const figmaResult = run >= 0.78;
-    const githubResult = run >= 0.87;
-    const complete = run >= 0.95;
+    const mcpSubmitted = run >= 0.71;
+    const figmaResult = run >= 0.8;
+    const githubResult = run >= 0.88;
+    const complete = run >= 0.96;
     const activeInput = mcpSubmitted ? '' : statusSubmitted ? mcpPrompt : statusPrompt;
     const inputFocused = (
-        run >= 0.155 && run < 0.3
+        run >= 0.155 && run < 0.32
     ) || (
-        run >= 0.505 && run < 0.7
+        run >= 0.505 && run < 0.71
     );
     const logRef = useAutoScrollLog(
         `${statusSubmitted}:${mcpSubmitted}:${figmaResult}:${githubResult}:${complete}`,
@@ -1155,17 +1161,16 @@ function McpConnectionScene({ run }: { run: number }) {
                 <header className="dx-shell-window-bar">
                     <span className="dx-window-controls" aria-hidden="true"><i /><i /><i /></span>
                     <b>Codex CLI — web</b>
-                    <small>same terminal session</small>
                 </header>
 
                 <div className="dx-cli-continuous dx-mcp-cli-session">
-                    <header><BrandIcon icon={siOpenai} /><b>Codex</b><small>web / main</small></header>
+                    <header><BrandIcon icon={siOpenai} /><b>Codex</b><small>web</small></header>
                     <div className="dx-cli-continuous-log" ref={logRef}>
                         <div className="dx-cli-log-track">
                         <p className={`dx-cli-user-prompt ${statusSubmitted ? 'is-visible' : ''}`}>
                             <span>›</span> MCPの接続状況を確認して
                         </p>
-                        <div className={`dx-mcp-inline-result ${statusSubmitted ? 'is-visible' : ''}`}>
+                        <div className={`dx-mcp-inline-result ${statusResult ? 'is-visible' : ''}`}>
                             <p className="dx-cli-command"><span>→</span> Ran <b>codex mcp list</b></p>
                             <div className="dx-mcp-cli-table" role="table" aria-label="Configured MCP servers">
                                 <header role="row"><span>Name</span><span>Status</span><span>Auth</span></header>
@@ -1182,9 +1187,11 @@ function McpConnectionScene({ run }: { run: number }) {
                         <div className={`dx-cli-tool-event ${githubResult ? 'is-visible' : ''}`}>
                             <Check /> <span><b>Called GitHub MCP</b><small>Issue requirements received</small></span>
                         </div>
-                        <p className={`dx-cli-agent-reply ${complete ? 'is-visible' : ''}`}>
-                            2つの情報を比較しました。実装との差分を整理します。
-                        </p>
+                        <div className={`dx-mcp-diff-result ${complete ? 'is-visible' : ''}`}>
+                            <b>確認した差分は2件です</b>
+                            <span>Figma — CTAの上下余白をデザイン値へ合わせる</span>
+                            <span>GitHub — 360px幅の見出し折り返し条件を反映する</span>
+                        </div>
                         </div>
                     </div>
                     <div className={`dx-cli-composer ${inputFocused ? 'is-focused' : ''}`}>
@@ -1248,12 +1255,11 @@ function AutomationEcosystem({
 
                         return (
                         <article
-                            key={scene.number}
+                            key={scene.label}
                             className={`dx-ecosystem-scene dx-ecosystem-scene--${index + 1} ${currentScene === index ? 'is-current' : ''}`}
                             style={ecosystemSceneStyle(progress, index, reducedMotion)}
                         >
                             <div className="dx-ecosystem-copy">
-                                <span>{scene.number}</span>
                                 <small>{scene.label}</small>
                                 <h3>{scene.title}</h3>
                                 <p>{scene.body}</p>
@@ -1270,12 +1276,11 @@ function AutomationEcosystem({
                 <div className="dx-ecosystem-mobile-copies" aria-hidden="true">
                     {AUTOMATION_SCENES.map((scene, index) => (
                         <div
-                            key={scene.number}
+                            key={scene.label}
                             className={`dx-ecosystem-mobile-copy dx-ecosystem-mobile-copy--${index + 1}`}
                             style={ecosystemSceneStyle(progress, index, reducedMotion)}
                         >
                             <div className="dx-ecosystem-mobile-title">
-                                <span>{scene.number}</span>
                                 <small>{scene.label}</small>
                                 <strong><BalancedJapaneseTitle text={scene.title} /></strong>
                             </div>
@@ -1335,30 +1340,39 @@ export function DevelopmentExperience() {
                 (motionProgress - CODEX_PHASE_END) / (1 - CODEX_PHASE_END),
             );
             const seasonWeights = Array.from({ length: 6 }, () => 0);
-            const setSeasonBlend = (from: number, to: number, mix: number) => {
-                const easedMix = easeInOutSmooth(mix);
-                seasonWeights[from] = 1 - easedMix;
-                seasonWeights[to] = easedMix;
-            };
+            // Codex stays in spring. From the CLI scene onward, every scroll
+            // step advances a long crossfade instead of waiting for a scene
+            // boundary and then switching backgrounds in a short burst.
+            // Spring already occupies the complete Codex demonstration, so it
+            // hands off soon after the CLI scene begins. Later seasons retain
+            // broader ranges to keep the rest of the page changing gradually.
+            const seasonStops = [0, 0.09, 0.3, 0.54, 0.78, 1];
+            const activeStop = Math.min(
+                seasonStops.length - 2,
+                seasonStops.findIndex((stop, index) => (
+                    index < seasonStops.length - 1
+                    && ecosystemPhase >= stop
+                    && ecosystemPhase <= seasonStops[index + 1]
+                )),
+            );
+            const fromStop = Math.max(0, activeStop);
+            const segmentStart = seasonStops[fromStop];
+            const segmentEnd = seasonStops[fromStop + 1];
+            const seasonMix = easeInOutSmooth(
+                (ecosystemPhase - segmentStart) / (segmentEnd - segmentStart),
+            );
+            seasonWeights[fromStop] = 1 - seasonMix;
+            seasonWeights[fromStop + 1] = seasonMix;
 
-            // Background changes belong to the gaps between demonstrations.
-            // Each active workflow therefore keeps one stable atmosphere.
-            if (ecosystemPhase < 0.005) {
-                seasonWeights[0] = 1; // Codex: spring
-            } else if (ecosystemPhase < 0.08) {
-                setSeasonBlend(0, 1, (ecosystemPhase - 0.005) / 0.075);
-            } else if (ecosystemPhase < 0.24) {
-                seasonWeights[1] = 1; // Codex / CLI: early summer
-            } else if (ecosystemPhase < 0.325) {
-                setSeasonBlend(1, 3, (ecosystemPhase - 0.24) / 0.085);
-            } else if (ecosystemPhase < 0.565) {
-                seasonWeights[3] = 1; // Plugin + CLI: autumn
-            } else if (ecosystemPhase < 0.65) {
-                setSeasonBlend(3, 5, (ecosystemPhase - 0.565) / 0.085);
-            } else {
-                seasonWeights[5] = 1; // MCP and the following content: winter
-            }
-            const headerLight = seasonWeights[5] * 0.94;
+            const atmosphereDepth = seasonWeights.reduce(
+                (sum, weight, index) => sum + weight * [0, 0.06, 0.14, 0.32, 0.62, 0.94][index],
+                0,
+            );
+            const atmosphereWarmth = seasonWeights.reduce(
+                (sum, weight, index) => sum + weight * [0.08, 0.18, 0.28, 0.48, 0.1, 0][index],
+                0,
+            );
+            const headerLight = atmosphereDepth;
             const headerMain = Math.round(18 + (246 - 18) * headerLight);
             const headerBlue = Math.round(35 + (249 - 35) * headerLight);
             const headerMuted = (0.7 + headerLight * 0.2).toFixed(3);
@@ -1375,6 +1389,8 @@ export function DevelopmentExperience() {
             document.body.style.setProperty('--dx-header-fg', `rgb(${headerMain} ${headerBlue} ${Math.round(headerBlue + (255 - headerBlue) * headerLight)} / ${headerMuted})`);
             document.body.style.setProperty('--dx-header-fg-strong', `rgb(${headerMain} ${headerBlue} ${Math.round(headerBlue + (255 - headerBlue) * headerLight)} / 0.98)`);
             document.body.style.setProperty('--dx-header-space', headerLight.toFixed(4));
+            document.body.style.setProperty('--dx-atmosphere-depth', atmosphereDepth.toFixed(4));
+            document.body.style.setProperty('--dx-atmosphere-warmth', atmosphereWarmth.toFixed(4));
         };
 
         const requestUpdate = () => {
@@ -1399,6 +1415,8 @@ export function DevelopmentExperience() {
                 '--dx-header-fg',
                 '--dx-header-fg-strong',
                 '--dx-header-space',
+                '--dx-atmosphere-depth',
+                '--dx-atmosphere-warmth',
             ].forEach((property) => document.body.style.removeProperty(property));
         };
     }, []);
