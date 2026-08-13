@@ -104,6 +104,10 @@ function TestRoutes({
                 <Route path="/admin" element={<div>Admin</div>} />
                 <Route path="/admin/members" element={<div>Members</div>} />
                 <Route
+                    path="/app/ai-assistant/*"
+                    element={<div>Embedded Assistant</div>}
+                />
+                <Route
                     path="/administrator"
                     element={<div>Public lookalike</div>}
                 />
@@ -321,6 +325,25 @@ describe('Layout assistant integration', () => {
             ).toBeInTheDocument();
         },
     );
+
+    it.each([
+        '/app/ai-assistant',
+        '/app/ai-assistant/',
+        '/APP/AI-ASSISTANT',
+        '/app/ai-assistant/conversation',
+    ])('hides the floating assistant and site chrome on %s', (initialEntry) => {
+        const { client, createId, send } = createHarness();
+        renderRoutes({ initialEntry, client, createId });
+
+        expect(screen.getByText('Embedded Assistant')).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'AI Assistantを開く' }))
+            .not.toBeInTheDocument();
+        expect(screen.queryByTestId('site-header')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('dev-header')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('site-footer')).not.toBeInTheDocument();
+        expect(screen.getByRole('main')).toHaveClass('h-full', 'min-h-0');
+        expect(send).not.toHaveBeenCalled();
+    });
 
     it('keeps the existing layout contracts and places the widget outside its background', () => {
         const { client, createId } = createHarness();

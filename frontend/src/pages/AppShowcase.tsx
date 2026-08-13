@@ -9,7 +9,6 @@ const apps: {
     title: string;
     status: 'available' | 'wip';
     description: string;
-    tags: string[];
     url?: string;
     path?: string;
     images?: string[];
@@ -19,7 +18,6 @@ const apps: {
         title: 'AI Assistant',
         status: 'available',
         description: 'サイトの公開情報を検索・検証し、根拠となるページと一緒に案内するAIアシスタント。',
-        tags: ['OpenAI', 'AWS Lambda', 'Grounded AI'],
         path: '/app/ai-assistant',
         visual: 'assistant',
     },
@@ -27,7 +25,6 @@ const apps: {
         title: '卓球組み合わせ表ジェネレーター',
         status: 'available',
         description: '人数とクール数を指定して、卓球の組み合わせを自動生成。番号シャッフル、休み枠、台ローテーションに対応。',
-        tags: ['React', 'TypeScript', 'Sports'],
         path: '/app/table-tennis',
         images: [
             '/images/table-tennis-match-maker.webp',
@@ -37,7 +34,6 @@ const apps: {
         title: 'カラーソートパズル',
         status: 'available',
         description: '透明なボトルに入った色を移し替えて、同じ色ごとに揃えるミニパズル。',
-        tags: ['React', 'TypeScript', 'Puzzle'],
         path: '/app/color-sort',
         images: [
             '/images/color-sort-puzzle.webp',
@@ -57,7 +53,7 @@ function ImageCarousel({ images, title }: { images: string[]; title: string }) {
     }, [images.length]);
 
     return (
-        <div className="aspect-video relative overflow-hidden bg-gray-100 dark:bg-gray-800">
+        <div data-testid="app-card-visual" className="aspect-[4/3] relative overflow-hidden bg-gray-100 dark:bg-gray-800">
             {images.map((img, index) => (
                 <img
                     key={img}
@@ -83,6 +79,56 @@ function ImageCarousel({ images, title }: { images: string[]; title: string }) {
                     ))}
                 </div>
             )}
+        </div>
+    );
+}
+
+function AssistantCardPreview() {
+    return (
+        <div
+            role="img"
+            aria-label="AI Assistantのプレビュー"
+            data-testid="app-card-visual"
+            className="aspect-[4/3] relative overflow-hidden bg-[#071017] p-3 sm:p-4"
+        >
+            <div className="absolute -right-14 -top-14 h-40 w-40 rounded-full border border-[#8ED3F2]/20" />
+            <div className="absolute -right-5 -top-5 h-24 w-24 rounded-full border border-[#8ED3F2]/15" />
+            <div
+                data-testid="assistant-preview-shell"
+                className="relative grid h-full min-h-0 grid-rows-[32px_minmax(0,1fr)_28px] overflow-hidden rounded-xl border border-white/15 bg-white/10 shadow-2xl backdrop-blur-xl"
+            >
+                <div className="flex min-w-0 items-center justify-between border-b border-white/10 px-3 text-[9px] text-white/80">
+                    <span className="flex min-w-0 items-center gap-1.5 font-semibold">
+                        <Sparkles className="h-3.5 w-3.5 shrink-0 text-[#8ED3F2]" />
+                        <span className="truncate">AI Assistant</span>
+                    </span>
+                    <span className="flex shrink-0 items-center gap-1 text-[8px] font-bold tracking-widest text-[#8FE2BD]">
+                        <i className="h-1.5 w-1.5 rounded-full bg-[#46D49B]" /> LIVE
+                    </span>
+                </div>
+                <div
+                    data-testid="assistant-preview-messages"
+                    className="flex min-h-0 flex-col gap-1.5 overflow-hidden p-2 text-[8px] leading-tight"
+                >
+                    <div className="ml-auto max-w-[78%] truncate rounded-lg rounded-br-sm bg-[#3A83AC] px-2 py-1 text-white">
+                        このサークルって普段何をしてる？
+                    </div>
+                    <div className="flex min-w-0 items-start gap-2">
+                        <span className="grid h-4 w-4 shrink-0 place-items-center rounded-md bg-white/10">
+                            <Sparkles className="h-3 w-3 text-[#9ADCF8]" />
+                        </span>
+                        <div className="min-w-0 max-w-[82%] truncate rounded-lg rounded-tl-sm bg-white/10 px-2 py-1 text-white/80">
+                            公開情報をもとに短く案内します。
+                        </div>
+                    </div>
+                </div>
+                <div
+                    data-testid="assistant-preview-composer"
+                    className="mx-2.5 mb-1.5 flex min-w-0 items-center rounded-full border border-white/10 bg-black/15 px-2.5 text-[7px] text-white/35"
+                >
+                    <span className="truncate">メッセージを入力します</span>
+                </div>
+            </div>
         </div>
     );
 }
@@ -141,39 +187,11 @@ export function AppShowcase() {
                             >
                                 {/* App Image */}
                                 {app.visual === 'assistant' ? (
-                                    <div className="aspect-video relative overflow-hidden bg-[#071017] p-5">
-                                        <div className="absolute -right-14 -top-14 h-40 w-40 rounded-full border border-[#8ED3F2]/20" />
-                                        <div className="absolute -right-5 -top-5 h-24 w-24 rounded-full border border-[#8ED3F2]/15" />
-                                        <div className="relative h-full overflow-hidden rounded-xl border border-white/15 bg-white/10 shadow-2xl backdrop-blur-xl">
-                                            <div className="flex h-9 items-center justify-between border-b border-white/10 px-3 text-[10px] text-white/80">
-                                                <span className="flex items-center gap-1.5 font-semibold">
-                                                    <Sparkles className="h-3.5 w-3.5 text-[#8ED3F2]" />
-                                                    AI Assistant
-                                                </span>
-                                                <span className="flex items-center gap-1 text-[8px] font-bold tracking-widest text-[#8FE2BD]">
-                                                    <i className="h-1.5 w-1.5 rounded-full bg-[#46D49B]" /> LIVE
-                                                </span>
-                                            </div>
-                                            <div className="space-y-2 p-3 text-[9px]">
-                                                <div className="ml-auto w-fit rounded-lg rounded-br-sm bg-[#3A83AC] px-2.5 py-1.5 text-white">
-                                                    活動日はいつ？
-                                                </div>
-                                                <div className="flex items-start gap-2">
-                                                    <span className="grid h-5 w-5 shrink-0 place-items-center rounded-md bg-white/10">
-                                                        <Sparkles className="h-3 w-3 text-[#9ADCF8]" />
-                                                    </span>
-                                                    <div className="rounded-lg rounded-tl-sm bg-white/10 px-2.5 py-1.5 leading-relaxed text-white/80">
-                                                        公開情報を確認して回答します。
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="absolute inset-x-3 bottom-3 h-7 rounded-full border border-white/10 bg-black/15" />
-                                        </div>
-                                    </div>
+                                    <AssistantCardPreview />
                                 ) : app.images && app.images.length > 0 ? (
                                     <ImageCarousel images={app.images} title={app.title} />
                                 ) : (
-                                    <div className="aspect-video bg-[#F5F5F7] dark:bg-[#111113] flex items-center justify-center">
+                                    <div data-testid="app-card-visual" className="aspect-[4/3] bg-[#F5F5F7] dark:bg-[#111113] flex items-center justify-center">
                                         <Smartphone className="w-12 h-12 text-[#5DABFF]" />
                                     </div>
                                 )}
@@ -190,18 +208,6 @@ export function AppShowcase() {
                                     <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-4 line-clamp-3">
                                         {app.description}
                                     </p>
-
-                                    {/* Tags */}
-                                    <div className="flex flex-wrap gap-2 mb-4">
-                                        {app.tags.map((tag) => (
-                                            <span
-                                                key={tag}
-                                                className="px-2 py-0.5 text-xs rounded-full bg-[#0071E3]/10 dark:bg-[#2997FF]/10 text-[#004C99] dark:text-[#5DABFF]"
-                                            >
-                                                {tag}
-                                            </span>
-                                        ))}
-                                    </div>
 
                                     {/* Link */}
                                     {app.path && (

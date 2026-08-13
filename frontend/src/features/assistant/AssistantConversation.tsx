@@ -26,6 +26,8 @@ export interface AssistantConversationProps {
     isSending: boolean;
     errorMessage: string | null;
     inputRef: RefObject<HTMLTextAreaElement | null>;
+    suggestedQuestions?: readonly string[];
+    onSelectSuggestedQuestion?(question: string): void;
     onSubmit(message: string): Promise<boolean>;
     onClearError(): void;
 }
@@ -56,6 +58,8 @@ export function AssistantConversation({
     isSending,
     errorMessage,
     inputRef,
+    suggestedQuestions = [],
+    onSelectSuggestedQuestion,
     onSubmit,
     onClearError,
 }: AssistantConversationProps) {
@@ -231,6 +235,21 @@ export function AssistantConversation({
                     </AssistantMessageRow>
                 )}
             </div>
+
+            {suggestedQuestions.length > 0 && onSelectSuggestedQuestion && (
+                <nav className="assistant-inline-prompts" aria-label="質問例">
+                    {suggestedQuestions.map((question) => (
+                        <button
+                            key={question}
+                            type="button"
+                            disabled={sending}
+                            onClick={() => onSelectSuggestedQuestion(question)}
+                        >
+                            {question}
+                        </button>
+                    ))}
+                </nav>
+            )}
 
             <form className="assistant-form" onSubmit={handleFormSubmit}>
                 <label

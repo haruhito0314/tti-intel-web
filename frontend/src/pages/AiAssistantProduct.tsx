@@ -67,20 +67,6 @@ export function AiAssistantProductPage() {
                     新しい会話
                 </button>
 
-                <nav className="assistant-app-prompts" aria-label="質問例">
-                    <span>質問例</span>
-                    {SUGGESTED_QUESTIONS.map((question) => (
-                        <button
-                            key={question}
-                            type="button"
-                            disabled={isSending}
-                            onClick={() => ask(question)}
-                        >
-                            {question}
-                        </button>
-                    ))}
-                </nav>
-
                 <div className="assistant-app-sidebar-footer">
                     <ShieldCheck />
                     <p>{ASSISTANT_GUIDANCE}</p>
@@ -106,25 +92,14 @@ export function AiAssistantProductPage() {
                     </button>
                 </header>
 
-                <div className="assistant-app-mobile-prompts" aria-label="質問例">
-                    {SUGGESTED_QUESTIONS.map((question) => (
-                        <button
-                            key={question}
-                            type="button"
-                            disabled={isSending}
-                            onClick={() => ask(question)}
-                        >
-                            {question}
-                        </button>
-                    ))}
-                </div>
-
                 <section className="assistant-app-chat" aria-label="AI Assistant">
                     <AssistantConversation
                         messages={messages}
                         isSending={isSending}
                         errorMessage={errorMessage}
                         inputRef={inputRef}
+                        suggestedQuestions={messages.length === 0 ? SUGGESTED_QUESTIONS : []}
+                        onSelectSuggestedQuestion={ask}
                         onSubmit={sendMessage}
                         onClearError={clearError}
                     />

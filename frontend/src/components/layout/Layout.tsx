@@ -23,7 +23,14 @@ function isAdminPath(pathname: string) {
 }
 
 function isEmbeddedAssistantPath(pathname: string) {
-    return pathname === '/app/ai-assistant';
+    const normalizedPathname = pathname
+        .toLowerCase()
+        .replace(/\/+$/, '');
+
+    return (
+        normalizedPathname === '/app/ai-assistant'
+        || normalizedPathname.startsWith('/app/ai-assistant/')
+    );
 }
 
 export interface LayoutProps {
