@@ -17,14 +17,14 @@ const apps: {
     {
         title: 'AI Assistant',
         status: 'available',
-        description: 'サイトの公開情報を検索・検証し、根拠となるページと一緒に案内するAIアシスタント。',
+        description: 'サイトの公開情報をもとに、知りたい内容を短く案内するAIアシスタント。',
         path: '/app/ai-assistant',
         visual: 'assistant',
     },
     {
-        title: '卓球組み合わせ表ジェネレーター',
+        title: '卓球組み合わせ表',
         status: 'available',
-        description: '人数とクール数を指定して、卓球の組み合わせを自動生成。番号シャッフル、休み枠、台ローテーションに対応。',
+        description: '人数とクール数から、卓球の組み合わせと台のローテーションを自動生成。',
         path: '/app/table-tennis',
         images: [
             '/images/table-tennis-match-maker.webp',
@@ -33,7 +33,7 @@ const apps: {
     {
         title: 'カラーソートパズル',
         status: 'available',
-        description: '透明なボトルに入った色を移し替えて、同じ色ごとに揃えるミニパズル。',
+        description: 'ボトルの色を移し替えて、同じ色ごとに揃えるミニパズル。',
         path: '/app/color-sort',
         images: [
             '/images/color-sort-puzzle.webp',
@@ -111,14 +111,14 @@ function AssistantCardPreview() {
                     className="flex min-h-0 flex-col gap-1.5 overflow-hidden p-2 text-[8px] leading-tight"
                 >
                     <div className="ml-auto max-w-[78%] truncate rounded-lg rounded-br-sm bg-[#3A83AC] px-2 py-1 text-white">
-                        このサークルって普段何をしてる？
+                        このAI Assistantは何ができるの？
                     </div>
                     <div className="flex min-w-0 items-start gap-2">
                         <span className="grid h-4 w-4 shrink-0 place-items-center rounded-md bg-white/10">
                             <Sparkles className="h-3 w-3 text-[#9ADCF8]" />
                         </span>
                         <div className="min-w-0 max-w-[82%] truncate rounded-lg rounded-tl-sm bg-white/10 px-2 py-1 text-white/80">
-                            公開情報をもとに短く案内します。
+                            サークルやサイトの情報を短く案内できます。
                         </div>
                     </div>
                 </div>
@@ -183,7 +183,8 @@ export function AppShowcase() {
                                 key={index}
                                 variant="elevated"
                                 padding="none"
-                                className={`${index % 2 === 0 ? 'accent-card-soft' : 'accent-card-cool'} overflow-hidden hover:scale-[1.015] transition-transform duration-300 group`}
+                                data-testid="app-showcase-card"
+                                className={`${index % 2 === 0 ? 'accent-card-soft' : 'accent-card-cool'} flex h-full flex-col overflow-hidden hover:scale-[1.015] transition-transform duration-300 group`}
                             >
                                 {/* App Image */}
                                 {app.visual === 'assistant' ? (
@@ -196,16 +197,18 @@ export function AppShowcase() {
                                     </div>
                                 )}
 
-                                <CardContent className="p-6">
-                                    <div className="mb-2 flex flex-wrap items-center gap-2">
-                                        <h3 className="apple-headline text-[#1D1D1F] dark:text-[#F5F5F7]">
+                                <CardContent data-testid="app-card-content" className="flex flex-1 flex-col p-6">
+                                    <div data-testid="app-card-title-row" className="mb-2 grid grid-rows-[1.75rem_auto] content-start gap-2">
+                                        <h3 className="apple-headline truncate self-start text-[#1D1D1F] dark:text-[#F5F5F7]">
                                             {app.title}
                                         </h3>
-                                        <Badge variant={app.status === 'available' ? 'success' : 'warning'}>
-                                            {app.status === 'available' ? '公開中' : '調整中'}
-                                        </Badge>
+                                        <div>
+                                            <Badge variant={app.status === 'available' ? 'success' : 'warning'}>
+                                                {app.status === 'available' ? '公開中' : '調整中'}
+                                            </Badge>
+                                        </div>
                                     </div>
-                                    <p className="apple-footnote text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)] mb-4 line-clamp-3">
+                                    <p data-testid="app-card-description" className="apple-footnote mb-4 h-[3em] line-clamp-2 leading-[1.5] text-[#6E6E73] dark:text-[rgba(235,235,245,0.6)]">
                                         {app.description}
                                     </p>
 
@@ -213,7 +216,7 @@ export function AppShowcase() {
                                     {app.path && (
                                         <Link
                                             to={app.path}
-                                            className="inline-flex items-center gap-1.5 text-sm text-[#0066CC] dark:text-[#2997FF] hover:underline"
+                                            className="mt-auto inline-flex items-center gap-1.5 self-start text-sm text-[#0066CC] dark:text-[#2997FF] hover:underline"
                                         >
                                             アプリを見る
                                             <ExternalLink className="w-3.5 h-3.5" />
@@ -224,7 +227,7 @@ export function AppShowcase() {
                                             href={app.url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-1.5 text-sm text-[#0066CC] dark:text-[#2997FF] hover:underline"
+                                            className="mt-auto inline-flex items-center gap-1.5 self-start text-sm text-[#0066CC] dark:text-[#2997FF] hover:underline"
                                         >
                                             アプリを見る
                                             <ExternalLink className="w-3.5 h-3.5" />
