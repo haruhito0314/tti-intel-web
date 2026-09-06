@@ -2,10 +2,12 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Pin, Search } from 'lucide-react';
 import { PageSeo } from '@/components/PageSeo';
+import { projectAnnouncements } from '@/lib/projectAnnouncements';
 import { Card, Badge, Input, Button } from '@/components/ui';
 
 // Dummy data for MVP
 const posts = [
+    ...projectAnnouncements,
     {
         id: '3',
         slug: 'ai-assistant-launched',
@@ -36,7 +38,7 @@ const posts = [
         publishedAt: '2026-04-01',
         category: 'お知らせ',
         tags: ['サークル紹介'],
-        pinned: true,
+        pinned: false,
         coverImageUrl: null,
     },
 ];

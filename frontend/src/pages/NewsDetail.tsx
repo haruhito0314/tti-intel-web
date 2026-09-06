@@ -5,9 +5,13 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
 import { PageSeo } from '@/components/PageSeo';
+import { projectAnnouncements, type AnnouncementVideo } from '@/lib/projectAnnouncements';
 import { ArrowLeft, Calendar, User, Tag, Share2, ExternalLink } from 'lucide-react';
 import { Badge, Button } from '@/components/ui';
 import type { ExtraProps } from 'react-markdown';
+
+// Let media extend beyond the reading column on desktop, with room on both sides.
+const wideMediaClasses = 'lg:relative lg:left-1/2 lg:w-[min(1120px,calc(100vw-64px))] lg:max-w-none lg:-translate-x-1/2';
 
 // Dummy data for MVP - will be replaced with API call
 const postsData: Record<string, {
@@ -17,8 +21,10 @@ const postsData: Record<string, {
     author: string;
     category: string;
     tags: string[];
+    videos?: AnnouncementVideo[];
     relatedPosts: { slug: string; title: string }[];
 }> = {
+    ...Object.fromEntries(projectAnnouncements.map((post) => [post.slug, post])),
     'ai-assistant-launched': {
         title: 'サイト内AI Assistantを公開しました',
         content: `
@@ -259,6 +265,35 @@ export function NewsDetail() {
             </header>
 
             <div className="max-w-[720px] mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14">
+                {post.videos && (
+                    <section aria-label="紹介動画" className="mb-12 space-y-8">
+                        <p className="text-[17px] leading-[1.9] text-[#1D1D1F] dark:text-[#F5F5F7]">
+                            制作・納品した紹介動画を、日本語版と英語版でご覧いただけます。
+                        </p>
+                        {post.videos.map((video) => (
+                            <figure key={video.language} className={wideMediaClasses}>
+                                <figcaption className="mb-3 text-[18px] font-semibold text-[#1D1D1F] dark:text-[#F5F5F7]" lang={video.language}>
+                                    {video.title}
+                                </figcaption>
+                                <video
+                                    controls
+                                    playsInline
+                                    preload="none"
+                                    poster={video.poster}
+                                    aria-label={`ナレッジAI紹介動画 ${video.title}`}
+                                    className="aspect-video w-full rounded-2xl border border-black/10 bg-black dark:border-white/10"
+                                >
+                                    <source src={video.src} type="video/mp4" />
+                                    <track kind="captions" src={video.captions} srcLang={video.language} label={video.captionLabel} />
+                                    お使いのブラウザでは動画を再生できません。
+                                </video>
+                                <a href={video.src} className="mt-3 inline-block text-[14px] text-[#0071E3] dark:text-[#5CABFF] hover:underline underline-offset-4">
+                                    {video.title}の動画を直接開く
+                                </a>
+                            </figure>
+                        ))}
+                    </section>
+                )}
                 <div className="news-article-body">
                     <ReactMarkdown
                         remarkPlugins={[remarkGfm, remarkMath]}
@@ -314,8 +349,8 @@ export function NewsDetail() {
                                     alt={alt ?? ''}
                                     loading="lazy"
                                     width={1280}
-                                    height={720}
-                                    className="mt-8 mb-0 block h-auto w-full rounded-2xl border border-black/10 shadow-sm dark:border-white/10"
+                                    height={src === '/images/crea-website.webp' ? 900 : 720}
+                                    className={`mt-8 mb-0 block h-auto w-full rounded-2xl border border-black/10 shadow-sm dark:border-white/10 ${wideMediaClasses}`}
                                 />
                             ),
                             em: ({ children }) => (

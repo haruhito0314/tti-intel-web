@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useRef, useState, type CSSProperties } from 
 import { Link } from 'react-router-dom';
 import { ArrowRight, Users, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PageSeo } from '@/components/PageSeo';
+import { projectAnnouncements } from '@/lib/projectAnnouncements';
 import { Button, Card, CardContent, Badge, Skeleton } from '@/components/ui';
 import {
     getDefaultWeeklyMathProblem,
@@ -15,6 +16,7 @@ const MathMarkdown = lazy(() => import('@/components/MathMarkdown').then(m => ({
 
 // Dummy data for MVP
 const latestPosts = [
+    ...projectAnnouncements,
     {
         id: '3',
         slug: 'ai-assistant-launched',
@@ -43,7 +45,7 @@ const latestPosts = [
         publishedAt: '2026-04-01',
         category: 'お知らせ',
         tags: ['サークル紹介'],
-        pinned: true,
+        pinned: false,
     },
 ];
 
