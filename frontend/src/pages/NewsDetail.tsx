@@ -22,6 +22,7 @@ const postsData: Record<string, {
     category: string;
     tags: string[];
     videos?: AnnouncementVideo[];
+    videoIntro?: string;
     relatedPosts: { slug: string; title: string }[];
 }> = {
     ...Object.fromEntries(projectAnnouncements.map((post) => [post.slug, post])),
@@ -268,7 +269,7 @@ export function NewsDetail() {
                 {post.videos && (
                     <section aria-label="紹介動画" className="mb-12 space-y-8">
                         <p className="text-[17px] leading-[1.9] text-[#1D1D1F] dark:text-[#F5F5F7]">
-                            制作・納品した紹介動画を、日本語版と英語版でご覧いただけます。
+                            {post.videoIntro}
                         </p>
                         {post.videos.map((video) => (
                             <figure key={video.language} className={wideMediaClasses}>
@@ -280,7 +281,7 @@ export function NewsDetail() {
                                     playsInline
                                     preload="none"
                                     poster={video.poster}
-                                    aria-label={`ナレッジAI紹介動画 ${video.title}`}
+                                    aria-label={`${post.title} ${video.title}`}
                                     className="aspect-video w-full rounded-2xl border border-black/10 bg-black dark:border-white/10"
                                 >
                                     <source src={video.src} type="video/mp4" />

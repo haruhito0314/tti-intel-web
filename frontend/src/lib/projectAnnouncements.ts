@@ -10,7 +10,56 @@ export interface AnnouncementVideo {
 // Shared by the home page, news list, and article detail.
 export const projectAnnouncements = [
     {
+        id: '6',
+        slug: 'kikiha-launched',
+        title: '会議AIアシスタント「kikiha」を公開しました',
+        excerpt: '会話を、チームの力に。リアルタイムの文字起こし・翻訳から、AIによる要約や議事録の共有までをサポートする「kikiha」を制作しました。',
+        publishedAt: '2026-09-14',
+        author: 'サークル運営',
+        category: 'お知らせ',
+        tags: ['kikiha', 'AI', 'Web制作'],
+        pinned: false,
+        coverImageUrl: null,
+        videoIntro: 'kikihaの使い方や会話のイメージを、紹介動画でご覧いただけます。',
+        videos: [
+            {
+                title: 'kikiha 紹介動画',
+                src: '/videos/kikiha-introduction-ja.mp4',
+                poster: '/images/kikiha-poster.jpg',
+                captions: '/videos/kikiha-ja.vtt',
+                language: 'ja',
+                captionLabel: '日本語',
+            },
+        ] satisfies AnnouncementVideo[],
+        content: `
+## 会話を、チームの力に。
+
+会議AIアシスタント「kikiha（キキハ）」を制作し、[kikiha.com](https://kikiha.com/)を公開しました。
+
+会議中の「聞き取れなかった」「途中から参加して流れがわからない」、会議後の「何が決まったか整理したい」。そんな場面で、会話の理解から振り返り、チームへの共有までをサポートするサービスです。
+
+## kikihaでできること
+
+- **リアルタイム文字起こし・翻訳**：話している内容を文字で確認し、違う言語の会話も読みたい言語で追えます。
+- **会議中のAIサポート**：ここまでの要点を確認したり、会話の内容について質問したりできます。
+- **AI要約・議事録**：会議後に決定事項や次のアクションを整理し、振り返りに役立てられます。
+- **共有・Slack連携**：議事録をチームへ共有し、Slackから会議の内容を確認できます。
+
+## 紹介動画について
+
+動画では、多言語での会話から、会議中の要点確認、議事録の作成、Slackでのやり取りまで、利用の流れを紹介しています。画面内の会話はデモです。
+
+## kikihaを見てみる
+
+機能や使い方など、詳しくは公式サイトをご覧ください。
+
+[kikihaの公式サイトを見る](https://kikiha.com/)
+        `,
+        relatedPosts: [],
+    },
+    {
         id: '5',
+        videoIntro: '制作・納品した紹介動画を、日本語版と英語版でご覧いただけます。',
         slug: 'knowledge-ai-video-delivered',
         title: 'ナレッジAI紹介動画を制作・納品しました',
         excerpt: 'CREAのナレッジAIを紹介する動画を制作・納品しました。日本語版と英語版をご覧いただけます。',
