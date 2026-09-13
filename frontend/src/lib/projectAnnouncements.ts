@@ -24,9 +24,9 @@ export const projectAnnouncements = [
         videos: [
             {
                 title: 'kikiha 紹介動画',
-                src: '/videos/kikiha-introduction-ja.mp4',
+                src: '/videos/kikiha-introduction-ja-v8.mp4',
                 poster: '/images/kikiha-poster.jpg',
-                captions: '/videos/kikiha-ja.vtt',
+                captions: '/videos/kikiha-ja-v7.vtt',
                 language: 'ja',
                 captionLabel: '日本語',
             },
