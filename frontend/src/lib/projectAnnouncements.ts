@@ -58,60 +58,6 @@ export const projectAnnouncements = [
         relatedPosts: [],
     },
     {
-        id: '5',
-        videoIntro: '制作・納品した紹介動画を、日本語版と英語版でご覧いただけます。',
-        slug: 'knowledge-ai-video-delivered',
-        title: 'ナレッジAI紹介動画を制作・納品しました',
-        excerpt: 'CREAのナレッジAIを紹介する動画を制作・納品しました。日本語版と英語版をご覧いただけます。',
-        publishedAt: '2026-09-06',
-        author: 'サークル運営',
-        category: '活動報告',
-        tags: ['動画制作', 'CREA'],
-        pinned: false,
-        coverImageUrl: null,
-        videos: [
-            {
-                title: '日本語版',
-                src: '/videos/knowledge-ai-introduction-ja.mp4',
-                poster: '/images/knowledge-ai-video-ja.jpg',
-                captions: '/videos/knowledge-ai-ja.vtt',
-                language: 'ja',
-                captionLabel: '日本語',
-            },
-            {
-                title: 'English version',
-                src: '/videos/knowledge-ai-introduction-en.mp4',
-                poster: '/images/knowledge-ai-video-en.jpg',
-                captions: '/videos/knowledge-ai-en.vtt',
-                language: 'en',
-                captionLabel: 'English',
-            },
-        ] satisfies AnnouncementVideo[],
-        content: `
-## ナレッジAIの紹介動画を制作
-
-株式会社CREAの「ナレッジAI」を紹介する動画を制作・納品しました。
-
-現場で培われた経験や社内の資料を、次の人の判断に役立てる。その利用イメージを伝えるため、日本語版と英語版の2本を制作しました。
-
-## 動画で紹介していること
-
-- 社内のマニュアルや保全記録を、会話で検索する
-- 回答の根拠となる資料や過去の事例を確認する
-- 現場での経験を会話から整理し、原因・対処・再発防止の記録につなげる
-
-映像は、利用の流れを紹介するデモです。英語版では、画面内の文章やナレーションも英語に合わせて構成しています。
-
-## 伝わりやすさを大切に
-
-画面の見せ方、言葉の出るタイミング、ナレーションと会話のテンポを調整し、初めて見る方にも活用のイメージが伝わる構成を目指しました。
-
-        `,
-        relatedPosts: [
-            { slug: 'crea-website-delivered', title: 'CREAのWebサイトを制作・納品しました' },
-        ],
-    },
-    {
         id: '4',
         slug: 'crea-website-delivered',
         title: 'CREAのWebサイトを制作・納品しました',
@@ -148,8 +94,6 @@ CREAは、AI導入や業務自動化、製造業のDX支援などに取り組む
 
 [CREAのWebサイトを見る](https://tech-crea.com/)
         `,
-        relatedPosts: [
-            { slug: 'knowledge-ai-video-delivered', title: 'ナレッジAI紹介動画を制作・納品しました' },
-        ],
+        relatedPosts: [],
     },
 ];
