@@ -309,6 +309,43 @@ export function Home() {
             </section>
 
             <div className="home-main-color-flow bg-[#F5F5F7] dark:bg-[var(--surface-2)]">
+                <section aria-labelledby="home-intro-video-title" className="home-flow-block bg-white dark:bg-[#111113] py-14 lg:py-20">
+                    <div className="max-w-[1120px] mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="max-w-2xl mx-auto mb-8 text-center">
+                            <p className="mb-3 text-sm font-semibold tracking-widest text-[#0071E3] dark:text-[#5CABFF]">サークル紹介</p>
+                            <h2 id="home-intro-video-title" className="text-[28px] sm:text-[40px] font-semibold tracking-[-0.03em] leading-tight text-[#1D1D1F] dark:text-[#F5F5F7]">
+                                <span className="inline-block">30秒でわかる</span>{' '}
+                                <span className="inline-block">TTI Intelligence</span>
+                            </h2>
+                            <p className="mt-4 text-[16px] sm:text-[17px] leading-relaxed text-[#6E6E73] dark:text-[rgba(235,235,245,0.66)]">
+                                AIを使って学び、創り、挑戦する。私たちの活動を動画で紹介します。
+                            </p>
+                        </div>
+                        <video
+                            controls
+                            playsInline
+                            preload="none"
+                            poster="/images/tti-intro-poster.jpg"
+                            aria-label="TTI Intelligence 紹介動画（30秒）"
+                            className="aspect-video w-full rounded-2xl border border-black/10 bg-black shadow-lg dark:border-white/10"
+                        >
+                            <source src="/videos/tti-intro-web.mp4" type="video/mp4" />
+                            お使いのブラウザでは動画を再生できません。
+                            <a href="/videos/tti-intro-web.mp4">紹介動画を直接開く</a>
+                        </video>
+                        <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4">
+                            <Link to="/about" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#0066CC] px-6 py-3 text-[15px] font-semibold text-white hover:bg-[#0055AA] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071E3] focus-visible:ring-offset-2">
+                                サークルについて知る
+                                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                            </Link>
+                            <Link to="/contact" className="inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-[15px] font-semibold text-[#0071E3] dark:text-[#5CABFF] hover:underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071E3] focus-visible:ring-offset-2">
+                                参加について問い合わせる
+                                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                            </Link>
+                        </div>
+                    </div>
+                </section>
+
                 {/* Explanation Videos */}
                 <section id="home-videos" className="home-flow-block bg-[#F5F5F7] dark:bg-[#111113] w-full py-14 lg:py-16 relative z-10 border-y border-black/5 dark:border-white/10">
                     <div className="max-w-[1120px] mx-auto px-4 sm:px-6 lg:px-8">
