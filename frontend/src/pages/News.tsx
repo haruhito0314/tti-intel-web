@@ -152,6 +152,16 @@ export function News() {
                         ) : (
                             sortedPosts.map((post) => (
                                 <Link key={post.id} to={`/news/${post.slug}`} className="block group py-6 first:pt-0">
+                                    {post.coverImageUrl && (
+                                        <img
+                                            src={post.coverImageUrl}
+                                            alt=""
+                                            width={1920}
+                                            height={1080}
+                                            loading="lazy"
+                                            className="mb-5 aspect-video w-full rounded-2xl border border-black/10 object-cover dark:border-white/10"
+                                        />
+                                    )}
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-2">

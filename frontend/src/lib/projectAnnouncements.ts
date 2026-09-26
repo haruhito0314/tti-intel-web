@@ -2,13 +2,48 @@ export interface AnnouncementVideo {
     title: string;
     src: string;
     poster: string;
-    captions: string;
+    captions?: string;
     language: string;
-    captionLabel: string;
+    captionLabel?: string;
 }
 
 // Shared by the home page, news list, and article detail.
 export const projectAnnouncements = [
+    {
+        id: '7',
+        slug: 'tti-introduction-video-released',
+        title: 'TTI Intelligenceの紹介動画を公開しました',
+        excerpt: '「AIの未来を、一緒に創ろう。」TTI Intelligenceの活動や雰囲気を30秒にまとめた紹介動画を制作しました。',
+        publishedAt: '2026-09-26',
+        author: 'サークル運営',
+        category: 'お知らせ',
+        tags: ['サークル紹介', '動画', 'メンバー募集'],
+        pinned: false,
+        coverImageUrl: '/images/tti-intro-poster.jpg',
+        videoIntro: '「AIの未来を、一緒に創ろう。」TTI Intelligenceの活動や雰囲気を30秒にまとめた紹介動画を制作しました。AIを使って学び、創り、挑戦する私たちのサークルを、ぜひご覧ください。',
+        videos: [
+            {
+                title: 'TTI Intelligence 紹介動画（30秒）',
+                src: '/videos/tti-intro-web.mp4',
+                poster: '/images/tti-intro-poster.jpg',
+                language: 'ja',
+            },
+        ] satisfies AnnouncementVideo[],
+        content: `
+## 一緒に学び、創り、挑戦しよう
+
+TTI Intelligenceは、豊田工業大学の学生を中心としたAIサークルです。開発・数学・ゲーム・解説動画など、興味に合わせて活動しています。
+
+プログラミング未経験の方も歓迎しています。活動や参加に興味のある方は、お気軽にお問い合わせください。
+
+[サークルについて知る](/about)
+
+[参加について問い合わせる](/contact)
+        `,
+        relatedPosts: [
+            { slug: 'welcome-to-tti-intelligence', title: 'TTI Intelligenceへようこそ！' },
+        ],
+    },
     {
         id: '6',
         slug: 'kikiha-launched',

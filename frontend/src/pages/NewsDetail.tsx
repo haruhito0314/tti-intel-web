@@ -285,7 +285,9 @@ export function NewsDetail() {
                                     className="aspect-video w-full rounded-2xl border border-black/10 bg-black dark:border-white/10"
                                 >
                                     <source src={video.src} type="video/mp4" />
-                                    <track kind="captions" src={video.captions} srcLang={video.language} label={video.captionLabel} />
+                                    {video.captions && (
+                                        <track kind="captions" src={video.captions} srcLang={video.language} label={video.captionLabel} />
+                                    )}
                                     お使いのブラウザでは動画を再生できません。
                                 </video>
                                 <a href={video.src} className="mt-3 inline-block text-[14px] text-[#0071E3] dark:text-[#5CABFF] hover:underline underline-offset-4">
