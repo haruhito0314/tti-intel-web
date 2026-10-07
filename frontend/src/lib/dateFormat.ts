@@ -1,5 +1,19 @@
 import { getWeekDateRange } from './weeklyMath';
 
+export function formatTimestampDateLabel(timestamp: unknown, includeTime = false): string {
+    if (!timestamp) return '';
+    const date = typeof timestamp === 'object' && 'toDate' in timestamp && typeof timestamp.toDate === 'function'
+        ? timestamp.toDate()
+        : new Date(timestamp as string | number | Date);
+
+    return date.toLocaleDateString('ja-JP', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        ...(includeTime ? { hour: '2-digit', minute: '2-digit' } : {}),
+    });
+}
+
 export function formatDateLabel(date: Date): string {
     return date.toLocaleDateString('ja-JP', {
         year: 'numeric',

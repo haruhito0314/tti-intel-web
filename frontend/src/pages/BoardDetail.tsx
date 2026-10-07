@@ -8,6 +8,8 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { doc, collection, addDoc, onSnapshot, query, orderBy, Timestamp, increment, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { formatTimestampDateLabel } from '@/lib/dateFormat';
+import type { BoardThread, BoardComment } from '@/lib/board';
 import { useAuth } from '@/hooks/useAuth';
 import { useLikes } from '@/hooks/useLikes';
 
@@ -18,32 +20,12 @@ const commentSchema = z.object({
 
 type CommentForm = z.infer<typeof commentSchema>;
 
-interface Thread {
-    id: string;
-    title: string;
-    body: string;
-    displayName: string;
-    createdAt: unknown;
-    pinned: boolean;
-    locked: boolean;
-    commentCount: number;
-    likeCount: number;
-}
-
-interface Comment {
-    id: string;
-    body: string;
-    displayName: string;
-    createdAt: unknown;
-    likeCount: number;
-}
-
 export function BoardDetail() {
     const { id } = useParams<{ id: string }>();
     const { isAdmin } = useAuth();
     const { isLiked, toggleLike } = useLikes();
-    const [thread, setThread] = useState<Thread | null>(null);
-    const [comments, setComments] = useState<Comment[]>([]);
+    const [thread, setThread] = useState<BoardThread | null>(null);
+    const [comments, setComments] = useState<BoardComment[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoadingThread, setIsLoadingThread] = useState(true);
     const [isLoadingComments, setIsLoadingComments] = useState(true);
@@ -73,7 +55,7 @@ export function BoardDetail() {
         const threadRef = doc(db, 'threads', id);
         const unsubscribeThread = onSnapshot(threadRef, (docSnap) => {
             if (docSnap.exists()) {
-                setThread({ id: docSnap.id, ...docSnap.data() } as Thread);
+                setThread({ id: docSnap.id, ...docSnap.data() } as BoardThread);
                 setThreadNotFound(false);
             } else {
                 setThreadNotFound(true);
@@ -89,9 +71,9 @@ export function BoardDetail() {
         const commentsRef = collection(db, 'threads', id, 'comments');
         const q = query(commentsRef, orderBy('createdAt', 'asc'));
         const unsubscribeComments = onSnapshot(q, (querySnapshot) => {
-            const commentsData: Comment[] = [];
+            const commentsData: BoardComment[] = [];
             querySnapshot.forEach((docSnap) => {
-                commentsData.push({ id: docSnap.id, ...docSnap.data() } as Comment);
+                commentsData.push({ id: docSnap.id, ...docSnap.data() } as BoardComment);
             });
             setComments(commentsData);
             setIsLoadingComments(false);
@@ -105,20 +87,6 @@ export function BoardDetail() {
             unsubscribeComments();
         };
     }, [id]);
-
-    const formatDate = (timestamp: unknown) => {
-        if (!timestamp) return '';
-        const date = typeof timestamp === 'object' && timestamp !== null && 'toDate' in timestamp && typeof timestamp.toDate === 'function'
-            ? timestamp.toDate()
-            : new Date(timestamp as string | number | Date);
-        return date.toLocaleDateString('ja-JP', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-        });
-    };
 
     const onSubmit = async (data: CommentForm) => {
         if (!id) return;
@@ -322,7 +290,7 @@ export function BoardDetail() {
                         <div className="flex items-center gap-4 text-sm text-[#86868B] dark:text-[rgba(235,235,245,0.3)]">
                             <span className="font-medium">{thread.displayName}</span>
                             <span>•</span>
-                            <span>{formatDate(thread.createdAt)}</span>
+                            <span>{formatTimestampDateLabel(thread.createdAt, true)}</span>
                             <button
                                 onClick={async () => {
                                     const liked = isLiked(`thread-${thread.id}`);
@@ -370,7 +338,7 @@ export function BoardDetail() {
                                     <div className="flex items-center gap-4 text-sm text-[#86868B] dark:text-[rgba(235,235,245,0.3)]">
                                         <span className="font-medium">{comment.displayName}</span>
                                         <span>•</span>
-                                        <span>{formatDate(comment.createdAt)}</span>
+                                        <span>{formatTimestampDateLabel(comment.createdAt, true)}</span>
                                         <button
                                             onClick={async () => {
                                                 if (!id) return;

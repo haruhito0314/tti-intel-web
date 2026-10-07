@@ -8,6 +8,8 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { collection, addDoc, onSnapshot, query, orderBy, Timestamp, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { formatTimestampDateLabel } from '@/lib/dateFormat';
+import type { BoardThread } from '@/lib/board';
 import { useAuth } from '@/hooks/useAuth';
 
 const createThreadSchema = z.object({
@@ -18,23 +20,11 @@ const createThreadSchema = z.object({
 
 type CreateThreadForm = z.infer<typeof createThreadSchema>;
 
-interface Thread {
-    id: string;
-    title: string;
-    body: string;
-    displayName: string;
-    createdAt: unknown;
-    commentCount: number;
-    likeCount: number;
-    pinned: boolean;
-    locked: boolean;
-}
-
 export function Board() {
     const { isAdmin } = useAuth();
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [threads, setThreads] = useState<Thread[]>([]);
+    const [threads, setThreads] = useState<BoardThread[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [loadError, setLoadError] = useState(false);
 
@@ -50,9 +40,9 @@ export function Board() {
     useEffect(() => {
         const q = query(collection(db, 'threads'), orderBy('createdAt', 'desc'));
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
-            const threadsData: Thread[] = [];
+            const threadsData: BoardThread[] = [];
             querySnapshot.forEach((doc) => {
-                threadsData.push({ id: doc.id, ...doc.data() } as Thread);
+                threadsData.push({ id: doc.id, ...doc.data() } as BoardThread);
             });
             setThreads(threadsData);
             setLoadError(false);
@@ -124,20 +114,6 @@ export function Board() {
         if (!a.pinned && b.pinned) return 1;
         return 0; // maintain descending date order from query
     });
-
-    const formatDate = (timestamp: unknown) => {
-        if (!timestamp) return '';
-        const date = typeof timestamp === 'object' && timestamp !== null && 'toDate' in timestamp && typeof timestamp.toDate === 'function'
-            ? timestamp.toDate()
-            : new Date(timestamp as string | number | Date);
-        return date.toLocaleDateString('ja-JP', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    };
 
     return (
         <div className="animate-fade-in">
@@ -251,7 +227,7 @@ export function Board() {
                                                     <div className="flex items-center gap-4 text-sm text-[#86868B] dark:text-[rgba(235,235,245,0.3)]">
                                                         <span>{thread.displayName}</span>
                                                         <span>•</span>
-                                                        <span>{formatDate(thread.createdAt)}</span>
+                                                        <span>{formatTimestampDateLabel(thread.createdAt, true)}</span>
                                                         <span className="flex items-center gap-1">
                                                             <MessageSquare className="w-4 h-4" />
                                                             {thread.commentCount}

@@ -4,6 +4,7 @@ import { ArrowLeft, UserPlus, Trash2, Shield, Mail } from 'lucide-react';
 import { Card, CardContent, Button, Input } from '@/components/ui';
 import { collection, setDoc, deleteDoc, doc, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { formatTimestampDateLabel } from '@/lib/dateFormat';
 import { useAuth } from '@/hooks/useAuth';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -111,18 +112,6 @@ export function AdminMembers() {
             console.error('Error deleting admin:', error);
             alert('削除に失敗しました');
         }
-    };
-
-    const formatDate = (timestamp: unknown) => {
-        if (!timestamp) return '';
-        const date = typeof timestamp === 'object' && timestamp !== null && 'toDate' in timestamp && typeof timestamp.toDate === 'function'
-            ? timestamp.toDate()
-            : new Date(timestamp as string | number | Date);
-        return date.toLocaleDateString('ja-JP', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-        });
     };
 
     if (loading) {
@@ -246,7 +235,7 @@ export function AdminMembers() {
                                                 {admin.email}
                                             </p>
                                             <p className="text-xs text-[#86868B] dark:text-[rgba(235,235,245,0.3)]">
-                                                追加日: {formatDate(admin.addedAt)} • 追加者: {admin.addedBy}
+                                                追加日: {formatTimestampDateLabel(admin.addedAt)} • 追加者: {admin.addedBy}
                                             </p>
                                         </div>
                                         {admin.email === user.email ? (

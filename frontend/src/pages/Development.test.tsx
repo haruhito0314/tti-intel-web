@@ -100,10 +100,10 @@ describe('Development page', () => {
     });
 
     it('keeps the cursor attached while the Codex window becomes the work surface', () => {
-        expect(demoCursorTarget(3_900)).toBe('codex-window');
-        expect(demoCursorTarget(4_100)).toBe('codex-window');
-        expect(demoCursorTarget(4_700)).toBe('codex-window');
-        expect(demoCursorTarget(4_900)).toBe('input');
+        expect(demoCursorTarget(2_900)).toBe('codex-window');
+        expect(demoCursorTarget(3_100)).toBe('codex-window');
+        expect(demoCursorTarget(3_199)).toBe('codex-window');
+        expect(demoCursorTarget(3_200)).toBe('input');
     });
 
     it('continues from the Codex preview into deployment, plugin, and MCP scenes', () => {
@@ -119,7 +119,7 @@ describe('Development page', () => {
         expect(screen.getByRole('heading', { name: 'よい手順を、何度でも使える形に。' })).toBeInTheDocument();
         expect(screen.getByRole('heading', { name: '必要な情報と道具を、開発につなぐ。' })).toBeInTheDocument();
         expect(screen.getByLabelText('vercel deploy --prod')).toBeInTheDocument();
-        expect(screen.getByLabelText('sam deploy --guided')).toBeInTheDocument();
+        expect(screen.getByLabelText('sam deploy --config-env production')).toBeInTheDocument();
         expect(screen.getByText('Codex CLI')).toBeInTheDocument();
         expect(screen.getByLabelText('Vercelへ公開して')).toBeInTheDocument();
         expect(screen.getByLabelText('AWSへバックエンドをデプロイして')).toBeInTheDocument();
