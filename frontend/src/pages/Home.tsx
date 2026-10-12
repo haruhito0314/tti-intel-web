@@ -314,7 +314,7 @@ export function Home() {
                         <div className="max-w-2xl mx-auto mb-8 text-center">
                             <p className="mb-3 text-sm font-semibold tracking-widest text-[#0071E3] dark:text-[#5CABFF]">サークル紹介</p>
                             <h2 id="home-intro-video-title" className="text-[28px] sm:text-[40px] font-semibold tracking-[-0.03em] leading-tight text-[#1D1D1F] dark:text-[#F5F5F7]">
-                                <span className="inline-block">30秒でわかる</span>{' '}
+                                <span className="inline-block">約40秒でわかる</span>{' '}
                                 <span className="inline-block">TTI Intelligence</span>
                             </h2>
                             <p className="mt-4 text-[16px] sm:text-[17px] leading-relaxed text-[#6E6E73] dark:text-[rgba(235,235,245,0.66)]">
@@ -325,13 +325,13 @@ export function Home() {
                             controls
                             playsInline
                             preload="none"
-                            poster="/images/tti-intro-poster.jpg"
-                            aria-label="TTI Intelligence 紹介動画（30秒）"
+                            poster="/images/tti-circle-intro-v7-poster.jpg"
+                            aria-label="TTI Intelligence 紹介動画（約40秒）"
                             className="aspect-video w-full rounded-2xl border border-black/10 bg-black shadow-lg dark:border-white/10"
                         >
-                            <source src="/videos/tti-intro-web.mp4" type="video/mp4" />
+                            <source src="/videos/tti-circle-intro-v7.mp4" type="video/mp4" />
                             お使いのブラウザでは動画を再生できません。
-                            <a href="/videos/tti-intro-web.mp4">紹介動画を直接開く</a>
+                            <a href="/videos/tti-circle-intro-v7.mp4">紹介動画を直接開く</a>
                         </video>
                         <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4">
                             <Link to="/about" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#0066CC] px-6 py-3 text-[15px] font-semibold text-white hover:bg-[#0055AA] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071E3] focus-visible:ring-offset-2">
