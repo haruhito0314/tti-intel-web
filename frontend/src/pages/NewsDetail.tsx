@@ -6,7 +6,7 @@ import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
 import { PageSeo } from '@/components/PageSeo';
 import { projectAnnouncements, type AnnouncementVideo } from '@/lib/projectAnnouncements';
-import { ArrowLeft, Calendar, User, Tag, Share2, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Tag, Share2 } from 'lucide-react';
 import { Badge, Button } from '@/components/ui';
 import type { ExtraProps } from 'react-markdown';
 
@@ -67,58 +67,6 @@ AI Assistantは、このサイトの公開情報をもとに案内します。
         relatedPosts: [
             { slug: 'welcome-to-tti-intelligence', title: 'TTI Intelligenceへようこそ！' },
         ],
-    },
-    'web-development-tutorial-released': {
-        title: 'Web開発をゼロから学べるサイトを公開しました',
-        content: `
-## 未経験からWebアプリの公開まで
-
-プログラミングを初めて学ぶ方が、Web開発を基礎から順番に身につけられる学習サイトを公開しました。
-
-教材を読むために特別なアプリを準備する必要はありません。ブラウザで説明を読み、章を進めながら必要な開発環境を一つずつ導入します。
-
-![27章の進捗と次に学ぶ章を確認できる学習ダッシュボード](/images/web-tutorial-dashboard.webp)
-
-*学習状況と次に進む章を一目で確認できるダッシュボード。*
-
-## 27章で段階的に学べます
-
-教材は第0章から第26章までの全27章です。
-
-- HTML・CSSでWebページを作る基礎
-- JavaScript・TypeScriptの文法と非同期処理
-- Reactを使った画面、フォーム、ページ遷移
-- API通信とデータの保存
-- AWS CDK・Lambda・DynamoDB・Cognito
-- テスト、セキュリティ、公開、安全な削除
-
-単にコードをコピーするだけでなく、「何をしているのか」「なぜ必要なのか」を確認しながら進められる構成にしています。
-
-![第4章HTML教材の本文と目次を表示した学習画面](/images/web-tutorial-html-lesson.webp)
-
-*章の目標、解説、手順、目次を確認しながら学習できます。*
-
-## 自分のペースで繰り返し学習
-
-各章には説明、確認項目、練習問題、解答があります。学習状況はブラウザに保存され、途中から再開できます。リセット機能を使えば、最初から何度でもやり直せます。
-
-最後には、空のフォルダから自分の力でWebアプリを完成させる卒業課題を用意しています。
-
-## 対応環境
-
-現在、開発環境の手順はmacOS向けに書かれています。Windows向けの対応も順次進める予定です。
-
-Web開発に興味はあるものの、何から始めればよいか分からない方におすすめです。
-
-全27章・ブラウザですぐ読めます。
-
-[無料でWeb開発を学び始める](https://build-tutorial.vercel.app)
-    `,
-        publishedAt: '2026-07-13',
-        author: 'サークル運営',
-        category: 'お知らせ',
-        tags: ['Web開発', '学習教材'],
-        relatedPosts: [],
     },
     'welcome-to-tti-intelligence': {
         title: 'TTI Intelligenceへようこそ！',
@@ -383,22 +331,16 @@ export function NewsDetail() {
                                 const target = href ?? '';
                                 const isExternal =
                                     /^(https?:|mailto:|tel:)/.test(target) || target.startsWith('//');
-                                const isTutorialCta = target === 'https://build-tutorial.vercel.app';
 
                                 if (isExternal) {
                                     return (
                                         <a
                                             href={target}
-                                            className={isTutorialCta
-                                                ? 'mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#0066CC] px-6 py-3.5 font-semibold text-white no-underline shadow-sm transition-colors hover:bg-[#004C99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071E3] focus-visible:ring-offset-2 dark:text-white sm:w-auto'
-                                                : 'text-[#0071E3] dark:text-[#5CABFF] underline-offset-4 hover:underline'}
+                                            className="text-[#0071E3] dark:text-[#5CABFF] underline-offset-4 hover:underline"
                                             target={target.startsWith('http') ? '_blank' : undefined}
                                             rel={target.startsWith('http') ? 'noopener noreferrer' : undefined}
                                         >
                                             {children}
-                                            {isTutorialCta && (
-                                                <ExternalLink className="h-4 w-4" aria-hidden="true" />
-                                            )}
                                         </a>
                                     );
                                 }

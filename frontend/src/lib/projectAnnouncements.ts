@@ -10,6 +10,58 @@ export interface AnnouncementVideo {
 // Shared by the home page, news list, and article detail.
 export const projectAnnouncements = [
     {
+        id: '8',
+        slug: 'fce-partnership',
+        title: '株式会社ＦＣＥと学生団体として提携しました',
+        excerpt: 'AIの学びを、社会での実践へ。TTI Intelligenceは株式会社ＦＣＥと学生団体として提携し、AI家庭教師の取り組みに向けた連携を進めています。',
+        publishedAt: '2026-10-20',
+        author: 'サークル運営',
+        category: 'お知らせ',
+        tags: ['ＦＣＥ', '企業連携', 'AI'],
+        pinned: false,
+        coverImageUrl: null,
+        content: `
+## AIの学びを、社会での実践へ
+
+TTI Intelligence（豊田工業大学AIサークル）は、株式会社ＦＣＥ（東京都新宿区、代表取締役社長：石川淳悦、証券コード：9564）と学生団体として提携しました。
+
+私たちは、AIを使ったWebサイト・アプリの開発などを通して、学びながら手を動かす活動を続けています。今回の提携を通じて、サークルで培った知識や経験を、企業のAI活用を支える実践につなげていきたいと考えています。
+
+## 「AI家庭教師」の取り組みに向けて
+
+ＦＣＥは、AIを活用したいと考える中小企業の経営者に対し、AIに詳しい学生が「AI家庭教師」として伴走する取り組みを進めています。
+
+TTI Intelligenceは、同社の「AIx ONE Learning」を活用した取り組みに向けて、ＦＣＥとの連携を進めています。AIの使い方を一緒に考え、現場の課題に向き合う経験を通じて、学生自身も学びを深めていくことを目指します。
+
+## 今後の活動について
+
+現在、具体的な活動内容や進め方について、ＦＣＥと確認・調整を進めています。活動の開始時期や参加方法など、詳細が決まり次第、このWebサイトでお知らせします。
+
+AIを学ぶだけでなく、実際の場面で役立てる経験へ。これからも、学生の興味や挑戦を大切にしながら活動していきます。
+
+## 株式会社ＦＣＥについて
+
+- **設立**：2017年4月21日
+- **代表取締役社長**：石川淳悦
+- **東証上場 証券コード**：9564
+- **本社**：〒163-0810 東京都新宿区西新宿２-４-１ 新宿NSビル10階
+- **事業内容**：DX推進事業、教育研修事業、出版事業、AIソリューション事業
+- **URL**：[https://fce-hd.co.jp/](https://fce-hd.co.jp/)
+- **採用サイト**：[https://recruit.fce-hd.co.jp/](https://recruit.fce-hd.co.jp/)
+
+## 関連情報
+
+[株式会社ＦＣＥの公式サイトを見る](https://fce-hd.co.jp/)
+
+[TTI Intelligenceの活動について](/about)
+
+[サークルへの参加・お問い合わせ](/contact)
+        `,
+        relatedPosts: [
+            { slug: 'welcome-to-tti-intelligence', title: 'TTI Intelligenceへようこそ！' },
+        ],
+    },
+    {
         id: '7',
         slug: 'tti-introduction-video-released',
         title: 'TTI Intelligenceの紹介動画を公開しました',
