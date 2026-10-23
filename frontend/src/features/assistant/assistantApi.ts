@@ -23,8 +23,11 @@ export function removeInlineAssistantUrls(answer: string): string {
         .replace(/\[([^\]]+)]\(https?:\/\/[^)\s]+\)/gi, '$1')
         .replace(/<https?:\/\/[^>\s]+>/gi, '')
         .replace(/https?:\/\/[^\s<>"'。．、，！？）)\]}]+/gi, '')
-        .replace(/\s+/g, ' ')
-        .replace(/\s+([。．、，！？])/g, '$1')
+        .replace(/\r\n?/g, '\n')
+        .replace(/[^\S\n]+/g, ' ')
+        .replace(/ *\n */g, '\n')
+        .replace(/\n{3,}/g, '\n\n')
+        .replace(/[^\S\n]+([。．、，！？])/g, '$1')
         .trim();
 }
 

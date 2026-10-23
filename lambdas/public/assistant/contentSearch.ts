@@ -53,13 +53,13 @@ export interface DynamicContentResult {
  * one boundary so quota, secret, and Luna failures keep their own mappings.
  */
 export async function retrieveDynamicContentSafely(
-  search: () => Promise<RankedContentEntry[]>,
+  search: () => Promise<RankedContentEntry[] | DynamicContentResult>,
 ): Promise<DynamicContentResult> {
   try {
-    return {
-      content: await search(),
-      dynamicContentAvailable: true,
-    };
+    const result = await search();
+    return Array.isArray(result)
+      ? { content: result, dynamicContentAvailable: true }
+      : result;
   } catch {
     return {
       content: [],
@@ -158,7 +158,7 @@ export function scoreContentCandidate(
   }
   for (const keyword of candidate.keywords ?? []) {
     const normalizedKeyword = normalizeSearchText(keyword);
-    if (normalizedKeyword && normalizedQuery.includes(normalizedKeyword)) score += 3;
+    if (normalizedKeyword && containsContentKeyword(normalizedQuery, normalizedKeyword)) score += 3;
   }
 
   if (score > 0) {
@@ -171,6 +171,24 @@ export function scoreContentCandidate(
   }
 
   return score;
+}
+
+function containsContentKeyword(query: string, keyword: string): boolean {
+  if (!keyword.startsWith('/')) return query.includes(keyword);
+  // Routes identify a whole item: /board/1 must not also match /board/10.
+  let index = query.indexOf(keyword);
+  while (index !== -1) {
+    const following = query[index + keyword.length];
+    if (following === undefined || /[\s?#)\]}>"'。、，,!?！？」』）]/u.test(following)) {
+      return true;
+    }
+    index = query.indexOf(keyword, index + keyword.length);
+  }
+  return false;
+}
+
+function contentRouteKeywords(kind: 'news' | 'board', key: string): string[] {
+  return [...new Set([`/${kind}/${encodeURIComponent(key)}`, `/${kind}/${key}`])];
 }
 
 function toNewsEntry(item: NewsDetailItem): ContentEntry {
@@ -212,16 +230,27 @@ function toMathEntry(item: MathListItem): ContentEntry {
   };
 }
 
-export async function selectRelevantContent(
+export async function searchRelevantContent(
   query: string,
   repositories: ContentRepositories,
-): Promise<RankedContentEntry[]> {
+): Promise<DynamicContentResult> {
   const normalizedQuery = normalizeSearchText(query);
-  if (normalizedQuery.length === 0) return [];
+  if (normalizedQuery.length === 0) {
+    return { content: [], dynamicContentAvailable: true };
+  }
 
   const ranked: RankedContentEntry[] = [];
+  // Each store is independent. A failed source must not discard content that
+  // was successfully read from another source, or look like an empty result.
+  const [newsResult, boardResult, mathResult] = await Promise.allSettled([
+    Promise.resolve().then(() => repositories.listPublishedNews()),
+    Promise.resolve().then(() => repositories.listBoardThreads()),
+    Promise.resolve().then(() => repositories.listPublishedMathProblems()),
+  ]);
+  let dynamicContentAvailable = [newsResult, boardResult, mathResult]
+    .every((result) => result.status === 'fulfilled');
 
-  const newsList = await repositories.listPublishedNews();
+  const newsList = newsResult.status === 'fulfilled' ? newsResult.value : [];
   const newsCandidates = newsList
     .map((item) => ({
       item,
@@ -229,6 +258,7 @@ export async function selectRelevantContent(
         title: item.title,
         excerpt: item.excerpt,
         tags: item.tags,
+        keywords: contentRouteKeywords('news', item.slug),
         categoryKeywords: ['お知らせ', 'ニュース', '記事'],
       }),
     }))
@@ -236,45 +266,68 @@ export async function selectRelevantContent(
     .sort((a, b) => b.score - a.score || a.item.slug.localeCompare(b.item.slug))
     .slice(0, MAX_CONTENT_RESULTS);
 
-  for (const candidate of newsCandidates) {
-    const detail = await repositories.getNewsBySlug(candidate.item.slug);
+  const newsDetails = await Promise.allSettled(newsCandidates.map(
+    (candidate) => Promise.resolve().then(() => repositories.getNewsBySlug(candidate.item.slug)),
+  ));
+  for (const [index, result] of newsDetails.entries()) {
+    if (result.status === 'rejected') {
+      dynamicContentAvailable = false;
+      continue;
+    }
+    const detail = result.value;
     if (!detail || detail.status === 'draft') continue;
     ranked.push({
       entry: toNewsEntry(detail),
-      score: candidate.score,
+      score: newsCandidates[index].score,
     });
   }
 
-  const threads = await repositories.listBoardThreads();
+  const threads = boardResult.status === 'fulfilled' ? boardResult.value : [];
   for (const item of threads) {
     const score = scoreContentCandidate(normalizedQuery, {
       title: item.title,
       excerpt: item.body,
+      keywords: contentRouteKeywords('board', item.threadId),
       categoryKeywords: ['掲示板', '相談', '投稿'],
     });
     if (score < MIN_CONTENT_SCORE) continue;
     ranked.push({ entry: toBoardEntry(item), score });
   }
 
-  const mathProblems = await repositories.listPublishedMathProblems();
+  const mathProblems = mathResult.status === 'fulfilled' ? mathResult.value : [];
   // Listing asks → guide page only. Individual links only for specific titles/weekKeys.
-  if (!isWeeklyMathListingQuery(normalizedQuery)) {
-    for (const item of mathProblems) {
-      if (item.problemPublished === false) continue;
-      // Title / weekKey only — do not score problem body (avoids weak floods and answer leakage).
-      const score = scoreContentCandidate(normalizedQuery, {
-        title: item.title,
-        keywords: [item.weekKey],
-      });
-      if (score < MIN_CONTENT_SCORE) continue;
-      ranked.push({ entry: toMathEntry(item), score });
-    }
+  const listingQuery = isWeeklyMathListingQuery(normalizedQuery);
+  for (const item of mathProblems) {
+    if (item.problemPublished === false) continue;
+    const title = normalizeSearchText(item.title);
+    const weekKey = normalizeSearchText(item.weekKey);
+    const explicitlyNamedProblem = (title.length > 0 && normalizedQuery.includes(title))
+      || (weekKey.length > 0 && normalizedQuery.includes(weekKey));
+    // A follow-up can include the earlier section question as well as the
+    // exact problem title from the answer. Keep that specific problem usable.
+    if (listingQuery && !explicitlyNamedProblem) continue;
+    // Title / weekKey only — do not score problem body (avoids weak floods and answer leakage).
+    const score = scoreContentCandidate(normalizedQuery, {
+      title: item.title,
+      keywords: [item.weekKey],
+    });
+    if (score < MIN_CONTENT_SCORE) continue;
+    ranked.push({ entry: toMathEntry(item), score });
   }
 
-  return ranked
+  const content = ranked
     .sort((a, b) => {
       if (a.score !== b.score) return b.score - a.score;
       return a.entry.id < b.entry.id ? -1 : a.entry.id > b.entry.id ? 1 : 0;
     })
     .slice(0, MAX_CONTENT_RESULTS);
+  return { content, dynamicContentAvailable };
+}
+
+/** Compatibility for offline evaluators that only consume the ranked items. */
+export async function selectRelevantContent(
+  query: string,
+  repositories: ContentRepositories,
+): Promise<RankedContentEntry[]> {
+  return (await searchRelevantContent(query, repositories)).content;
 }

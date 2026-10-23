@@ -115,30 +115,28 @@ export function createMathContentRepository(
 ): Pick<ContentRepositories, 'listPublishedMathProblems'> {
   return {
     async listPublishedMathProblems() {
-      try {
-        const app = getApps()[0] ?? initializeApp({
-          apiKey: firebaseConfig.apiKey,
-          projectId: firebaseConfig.projectId,
+      const app = getApps()[0] ?? initializeApp({
+        apiKey: firebaseConfig.apiKey,
+        projectId: firebaseConfig.projectId,
+      });
+      // Let the shared retrieval boundary distinguish a failed read from a
+      // genuinely empty collection while preserving other sources' content.
+      const snapshot = await getDocs(collection(getFirestore(app), 'weeklyMath'));
+      const problems: MathListItem[] = [];
+      for (const docSnap of snapshot.docs) {
+        const data = docSnap.data();
+        if (data.problemPublished !== true) continue;
+        if (typeof data.title !== 'string' || typeof data.problem !== 'string') continue;
+        // Never include answer/explanation fields in the returned shape.
+        problems.push({
+          weekKey: docSnap.id,
+          title: data.title,
+          problem: data.problem,
+          hint: typeof data.hint === 'string' ? data.hint : undefined,
+          problemPublished: true,
         });
-        const snapshot = await getDocs(collection(getFirestore(app), 'weeklyMath'));
-        const problems: MathListItem[] = [];
-        for (const docSnap of snapshot.docs) {
-          const data = docSnap.data();
-          if (data.problemPublished !== true) continue;
-          if (typeof data.title !== 'string' || typeof data.problem !== 'string') continue;
-          // Never include answer/explanation fields in the returned shape.
-          problems.push({
-            weekKey: docSnap.id,
-            title: data.title,
-            problem: data.problem,
-            hint: typeof data.hint === 'string' ? data.hint : undefined,
-            problemPublished: true,
-          });
-        }
-        return problems;
-      } catch {
-        return [];
       }
+      return problems;
     },
   };
 }

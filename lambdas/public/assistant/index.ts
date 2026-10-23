@@ -10,10 +10,12 @@ import type {
 
 import {
   retrieveDynamicContentSafely,
-  selectRelevantContent,
+  searchRelevantContent,
+  type DynamicContentResult,
   type ContentRepositories,
 } from './contentSearch.js';
 import { createContentRepositories } from './contentRepos.js';
+import { jstDateKey } from './dayKey.js';
 import {
   buildAssistantKnowledgePack,
   type AssistantKnowledgePack,
@@ -41,7 +43,7 @@ import {
   createVerifiedOfficialLinks,
   KNOWN_PAGE_ROUTES,
 } from './runtimeCatalog.js';
-import { shouldSearchDynamicContent } from './scope.js';
+import { buildDynamicContentQuery, shouldSearchDynamicContent } from './scope.js';
 import type {
   AssistantLink,
   ModelGuideResponse,
@@ -96,7 +98,7 @@ export interface AssistantHandlerDependencies {
   now(): Date;
   getApiKey(): Promise<string>;
   reserveQuota(input: QuotaReservationInput): Promise<void>;
-  searchContent(message: string): Promise<RankedContentEntry[]>;
+  searchContent(message: string): Promise<RankedContentEntry[] | DynamicContentResult>;
   requestOpenAI(input: GroundedRequestOpenAIInput): Promise<OpenAIResult>;
   log(record: Record<string, string | number>): void;
 }
@@ -285,9 +287,6 @@ function createPublicAnswer(
   modelAnswer: string,
 ): string {
   if (output.scope === 'university') return UNIVERSITY_DIRECTION;
-  if (output.scope === 'out_of_scope') {
-    return `申し訳ありませんが、${output.topicLabel}については案内できません。必要であればお問い合わせください。`;
-  }
   return modelAnswer;
 }
 
@@ -328,7 +327,7 @@ function createScopeAwareLinks(
     return createVerifiedOfficialLinks(['toyota-ti']);
   }
   if (output.scope === 'out_of_scope') {
-    return createVerifiedPageLinks(['contact'], new Set<PageId>(['contact']));
+    return [];
   }
 
   const allowedPageIdSet = new Set<PageId>(
@@ -431,7 +430,7 @@ export function createAssistantHandler(
         return errorResponse(500, origin, evaluationRequestId);
       }
 
-      const localResponse = localConversationResponseFor(request.message);
+      const localResponse = localConversationResponseFor(request.message, request.history);
       if (localResponse !== null) {
         assistantScope = 'conversation';
         outcome = 'local_conversation';
@@ -461,9 +460,15 @@ export function createAssistantHandler(
       const dynamicContent = shouldSearchDynamicContent(
         request.message,
         request.currentPath,
+        request.history,
       )
         ? await retrieveDynamicContentSafely(
-          () => dependencies.searchContent(request.message),
+          () => dependencies.searchContent([
+            buildDynamicContentQuery(request.message, request.history),
+            // The current detail path identifies a problem even if the user
+            // asks only 「この問題」 and has no previous conversation.
+            /^\/(?:news|board|weekly-math)\//.test(request.currentPath) ? request.currentPath : '',
+          ].filter(Boolean).join('\n')),
         )
         : { content: [] };
       const content = dynamicContent.content.slice(0, 3);
@@ -475,6 +480,10 @@ export function createAssistantHandler(
         request,
         knowledgePack,
         content,
+        currentDate: jstDateKey(dependencies.now()),
+        dynamicContentStatus: 'dynamicContentAvailable' in dynamicContent
+          ? dynamicContent.dynamicContentAvailable ? 'available' : 'unavailable'
+          : 'not_searched',
       });
       dependencyStage = 'internal';
 
@@ -617,7 +626,7 @@ export function createRuntimeDependencies(
       quotaConfig,
       input,
     ),
-    searchContent: (message) => selectRelevantContent(message, contentRepositories),
+    searchContent: (message) => searchRelevantContent(message, contentRepositories),
     requestOpenAI: (input) => callOpenAI({
       ...input,
       timeoutMs: OPENAI_TIMEOUT_MS,

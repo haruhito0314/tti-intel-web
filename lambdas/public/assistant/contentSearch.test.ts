@@ -4,6 +4,7 @@ import {
   contentIdFor,
   isWeeklyMathListingQuery,
   scoreContentCandidate,
+  searchRelevantContent,
   selectRelevantContent,
   retrieveDynamicContentSafely,
   truncateExcerpt,
@@ -49,6 +50,89 @@ describe('contentSearch', () => {
       content: [],
       dynamicContentAvailable: false,
     });
+  });
+
+  it('keeps a partial-availability result intact at the retrieval boundary', async () => {
+    const result = { content: [], dynamicContentAvailable: false };
+    await expect(retrieveDynamicContentSafely(async () => result)).resolves.toEqual(result);
+  });
+
+  it('preserves board and math matches when the news repository fails', async () => {
+    const repositories = createRepos({
+      listPublishedNews: vi.fn(async () => { throw new Error('news unavailable'); }),
+      listBoardThreads: vi.fn(async () => [{
+        threadId: 'spring-event',
+        title: '春の交流会',
+        body: '交流会の相談です。',
+      }]),
+      listPublishedMathProblems: vi.fn(async () => [{
+        weekKey: '2026-W29',
+        title: '経路の場合の数',
+        problem: '場合の数を求めよ。',
+        problemPublished: true,
+      }]),
+    });
+
+    const result = await searchRelevantContent('春の交流会と経路の場合の数', repositories);
+    expect(result.dynamicContentAvailable).toBe(false);
+    expect(result.content.map(({ entry }) => entry.id))
+      .toEqual(['board:spring-event', 'weekly-math:2026-W29']);
+    expect(repositories.getNewsBySlug).not.toHaveBeenCalled();
+  });
+
+  it('preserves news matches when the board and math repositories fail', async () => {
+    const article = {
+      postId: '1', slug: 'spring-event', title: '春の交流会', status: 'published',
+    };
+    const repositories = createRepos({
+      listPublishedNews: vi.fn(async () => [article]),
+      getNewsBySlug: vi.fn(async () => ({ ...article, content: '交流会のお知らせです。' })),
+      listBoardThreads: vi.fn(async () => { throw new Error('board unavailable'); }),
+      listPublishedMathProblems: vi.fn(async () => { throw new Error('math unavailable'); }),
+    });
+
+    const result = await searchRelevantContent('春の交流会', repositories);
+    expect(result.dynamicContentAvailable).toBe(false);
+    expect(result.content.map(({ entry }) => entry.id)).toEqual(['news:spring-event']);
+  });
+
+  it('skips only the failed article detail and marks the lookup as incomplete', async () => {
+    const first = { postId: '1', slug: 'spring-event', title: '春の交流会' };
+    const second = { postId: '2', slug: 'study-group', title: '新入生勉強会' };
+    const repositories = createRepos({
+      listPublishedNews: vi.fn(async () => [first, second]),
+      getNewsBySlug: vi.fn(async (slug) => {
+        if (slug === first.slug) throw new Error('detail unavailable');
+        return { ...second, content: '新入生を対象にした勉強会です。' };
+      }),
+    });
+
+    const result = await searchRelevantContent('春の交流会と新入生勉強会', repositories);
+    expect(result.dynamicContentAvailable).toBe(false);
+    expect(result.content.map(({ entry }) => entry.id)).toEqual(['news:study-group']);
+    expect(repositories.getNewsBySlug).toHaveBeenCalledTimes(2);
+  });
+
+  it('distinguishes total repository failure from a successful empty lookup', async () => {
+    const unavailable = async () => { throw new Error('repository unavailable'); };
+    await expect(searchRelevantContent('お知らせ', createRepos({
+      listPublishedNews: unavailable,
+      listBoardThreads: unavailable,
+      listPublishedMathProblems: unavailable,
+    }))).resolves.toEqual({ content: [], dynamicContentAvailable: false });
+    await expect(searchRelevantContent('お知らせ', createRepos()))
+      .resolves.toEqual({ content: [], dynamicContentAvailable: true });
+  });
+
+  it('does not treat a deleted or unpublished article as a repository failure', async () => {
+    const repositories = createRepos({
+      listPublishedNews: vi.fn(async () => [{
+        postId: '1', slug: 'removed', title: '春の交流会',
+      }]),
+      getNewsBySlug: vi.fn(async () => null),
+    });
+    await expect(searchRelevantContent('春の交流会', repositories))
+      .resolves.toEqual({ content: [], dynamicContentAvailable: true });
   });
 
   it('truncates long excerpts without leaking answer fields from math shaping', async () => {
@@ -115,6 +199,49 @@ describe('contentSearch', () => {
 
     const selected = await selectRelevantContent('参加相談のスレッド', repositories);
     expect(selected[0]?.entry.href).toBe('/board/thread-1');
+  });
+
+  it.each(['spring-event', '春の交流会'])(
+    'retrieves the current article by its encoded detail path: %s',
+    async (slug) => {
+      const article = { postId: '1', slug, title: '新歓のご案内' };
+      const repositories = createRepos({
+        listPublishedNews: vi.fn(async () => [article]),
+        getNewsBySlug: vi.fn(async () => ({ ...article, content: '体験会の日時です。' })),
+      });
+
+      const result = await searchRelevantContent(
+        `この記事の内容を教えて\n/news/${encodeURIComponent(slug)}`,
+        repositories,
+      );
+      expect(result.dynamicContentAvailable).toBe(true);
+      expect(result.content.map(({ entry }) => entry.id)).toEqual([`news:${slug}`]);
+    },
+  );
+
+  it('retrieves the current board post without matching a different ID prefix', async () => {
+    const repositories = createRepos({
+      listBoardThreads: vi.fn(async () => [
+        { threadId: '1', title: '見学の相談', body: '見学したいです。' },
+        { threadId: '10', title: '新歓のご案内', body: '体験会の日時です。' },
+      ]),
+    });
+
+    const result = await searchRelevantContent('この投稿の内容を教えて\n/board/10', repositories);
+    expect(result.content.map(({ entry }) => entry.id)).toEqual(['board:10']);
+  });
+
+  it('does not match an article slug that is only a prefix of the current path', async () => {
+    const article = { postId: '1', slug: 'spring-event', title: '新歓のご案内' };
+    const repositories = createRepos({
+      listPublishedNews: vi.fn(async () => [article]),
+    });
+    const result = await searchRelevantContent(
+      'この記事の内容を教えて\n/news/spring-event-extra',
+      repositories,
+    );
+    expect(result.content).toEqual([]);
+    expect(repositories.getNewsBySlug).not.toHaveBeenCalled();
   });
 
   it('ignores weak matches below the score threshold', async () => {
@@ -193,6 +320,31 @@ describe('contentSearch', () => {
       title: '経路の場合の数',
       categoryKeywords: ['数学', '問題', '今週'],
     })).toBe(0);
+  });
+
+  it('retrieves an explicitly named problem in a follow-up to a math listing', async () => {
+    const repositories = createRepos({
+      listPublishedMathProblems: vi.fn(async () => [
+        {
+          weekKey: '2026-W29',
+          title: '経路の場合の数',
+          problem: '場合の数を求めよ',
+          problemPublished: true,
+        },
+        {
+          weekKey: '2026-W30',
+          title: '数列の和',
+          problem: '和を求めよ',
+          problemPublished: true,
+        },
+      ]),
+    });
+
+    const selected = await selectRelevantContent(
+      '今週の数学について教えて\n「経路の場合の数」が公開されています。\nもっと詳しく',
+      repositories,
+    );
+    expect(selected.map(({ entry }) => entry.id)).toEqual(['weekly-math:2026-W29']);
   });
 
   it('does not flood titles from short reverse query matches', () => {

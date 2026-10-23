@@ -212,6 +212,7 @@ describe('Layout assistant integration', () => {
         expect(secondRequest.sessionId).toBe(firstRequest.sessionId);
         expect(secondRequest.history).toEqual([
             { role: 'user', content: 'お知らせについて教えて' },
+            { role: 'assistant', content: '目的のページをご案内します。' },
         ]);
     });
 

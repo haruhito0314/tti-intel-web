@@ -1,4 +1,6 @@
 import { buildResponsesPayload } from '../public/assistant/openai.js';
+import { buildAssistantKnowledgePack } from '../public/assistant/knowledgePack.js';
+import { MAX_MODEL_ANSWER_LENGTH, parseAssistantRequest } from '../public/assistant/validation.js';
 import {
   isSafeDynamicHref,
   KNOWN_PAGE_ROUTES,
@@ -173,18 +175,14 @@ function nonEmptyString(value: unknown, field: string): string {
 }
 
 function parseHistory(value: unknown, field: string): HistoryMessage[] {
-  if (!Array.isArray(value) || value.length > 8) {
-    return invalidFixture(`${field} must be an array with at most 8 entries`);
+  try {
+    return parseAssistantRequest(JSON.stringify({
+      message: 'fixture', currentPath: '/',
+      sessionId: '00000000-0000-4000-8000-000000000000', history: value,
+    })).history;
+  } catch {
+    return invalidFixture(`${field} must satisfy the assistant API history contract`);
   }
-  return value.map((entry, index) => {
-    if (!isRecord(entry) || entry.role !== 'user') {
-      return invalidFixture(`${field}[${index}] must be a user message`);
-    }
-    return {
-      role: 'user',
-      content: nonEmptyString(entry.content, `${field}[${index}].content`),
-    };
-  });
 }
 
 function parseStringList(value: unknown, field: string): string[] {
@@ -366,12 +364,9 @@ export function buildInterimEvaluationCase(evaluationCase: InterimEvaluationCase
   };
   const payload = buildResponsesPayload({
     request,
-    knowledge,
+    knowledgePack: buildAssistantKnowledgePack(),
     content: [],
-    dynamicContentAvailable: false,
-    allowedPageIds: [],
-    model: 'gpt-5.6-luna',
-    contextualFollowUp: routingIntent.requiresHistory,
+    dynamicContentStatus: 'not_searched',
   });
   return {
     payload,
@@ -664,8 +659,8 @@ export function assessInterimObservation(
 ): InterimAssessment {
   const failures: string[] = [];
   if (observation.statusCode !== 200) failures.push('expected a 200 response');
-  if ([...observation.response.answer].length > 200) {
-    failures.push('answer exceeds 200 code points');
+  if (observation.response.answer.length > MAX_MODEL_ANSWER_LENGTH) {
+    failures.push(`answer exceeds ${MAX_MODEL_ANSWER_LENGTH} UTF-16 code units`);
   }
   if (
     observation.latencyMs !== undefined
@@ -701,10 +696,6 @@ export function assessInterimObservation(
   if (evaluationCase.expectedScope === 'university'
     && UNIVERSITY_DETAIL_PROSE.test(observation.response.answer)) {
     failures.push('answer contains detailed university claims');
-  }
-  if (evaluationCase.expectedScope === 'out_of_scope'
-    && !/(?:申し訳|すみません|ごめんなさい|お詫び)/u.test(observation.response.answer)) {
-    failures.push('answer omits a question-specific apology');
   }
   if (
     evaluationCase.expectation === 'distinction'
@@ -742,27 +733,11 @@ export function assessInterimObservation(
 
   const privateValues = [
     evaluationCase.message,
-    ...evaluationCase.history.map(({ content }) => content),
+    ...evaluationCase.history.flatMap(({ content, references }) => [content, ...(references ?? [])]),
     observation.response.answer,
   ];
-  const scopeDecision = classifyAssistantScope(
-    evaluationCase.message,
-    evaluationCase.currentPath,
-    evaluationCase.history,
-  );
-  const { knowledge } = selectAssistantRequestContext(
-    evaluationCase.message,
-    evaluationCase.currentPath,
-    evaluationCase.history,
-    isGenerativeScope(scopeDecision.scope) ? scopeDecision.scope : 'site',
-  );
-  for (const { item } of knowledge) {
-    privateValues.push(
-      item.title,
-      item.summary,
-      ...item.details,
-      ...item.keywords,
-    );
+  for (const entry of buildAssistantKnowledgePack().entries) {
+    privateValues.push(entry.title, ...entry.facts);
   }
   const logScan: LogScanState = { nodes: 0, totalCharacters: 0, values: [] };
   const scannedAllLogValues = collectLogStringValues(observation.logs, logScan);

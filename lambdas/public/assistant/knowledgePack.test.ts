@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { OFFICIAL_SOURCE_LINKS } from './runtimeCatalog.js';
+import { SITE_KNOWLEDGE } from './structuredKnowledge.js';
 import {
   assistantKnowledgePackBytes,
   buildAssistantKnowledgePack,
@@ -11,13 +12,17 @@ const REQUIRED_TOPIC_IDS = [
   'circle.identity', 'circle.activities', 'circle.participation',
   'circle.eligibility', 'circle.schedule', 'circle.fees',
   'circle.contact', 'circle.discord', 'circle.youtube',
+  'circle.discord-youtube', 'circle.game-activity', 'circle.weekly-math',
+  'circle.ap-exam-schedule',
   'site.overview', 'site.about', 'site.news', 'site.apps',
   'site.development', 'site.board', 'site.contact',
+  'site.public-contact',
   'site.game-community', 'site.weekly-math',
-  'site.table-tennis', 'site.color-sort',
+  'site.table-tennis', 'site.color-sort', 'site.ai-assistant',
   'board.posting', 'board.anonymous-name', 'board.threads', 'board.comments',
   'development.codex', 'development.vercel', 'development.aws',
   'development.plugin', 'development.cli', 'development.mcp',
+  'development.combined-workflow', 'development.project-examples',
 ] as const;
 
 describe('buildAssistantKnowledgePack', () => {
@@ -44,6 +49,45 @@ describe('buildAssistantKnowledgePack', () => {
     const serialized = JSON.stringify(buildAssistantKnowledgePack());
 
     expect(serialized).not.toMatch(/星雲祭2026|参加相談のスレッド|スレッド本文|コメント本文/u);
+  });
+
+  it('makes every reviewed catalog item available to answer generation', () => {
+    const pack = buildAssistantKnowledgePack();
+    const entriesByTitle = new Map(pack.entries.map((entry) => [entry.title, entry]));
+
+    expect(entriesByTitle.size).toBe(SITE_KNOWLEDGE.length);
+    for (const item of SITE_KNOWLEDGE) {
+      const entry = entriesByTitle.get(item.title);
+      expect(entry, `Missing reviewed knowledge: ${item.id}`).toBeDefined();
+      expect(entry?.facts).toEqual([item.summary, ...item.details]);
+    }
+  });
+
+  it('preserves review dates and freshness so old plans are distinguishable from stable facts', () => {
+    const entries = buildAssistantKnowledgePack().entries;
+    const exam = entries.find((entry) => entry.topicId === 'circle.ap-exam-schedule');
+    const identity = entries.find((entry) => entry.topicId === 'circle.identity');
+
+    expect(exam).toMatchObject({ asOf: '2026-08-03', volatility: 'volatile' });
+    expect(exam?.facts.join(' ')).toMatch(/2026年11月/u);
+    expect(identity?.volatility).toBe('stable');
+    expect(identity).not.toHaveProperty('asOf');
+    for (const item of SITE_KNOWLEDGE) {
+      const entry = entries.find((candidate) => candidate.title === item.title);
+      expect(entry?.asOf).toBe(item.asOf);
+      expect(entry?.volatility).toBe(item.volatility);
+    }
+  });
+
+  it('includes concrete activity details, app behavior, contact details, and the full development workflow', () => {
+    const entries = new Map(buildAssistantKnowledgePack().entries.map((entry) => [entry.topicId, entry]));
+
+    expect(entries.get('circle.game-activity')?.facts.join(' ')).toMatch(/VALORANT.*APEX LEGENDS.*Minecraft.*見るだけ/u);
+    expect(entries.get('circle.weekly-math')?.facts.join(' ')).toMatch(/自作問題.*表現/u);
+    expect(entries.get('site.ai-assistant')?.facts.join(' ')).toMatch(/確認済みの資料/u);
+    expect(entries.get('site.public-contact')?.facts.join(' ')).toContain('tti.intel@gmail.com');
+    expect(entries.get('development.combined-workflow')?.facts.join(' ')).toMatch(/構想.*調査.*実装.*検証.*公開.*改善/u);
+    expect(entries.get('development.project-examples')?.facts.join(' ')).toMatch(/AI Assistant.*Color Sort Puzzle.*卓球組み合わせ/u);
   });
 
   it('routes unpublished member details and organization collaboration to Contact', () => {

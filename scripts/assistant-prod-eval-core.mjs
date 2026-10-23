@@ -26,6 +26,11 @@ const UNIVERSITY_DETAIL_PROSE = /(?:学部|大学院|入試|学費|学生生活|
 const UNIVERSITY_PLAIN_REDIRECT = '豊田工業大学は公式サイトをご確認ください。';
 const MAX_SAFETY_CLAUSES = 64;
 const MAX_SAFETY_CLAUSE_LENGTH = 512;
+/** Keep aligned with the API validator and frontend response limit. */
+const MAX_ANSWER_LENGTH = 1_200;
+const MAX_HISTORY_REFERENCES = 4;
+const MAX_REFERENCE_TITLE_LENGTH = 120;
+const MAX_HISTORY_TOTAL_LENGTH = 6_540;
 
 function assert(condition, message) {
   if (!condition) throw new TypeError(`Invalid Luna evaluation fixture: ${message}`);
@@ -69,7 +74,24 @@ export function validateFixture(value) {
       === (evaluationCase.expectedLunaCallCount === 1), `${field}.expectedLunaCallCount does not match scope`);
     assert(typeof evaluationCase.message === 'string' && evaluationCase.message.trim(), `${field}.message is required`);
     assert(typeof evaluationCase.currentPath === 'string' && evaluationCase.currentPath.startsWith('/'), `${field}.currentPath is invalid`);
-    assert(Array.isArray(evaluationCase.history) && evaluationCase.history.length <= 8, `${field}.history is invalid`);
+    assert(Array.isArray(evaluationCase.history) && evaluationCase.history.length <= 6, `${field}.history is invalid`);
+    let historyLength = 0;
+    for (const [historyIndex, turn] of evaluationCase.history.entries()) {
+      assert(turn && (turn.role === 'user' || turn.role === 'assistant')
+        && typeof turn.content === 'string' && turn.content.trim(), `${field}.history[${historyIndex}] is invalid`);
+      assert(turn.content.length <= (turn.role === 'user' ? 500 : MAX_ANSWER_LENGTH), `${field}.history[${historyIndex}] is too long`);
+      historyLength += turn.content.length;
+      if (turn.references !== undefined) {
+        assert(turn.role === 'assistant' && Array.isArray(turn.references)
+          && turn.references.length <= MAX_HISTORY_REFERENCES, `${field}.history[${historyIndex}].references is invalid`);
+        for (const title of turn.references) {
+          assert(typeof title === 'string' && title.trim()
+            && title.length <= MAX_REFERENCE_TITLE_LENGTH, `${field}.history[${historyIndex}].references contains an invalid title`);
+          historyLength += title.length;
+        }
+      }
+    }
+    assert(historyLength <= MAX_HISTORY_TOTAL_LENGTH, `${field}.history exceeds the API budget`);
     validateStringArray(evaluationCase.requiredConcepts, `${field}.requiredConcepts`, { nonEmpty: true });
     validateStringArray(evaluationCase.forbiddenConcepts, `${field}.forbiddenConcepts`);
     validateStringArray(evaluationCase.templateTerms, `${field}.templateTerms`, { nonEmpty: true });
@@ -87,8 +109,8 @@ export function validateFixture(value) {
       assert(links.mode === 'none' && links.allowedHrefs.length === 0 && links.requiredHrefs.length === 0, `${field} conversation response must be link-free`);
     }
     if (evaluationCase.expectedScope === 'out_of_scope') {
-      assert(links.mode === 'required' && links.allowedHrefs.length === 1
-        && links.allowedHrefs[0] === '/contact', `${field} out-of-scope response must require Contact`);
+      assert(links.mode === 'none' && links.allowedHrefs.length === 0
+        && links.requiredHrefs.length === 0, `${field} out-of-scope response must be link-free`);
     }
   }
   assert(categories.size === 25 && [...categories.values()].every((count) => count === 4), 'exactly 25 topics x 4 variants are required');
@@ -222,7 +244,7 @@ export function evaluateCase(evaluationCase, response, metrics = {}) {
   const hrefs = links.map(({ href }) => href);
   if (response?.status !== 200) issues.push(`http_${response?.status ?? 'missing'}`);
   if (!answer.trim()) issues.push('empty_answer');
-  if ([...answer].length > 200) issues.push('answer_too_long');
+  if (answer.length > MAX_ANSWER_LENGTH) issues.push('answer_too_long');
   if (!safeInteger(response?.latencyMs)) issues.push('invalid_latency');
   if (metrics.assistantScope !== evaluationCase.expectedScope) issues.push('assistant_scope');
   if (metrics.lunaCallCount !== evaluationCase.expectedLunaCallCount) issues.push('luna_call_count');
@@ -240,7 +262,6 @@ export function evaluateCase(evaluationCase, response, metrics = {}) {
   }
   if (evaluationCase.expectedScope === 'university' && hasDetailedUniversityProse(answer)) issues.push('detailed_university_prose');
   if (evaluationCase.expectedScope === 'out_of_scope') {
-    if (!/(?:申し訳|すみません|ごめんなさい|お詫び)/u.test(answer)) issues.push('missing_out_of_scope_apology');
     if (!evaluationCase.requiredConcepts.some((concept) => normalize(answer).includes(normalize(concept)))) {
       issues.push('missing_out_of_scope_topic');
     }

@@ -256,12 +256,11 @@ describe('createAssistantHandler grounded scope state machine', () => {
       message: '東京の天気は？',
       scope: 'out_of_scope' as const,
       topicLabel: '東京の天気',
-      answer: '東京の天気には対応できません。お問い合わせフォームをご利用ください。',
-      publicAnswer: '申し訳ありませんが、東京の天気については案内できません。必要であればお問い合わせください。',
-      pageIds: ['contact'],
+      answer: '東京の天気については案内できません。TTI Intelligenceやこのサイトについてならお答えできます。',
+      pageIds: [],
       contentIds: [],
       sourceIds: [],
-      links: [{ pageId: 'contact', title: 'お問い合わせ', href: '/contact' }],
+      links: [],
     },
   ])('uses one grounded Luna result for $message', async ({
     message,
@@ -293,6 +292,8 @@ describe('createAssistantHandler grounded scope state machine', () => {
       request: expect.objectContaining({ message }),
       knowledgePack: buildAssistantKnowledgePack(),
       content: [],
+      currentDate: '2026-08-03',
+      dynamicContentStatus: 'available',
     });
     expect(dependencies.log).toHaveBeenCalledWith(expect.objectContaining({
       assistantScope: scope,
@@ -459,8 +460,56 @@ describe('createAssistantHandler single-Luna path', () => {
     expect(requestOpenAI).toHaveBeenCalledWith(expect.objectContaining({
       content: [],
       knowledgePack: buildAssistantKnowledgePack(),
+      dynamicContentStatus: 'unavailable',
     }));
     expect(JSON.stringify(response)).not.toContain('PRIVATE_DYNAMIC_BODY');
+  });
+
+
+  it.each(['2つ目を詳しく', '難しいね', 'はい'])('passes the actual previous answer to generation for %s', async (message) => {
+    const history: AssistantRequest['history'] = [
+      { role: 'user', content: 'どんな活動がある？' },
+      { role: 'assistant', content: '1. アプリ開発 2. ゲーム活動。2つ目について詳しく説明しましょうか？' },
+    ];
+    const dependencies = createDependencies();
+    const response = await invoke(dependencies, eventForRequest({ message, history, currentPath: '/' }));
+    expect(response.statusCode).toBe(200);
+    expect(dependencies.requestOpenAI).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(dependencies.requestOpenAI).mock.calls[0]?.[0].request).toMatchObject({ message, history });
+  });
+
+  it('retains the current article in a follow-up search instead of searching only a pronoun', async () => {
+    const dependencies = createDependencies();
+    await invoke(dependencies, eventForRequest({
+      message: 'もっと詳しく', currentPath: '/',
+      history: [
+        { role: 'user', content: 'ニュースの星雲祭2026について教えて' },
+        { role: 'assistant', content: '星雲祭2026 開催レポートを紹介します。' },
+      ],
+    }));
+    expect(dependencies.searchContent).toHaveBeenCalledWith(expect.stringContaining('星雲祭2026'));
+  });
+
+  it('uses a detail-page identifier even without conversation history', async () => {
+    const dependencies = createDependencies();
+    await invoke(dependencies, eventForRequest({
+      message: 'この問題のヒントは？', currentPath: '/weekly-math/2026-08-03', history: [],
+    }));
+    expect(dependencies.searchContent).toHaveBeenCalledWith(expect.stringContaining('2026-08-03'));
+  });
+
+  it('distinguishes unsearched context from unavailable or empty search results', async () => {
+    const dependencies = createDependencies();
+    await invoke(dependencies, eventForRequest({ message: 'サークルの参加方法は？', currentPath: '/', history: [] }));
+    expect(dependencies.searchContent).not.toHaveBeenCalled();
+    expect(vi.mocked(dependencies.requestOpenAI).mock.calls[0]?.[0].dynamicContentStatus).toBe('not_searched');
+  });
+
+  it('passes successfully fetched content along with partial-failure status', async () => {
+    const content = contentResult();
+    const dependencies = createDependencies({ searchContent: vi.fn(async () => ({ content: [content], dynamicContentAvailable: false })) });
+    await invoke(dependencies, eventForRequest({ message: 'ニュースの星雲祭2026について教えて', history: [] }));
+    expect(dependencies.requestOpenAI).toHaveBeenCalledWith(expect.objectContaining({ content: [content], dynamicContentStatus: 'unavailable' }));
   });
 
   it('passes the request history unchanged with the complete pack', async () => {
@@ -751,7 +800,7 @@ describe('createAssistantHandler verified links', () => {
     });
   });
 
-  it('ignores all model IDs for out-of-scope answers and emits only contact', async () => {
+  it('ignores all model IDs for out-of-scope answers without an unrelated contact link', async () => {
     const dependencies = createDependencies({
       requestOpenAI: vi.fn(async (): Promise<OpenAIResult> => ({
         ...successfulAnswerResult,
@@ -759,7 +808,7 @@ describe('createAssistantHandler verified links', () => {
           ...successfulAnswerResult.output,
           scope: 'out_of_scope',
           topicLabel: '東京の天気',
-          answer: '申し訳ありませんが、東京の天気は案内できません。お問い合わせください。',
+          answer: '東京の天気には対応していません。TTI Intelligenceやこのサイトの案内ができます。',
           pageIds: ['about'],
           contentIds: ['news:nebula-festival-2026'],
           sourceIds: ['discord'],
@@ -773,8 +822,8 @@ describe('createAssistantHandler verified links', () => {
     }));
 
     expect(parsedBody(response)).toEqual({
-      answer: '申し訳ありませんが、東京の天気については案内できません。必要であればお問い合わせください。',
-      links: [{ pageId: 'contact', title: 'お問い合わせ', href: '/contact' }],
+      answer: '東京の天気には対応していません。TTI Intelligenceやこのサイトの案内ができます。',
+      links: [],
     });
   });
 
@@ -1086,7 +1135,7 @@ describe('createAssistantHandler privacy-safe logging', () => {
       cacheWriteTokens: 12,
       outputTokens: 20,
       totalTokens: 220,
-      knowledgeCount: 30,
+      knowledgeCount: buildAssistantKnowledgePack().entries.length,
       knowledgeDomains: 'circle,site,board,development',
       lunaCallCount: 1,
       webCallCount: 0,

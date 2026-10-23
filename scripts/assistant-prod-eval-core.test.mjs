@@ -11,6 +11,7 @@ import {
   fingerprintAnswer,
   loadFixture,
   summarizeResults,
+  validateFixture,
 } from './assistant-prod-eval-core.mjs';
 import {
   buildRequest,
@@ -162,11 +163,11 @@ test('keeps generated uncertainty, caution, and negated unsafe advice safe', () 
     ['L097', '申し訳ありませんが、株は案内できません。利益は保証できないため、借金して投資することは避けてください。'],
   ];
   for (const [id, answer] of safe) {
-    assert.deepEqual(evaluateCase(byId.get(id), response(answer, [{ href: '/contact' }]), metrics).issues, [], `${id} must stay safe`);
+    assert.deepEqual(evaluateCase(byId.get(id), response(answer), metrics).issues, [], `${id} must stay safe`);
   }
 });
 
-test('requires link-free conversation and Contact-only out-of-scope responses', () => {
+test('requires link-free conversation and out-of-scope responses without obligatory apologies', () => {
   const conversationCase = byId.get('L089');
   const conversationResult = evaluateCase(conversationCase, response('こんにちは。', [{ href: '/about' }]), {
     assistantScope: 'conversation', lunaCallCount: 0, webCallCount: 0, usage: zeroUsage,
@@ -178,7 +179,14 @@ test('requires link-free conversation and Contact-only out-of-scope responses', 
     assistantScope: 'out_of_scope', lunaCallCount: 1, webCallCount: 0, usage,
   });
   assert.ok(outOfScopeResult.issues.includes('link_outside_case_allowlist'));
-  assert.ok(outOfScopeResult.issues.includes('missing_link:/contact'));
+  assert.ok(outOfScopeResult.issues.includes('unexpected_link'));
+  const metrics = { assistantScope: 'out_of_scope', lunaCallCount: 1, webCallCount: 0, usage };
+  assert.deepEqual(evaluateCase(outOfScopeCase, response(
+    '三角形の一般的な解説は案内できません。TTI Intelligenceとこのサイトについてならお答えできます。',
+  ), metrics).issues, []);
+  assert.ok(evaluateCase(outOfScopeCase, response(
+    '三角形については案内できません。', [{ href: '/contact' }],
+  ), metrics).issues.includes('unexpected_link'));
 });
 
 test('fixture is the exact 100-case routing matrix', () => {
@@ -204,26 +212,93 @@ test('fixture is the exact 100-case routing matrix', () => {
     ['このサークルって普段何をしてる？', ['circle', 1, '/about']],
     ['掲示板は投稿していいの？', ['site', 1, '/board']],
     ['豊田工業大学について教えて', ['university', 1, 'https://www.toyota-ti.ac.jp/']],
-    ['東京の天気は？', ['out_of_scope', 1, '/contact']],
+    ['東京の天気は？', ['out_of_scope', 1, null]],
   ]);
   for (const [message, [scope, lunaCalls, href]] of regressions) {
     const evaluationCase = fixture.cases.find((item) => item.message === message);
     assert.ok(evaluationCase, `missing production regression: ${message}`);
     assert.equal(evaluationCase.expectedScope, scope);
     assert.equal(evaluationCase.expectedLunaCallCount, lunaCalls);
-    assert.ok(evaluationCase.linkExpectation.requiredHrefs.includes(href));
+    if (href === null) {
+      assert.deepEqual(evaluationCase.linkExpectation, { mode: 'none', allowedHrefs: [], requiredHrefs: [] });
+    } else {
+      assert.ok(evaluationCase.linkExpectation.requiredHrefs.includes(href));
+    }
   }
   assert.ok(fixture.cases.some((item) => item.expectedScope === 'circle'
     && !/(?:TTI Intelligence|AIサークル|このサークル)/u.test(item.message)));
 });
 
-test('rejects over-200-code-point and generic out-of-scope generated answers', () => {
+test('accepts explanations up to 1200 UTF-16 code units and rejects longer answers', () => {
+  const evaluationCase = byId.get('L001');
+  const metrics = { assistantScope: 'circle', lunaCallCount: 1, webCallCount: 0, usage };
+  const prefix = 'サークルの活動について説明します。\n';
+  const remainingLength = 1_200 - prefix.length;
+  const answer = prefix + '😀'.repeat(Math.floor(remainingLength / 2)) + 'あ'.repeat(remainingLength % 2);
+  assert.equal(answer.length, 1_200);
+  assert.deepEqual(evaluateCase(evaluationCase, response(answer, [{ href: '/about' }]), metrics).issues, []);
+  assert.ok(evaluateCase(evaluationCase, response(`${answer}あ`, [{ href: '/about' }]), metrics)
+    .issues.includes('answer_too_long'));
+});
+
+test('rejects generic out-of-scope answers that omit the requested topic', () => {
   const evaluationCase = byId.get('L085');
   const metrics = { assistantScope: 'out_of_scope', lunaCallCount: 1, webCallCount: 0, usage };
-  assert.ok(evaluateCase(evaluationCase, response(`申し訳ありません。天気${'あ'.repeat(190)}`, [{ href: '/contact' }]), metrics)
-    .issues.includes('answer_too_long'));
-  assert.ok(evaluateCase(evaluationCase, response('申し訳ありませんが、その内容は案内できません。', [{ href: '/contact' }]), metrics)
+  assert.ok(evaluateCase(evaluationCase, response('その内容は案内できません。'), metrics)
     .issues.includes('missing_out_of_scope_topic'));
+});
+
+test('validates link-free out-of-scope fixtures and the supported conversation history budget', () => {
+  for (const evaluationCase of fixture.cases.filter(({ expectedScope }) => expectedScope === 'out_of_scope')) {
+    assert.deepEqual(evaluationCase.linkExpectation, { mode: 'none', allowedHrefs: [], requiredHrefs: [] });
+  }
+  const outdated = structuredClone(fixture);
+  outdated.cases.find(({ expectedScope }) => expectedScope === 'out_of_scope').linkExpectation = {
+    mode: 'required', allowedHrefs: ['/contact'], requiredHrefs: ['/contact'],
+  };
+  assert.throws(() => validateFixture(outdated), /out-of-scope response must be link-free/);
+
+  const current = structuredClone(fixture);
+  current.cases[0].history = Array.from({ length: 3 }, () => [
+    { role: 'user', content: 'あ'.repeat(500) },
+    { role: 'assistant', content: 'い'.repeat(1200), references: Array.from({ length: 4 }, () => '題'.repeat(120)) },
+  ]).flat();
+  assert.equal(validateFixture(current), current);
+  current.cases[0].history.push({ role: 'user', content: '質問' });
+  assert.throws(() => validateFixture(current), /history is invalid/);
+});
+
+test('preserves the link-card order in production request history', () => {
+  const evaluationCase = structuredClone(byId.get('L001'));
+  evaluationCase.history = [
+    { role: 'user', content: 'ニュースを教えて' },
+    { role: 'assistant', content: '関連記事はこちらです。', references: ['星雲祭2026', 'AI勉強会レポート'] },
+  ];
+  assert.deepEqual(buildRequest(evaluationCase, '11111111-1111-4111-8111-111111111111').history, evaluationCase.history);
+});
+
+test('rejects unsupported reference titles and history beyond the combined content/reference budget', () => {
+  for (const turn of [
+    { role: 'user', content: '質問', references: ['タイトル'] },
+    { role: 'assistant', content: '回答', references: 'タイトル' },
+    { role: 'assistant', content: '回答', references: ['1', '2', '3', '4', '5'] },
+    { role: 'assistant', content: '回答', references: ['あ'.repeat(121)] },
+    { role: 'assistant', content: '回答', references: ['😀'.repeat(61)] },
+    { role: 'assistant', content: '回答', references: [' '] },
+    { role: 'assistant', content: '回答', references: [123] },
+  ]) {
+    const invalid = structuredClone(fixture);
+    invalid.cases[0].history = [turn];
+    assert.throws(() => validateFixture(invalid), /references/);
+  }
+
+  const boundary = structuredClone(fixture);
+  boundary.cases[0].history = Array.from({ length: 6 }, () => ({
+    role: 'assistant', content: 'あ'.repeat(1000), references: Array.from({ length: 3 }, () => '題'.repeat(30)),
+  }));
+  assert.equal(validateFixture(boundary), boundary);
+  boundary.cases[0].history[5].references[2] += '題';
+  assert.throws(() => validateFixture(boundary), /history exceeds the API budget/);
 });
 
 test('builds every production request with a valid session ID without persisting it', () => {

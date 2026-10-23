@@ -238,7 +238,7 @@ describe('createAssistantApi', () => {
 
     it.each([
         ['empty answer', { ...response, answer: '   ' }],
-        ['501 character answer', { ...response, answer: 'a'.repeat(501) }],
+        ['1201 character answer', { ...response, answer: 'a'.repeat(1201) }],
         ['5 links', {
             ...response,
             links: [
@@ -352,6 +352,33 @@ describe('createAssistantApi', () => {
 
         await expect(client.send(request)).resolves.toEqual({
             answer: '最新モデルを案内します。',
+            links: [],
+        });
+    });
+
+    it('accepts a complete 1200-character answer', async () => {
+        const fullAnswer = { ...response, answer: '詳'.repeat(1200) };
+        const fetchMock = vi.fn().mockResolvedValue(jsonResponse(fullAnswer));
+        const client = createAssistantApi({
+            baseUrl: 'https://api.example.com',
+            fetchImpl: injectedFetch(fetchMock),
+        });
+
+        await expect(client.send(request)).resolves.toEqual(fullAnswer);
+    });
+
+    it('preserves paragraphs and numbered choices while removing inline URLs', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(jsonResponse({
+            answer: '  まず  興味に合わせて選べます。\r\n\r\n1. [活動内容](https://wrong.example/activities)\r\n  2. 入会方法 https://wrong.example/join\r\n\r\n続けて質問してください。  ',
+            links: [],
+        }));
+        const client = createAssistantApi({
+            baseUrl: 'https://api.example.com',
+            fetchImpl: injectedFetch(fetchMock),
+        });
+
+        await expect(client.send(request)).resolves.toEqual({
+            answer: 'まず 興味に合わせて選べます。\n\n1. 活動内容\n2. 入会方法\n\n続けて質問してください。',
             links: [],
         });
     });

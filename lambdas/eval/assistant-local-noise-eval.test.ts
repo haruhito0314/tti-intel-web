@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
+import { buildAssistantKnowledgePack } from '../public/assistant/knowledgePack.js';
 
 import {
   assessInterimObservation,
@@ -79,66 +80,56 @@ describe('interim evaluator fixture', () => {
 });
 
 describe('buildInterimEvaluationCase', () => {
-  it('builds the Luna structured schema with no tools or web search', () => {
+  it('uses the complete reviewed pack in a single Luna structured payload', () => {
     const built = buildInterimEvaluationCase({
-      id: 'S001',
-      message: 'Codexについて教えて',
-      currentPath: '/',
-      history: [],
-      expectation: 'site',
+      id: 'S001', message: 'Codexについて教えて', currentPath: '/',
+      history: [], expectation: 'site',
     });
-    const serialized = JSON.stringify(built.payload);
+    const context = JSON.parse(built.payload.input.at(-1)!.content);
 
     expect(built.knowledgeIds).toContain('development-codex');
     expect(built.payload.model).toBe('gpt-5.6-luna');
     expect(built.payload.tools).toEqual([]);
+    expect(built.payload.max_output_tokens).toBe(2000);
     expect(built.payload.text.format.schema.required).toEqual([
-      'scope',
-      'topicLabel',
-      'answer',
-      'pageIds',
-      'contentIds',
-      'sourceIds',
+      'scope', 'topicLabel', 'answer', 'pageIds', 'contentIds', 'sourceIds',
     ]);
-    expect(serialized).not.toMatch(/web_search|trustedFactIds|expectedFactIds/);
+    expect(context.knowledgePack).toEqual(buildAssistantKnowledgePack());
+    expect(context.dynamicContentStatus).toBe('not_searched');
+    expect(JSON.stringify(built.payload)).not.toMatch(/web_search|trustedFactIds|expectedFactIds/);
   });
 
-  it('uses the same resolved follow-up decision for knowledge and payload history', () => {
+  it('retains native assistant replies when a follow-up refers to an offered option', () => {
+    const history = [
+      { role: 'user' as const, content: '今週の数学について教えて' },
+      { role: 'assistant' as const, content: '今週の数学をサイトから読めます。見方を説明しましょうか？' },
+    ];
     const built = buildInterimEvaluationCase({
-      id: 'F001',
-      message: 'どこから見るの？',
-      currentPath: '/',
-      history: [{ role: 'user', content: '今週の数学について教えて' }],
+      id: 'F001', message: 'はい', currentPath: '/', history,
       expectation: 'follow-up',
     });
-    const input = JSON.parse(built.payload.input[0]!.content[0]!.text) as {
-      isFollowUp: boolean;
-      history: unknown[];
-    };
+    const context = JSON.parse(built.payload.input.at(-1)!.content);
 
-    expect(built.contextualFollowUp).toBe(true);
-    expect(built.knowledgeIds).toContain('circle-weekly-math');
-    expect(input.isFollowUp).toBeUndefined();
-    expect(input.history).toHaveLength(1);
+    expect(built.payload.input.slice(0, -1)).toEqual(history);
+    expect(context.message).toBe('はい');
+    expect(context.knowledgePack).toEqual(buildAssistantKnowledgePack());
+    expect(context).not.toHaveProperty('history');
+    expect(context).not.toHaveProperty('isFollowUp');
   });
 
-  it('keeps one bounded prior turn for an explicit uncataloged Kyoto question', () => {
+  it('keeps the latest explicit new topic last even when legacy diagnostics select no knowledge', () => {
+    const history = [{ role: 'user' as const, content: 'Codexについて教えて' }];
     const built = buildInterimEvaluationCase({
-      id: 'G002',
-      message: 'どこに京都がありますか？',
-      currentPath: '/',
-      history: [{ role: 'user', content: 'Codexについて教えて' }],
-      expectation: 'general',
+      id: 'G002', message: 'どこに京都がありますか？', currentPath: '/',
+      history, expectation: 'general',
     });
-    const input = JSON.parse(built.payload.input[0]!.content[0]!.text) as {
-      isFollowUp: boolean;
-      history: unknown[];
-    };
+    const context = JSON.parse(built.payload.input.at(-1)!.content);
 
     expect(built.contextualFollowUp).toBe(false);
     expect(built.knowledgeIds).toEqual([]);
-    expect(input.isFollowUp).toBeUndefined();
-    expect(input.history).toHaveLength(1);
+    expect(built.payload.input.slice(0, -1)).toEqual(history);
+    expect(context.message).toBe('どこに京都がありますか？');
+    expect(context.knowledgePack).toEqual(buildAssistantKnowledgePack());
   });
 });
 
@@ -321,7 +312,7 @@ describe('assessInterimObservation', () => {
       const result = assessInterimObservation(byId.get(id)!, {
         statusCode: 200,
         latencyMs: 100,
-        response: { answer, links: [{ pageId: 'contact', title: 'お問い合わせ', href: '/contact' }] },
+        response: { answer, links: [] },
         lunaCallCount: 1,
         webCallCount: 0,
         usage: {
@@ -374,7 +365,7 @@ describe('assessInterimObservation', () => {
     const assess = (id: string, answer: string) => assessInterimObservation(byId.get(id)!, {
       statusCode: 200,
       latencyMs: 100,
-      response: { answer, links: [{ pageId: 'contact', title: 'お問い合わせ', href: '/contact' }] },
+      response: { answer, links: [] },
       lunaCallCount: 1,
       webCallCount: 0,
       usage,
@@ -408,7 +399,7 @@ describe('assessInterimObservation', () => {
     const assess = (answer: string) => assessInterimObservation(medical, {
       statusCode: 200,
       latencyMs: 100,
-      response: { answer, links: [{ pageId: 'contact', title: 'お問い合わせ', href: '/contact' }] },
+      response: { answer, links: [] },
       lunaCallCount: 1,
       webCallCount: 0,
       usage,
@@ -476,16 +467,16 @@ describe('assessInterimObservation', () => {
     ]));
   });
 
-  it('rejects answers over 200 code points', () => {
+  it('rejects answers over 1200 UTF-16 code units', () => {
     const result = assessInterimObservation(evaluationCase, {
       statusCode: 200,
-      response: { answer: '😀'.repeat(201), links: [] },
+      response: { answer: '😀'.repeat(601), links: [] },
       lunaCallCount: 1,
       webCallCount: 0,
       usage: { inputTokens: 10, cachedInputTokens: 0, cacheWriteTokens: 0, outputTokens: 2, totalTokens: 12 },
       logs: [],
     });
-    expect(result.failures).toContain('answer exceeds 200 code points');
+    expect(result.failures).toContain('answer exceeds 1200 UTF-16 code units');
   });
 
   it('rejects a public route that is not an Assistant link candidate', () => {

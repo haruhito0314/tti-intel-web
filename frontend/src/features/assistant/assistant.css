@@ -197,6 +197,10 @@
   margin: 0;
 }
 
+.assistant-message p {
+  white-space: pre-wrap;
+}
+
 .assistant-message-row .assistant-status {
   max-width: calc(100% - 2.5rem);
   padding: 0.75rem 0.875rem;

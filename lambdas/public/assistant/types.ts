@@ -56,8 +56,10 @@ export interface RankedKnowledgeItem {
 }
 
 export interface HistoryMessage {
-  role: 'user';
+  role: 'user' | 'assistant';
   content: string;
+  /** Titles of verified link cards in the order shown; conversational data only. */
+  references?: string[];
 }
 
 export interface AssistantRequest {

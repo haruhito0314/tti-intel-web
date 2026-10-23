@@ -38,8 +38,9 @@ const CIRCLE_ACTIONS = [
 ] as const;
 const DEICTIC_SITE_ALIAS = /^(?:このサイト|このページ|ここ(?:は|で|に|を|へ|が|の|も|と|から|まで|$))/;
 const SITE_ALIAS = /サイトマップ|ページ一覧|アプリ一覧|^開発について|^開発ページ|(?:サイト|ページ).*(?:ナビゲーション|ナビ|メニュー)|(?:ナビゲーション|ナビ|メニュー).*(?:サイト|ページ)|掲示板|お知らせ|ニュース|今週の数学|カラーソート|color sort|卓球組み合わせ|ai assistant|codex|vercel|aws|plugin|cli|mcp/;
-const DYNAMIC_CONTENT_TEXT_ALIAS = /お知らせ|ニュース|掲示板|今週の数学/;
-const DYNAMIC_PATH_ALIASES = new Set(['/news', '/board', '/weekly-math']);
+const DYNAMIC_CONTENT_TEXT_ALIAS = /お知らせ|ニュース|掲示板|今週の数学|記事|投稿|スレッド|レポート|イベント|数学の?問題|(?:この|その|あの)問題|^問題(?:は|の|を|について|$)/;
+const DYNAMIC_CONTENT_PATH = /(?:^|[\s(（])\/(?:news|board|weekly-math)(?:\/|[?#\s)）]|$)/;
+const DYNAMIC_CURRENT_PATH = /^\/(?:news|board|weekly-math)(?:\/|[?#]|$)/;
 const SCOPE_FOLLOW_UP = /^(?:学費|入試|学部)(?:は|も|を|について)?$/;
 const FAREWELL = /^(?:さようなら|さよなら|またね|また会おう|じゃあね|bye|goodbye)$/;
 const GREETING_OR_ACKNOWLEDGEMENT_PREFIX = /^(?:こんにちは|こんばんは|おはよう(?:ございます)?|はじめまして|よろしく(?:お願いします)?|ありがとう(?:ございます)?|なるほど|了解(?:しました|です)?|わかりました|わかった|はい|うん)(?:[!！?？。．、,，〜~…・:\s]+)+/;
@@ -91,7 +92,7 @@ function classifyContextFreeScope(message: string): AssistantScope | null {
 }
 
 function scopeFromHistory(history: readonly HistoryMessage[]): AssistantScope | null {
-  const previousUserTurn = history.at(-1);
+  const previousUserTurn = [...history].reverse().find((turn) => turn.role === 'user');
   if (previousUserTurn === undefined) return null;
   const scope = classifyContextFreeScope(previousUserTurn.content);
   return scope === 'circle' || scope === 'site' || scope === 'university'
@@ -125,13 +126,72 @@ export function isGenerativeScope(scope: AssistantScope): scope is 'circle' | 's
   return scope === 'circle' || scope === 'site';
 }
 
+function referencesDynamicContent(message: string): boolean {
+  const normalized = normalizeSearchText(message);
+  return DYNAMIC_CONTENT_TEXT_ALIAS.test(normalized)
+    || DYNAMIC_CONTENT_PATH.test(normalized);
+}
+
+function isContextualContentFollowUp(message: string): boolean {
+  const normalized = normalizeScopePhrase(message);
+  if (isBareEmpathyRemark(message)) return true;
+  if (/^(?:[1-9]\d*|[一二三四五六七八九十]+)(?:つ目|番目|個目|本目)(?:$|の|を|は|って|が|について)/.test(normalized)) {
+    return true;
+  }
+  if (/^(?:最初|最後)(?:の|を|は|って|について)/.test(normalized)) return true;
+  if (/^(?:はい|うん|お願いします|お願い|続けて|理解できない|よく[分わ]からない|[分わ]からない)$/.test(normalized)) {
+    return true;
+  }
+
+  // A complete new subject must not inherit an older article merely because it
+  // starts with a word such as 「それ」 or 「どう」.
+  const explicitScope = classifyContextFreeScope(message);
+  if (
+    explicitScope !== null
+    && explicitScope !== 'conversation'
+    && !referencesDynamicContent(message)
+  ) return false;
+  return shouldUseFollowUpHistory(message);
+}
+
+/** Resolve only the active topic, ending at the nearest substantive user turn. */
+function dynamicFollowUpContext(
+  message: string,
+  history: readonly HistoryMessage[],
+): readonly HistoryMessage[] {
+  if (!isContextualContentFollowUp(message)) return [];
+
+  const context: HistoryMessage[] = [];
+  for (const turn of history.slice(-12).reverse()) {
+    if (turn.role === 'user' && !isContextualContentFollowUp(turn.content)) {
+      context.unshift(turn);
+      break;
+    }
+    context.unshift(turn);
+  }
+
+  return context.some((turn) => turn.references?.length || referencesDynamicContent(turn.content)) ? context : [];
+}
+
+/** Include the article titles / selected item in the last answer for follow-ups. */
+export function buildDynamicContentQuery(
+  message: string,
+  history: readonly HistoryMessage[] = [],
+): string {
+  const context = dynamicFollowUpContext(message, history);
+  if (context.length === 0) return message;
+  return [...context.map((turn) => [turn.content.slice(0, 1_600), ...(turn.references ?? [])].join('\n')), message]
+    .join('\n')
+    .slice(-6_000);
+}
+
 /** Dynamic lookup is optional context and must never pre-classify the answer scope. */
 export function shouldSearchDynamicContent(
   message: string,
   currentPath: string,
+  history: readonly HistoryMessage[] = [],
 ): boolean {
-  const normalizedMessage = normalizeSearchText(message);
-  return DYNAMIC_CONTENT_TEXT_ALIAS.test(normalizedMessage)
-    || DYNAMIC_PATH_ALIASES.has(normalizedMessage)
-    || DYNAMIC_PATH_ALIASES.has(currentPath);
+  return referencesDynamicContent(message)
+    || DYNAMIC_CURRENT_PATH.test(currentPath)
+    || dynamicFollowUpContext(message, history).length > 0;
 }

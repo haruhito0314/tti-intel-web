@@ -1,5 +1,5 @@
 import { SITE_KNOWLEDGE } from './structuredKnowledge.js';
-import type { AssistantPageId, OfficialSourceId } from './types.js';
+import type { AssistantPageId, KnowledgeItem, OfficialSourceId } from './types.js';
 
 export const ASSISTANT_KNOWLEDGE_PACK_SCHEMA_VERSION = 1 as const;
 export const MAX_ASSISTANT_KNOWLEDGE_PACK_BYTES = 32_000;
@@ -10,6 +10,8 @@ export interface AssistantKnowledgeEntry {
   facts: readonly string[];
   pageIds: readonly AssistantPageId[];
   sourceIds: readonly OfficialSourceId[];
+  asOf?: string;
+  volatility?: KnowledgeItem['volatility'];
 }
 
 export interface AssistantKnowledgePack {
@@ -37,6 +39,10 @@ const KNOWLEDGE_PACK_TOPICS: readonly KnowledgePackTopic[] = [
   { topicId: 'circle.contact', catalogId: 'circle-contact', pageIds: ['contact'] },
   { topicId: 'circle.discord', catalogId: 'circle-discord', pageIds: ['game-community', 'contact'] },
   { topicId: 'circle.youtube', catalogId: 'circle-youtube', pageIds: ['about'] },
+  { topicId: 'circle.discord-youtube', catalogId: 'circle-discord-youtube', pageIds: ['about', 'game-community'] },
+  { topicId: 'circle.game-activity', catalogId: 'circle-game-activity', pageIds: ['game-community'] },
+  { topicId: 'circle.weekly-math', catalogId: 'circle-weekly-math', pageIds: ['about', 'weekly-math'] },
+  { topicId: 'circle.ap-exam-schedule', catalogId: 'circle-ap-exam-schedule', pageIds: ['about'] },
   { topicId: 'site.overview', catalogId: 'site-overview', pageIds: ['home'] },
   { topicId: 'site.about', catalogId: 'site-about', pageIds: ['about'] },
   { topicId: 'site.news', catalogId: 'site-news', pageIds: ['news'] },
@@ -44,10 +50,12 @@ const KNOWLEDGE_PACK_TOPICS: readonly KnowledgePackTopic[] = [
   { topicId: 'site.development', catalogId: 'site-development', pageIds: ['development'] },
   { topicId: 'site.board', catalogId: 'site-board', pageIds: ['board'] },
   { topicId: 'site.contact', catalogId: 'site-contact', pageIds: ['contact'] },
+  { topicId: 'site.public-contact', catalogId: 'site-public-contact', pageIds: ['contact'] },
   { topicId: 'site.game-community', catalogId: 'site-game-community', pageIds: ['game-community'] },
   { topicId: 'site.weekly-math', catalogId: 'site-weekly-math', pageIds: ['weekly-math'] },
   { topicId: 'site.table-tennis', catalogId: 'app-table-tennis', pageIds: ['apps', 'table-tennis'] },
   { topicId: 'site.color-sort', catalogId: 'app-color-sort', pageIds: ['apps', 'color-sort'] },
+  { topicId: 'site.ai-assistant', catalogId: 'app-ai-assistant', pageIds: ['apps'] },
   { topicId: 'board.posting', catalogId: 'board-posting', pageIds: ['board'] },
   { topicId: 'board.anonymous-name', catalogId: 'board-anonymous-name', pageIds: ['board'] },
   { topicId: 'board.threads', catalogId: 'board-threads', pageIds: ['board'] },
@@ -58,6 +66,8 @@ const KNOWLEDGE_PACK_TOPICS: readonly KnowledgePackTopic[] = [
   { topicId: 'development.plugin', catalogId: 'development-plugin', pageIds: ['development'] },
   { topicId: 'development.cli', catalogId: 'development-cli', pageIds: ['development'] },
   { topicId: 'development.mcp', catalogId: 'development-mcp', pageIds: ['development'] },
+  { topicId: 'development.combined-workflow', catalogId: 'development-combined-workflow', pageIds: ['development'] },
+  { topicId: 'development.project-examples', catalogId: 'development-project-examples', pageIds: ['development', 'apps'] },
 ];
 
 export function assistantKnowledgePackBytes(pack: AssistantKnowledgePack): number {
@@ -77,6 +87,8 @@ export function buildAssistantKnowledgePack(): AssistantKnowledgePack {
       facts: [item.summary, ...item.details],
       pageIds,
       sourceIds: item.sourceIds,
+      ...(item.asOf === undefined ? {} : { asOf: item.asOf }),
+      volatility: item.volatility,
     } satisfies AssistantKnowledgeEntry;
   });
   const pack: AssistantKnowledgePack = {

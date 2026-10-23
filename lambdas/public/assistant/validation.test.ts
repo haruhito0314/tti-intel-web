@@ -18,6 +18,33 @@ const validRequest = {
 };
 
 describe('parseAssistantRequest', () => {
+  it('accepts all three question/answer exchanges without dropping assistant choices', () => {
+    const history = Array.from({ length: 3 }, (_, index) => [
+      { role: 'user', content: `質問${index}` },
+      { role: 'assistant', content: '1. アプリ開発 2. ゲーム活動' },
+    ]).flat();
+    expect(parseAssistantRequest(JSON.stringify({ ...validRequest, history })).history).toEqual(history);
+  });
+
+  it('accepts the full supported history budget', () => {
+    const history = Array.from({ length: 3 }, () => [
+      { role: 'user', content: 'あ'.repeat(500) },
+      { role: 'assistant', content: '答'.repeat(1200), references: Array(4).fill('参'.repeat(120)) },
+    ]).flat();
+    expect(parseAssistantRequest(JSON.stringify({ ...validRequest, history })).history).toEqual(history);
+  });
+
+
+  it.each([
+    { role: 'user', content: '質問', references: ['記事'] },
+    { role: 'assistant', content: '回答', references: ['x'.repeat(121)] },
+    { role: 'assistant', content: '回答', references: Array(5).fill('記事') },
+    { role: 'assistant', content: '回答', references: ['   '] },
+    { role: 'assistant', content: '回答', references: [3] },
+  ])('rejects unbounded or malformed reference titles', (entry) => {
+    expect(() => parseAssistantRequest(JSON.stringify({ ...validRequest, history: [entry] }))).toThrow(RequestValidationError);
+  });
+
   it('parses and trims a valid request', () => {
     expect(parseAssistantRequest(JSON.stringify({
       ...validRequest,
@@ -55,28 +82,32 @@ describe('parseAssistantRequest', () => {
     ['backslash in path', JSON.stringify({ ...validRequest, currentPath: '/news\\archive' })],
     ['path without leading slash', JSON.stringify({ ...validRequest, currentPath: 'news' })],
     ['257 path code units', JSON.stringify({ ...validRequest, currentPath: `/${'a'.repeat(256)}` })],
-    ['3 history messages', JSON.stringify({
+    ['7 history messages', JSON.stringify({
       ...validRequest,
-      history: Array.from({ length: 3 }, () => ({ role: 'user', content: 'x' })),
+      history: Array.from({ length: 7 }, () => ({ role: 'user', content: 'x' })),
     })],
-    ['801 history code units', JSON.stringify({
+    ['501 user history code units', JSON.stringify({
       ...validRequest,
-      history: [{ role: 'user', content: 'x'.repeat(801) }],
+      history: [{ role: 'user', content: 'x'.repeat(501) }],
     })],
-    ['1,201 total history code units', JSON.stringify({
+    ['6,541 total history code units', JSON.stringify({
       ...validRequest,
       history: [
-        { role: 'user', content: 'x'.repeat(800) },
-        { role: 'user', content: 'x'.repeat(401) },
+        { role: 'assistant', content: 'x'.repeat(1200) },
+        { role: 'assistant', content: 'x'.repeat(1200) },
+        { role: 'assistant', content: 'x'.repeat(1200) },
+        { role: 'assistant', content: 'x'.repeat(1200) },
+        { role: 'assistant', content: 'x'.repeat(1200) },
+        { role: 'assistant', content: 'x'.repeat(541) },
       ],
     })],
     ['blank history content', JSON.stringify({
       ...validRequest,
       history: [{ role: 'user', content: '   ' }],
     })],
-    ['assistant history role', JSON.stringify({
+    ['1,201 assistant history code units', JSON.stringify({
       ...validRequest,
-      history: [{ role: 'assistant', content: 'x' }],
+      history: [{ role: 'assistant', content: 'x'.repeat(1201) }],
     })],
     ['unknown role', JSON.stringify({
       ...validRequest,
@@ -133,8 +164,8 @@ describe('validateModelGuideResponse', () => {
   const validOutOfScope = {
     scope: 'out_of_scope',
     topicLabel: '東京の天気',
-    answer: '申し訳ありませんが、東京の天気については案内できません。必要であればお問い合わせください。',
-    pageIds: ['contact'],
+    answer: '東京の天気については案内できません。このサイトやTTI Intelligenceについてならお答えできます。',
+    pageIds: [],
     contentIds: [],
     sourceIds: [],
   };
@@ -163,8 +194,14 @@ describe('validateModelGuideResponse', () => {
     expect(() => validateModelGuideResponse(value, context)).toThrow(UnsafeModelOutputError);
   });
 
-  it('accepts exactly 200 Unicode code points', () => {
-    const answer = '😀'.repeat(200);
+  it('accepts exactly 1200 UTF-16 code units', () => {
+    const answer = '😀'.repeat(600);
+    expect(validateModelGuideResponse({ ...validSite, answer }, context).answer).toBe(answer);
+  });
+
+
+  it('accepts a useful explanation with paragraphs and more than two sentences', () => {
+    const answer = '掲示板から投稿できます。\n1. 新規スレッドを開きます。\n2. タイトルと本文を入力します。\n3. 投稿ボタンを押します。';
     expect(validateModelGuideResponse({ ...validSite, answer }, context).answer).toBe(answer);
   });
 
@@ -179,7 +216,7 @@ describe('validateModelGuideResponse', () => {
     'もちろんです。掲示板にはスレッドを投稿できます。コメントも書き込めます。',
     'ご提案ありがとうございます。幅広いご相談を歓迎しています。詳しくはお問い合わせください。',
     'ご相談ありがとうございます。内容を確認して判断します。詳しくはお問い合わせください。',
-  ])('ignores one leading short acknowledgement when counting clauses: %s', (answer) => {
+  ])('accepts natural replies with multiple sentences: %s', (answer) => {
     expect(validateModelGuideResponse({ ...validSite, answer }, context).answer).toBe(answer);
   });
 
@@ -221,9 +258,7 @@ describe('validateModelGuideResponse', () => {
     ['raw URL in topic label', { ...validOutOfScope, topicLabel: 'https://evil.example' }],
     ['Markdown link in topic label', { ...validOutOfScope, topicLabel: '[天気](https://evil.example)' }],
     ['control character in answer', { ...validSite, answer: '確認してください\u0000。' }],
-    ['201 Unicode code points', { ...validSite, answer: '😀'.repeat(201) }],
-    ['three sentence clauses', { ...validSite, answer: '一つ目。二つ目。三つ目。' }],
-    ['three newline-separated clauses', { ...validSite, answer: '一つ目\n二つ目\n三つ目' }],
+    ['1201 UTF-16 code units', { ...validSite, answer: 'あ'.repeat(1201) }],
     ['blank out-of-scope topic label', { ...validOutOfScope, topicLabel: '' }],
     ['whitespace-only out-of-scope topic label', {
       ...validOutOfScope,
@@ -239,7 +274,7 @@ describe('validateModelGuideResponse', () => {
     ['site Toyota link', { ...validSite, sourceIds: ['toyota-ti'] }],
     ['university internal page link', { ...validUniversity, pageIds: ['about'] }],
     ['out-of-scope source link', { ...validOutOfScope, sourceIds: ['discord'] }],
-    ['out-of-scope page other than Contact', { ...validOutOfScope, pageIds: ['about'] }],
+    ['out-of-scope page link', { ...validOutOfScope, pageIds: ['about'] }],
   ])('rejects %s', (_name, value) => {
     expect(() => validateModelGuideResponse(value, context)).toThrow(UnsafeModelOutputError);
   });

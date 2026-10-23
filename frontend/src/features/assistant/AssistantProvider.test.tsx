@@ -321,7 +321,7 @@ describe('AssistantProvider', () => {
         expect(screen.getByTestId('last-result')).toHaveTextContent('true');
     });
 
-    it('sends at most the previous two user messages without duplicating the current one', async () => {
+    it('sends the previous three complete exchanges without duplicating the current message', async () => {
         const client: AssistantClient = {
             send: vi.fn(async ({ message }) => ({
                 answer: `answer-${message}`,
@@ -351,17 +351,136 @@ describe('AssistantProvider', () => {
             currentPath: '/news',
             sessionId: 'id-1',
             history: [
+                { role: 'user', content: 'question-5' },
+                { role: 'assistant', content: 'answer-question-5' },
                 { role: 'user', content: 'question-6' },
+                { role: 'assistant', content: 'answer-question-6' },
                 { role: 'user', content: 'question-7' },
+                { role: 'assistant', content: 'answer-question-7' },
             ],
         });
         expect(requests[7].history).not.toContainEqual({
             role: 'user',
             content: 'question-8',
         });
-        expect(requests[7].history.every((entry) => entry.role === 'user')).toBe(
-            true,
+    });
+
+    it('keeps full 1200-character replies and their questions in the bounded history', async () => {
+        const answer = '詳'.repeat(1200);
+        const question = '問'.repeat(500);
+        const client: AssistantClient = {
+            send: vi.fn().mockResolvedValue({ answer, links: [] }),
+        };
+        renderProvider({ client, createId: createIdFactory() });
+
+        for (let index = 1; index <= 4; index += 1) {
+            enterQuestion(question);
+            clickButton('質問を送る');
+            await waitFor(() => expect(readState().messages).toHaveLength(index * 2));
+        }
+
+        const { history } = vi.mocked(client.send).mock.calls[3][0];
+        expect(history).toEqual(Array.from({ length: 3 }, () => [
+            { role: 'user', content: question },
+            { role: 'assistant', content: answer },
+        ]).flat());
+        expect(history.reduce((total, entry) => total + entry.content.length, 0)).toBe(5100);
+    });
+
+    it('includes suggested choices in the next request when the user selects one', async () => {
+        const choices = 'どちらについて知りたいですか？\n1. 活動内容\n2. 入会方法';
+        const client: AssistantClient = {
+            send: vi.fn().mockResolvedValue({ answer: choices, links: [] }),
+        };
+        renderProvider({ client, createId: createIdFactory() });
+
+        enterQuestion('サークルについて教えて');
+        clickButton('質問を送る');
+        await waitFor(() => expect(readState().messages).toHaveLength(2));
+
+        enterQuestion('2番目を詳しく');
+        clickButton('質問を送る');
+        await waitFor(() => expect(client.send).toHaveBeenCalledTimes(2));
+
+        expect(vi.mocked(client.send).mock.calls[1][0]).toMatchObject({
+            message: '2番目を詳しく',
+            history: [
+                { role: 'user', content: 'サークルについて教えて' },
+                { role: 'assistant', content: choices },
+            ],
+        });
+    });
+
+    it('preserves the displayed link-card order for a follow-up about the second card', async () => {
+        const linkedResponse: AssistantResponse = {
+            answer: 'こちらから確認できます。',
+            links: [
+                { pageId: 'about', title: 'サークルについて', href: '/about' },
+                { pageId: 'contact', title: 'お問い合わせ', href: '/contact' },
+            ],
+        };
+        const client: AssistantClient = {
+            send: vi.fn().mockResolvedValue(linkedResponse),
+        };
+        renderProvider({ client, createId: createIdFactory() });
+
+        enterQuestion('活動と連絡方法を教えて');
+        clickButton('質問を送る');
+        await waitFor(() => expect(readState().messages).toHaveLength(2));
+        expect(readState().messages[1]).toMatchObject({
+            content: linkedResponse.answer,
+            links: linkedResponse.links,
+        });
+
+        enterQuestion('2つ目を詳しく');
+        clickButton('質問を送る');
+        await waitFor(() => expect(client.send).toHaveBeenCalledTimes(2));
+
+        expect(vi.mocked(client.send).mock.calls[1][0]).toMatchObject({
+            message: '2つ目を詳しく',
+            history: [
+                { role: 'user', content: '活動と連絡方法を教えて' },
+                {
+                    role: 'assistant',
+                    content: 'こちらから確認できます。',
+                    references: ['サークルについて', 'お問い合わせ'],
+                },
+            ],
+        });
+    });
+
+    it('bounds references to four 120-character titles per answer without altering displayed links', async () => {
+        const links = Array.from({ length: 5 }, (_, index) => ({
+            pageId: `page-${index}`,
+            title: `${index}${'長'.repeat(130)}`,
+            href: `/page-${index}`,
+        }));
+        const answer = '詳'.repeat(1200);
+        const question = '問'.repeat(500);
+        const client: AssistantClient = {
+            send: vi.fn().mockResolvedValue({ answer, links }),
+        };
+        renderProvider({ client, createId: createIdFactory() });
+
+        for (let index = 1; index <= 4; index += 1) {
+            enterQuestion(question);
+            clickButton('質問を送る');
+            await waitFor(() => expect(readState().messages).toHaveLength(index * 2));
+        }
+
+        const { history } = vi.mocked(client.send).mock.calls[3][0];
+        const references = links.slice(0, 4).map(({ title }) => title.slice(0, 120));
+        expect(history.filter(({ role }) => role === 'assistant')).toEqual(
+            Array.from({ length: 3 }, () => ({ role: 'assistant', content: answer, references })),
         );
+        expect(history.filter(({ role }) => role === 'user').every(
+            (entry) => entry.references === undefined,
+        )).toBe(true);
+        expect(history.reduce((total, entry) => (
+            total + entry.content.length
+                + (entry.references?.reduce((length, title) => length + title.length, 0) ?? 0)
+        ), 0)).toBe(6540);
+        expect(readState().messages[1].links).toEqual(links);
     });
 
     it('clears conversation history while keeping the session id', async () => {

@@ -10,13 +10,12 @@ import { ASSISTANT_MODEL_SCOPES } from './types.js';
 
 const MAX_RAW_BODY_LENGTH = 65_536;
 const MAX_MESSAGE_LENGTH = 500;
-const MAX_MODEL_ANSWER_LENGTH = 200;
-const MAX_MODEL_ANSWER_CLAUSES = 2;
+/** Keep aligned with frontend/src/features/assistant/types.ts. */
+export const MAX_MODEL_ANSWER_LENGTH = 1_200;
 const MAX_CURRENT_PATH_LENGTH = 256;
-/** Frontend sends at most 2 prior user turns; match that on the wire. */
-const MAX_HISTORY_MESSAGES = 2;
-const MAX_HISTORY_CONTENT_LENGTH = 800;
-const MAX_HISTORY_TOTAL_LENGTH = 1_200;
+/** Three recent complete conversation turns; legacy user-only history still works. */
+const MAX_HISTORY_MESSAGES = 6;
+const MAX_HISTORY_TOTAL_LENGTH = 6_540;
 const MAX_MODEL_PAGE_IDS = 3;
 const MAX_MODEL_CONTENT_IDS = 3;
 const MAX_MODEL_SOURCE_IDS = 3;
@@ -29,8 +28,6 @@ const CONTROL_CHARACTER_PATTERN = /\p{Cc}/u;
 const EMAIL_ADDRESS_PATTERN = /[a-z0-9](?:[a-z0-9.!#$%&'*+/=?^_`{|}~-]{0,62}[a-z0-9])?@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z]{2,63})+/giu;
 const URL_PATTERN = /(?:(?:https?|ftp):\/\/|\/\/|(?:mailto|tel|javascript|data):|www\.|\b[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.[a-z]{2,63}\b)/iu;
 const MARKDOWN_PATTERN = /(?:\[[^\]\r\n]*\]\([^\)\r\n]+\)|\*\*[^*\r\n]+\*\*|__[^_\r\n]+__|~~[^~\r\n]+~~|`[^`\r\n]+`)/u;
-const SENTENCE_CLAUSE_PATTERN = /[。．.!！？?\r\n]+/u;
-const LEADING_ACKNOWLEDGEMENT_PATTERN = /^(?:はい|いいえ|もちろんです|(?:ご提案|ご相談|お問い合わせ)ありがとうございます)$/u;
 
 export class RequestValidationError extends Error {
   readonly name = 'RequestValidationError';
@@ -76,14 +73,25 @@ function parseHistory(value: unknown): HistoryMessage[] {
       return invalidRequest();
     }
 
-    const { role, content } = item;
-    if (role !== 'user' || typeof content !== 'string') {
+    const { role, content, references } = item;
+    if ((role !== 'user' && role !== 'assistant') || typeof content !== 'string') {
       return invalidRequest();
     }
 
+    let parsedReferences: string[] | undefined;
+    if (references !== undefined) {
+      if (
+        role !== 'assistant'
+        || !Array.isArray(references)
+        || references.length > 4
+        || references.some((title) => typeof title !== 'string' || title.trim().length === 0 || title.length > 120)
+      ) return invalidRequest();
+      parsedReferences = references.map((title: string) => title.trim());
+      totalRawContentLength += references.reduce((sum: number, title: string) => sum + title.length, 0);
+    }
     totalRawContentLength += content.length;
     if (
-      content.length > MAX_HISTORY_CONTENT_LENGTH
+      content.length > (role === 'user' ? MAX_MESSAGE_LENGTH : MAX_MODEL_ANSWER_LENGTH)
       || totalRawContentLength > MAX_HISTORY_TOTAL_LENGTH
     ) {
       return invalidRequest();
@@ -94,7 +102,7 @@ function parseHistory(value: unknown): HistoryMessage[] {
       return invalidRequest();
     }
 
-    return { role, content: trimmedContent };
+    return { role, content: trimmedContent, ...(parsedReferences === undefined ? {} : { references: parsedReferences }) };
   });
 }
 
@@ -155,8 +163,8 @@ function isModelScope(value: string): value is AssistantModelScope {
   return (ASSISTANT_MODEL_SCOPES as readonly string[]).includes(value);
 }
 
-function hasUnsafeText(value: string): boolean {
-  return CONTROL_CHARACTER_PATTERN.test(value)
+function hasUnsafeText(value: string, allowNewlines = false): boolean {
+  return CONTROL_CHARACTER_PATTERN.test(allowNewlines ? value.replace(/\r?\n/g, '') : value)
     || URL_PATTERN.test(value.replace(EMAIL_ADDRESS_PATTERN, ''))
     || MARKDOWN_PATTERN.test(value);
 }
@@ -226,7 +234,7 @@ function validateScopePolicy(
   if (
     topicLabelLength < 1
     || topicLabel.trim().length === 0
-    || !hasOnlyIds(pageIds, ['contact'])
+    || !hasOnlyIds(pageIds, [])
     || !hasOnlyIds(contentIds, [])
     || !hasOnlyIds(sourceIds, [])
   ) {
@@ -270,25 +278,15 @@ export function validateModelGuideResponse(
     || typeof topicLabel !== 'string'
     || typeof answer !== 'string'
     || hasUnsafeText(topicLabel)
-    || hasUnsafeText(answer)
+    || hasUnsafeText(answer, true)
   ) {
     return unsafeModelOutput();
   }
 
   const trimmedAnswer = answer.trim();
-  const answerLength = [...answer].length;
-  const answerClauses = trimmedAnswer
-    .replace(EMAIL_ADDRESS_PATTERN, 'email')
-    .split(SENTENCE_CLAUSE_PATTERN)
-    .map((clause) => clause.trim())
-    .filter((clause) => clause.length > 0);
-  const clauseCount = LEADING_ACKNOWLEDGEMENT_PATTERN.test(answerClauses[0] ?? '')
-    ? answerClauses.length - 1
-    : answerClauses.length;
   if (
     trimmedAnswer.length === 0
-    || answerLength > MAX_MODEL_ANSWER_LENGTH
-    || clauseCount > MAX_MODEL_ANSWER_CLAUSES
+    || answer.length > MAX_MODEL_ANSWER_LENGTH
   ) {
     return unsafeModelOutput();
   }

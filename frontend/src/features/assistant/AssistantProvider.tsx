@@ -16,6 +16,8 @@ import {
     type AssistantContextValue,
 } from './assistantContext';
 import {
+    MAX_ASSISTANT_ANSWER_LENGTH,
+    MAX_ASSISTANT_LINKS,
     MAX_ASSISTANT_QUESTION_LENGTH,
     type AssistantClient,
     type AssistantHistoryMessage,
@@ -108,13 +110,21 @@ export function AssistantProvider({
             return false;
         }
 
-        // Send recent user turns only. Including prior assistant answers makes
-        // small models echo the last reply instead of answering the new message.
-        // Two prior turns match backend follow-up search; more increases topic bleed.
+        // Keep the previous three complete exchanges so references to the
+        // assistant's suggestions retain their meaning. Bound each role to the
+        // same limits as the API (6,540 characters: 5,100 content + 1,440 references).
         const history: AssistantHistoryMessage[] = messagesRef.current
-            .filter((entry) => entry.role === 'user')
-            .slice(-2)
-            .map(({ role, content }) => ({ role, content }));
+            .slice(-6)
+            .map((entry) => ({
+                role: entry.role,
+                content: entry.content.slice(0, entry.role === 'user'
+                    ? MAX_ASSISTANT_QUESTION_LENGTH
+                    : MAX_ASSISTANT_ANSWER_LENGTH),
+                ...(entry.role === 'assistant' && entry.links.length > 0
+                    ? { references: entry.links.slice(0, MAX_ASSISTANT_LINKS)
+                        .map(({ title }) => title.slice(0, 120)) }
+                    : {}),
+            }));
         const optimisticId = createId();
         const optimisticMessage: AssistantUiMessage = {
             id: optimisticId,

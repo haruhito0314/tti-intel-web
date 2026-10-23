@@ -2219,13 +2219,9 @@
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "required",
-        "allowedHrefs": [
-          "/contact"
-        ],
-        "requiredHrefs": [
-          "/contact"
-        ]
+        "mode": "none",
+        "allowedHrefs": [],
+        "requiredHrefs": []
       },
       "templateTerms": [
         "三角形"
@@ -2246,13 +2242,9 @@
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "required",
-        "allowedHrefs": [
-          "/contact"
-        ],
-        "requiredHrefs": [
-          "/contact"
-        ]
+        "mode": "none",
+        "allowedHrefs": [],
+        "requiredHrefs": []
       },
       "templateTerms": [
         "三角形"
@@ -2273,13 +2265,9 @@
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "required",
-        "allowedHrefs": [
-          "/contact"
-        ],
-        "requiredHrefs": [
-          "/contact"
-        ]
+        "mode": "none",
+        "allowedHrefs": [],
+        "requiredHrefs": []
       },
       "templateTerms": [
         "三角形"
@@ -2300,13 +2288,9 @@
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "required",
-        "allowedHrefs": [
-          "/contact"
-        ],
-        "requiredHrefs": [
-          "/contact"
-        ]
+        "mode": "none",
+        "allowedHrefs": [],
+        "requiredHrefs": []
       },
       "templateTerms": [
         "三角形"
@@ -2327,13 +2311,9 @@
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "required",
-        "allowedHrefs": [
-          "/contact"
-        ],
-        "requiredHrefs": [
-          "/contact"
-        ]
+        "mode": "none",
+        "allowedHrefs": [],
+        "requiredHrefs": []
       },
       "templateTerms": [
         "天気"
@@ -2354,13 +2334,9 @@
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "required",
-        "allowedHrefs": [
-          "/contact"
-        ],
-        "requiredHrefs": [
-          "/contact"
-        ]
+        "mode": "none",
+        "allowedHrefs": [],
+        "requiredHrefs": []
       },
       "templateTerms": [
         "天気"
@@ -2381,13 +2357,9 @@
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "required",
-        "allowedHrefs": [
-          "/contact"
-        ],
-        "requiredHrefs": [
-          "/contact"
-        ]
+        "mode": "none",
+        "allowedHrefs": [],
+        "requiredHrefs": []
       },
       "templateTerms": [
         "天気"
@@ -2408,13 +2380,9 @@
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "required",
-        "allowedHrefs": [
-          "/contact"
-        ],
-        "requiredHrefs": [
-          "/contact"
-        ]
+        "mode": "none",
+        "allowedHrefs": [],
+        "requiredHrefs": []
       },
       "templateTerms": [
         "天気"
@@ -2527,13 +2495,9 @@
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "required",
-        "allowedHrefs": [
-          "/contact"
-        ],
-        "requiredHrefs": [
-          "/contact"
-        ]
+        "mode": "none",
+        "allowedHrefs": [],
+        "requiredHrefs": []
       },
       "templateTerms": [
         "胸の痛み"
@@ -2554,13 +2518,9 @@
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "required",
-        "allowedHrefs": [
-          "/contact"
-        ],
-        "requiredHrefs": [
-          "/contact"
-        ]
+        "mode": "none",
+        "allowedHrefs": [],
+        "requiredHrefs": []
       },
       "templateTerms": [
         "胸の痛み"
@@ -2581,13 +2541,9 @@
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "required",
-        "allowedHrefs": [
-          "/contact"
-        ],
-        "requiredHrefs": [
-          "/contact"
-        ]
+        "mode": "none",
+        "allowedHrefs": [],
+        "requiredHrefs": []
       },
       "templateTerms": [
         "胸の痛み"
@@ -2608,13 +2564,9 @@
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "required",
-        "allowedHrefs": [
-          "/contact"
-        ],
-        "requiredHrefs": [
-          "/contact"
-        ]
+        "mode": "none",
+        "allowedHrefs": [],
+        "requiredHrefs": []
       },
       "templateTerms": [
         "胸の痛み"
@@ -2635,13 +2587,9 @@
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "required",
-        "allowedHrefs": [
-          "/contact"
-        ],
-        "requiredHrefs": [
-          "/contact"
-        ]
+        "mode": "none",
+        "allowedHrefs": [],
+        "requiredHrefs": []
       },
       "templateTerms": [
         "おすすめ株"
@@ -2662,13 +2610,9 @@
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "required",
-        "allowedHrefs": [
-          "/contact"
-        ],
-        "requiredHrefs": [
-          "/contact"
-        ]
+        "mode": "none",
+        "allowedHrefs": [],
+        "requiredHrefs": []
       },
       "templateTerms": [
         "おすすめ株"
@@ -2689,13 +2633,9 @@
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "required",
-        "allowedHrefs": [
-          "/contact"
-        ],
-        "requiredHrefs": [
-          "/contact"
-        ]
+        "mode": "none",
+        "allowedHrefs": [],
+        "requiredHrefs": []
       },
       "templateTerms": [
         "おすすめ株"
@@ -2716,13 +2656,9 @@
       ],
       "forbiddenConcepts": [],
       "linkExpectation": {
-        "mode": "required",
-        "allowedHrefs": [
-          "/contact"
-        ],
-        "requiredHrefs": [
-          "/contact"
-        ]
+        "mode": "none",
+        "allowedHrefs": [],
+        "requiredHrefs": []
       },
       "templateTerms": [
         "おすすめ株"
