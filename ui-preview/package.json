@@ -1,0 +1,10 @@
+{
+  "name": "tti-ui-preview",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/vite.mjs",
+    "build": "node scripts/vite.mjs build",
+    "preview": "node scripts/vite.mjs preview"
+  }
+}

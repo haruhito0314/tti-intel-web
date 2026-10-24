@@ -1,0 +1,8 @@
+{
+  "extends": "../frontend/tsconfig.app.json",
+  "compilerOptions": {
+    "paths": { "@/*": ["../frontend/src/*"] },
+    "types": ["vite/client", "node"]
+  },
+  "include": ["src", "activity-photos.ts", "vite.config.ts"]
+}

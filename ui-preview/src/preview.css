@@ -1,0 +1,267 @@
+@import "../../frontend/src/index.css";
+@source "../../frontend/src";
+
+/* Loaded only by ui-preview. All content and behavior comes from frontend. */
+.ui-preview {
+  --background: #fff;
+  --foreground: #1d1d1f;
+  --surface-1: #fff;
+  --surface-2: #f5f5f7;
+  --surface-3: #ebebed;
+  --bg-secondary: #f5f5f7;
+  --border: #d2d2d7;
+  --line-soft: #e5e5e7;
+  --glass-bg: rgba(250, 250, 252, .86);
+  --glass-border: transparent;
+}
+
+.ui-preview.dark {
+  --background: #000;
+  --foreground: #f5f5f7;
+  --surface-1: #111;
+  --surface-2: #1d1d1f;
+  --surface-3: #29292c;
+  --bg-secondary: #1d1d1f;
+  --border: #424245;
+  --line-soft: #333336;
+  --glass-bg: rgba(22, 22, 23, .86);
+  --glass-border: transparent;
+}
+
+.ui-preview body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic', sans-serif;
+}
+
+.ui-preview .animate-fade-in { animation: none; }
+
+.ui-preview .preview-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  min-height: 36px;
+  padding: 8px max(20px, calc((100vw - 1080px) / 2));
+  color: var(--foreground);
+  background: var(--surface-2);
+  font-size: 11px;
+  letter-spacing: .02em;
+}
+
+.ui-preview .preview-tools > div { display: flex; gap: 20px; }
+.ui-preview .preview-tools a,
+.ui-preview .preview-tools button { color: var(--link); }
+.ui-preview .preview-tools a:hover,
+.ui-preview .preview-tools button:hover { text-decoration: underline; }
+.ui-preview .preview-tools button { cursor: pointer; }
+.ui-preview .preview-sources {
+  padding: 24px max(20px, calc((100vw - 1080px) / 2));
+  background: var(--surface-2);
+  color: var(--foreground);
+  font-size: 13px;
+  line-height: 1.9;
+}
+.ui-preview .preview-sources ul { margin-top: 12px; }
+.ui-preview .preview-sources a { color: var(--link); }
+.ui-preview .preview-sources a:hover { text-decoration: underline; }
+
+.ui-preview .site-header .glass { border: 0; }
+.ui-preview .site-header-nav { max-width: 1100px; }
+.ui-preview .site-header .apple-nav { padding-inline: 18px; }
+.ui-preview .site-header-mobile-panel,
+.ui-preview .site-header-mobile-bg { background: var(--background); }
+
+/* Quiet neutral page headers, with room for the Japanese headlines. */
+.ui-preview .about-band-hero,
+.ui-preview .about-band-white { background: var(--background); }
+.ui-preview .about-band-hero::before,
+.ui-preview .about-band-hero::after,
+.ui-preview .about-band-white::before,
+.ui-preview .about-band-soft::before,
+.ui-preview .about-band-gray::before { content: none; }
+.ui-preview .about-band-hero > div { max-width: 1100px; padding-block: 96px 80px; }
+.ui-preview .apple-hero {
+  font-size: clamp(36px, 5vw, 64px);
+  font-weight: 650;
+  line-height: 1.2;
+  letter-spacing: -.035em;
+}
+.ui-preview .about-band-hero .apple-body {
+  font-size: clamp(16px, 1.5vw, 20px);
+  line-height: 1.85;
+  max-width: 48em;
+  margin-inline: auto;
+}
+.ui-preview .about-band-hero + section,
+.ui-preview .about-band-hero + .about-activities-section,
+.ui-preview .about-activities-section + .about-band-soft { border: 0; }
+
+/* Activity photographs have their own area; copy never overlaps the image. */
+.ui-preview .about-activities-section { background: var(--background); }
+.ui-preview .activities-grid {
+  max-width: 1240px;
+  padding: 0 32px 96px;
+  gap: 24px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.ui-preview .activity-card {
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  border-radius: 24px;
+  background: var(--surface-2);
+}
+.ui-preview .activity-card::before,
+.ui-preview .activity-card::after { content: none; }
+.ui-preview .activity-card .activity-copy {
+  position: static;
+  width: 100%;
+  min-height: 236px;
+  padding: 36px 36px 24px;
+  text-align: left;
+}
+.ui-preview .activity-copy h3 {
+  font-size: clamp(28px, 2.8vw, 36px);
+  font-weight: 650;
+  line-height: 1.2;
+  letter-spacing: -.035em;
+  color: var(--foreground);
+}
+.ui-preview .activity-copy p {
+  max-width: 31em;
+  margin-top: 14px;
+  font-size: 16px;
+  line-height: 1.8;
+  color: #6e6e73;
+}
+.ui-preview.dark .activity-copy p { color: #b5b5ba; }
+.ui-preview .activity-actions { gap: 10px 28px; margin-top: 10px; }
+.ui-preview .activity-button.primary,
+.ui-preview .activity-button.secondary {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: 4px;
+  backdrop-filter: none;
+  color: var(--link);
+  font-size: 16px;
+  font-weight: 400;
+  gap: 8px;
+}
+.ui-preview .activity-button::after { content: '›'; font-size: 23px; line-height: 1; }
+.ui-preview .activity-button:hover { text-decoration: underline; }
+.ui-preview .activity-card .activity-visual {
+  position: static;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  object-position: center;
+  filter: none;
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+.ui-preview .activity-card--dev .activity-visual { object-position: 62% center; }
+.ui-preview .activity-card--math .activity-visual { object-position: 60% center; }
+.ui-preview .about-band-soft { background: var(--surface-2); }
+.ui-preview .about-band-soft > section { padding-block: 72px; }
+.ui-preview .about-band-soft h2 { font-size: clamp(28px, 3vw, 36px); line-height: 1.3; }
+.ui-preview .about-band-soft button { min-height: 64px; font-size: 17px; }
+
+/* Preserve the full home content, with calmer hierarchy and larger breathing room. */
+.ui-preview .home-hero { background: var(--background); min-height: 660px; }
+.ui-preview .home-hero-atmosphere,
+.ui-preview .home-hero-fade,
+.ui-preview .home-hero-brand-underline { display: none; }
+.ui-preview .home-hero-content { padding-block: 100px; }
+.ui-preview .home-hero-stage { margin-bottom: 28px; }
+.ui-preview .home-hero-brand-text {
+  font-family: inherit;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+  color: var(--foreground);
+}
+.ui-preview .home-hero-write-char,
+.ui-preview .home-hero-rise {
+  opacity: 1;
+  transform: none;
+  clip-path: none;
+  animation: none;
+}
+.ui-preview .home-hero-title {
+  font-size: clamp(44px, 6.6vw, 82px);
+  line-height: 1.15;
+  letter-spacing: -.04em;
+  margin-bottom: 28px;
+}
+.ui-preview .home-hero-lead { max-width: 32em; line-height: 1.8; font-size: 19px; }
+.ui-preview .home-hero-actions { margin-top: 32px; gap: 20px; }
+.ui-preview .home-hero-actions > a:nth-child(2) button {
+  border: 0;
+  color: var(--link);
+  background: none;
+}
+.ui-preview .home-main-color-flow { background: var(--background); }
+.ui-preview .home-main-color-flow::before,
+.ui-preview .home-flow-block::after,
+.ui-preview .home-cta-band::before { content: none; }
+.ui-preview .home-flow-block { padding-block: 80px; }
+.ui-preview .home-flow-block::before { background: var(--surface-2); }
+.ui-preview .home-flow-block h2 { color: var(--foreground); }
+.ui-preview #home-videos h2,
+.ui-preview #home-math h2,
+.ui-preview #home-news h2 { font-size: clamp(28px, 3.4vw, 40px); }
+.ui-preview .accent-card-soft,
+.ui-preview .accent-card-cool {
+  background: var(--surface-1);
+  border: 0;
+  box-shadow: none;
+}
+.ui-preview #home-news a.group { padding-block: 28px; }
+.ui-preview .home-cta-band { background: var(--surface-2); border: 0; padding-block: 96px; }
+.ui-preview footer { border: 0; }
+
+/* The shared contact form keeps every field, validation and submission handler. */
+.ui-preview .about-band-white:has(form) { background: var(--surface-2); }
+.ui-preview .about-band-white:has(form) > div { max-width: 1120px; padding-block: 64px 88px; }
+.ui-preview .about-band-white:has(form) > div > .grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.75fr); gap: 48px; }
+.ui-preview .about-band-white:has(form) > div > .grid > div { grid-column: auto; min-width: 0; }
+.ui-preview .about-band-white:has(form) .accent-card-soft:has(form) { padding: 36px; }
+.ui-preview .about-band-white:has(form) input,
+.ui-preview .about-band-white:has(form) textarea { background: var(--surface-1); }
+.ui-preview .about-band-white:has(form) a[href^='mailto:'] { overflow-wrap: anywhere; }
+.ui-preview .about-band-white:has(input[type='search']) { padding-bottom: 40px; }
+.ui-preview .about-band-white:has(input[type='search']) .apple-headline { font-size: 24px; line-height: 1.5; }
+.ui-preview .about-band-white:has(input[type='search']) .apple-footnote { font-size: 15px; line-height: 1.75; }
+
+@media (max-width: 900px) {
+  .ui-preview .site-header .apple-nav { padding-inline: 9px; }
+  .ui-preview .activity-card .activity-copy { padding: 28px 26px 18px; min-height: 260px; }
+}
+
+@media (max-width: 767px) {
+  .ui-preview .about-band-hero > div { padding-block: 60px 48px; }
+  .ui-preview .activities-grid { grid-template-columns: 1fr; padding: 0 20px 60px; gap: 24px; }
+  .ui-preview .activity-card { border-radius: 20px; }
+  .ui-preview .activity-card .activity-copy { min-height: 0; padding: 28px 26px 20px; }
+  .ui-preview .activity-copy p { font-size: 15px; }
+  .ui-preview .activity-card .activity-visual { aspect-ratio: 3 / 2; }
+  .ui-preview .about-band-soft > section { padding-block: 48px; }
+  .ui-preview .home-hero { min-height: 600px; }
+  .ui-preview .home-hero-content { padding: 72px 24px; }
+  .ui-preview .home-hero-lead { font-size: 17px; }
+  .ui-preview .home-flow-block { padding-block: 56px; }
+  .ui-preview .about-band-white:has(form) > div { padding-block: 40px 60px; }
+  .ui-preview .about-band-white:has(form) > div > .grid { grid-template-columns: 1fr; gap: 32px; }
+  .ui-preview .about-band-white:has(form) .accent-card-soft:has(form) { padding: 24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-preview *, .ui-preview *::before, .ui-preview *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
